@@ -22,7 +22,7 @@ import (
 	"github.com/palantir/pkg/cli/flag"
 	"github.com/pkg/errors"
 
-	"github.com/palantir/checks/gocd"
+	"github.com/palantir/checks/gocd/config"
 )
 
 const (
@@ -48,15 +48,15 @@ func Command() cli.Command {
 		Usage: "Write or verify package import information for Go packages",
 		Flags: flags,
 		Action: func(ctx cli.Context) error {
-			cfg, err := gocd.Load(cfgcli.ConfigPath, cfgcli.ConfigJSON)
+			params, err := config.Load(cfgcli.ConfigPath, cfgcli.ConfigJSON)
 			if err != nil {
 				return err
 			}
 
 			var dirs []string
-			if len(cfg.RootDirs) > 0 {
+			if len(params.RootDirs) > 0 {
 				cfgDirs := make(map[string]struct{})
-				for _, dir := range cfg.RootDirs {
+				for _, dir := range params.RootDirs {
 					cfgDirs[dir] = struct{}{}
 				}
 
@@ -72,7 +72,7 @@ func Command() cli.Command {
 						return errors.Errorf("specified directories %v did not match any directories in configuration: %v", inputDirsSlice, sortedKeys(cfgDirs))
 					}
 				} else {
-					dirs = cfg.RootDirs
+					dirs = params.RootDirs
 					if len(dirs) == 0 {
 						return errors.New("no input directories were specified and none were found in the configuration")
 					}
