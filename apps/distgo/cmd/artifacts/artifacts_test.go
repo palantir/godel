@@ -1,0 +1,348 @@
+// Copyright 2016 Palantir Technologies, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package artifacts_test
+
+import (
+	"io/ioutil"
+	"path"
+	"path/filepath"
+	"testing"
+	"time"
+
+	"github.com/nmiyake/pkg/dirs"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/palantir/godel/apps/distgo/cmd/artifacts"
+	"github.com/palantir/godel/apps/distgo/cmd/build"
+	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/pkg/osarch"
+)
+
+func TestBuildArtifacts(t *testing.T) {
+	tmpDir, cleanup, err := dirs.TempDir("", "")
+	defer cleanup()
+	require.NoError(t, err)
+
+	for i, currCase := range []struct {
+		specs   func(projectDir string) []config.ProductBuildSpecWithDeps
+		osArchs []osarch.OSArch
+		want    map[string][]string
+	}{
+		// empty spec
+		{
+			specs: func(projectDir string) []config.ProductBuildSpecWithDeps {
+				return []config.ProductBuildSpecWithDeps{}
+			},
+			want: map[string][]string{},
+		},
+		// returns paths for all OS/arch combinations if requested osArchs is empty
+		{
+			specs: func(projectDir string) []config.ProductBuildSpecWithDeps {
+				return []config.ProductBuildSpecWithDeps{
+					createSpec(projectDir, "foo", "0.1.0", []osarch.OSArch{
+						{OS: "darwin", Arch: "amd64"},
+						{OS: "darwin", Arch: "386"},
+						{OS: "linux", Arch: "amd64"},
+					}, config.SLSDistType),
+				}
+			},
+			want: map[string][]string{
+				"foo": {
+					path.Join("build", "darwin-amd64", "foo"),
+					path.Join("build", "darwin-386", "foo"),
+					path.Join("build", "linux-amd64", "foo"),
+				},
+			},
+		},
+		// returns only path to requested OS/arch
+		{
+			specs: func(projectDir string) []config.ProductBuildSpecWithDeps {
+				return []config.ProductBuildSpecWithDeps{
+					createSpec(projectDir, "foo", "0.1.0", []osarch.OSArch{
+						{OS: "darwin", Arch: "amd64"},
+						{OS: "linux", Arch: "amd64"},
+					}, config.SLSDistType),
+				}
+			},
+			osArchs: []osarch.OSArch{{OS: "darwin", Arch: "amd64"}},
+			want: map[string][]string{
+				"foo": {
+					path.Join("build", "darwin-amd64", "foo"),
+				},
+			},
+		},
+		// path to windows executable includes ".exe"
+		{
+			specs: func(projectDir string) []config.ProductBuildSpecWithDeps {
+				return []config.ProductBuildSpecWithDeps{
+					createSpec(projectDir, "foo", "0.1.0", []osarch.OSArch{
+						{OS: "windows", Arch: "amd64"},
+					}, config.SLSDistType),
+				}
+			},
+			want: map[string][]string{
+				"foo": {
+					path.Join("build", "windows-amd64", "foo.exe"),
+				},
+			},
+		},
+		// returns empty if os/arch that is not part of the spec is requested
+		{
+			specs: func(projectDir string) []config.ProductBuildSpecWithDeps {
+				return []config.ProductBuildSpecWithDeps{
+					createSpec(projectDir, "foo", "0.1.0", []osarch.OSArch{
+						{OS: "darwin", Arch: "amd64"},
+						{OS: "linux", Arch: "amd64"},
+					}, config.SLSDistType),
+				}
+			},
+			osArchs: []osarch.OSArch{{OS: "windows", Arch: "amd64"}},
+			want:    map[string][]string{},
+		},
+	} {
+		currProjectDir, err := ioutil.TempDir(tmpDir, "")
+		require.NoError(t, err)
+
+		// relative path
+		got, err := artifacts.BuildArtifacts(currCase.specs(currProjectDir), artifacts.BuildArtifactsParams{
+			OSArchs: currCase.osArchs,
+		})
+		require.NoError(t, err, "Case %d", i)
+		assert.Equal(t, currCase.want, toMap(got), "Case %d", i)
+
+		// absolute path
+		got, err = artifacts.BuildArtifacts(currCase.specs(currProjectDir), artifacts.BuildArtifactsParams{
+			AbsPath: true,
+			OSArchs: currCase.osArchs,
+		})
+		require.NoError(t, err, "Case %d", i)
+		assert.Equal(t, toAbs(currCase.want, currProjectDir), toMap(got), "Case %d", i)
+	}
+}
+
+func TestBuildArtifactsRequiresBuild(t *testing.T) {
+	tmpDir, cleanup, err := dirs.TempDir(".", "")
+	defer cleanup()
+	require.NoError(t, err)
+
+	tmpDir, err = filepath.Abs(tmpDir)
+	require.NoError(t, err)
+
+	for i, currCase := range []struct {
+		specs         func(projectDir string) config.ProductBuildSpecWithDeps
+		osArchs       []osarch.OSArch
+		requiresBuild bool
+		beforeAction  func(projectDir string, specs []config.ProductBuildSpec)
+		want          map[string][]string
+	}{
+		// returns paths to all artifacts if build has not happened
+		{
+			specs: func(projectDir string) config.ProductBuildSpecWithDeps {
+				return createSpec(projectDir, "foo", "0.1.0", []osarch.OSArch{
+					{OS: "darwin", Arch: "amd64"},
+					{OS: "darwin", Arch: "386"},
+					{OS: "linux", Arch: "amd64"},
+				}, config.SLSDistType)
+			},
+			want: map[string][]string{
+				"foo": {
+					path.Join("build", "darwin-amd64", "foo"),
+					path.Join("build", "darwin-386", "foo"),
+					path.Join("build", "linux-amd64", "foo"),
+				},
+			},
+		},
+		// returns empty if all artifacts exist and are up-to-date
+		{
+			specs: func(projectDir string) config.ProductBuildSpecWithDeps {
+				return createSpec(projectDir, "foo", "0.1.0", []osarch.OSArch{
+					{OS: "darwin", Arch: "amd64"},
+					{OS: "darwin", Arch: "386"},
+					{OS: "linux", Arch: "amd64"},
+				}, config.SLSDistType)
+			},
+			beforeAction: func(projectDir string, specs []config.ProductBuildSpec) {
+				// build products
+				err = build.Run(specs, nil, build.Context{
+					Parallel: false,
+				}, ioutil.Discard)
+				require.NoError(t, err)
+			},
+			want: map[string][]string{},
+		},
+		// returns paths to all artifacts if input source file has been modified
+		{
+			specs: func(projectDir string) config.ProductBuildSpecWithDeps {
+				return createSpec(projectDir, "foo", "0.1.0", []osarch.OSArch{
+					{OS: "darwin", Arch: "amd64"},
+					{OS: "darwin", Arch: "386"},
+					{OS: "linux", Arch: "amd64"},
+				}, config.SLSDistType)
+			},
+			beforeAction: func(projectDir string, specs []config.ProductBuildSpec) {
+				// build products
+				err := build.Run(specs, nil, build.Context{
+					Parallel: false,
+				}, ioutil.Discard)
+				require.NoError(t, err)
+
+				// sleep to ensure that modification time will differ
+				time.Sleep(time.Second)
+
+				// update source file
+				err = ioutil.WriteFile(path.Join(projectDir, "main.go"), []byte("package main; func main(){}"), 0644)
+				require.NoError(t, err)
+			},
+			want: map[string][]string{
+				"foo": {
+					path.Join("build", "darwin-amd64", "foo"),
+					path.Join("build", "darwin-386", "foo"),
+					path.Join("build", "linux-amd64", "foo"),
+				},
+			},
+		},
+		// if OS/Archs are specified, results are filtered base on that
+		{
+			specs: func(projectDir string) config.ProductBuildSpecWithDeps {
+				return createSpec(projectDir, "foo", "0.1.0", []osarch.OSArch{
+					{OS: "darwin", Arch: "amd64"},
+					{OS: "darwin", Arch: "386"},
+					{OS: "linux", Arch: "amd64"},
+				}, config.SLSDistType)
+			},
+			osArchs: []osarch.OSArch{
+				{OS: "windows", Arch: "amd64"},
+			},
+			want: map[string][]string{},
+		},
+	} {
+		currProjectDir, err := ioutil.TempDir(tmpDir, "")
+		require.NoError(t, err)
+
+		err = ioutil.WriteFile(path.Join(currProjectDir, "main.go"), []byte("package main; func main(){}"), 0644)
+		require.NoError(t, err)
+
+		specWithDeps := currCase.specs(currProjectDir)
+		if currCase.beforeAction != nil {
+			currCase.beforeAction(currProjectDir, specWithDeps.AllSpecs())
+		}
+
+		got, err := artifacts.BuildArtifacts([]config.ProductBuildSpecWithDeps{specWithDeps}, artifacts.BuildArtifactsParams{
+			RequiresBuild: true,
+			OSArchs:       currCase.osArchs,
+		})
+		require.NoError(t, err, "Case %d", i)
+		assert.Equal(t, currCase.want, toMap(got), "Case %d", i)
+	}
+}
+
+func TestDistArtifacts(t *testing.T) {
+	tmpDir, cleanup, err := dirs.TempDir("", "")
+	defer cleanup()
+	require.NoError(t, err)
+
+	for i, currCase := range []struct {
+		specs func(projectDir string) []config.ProductBuildSpecWithDeps
+		want  map[string][]string
+	}{
+		{
+			specs: func(projectDir string) []config.ProductBuildSpecWithDeps {
+				return []config.ProductBuildSpecWithDeps{}
+			},
+			want: map[string][]string{},
+		},
+		{
+			specs: func(projectDir string) []config.ProductBuildSpecWithDeps {
+				return []config.ProductBuildSpecWithDeps{
+					createSpec(projectDir, "foo", "0.1.0", nil, config.SLSDistType),
+				}
+			},
+			want: map[string][]string{
+				"foo": {"foo-0.1.0.sls.tgz"},
+			},
+		},
+		{
+			specs: func(projectDir string) []config.ProductBuildSpecWithDeps {
+				return []config.ProductBuildSpecWithDeps{
+					createSpec(projectDir, "foo", "0.1.0", nil, config.SLSDistType),
+					createSpec(projectDir, "bar", "unspecified", nil, config.BinDistType),
+				}
+			},
+			want: map[string][]string{
+				"foo": {"foo-0.1.0.sls.tgz"},
+				"bar": {"bar-unspecified.tgz"},
+			},
+		},
+	} {
+		currProjectDir, err := ioutil.TempDir(tmpDir, "")
+		require.NoError(t, err)
+
+		// relative path
+		got, err := artifacts.DistArtifacts(currCase.specs(currProjectDir), false)
+		require.NoError(t, err, "Case %d", i)
+		assert.Equal(t, currCase.want, toMap(got), "Case %d", i)
+
+		// absolute path
+		got, err = artifacts.DistArtifacts(currCase.specs(currProjectDir), true)
+		require.NoError(t, err, "Case %d", i)
+		assert.Equal(t, toAbs(currCase.want, currProjectDir), toMap(got), "Case %d", i)
+	}
+}
+
+func toAbs(input map[string][]string, baseDir string) map[string][]string {
+	absWant := make(map[string][]string, len(input))
+	for k, v := range input {
+		absWant[k] = make([]string, len(v))
+		for i := range v {
+			absWant[k][i] = path.Join(baseDir, v[i])
+		}
+	}
+	return absWant
+}
+
+func createSpec(projectDir, productName, productVersion string, osArchs []osarch.OSArch, distType config.DistType) config.ProductBuildSpecWithDeps {
+	return config.ProductBuildSpecWithDeps{
+		Spec: config.ProductBuildSpec{
+			ProductConfig: config.ProductConfig{
+				Build: config.BuildConfig{
+					OutputDir: "build",
+					OSArchs:   osArchs,
+				},
+				Dist: []config.DistConfig{{
+					DistType: config.DistTypeConfig{
+						Type: distType,
+					},
+				}},
+			},
+			ProjectDir:     projectDir,
+			ProductName:    productName,
+			ProductVersion: productVersion,
+		},
+	}
+}
+
+func toMap(input map[string]artifacts.OrderedStringMap) map[string][]string {
+	output := make(map[string][]string, len(input))
+	for product, m := range input {
+		keys := m.Keys()
+		values := make([]string, len(keys))
+		for i, k := range keys {
+			values[i] = m.Get(k)
+		}
+		output[product] = values
+	}
+	return output
+}

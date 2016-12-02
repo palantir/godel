@@ -1,0 +1,10 @@
+names:
+  - "\\..+"
+  - "vendor"
+  - "testdata"
+paths:
+  - "apps/gonform/generated_src"
+  - "apps/gunit/generated_src"
+  - "apps/okgo/generated_src"
+  - "docker"
+  - "godel"

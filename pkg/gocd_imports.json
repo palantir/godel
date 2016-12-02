@@ -1,0 +1,22 @@
+{
+    "imports": [],
+    "mainOnlyImports": [],
+    "testOnlyImports": [
+        {
+            "path": "github.com/palantir/godel/vendor/github.com/stretchr/testify/assert",
+            "numGoFiles": 6,
+            "numImportedGoFiles": 9,
+            "importedFrom": [
+                "github.com/palantir/godel/pkg/products_test"
+            ]
+        },
+        {
+            "path": "github.com/palantir/godel/vendor/github.com/stretchr/testify/require",
+            "numGoFiles": 5,
+            "numImportedGoFiles": 15,
+            "importedFrom": [
+                "github.com/palantir/godel/pkg/products_test"
+            ]
+        }
+    ]
+}

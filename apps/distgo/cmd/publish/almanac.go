@@ -1,0 +1,183 @@
+// Copyright 2016 Palantir Technologies, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package publish
+
+import (
+	"bytes"
+	"crypto/hmac"
+	"crypto/sha1"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strings"
+	"time"
+
+	"github.com/pkg/errors"
+)
+
+type AlmanacUnit struct {
+	Product  string            `json:"product"`
+	Branch   string            `json:"branch"`
+	Revision string            `json:"revision"`
+	URL      string            `json:"url"`
+	Tags     []string          `json:"tags,omitempty"`
+	Metadata map[string]string `json:"metadata,omitempty"`
+}
+
+type AlmanacInfo struct {
+	URL      string
+	AccessID string
+	Secret   string
+	Release  bool
+}
+
+func (a AlmanacInfo) CheckConnectivity() error {
+	_, err := a.get("/v1/units")
+	return err
+}
+
+func (a AlmanacInfo) CheckProduct(product string) error {
+	_, err := a.get(strings.Join([]string{"/v1/units", product}, "/"))
+	return err
+}
+
+func (a AlmanacInfo) CreateProduct(product string) error {
+	_, err := a.do(http.MethodPost, "/v1/units/products", fmt.Sprintf(`{"name":"%v"}`, product))
+	return err
+}
+
+func (a AlmanacInfo) CheckProductBranch(product, branch string) error {
+	_, err := a.get(strings.Join([]string{"/v1/units", product, branch}, "/"))
+	return err
+}
+
+func (a AlmanacInfo) CreateProductBranch(product, branch string) error {
+	_, err := a.do(http.MethodPost, strings.Join([]string{"/v1/units", product}, "/"), fmt.Sprintf(`{"name":"%v"}`, branch))
+	return err
+}
+
+func (a AlmanacInfo) GetUnit(product, branch, revision string) ([]byte, error) {
+	return a.get(strings.Join([]string{"/v1/units", product, branch, revision}, "/"))
+}
+
+func (a AlmanacInfo) CreateUnit(unit AlmanacUnit, version string) error {
+	endpoint := "/v1/units"
+
+	// set version field of metadata to be version
+	if unit.Metadata == nil {
+		unit.Metadata = make(map[string]string)
+	}
+	unit.Metadata["version"] = version
+
+	jsonBytes, err := json.Marshal(unit)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to marshal %v as JSON", unit)
+	}
+
+	_, err = a.do(http.MethodPost, endpoint, string(jsonBytes))
+	return err
+}
+
+func (a AlmanacInfo) ReleaseProduct(product, branch, revision string) error {
+	gaBody := map[string]string{
+		"name": "GA",
+	}
+	jsonBytes, err := json.Marshal(gaBody)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to marshal %v as JSON", gaBody)
+	}
+
+	_, err = a.do(http.MethodPost, strings.Join([]string{"/v1/units", product, branch, revision, "releases"}, "/"), string(jsonBytes))
+	return err
+}
+
+func (a AlmanacInfo) get(endpoint string) ([]byte, error) {
+	return a.do(http.MethodGet, endpoint, "")
+}
+
+func (a AlmanacInfo) do(method, endpoint, body string) (rBody []byte, rErr error) {
+	destURL, err := url.Parse(a.URL + endpoint)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Failed")
+	}
+
+	req := http.Request{
+		Method: method,
+		URL:    destURL,
+	}
+
+	if body != "" {
+		req.Header = http.Header{
+			"Content-Type": []string{"application/json"},
+		}
+		req.Body = ioutil.NopCloser(bytes.NewReader([]byte(body)))
+		req.ContentLength = int64(len([]byte(body)))
+	}
+
+	if err := addAlmanacAuthForRequest(a.AccessID, a.Secret, body, &req); err != nil {
+		return nil, errors.Wrapf(err, "Failed to add Almanac authorization info to header for request %v", req)
+	}
+
+	resp, err := http.DefaultClient.Do(&req)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Almanac request failed: %v", req)
+	}
+
+	defer func() {
+		if err := resp.Body.Close(); err != nil && rErr == nil {
+			rErr = errors.Wrapf(err, "failed to close response body for %s", destURL.String())
+		}
+	}()
+	responseBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Failed to read response body for %v", destURL.String())
+	}
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return responseBytes, errors.Errorf("Received non-success status code: %v. Response: %s", resp.Status, string(responseBytes))
+	}
+
+	return responseBytes, nil
+}
+
+// Adds the X-timestamp and X-authorization header entries to the provided http.Request. Assumes that the body of the
+// request will be the byte representation of the "body" string.
+func addAlmanacAuthForRequest(accessID, secret, body string, req *http.Request) error {
+	// if request Header is nil, initialize to empty object so that map assignment can be done
+	if req.Header == nil {
+		req.Header = http.Header{}
+	}
+
+	timestamp := time.Now().Unix()
+	req.Header.Add("X-timestamp", fmt.Sprintf("%d", timestamp))
+
+	hmac, err := hmacSHA1(fmt.Sprintf("%v%d%v", req.URL.String(), timestamp, body), secret)
+	if err != nil {
+		return err
+	}
+	req.Header.Add("X-authorization", fmt.Sprintf("%v:%v", accessID, hmac))
+	return nil
+}
+
+func hmacSHA1(message string, secret string) (string, error) {
+	h := hmac.New(sha1.New, []byte(secret))
+	if _, err := h.Write([]byte(message)); err != nil {
+		return "", errors.Wrapf(err, "Failed to compute HMAC-SHA1")
+	}
+	return base64.StdEncoding.EncodeToString(h.Sum(nil)), nil
+}

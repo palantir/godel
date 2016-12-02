@@ -1,0 +1,117 @@
+machine:
+  environment:
+    GODIST: "go1.7.3.linux-amd64.tar.gz"
+    GOPATH: "$HOME/.go_workspace"
+    IMPORT_PATH: "github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME"
+    GO_PROJECT_SRC_PATH: "$GOPATH/src/$IMPORT_PATH"
+    MIN_CIRCLE_NODES: 5
+  services:
+    - docker
+  post:
+    - if (( $CIRCLE_NODE_TOTAL < $MIN_CIRCLE_NODES )); then echo "Build requires at least $MIN_CIRCLE_NODES nodes, was ${CIRCLE_NODE_TOTAL}"; false; fi
+    - mkdir -p download
+    - test -e "download/$GODIST" || wget -O "download/$GODIST" "https://storage.googleapis.com/golang/$GODIST"
+    # create custom Go distribution with packages built for darwin-amd64 if it is not present
+    - |
+      if [ ! -e "download/$GODIST-custom.tgz" ]; then
+        sudo rm -rf /usr/local/go && \
+        sudo tar -C /usr/local -xzf "download/$GODIST" && \
+        sudo env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 /usr/local/go/bin/go install std && \
+        sudo env CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 /usr/local/go/bin/go install std && \
+        tar -C /usr/local -czf "download/$GODIST-custom.tgz" go
+      fi
+    - sudo rm -rf /usr/local/go
+    - sudo tar -C /usr/local -xzf "download/$GODIST-custom.tgz"
+
+checkout:
+  post:
+    # ensure all tags are fetched and up-to-date
+    - git tag -l | xargs git tag -d && git fetch -t
+
+dependencies:
+  override:
+    - mkdir -p "$GOPATH/src/$IMPORT_PATH"
+    - rsync -az --delete ./ "$GOPATH/src/$IMPORT_PATH/"
+    - cd "$GO_PROJECT_SRC_PATH" && ./godelw version
+  cache_directories:
+    - ~/.godel
+    - ~/download
+
+test:
+  override:
+    - ? |
+        case $CIRCLE_NODE_INDEX in
+          0)
+            cd "$GO_PROJECT_SRC_PATH" && CGO_ENABLED=0 go install $(go list -f '{{if (len .GoFiles) ne 0}}{{.ImportPath}}{{end}}' ./...) && \
+            mkdir -p "$CIRCLE_TEST_REPORTS/$CIRCLE_PROJECT_REPONAME" && \
+            cd "$GO_PROJECT_SRC_PATH" && ./godelw verify --apply=false --junit-output="$CIRCLE_TEST_REPORTS/$CIRCLE_PROJECT_REPONAME/$CIRCLE_PROJECT_REPONAME-tests.xml"
+            ;;
+          1)
+            cd "$GO_PROJECT_SRC_PATH" && CGO_ENABLED=0 go install $(go list -f '{{if (len .GoFiles) ne 0}}{{.ImportPath}}{{end}}' ./...) && \
+            mkdir -p "$CIRCLE_TEST_REPORTS/$CIRCLE_PROJECT_REPONAME" && \
+            mkdir -p "$CIRCLE_TEST_REPORTS/$CIRCLE_PROJECT_REPONAME-integration" && \
+            cd "$GO_PROJECT_SRC_PATH" && ./godelw test --tags=integration --junit-output="$CIRCLE_TEST_REPORTS/$CIRCLE_PROJECT_REPONAME-integration/$CIRCLE_PROJECT_REPONAME-integration-tests.xml"
+            ;;
+          2)
+            cd "$GO_PROJECT_SRC_PATH" && ./godelw dist godel && \
+            docker run \
+            -v "$GO_PROJECT_SRC_PATH":/go/src/github.com/palantir/godel \
+            -v ~/.godel:/home/linuxbrew/.godel \
+            nmiyake/go:brew-go \
+            /bin/sh -c 'cd ./src/github.com/palantir/godel; go version; go env; ./godelw test --tags=integration'
+            ;;
+          3)
+            cd "$GO_PROJECT_SRC_PATH" && ./godelw dist godel && \
+            docker run \
+            -v "$GO_PROJECT_SRC_PATH":/go/src/github.com/palantir/godel \
+            -v ~/.godel:/root/.godel \
+            nmiyake/go:alpine-go-1.6 \
+            /bin/sh -c 'cd ./src/github.com/palantir/godel; go version; go env; ./godelw test --tags=integration'
+            ;;
+          4)
+            sudo apt-get install rpm && \
+            gem install fpm && \
+            cd "$GO_PROJECT_SRC_PATH" && CGO_ENABLED=0 go install $(go list -f '{{if (len .GoFiles) ne 0}}{{.ImportPath}}{{end}}' ./...) && \
+            cd "$GO_PROJECT_SRC_PATH"/apps/gonform && go generate && \
+            if [[ -z $(git status --porcelain) ]]; then \
+                true; \
+            else \
+                echo "Generated source code differed from code in commit. See gonform_generated_code_diff.txt in artifacts directory for diff." && \
+                (git diff > $CIRCLE_ARTIFACTS/gonform_generated_code_diff.txt) && \
+                false; \
+            fi && \
+            if [[ -z $(git status --porcelain) ]]; then \
+                true; \
+            else \
+                echo "Generated source code differed from code in commit. See gunit_generated_code_diff.txt in artifacts directory for diff." && \
+                (git diff > $CIRCLE_ARTIFACTS/gunit_generated_code_diff.txt) && \
+                false; \
+            fi && \
+            cd "$GO_PROJECT_SRC_PATH"/apps/okgo && go generate && \
+            if [[ -z $(git status --porcelain) ]]; then \
+                true; \
+            else \
+                echo "Generated source code differed from code in commit. See okgo_generated_code_diff.txt in artifacts directory for diff." && \
+                (git diff > $CIRCLE_ARTIFACTS/okgo_generated_code_diff.txt) && \
+                false; \
+            fi && \
+            cd "$GO_PROJECT_SRC_PATH" && ./godelw test --tags=distgo,gonform,gunit,okgo
+            ;;
+          *)
+            echo "Unexpected node $CIRCLE_NODE_INDEX"
+            ;;
+        esac
+      :
+          parallel: true
+
+deployment:
+  master:
+    branch: master
+    owner: palantir
+    commands:
+      - cd "$GO_PROJECT_SRC_PATH" && ./godelw github-wiki --docs-dir docs --repository=git@github.com:palantir/godel.wiki.git
+  release:
+    tag: /[0-9]+(\.[0-9]+)+(-rc[0-9]+)?(-alpha[0-9]+)?/
+    owner: palantir
+    commands:
+      - cd "$GO_PROJECT_SRC_PATH" && ./godelw publish bintray --url https://api.bintray.com --subject palantir --repository releases --user "$BINTRAY_USER" --password "$BINTRAY_PASSWORD" --publish --downloads-list godel

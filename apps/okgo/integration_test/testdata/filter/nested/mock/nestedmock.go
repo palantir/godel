@@ -1,0 +1,4 @@
+package nestedmock
+
+func NestedMock() {
+}
