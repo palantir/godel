@@ -42,12 +42,12 @@ test:
     - ? |
         case $CIRCLE_NODE_INDEX in
           0)
-            cd "$GO_PROJECT_SRC_PATH" && CGO_ENABLED=0 go install $(go list -f '{{if (len .GoFiles) ne 0}}{{.ImportPath}}{{end}}' ./...) && \
+            cd "$GO_PROJECT_SRC_PATH" && CGO_ENABLED=0 go install $(./godelw packages) && \
             mkdir -p "$CIRCLE_TEST_REPORTS/$CIRCLE_PROJECT_REPONAME" && \
             cd "$GO_PROJECT_SRC_PATH" && ./godelw verify --apply=false --junit-output="$CIRCLE_TEST_REPORTS/$CIRCLE_PROJECT_REPONAME/$CIRCLE_PROJECT_REPONAME-tests.xml"
             ;;
           1)
-            cd "$GO_PROJECT_SRC_PATH" && CGO_ENABLED=0 go install $(go list -f '{{if (len .GoFiles) ne 0}}{{.ImportPath}}{{end}}' ./...) && \
+            cd "$GO_PROJECT_SRC_PATH" && CGO_ENABLED=0 go install $(./godelw packages) && \
             mkdir -p "$CIRCLE_TEST_REPORTS/$CIRCLE_PROJECT_REPONAME" && \
             mkdir -p "$CIRCLE_TEST_REPORTS/$CIRCLE_PROJECT_REPONAME-integration" && \
             cd "$GO_PROJECT_SRC_PATH" && ./godelw test --tags=integration --junit-output="$CIRCLE_TEST_REPORTS/$CIRCLE_PROJECT_REPONAME-integration/$CIRCLE_PROJECT_REPONAME-integration-tests.xml"
@@ -55,23 +55,26 @@ test:
           2)
             cd "$GO_PROJECT_SRC_PATH" && ./godelw dist godel && \
             docker run \
-            -v "$GO_PROJECT_SRC_PATH":/go/src/github.com/palantir/godel \
+            -v "$GO_PROJECT_SRC_PATH":/go/src/$IMPORT_PATH \
             -v ~/.godel:/home/linuxbrew/.godel \
+            -e IMPORT_PATH \
             nmiyake/go:brew-go \
-            /bin/sh -c 'cd ./src/github.com/palantir/godel; go version; go env; ./godelw test --tags=integration'
+            /bin/sh -c 'cd /go/src/$IMPORT_PATH; go version; go env; ./godelw test --tags=integration'
             ;;
           3)
             cd "$GO_PROJECT_SRC_PATH" && ./godelw dist godel && \
             docker run \
-            -v "$GO_PROJECT_SRC_PATH":/go/src/github.com/palantir/godel \
+            -v "$GO_PROJECT_SRC_PATH":/go/src/$IMPORT_PATH \
             -v ~/.godel:/root/.godel \
+            -e IMPORT_PATH \
             nmiyake/go:alpine-go-1.6 \
-            /bin/sh -c 'cd ./src/github.com/palantir/godel; go version; go env; ./godelw test --tags=integration'
+            /bin/sh -c 'cd /go/src/$IMPORT_PATH; go version; go env; ./godelw test --tags=integration'
             ;;
           4)
             sudo apt-get install rpm && \
             gem install fpm && \
-            cd "$GO_PROJECT_SRC_PATH" && CGO_ENABLED=0 go install $(go list -f '{{if (len .GoFiles) ne 0}}{{.ImportPath}}{{end}}' ./...) && \
+            cd "$GO_PROJECT_SRC_PATH" && CGO_ENABLED=0 go install $(./godelw packages) && \
+            cd "$GO_PROJECT_SRC_PATH" && CGO_ENABLED=0 go install ./vendor/github.com/palantir/amalgomate && \
             cd "$GO_PROJECT_SRC_PATH"/apps/gonform && go generate && \
             if [[ -z $(git status --porcelain) ]]; then \
                 true; \

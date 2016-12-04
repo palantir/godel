@@ -13,4 +13,4 @@ tags:
       - "apps/okgo"
   integration:
     paths:
-      - "test/integration"
+      - "integration_test"
