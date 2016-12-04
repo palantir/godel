@@ -26,7 +26,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 )
 
 type ArtifactoryConnectionInfo struct {
@@ -34,7 +34,7 @@ type ArtifactoryConnectionInfo struct {
 	Repository string
 }
 
-func (a ArtifactoryConnectionInfo) Publish(buildSpec config.ProductBuildSpec, paths ProductPaths, stdout io.Writer) (rURL string, rErr error) {
+func (a ArtifactoryConnectionInfo) Publish(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) (rURL string, rErr error) {
 	artifactoryURL := strings.Join([]string{a.URL, "artifactory"}, "/")
 	baseURL := strings.Join([]string{artifactoryURL, a.Repository, paths.productPath}, "/")
 

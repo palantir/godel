@@ -31,13 +31,13 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/palantir/godel/apps/distgo/cmd"
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 	"github.com/palantir/godel/apps/distgo/pkg/script"
 )
 
 type buildUnit struct {
-	buildSpec config.ProductBuildSpec
+	buildSpec params.ProductBuildSpec
 	osArch    osarch.OSArch
 }
 
@@ -47,9 +47,9 @@ type Context struct {
 	Pkgdir   bool
 }
 
-func Products(products []string, osArchs cmd.OSArchFilter, buildCtx Context, cfg config.ProjectConfig, wd string, stdout io.Writer) error {
-	return RunBuildFunc(func(buildSpec []config.ProductBuildSpecWithDeps, stdout io.Writer) error {
-		specs := make([]config.ProductBuildSpec, len(buildSpec))
+func Products(products []string, osArchs cmd.OSArchFilter, buildCtx Context, cfg params.Project, wd string, stdout io.Writer) error {
+	return RunBuildFunc(func(buildSpec []params.ProductBuildSpecWithDeps, stdout io.Writer) error {
+		specs := make([]params.ProductBuildSpec, len(buildSpec))
 		for i, curr := range buildSpec {
 			specs[i] = curr.Spec
 		}
@@ -64,7 +64,7 @@ func Products(products []string, osArchs cmd.OSArchFilter, buildCtx Context, cfg
 // returned is propagated back (and any builds that have not started will not be started). If ctx.PkgDir is true, a
 // custom per-OS/Arch "pkg" directory is used and the "install" command is run before build for each unit, which can
 // speed up compilations on repeated runs by writing compiled packages to disk for reuse.
-func Run(buildSpecs []config.ProductBuildSpec, osArchs cmd.OSArchFilter, ctx Context, stdout io.Writer) error {
+func Run(buildSpecs []params.ProductBuildSpec, osArchs cmd.OSArchFilter, ctx Context, stdout io.Writer) error {
 	var units []buildUnit
 	for _, currSpec := range distinct(buildSpecs) {
 		// execute pre-build script
@@ -125,10 +125,10 @@ func Run(buildSpecs []config.ProductBuildSpec, osArchs cmd.OSArchFilter, ctx Con
 // ArtifactPaths returns a map that contains the paths to the executables created by the provided spec. The keys in the
 // map are the OS/architecture of the executable, and the value is the output path for the executable for that
 // OS/architecture.
-func ArtifactPaths(buildSpec config.ProductBuildSpec) map[osarch.OSArch]string {
+func ArtifactPaths(buildSpec params.ProductBuildSpec) map[osarch.OSArch]string {
 	paths := make(map[osarch.OSArch]string)
 	for _, osArch := range buildSpec.Build.OSArchs {
-		paths[osArch] = path.Join(buildSpec.ProjectDir, buildSpec.Build.OutputDir, buildSpec.VersionInfo.Version, osArch.String(), config.ExecutableName(buildSpec.ProductName, osArch.OS))
+		paths[osArch] = path.Join(buildSpec.ProjectDir, buildSpec.Build.OutputDir, buildSpec.VersionInfo.Version, osArch.String(), ExecutableName(buildSpec.ProductName, osArch.OS))
 	}
 	return paths
 }
@@ -173,7 +173,7 @@ func worker(stdout io.Writer, in <-chan buildUnit, ctx Context) <-chan error {
 	return out
 }
 
-func executeBuild(stdout io.Writer, buildSpec config.ProductBuildSpec, ctx Context, osArch osarch.OSArch) error {
+func executeBuild(stdout io.Writer, buildSpec params.ProductBuildSpec, ctx Context, osArch osarch.OSArch) error {
 	name := buildSpec.ProductName
 
 	start := time.Now()
@@ -209,7 +209,7 @@ const (
 	doInstall
 )
 
-func doBuildAction(action buildAction, buildSpec config.ProductBuildSpec, outputDir string, osArch osarch.OSArch, pkgdir bool) error {
+func doBuildAction(action buildAction, buildSpec params.ProductBuildSpec, outputDir string, osArch osarch.OSArch, pkgdir bool) error {
 	cmd := exec.Command("go")
 	cmd.Dir = buildSpec.ProjectDir
 
@@ -233,7 +233,7 @@ func doBuildAction(action buildAction, buildSpec config.ProductBuildSpec, output
 	switch action {
 	case doBuild:
 		args = append(args, "build")
-		args = append(args, "-o", path.Join(outputDir, config.ExecutableName(buildSpec.ProductName, goos)))
+		args = append(args, "-o", path.Join(outputDir, ExecutableName(buildSpec.ProductName, goos)))
 	case doInstall:
 		args = append(args, "install")
 	default:
@@ -295,8 +295,8 @@ func goInstallErrorMsg(osArch osarch.OSArch, err error) string {
 	}, "\n")
 }
 
-func distinct(buildSpecs []config.ProductBuildSpec) []config.ProductBuildSpec {
-	distinctSpecs := make([]config.ProductBuildSpec, 0, len(buildSpecs))
+func distinct(buildSpecs []params.ProductBuildSpec) []params.ProductBuildSpec {
+	distinctSpecs := make([]params.ProductBuildSpec, 0, len(buildSpecs))
 	for _, spec := range buildSpecs {
 		if contains(distinctSpecs, spec) {
 			continue
@@ -306,7 +306,7 @@ func distinct(buildSpecs []config.ProductBuildSpec) []config.ProductBuildSpec {
 	return distinctSpecs
 }
 
-func contains(specs []config.ProductBuildSpec, spec config.ProductBuildSpec) bool {
+func contains(specs []params.ProductBuildSpec, spec params.ProductBuildSpec) bool {
 	for _, currSpec := range specs {
 		if reflect.DeepEqual(currSpec, spec) {
 			return true

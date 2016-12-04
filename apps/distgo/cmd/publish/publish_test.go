@@ -29,7 +29,7 @@ import (
 	"github.com/palantir/godel/apps/distgo/cmd/build"
 	"github.com/palantir/godel/apps/distgo/cmd/dist"
 	"github.com/palantir/godel/apps/distgo/cmd/publish"
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/git"
 	"github.com/palantir/godel/apps/distgo/pkg/git/gittest"
 )
@@ -53,25 +53,25 @@ func TestPublishLocal(t *testing.T) {
 	require.NoError(t, err)
 
 	for i, currCase := range []struct {
-		buildSpec   func(projectDir string) config.ProductBuildSpecWithDeps
+		buildSpec   func(projectDir string) params.ProductBuildSpecWithDeps
 		skip        func() bool
 		wantPaths   []string
 		wantContent map[string]string
 	}{
 		{
-			buildSpec: func(projectDir string) config.ProductBuildSpecWithDeps {
-				specWithDeps, err := config.NewProductBuildSpecWithDeps(config.NewProductBuildSpec(projectDir, "publish-test-service", git.ProjectInfo{
+			buildSpec: func(projectDir string) params.ProductBuildSpecWithDeps {
+				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(projectDir, "publish-test-service", git.ProjectInfo{
 					Version:  "0.0.1",
 					Branch:   "0.0.1",
 					Revision: "0",
-				}, config.ProductConfig{
-					Build: config.BuildConfig{
+				}, params.Product{
+					Build: params.Build{
 						MainPkg: "./.",
 					},
-					DefaultPublish: config.PublishConfig{
+					DefaultPublish: params.Publish{
 						GroupID: "com.palantir.distgo-publish-test",
 					},
-				}, config.ProjectConfig{}), nil)
+				}, params.Project{}), nil)
 				require.NoError(t, err)
 				return specWithDeps
 			},
@@ -84,24 +84,22 @@ func TestPublishLocal(t *testing.T) {
 			},
 		},
 		{
-			buildSpec: func(projectDir string) config.ProductBuildSpecWithDeps {
-				specWithDeps, err := config.NewProductBuildSpecWithDeps(config.NewProductBuildSpec(projectDir, "publish-test-service", git.ProjectInfo{
+			buildSpec: func(projectDir string) params.ProductBuildSpecWithDeps {
+				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(projectDir, "publish-test-service", git.ProjectInfo{
 					Version:  "0.0.1",
 					Branch:   "0.0.1",
 					Revision: "0",
-				}, config.ProductConfig{
-					Build: config.BuildConfig{
+				}, params.Product{
+					Build: params.Build{
 						MainPkg: "./.",
 					},
-					Dist: []config.DistConfig{{
-						DistType: config.DistTypeConfig{
-							Type: config.BinDistType,
-						},
+					Dist: []params.Dist{{
+						Info: &params.BinDistInfo{},
 					}},
-					DefaultPublish: config.PublishConfig{
+					DefaultPublish: params.Publish{
 						GroupID: "com.palantir.distgo-publish-test",
 					},
-				}, config.ProjectConfig{}), nil)
+				}, params.Project{}), nil)
 				require.NoError(t, err)
 				return specWithDeps
 			},
@@ -114,19 +112,19 @@ func TestPublishLocal(t *testing.T) {
 			},
 		},
 		{
-			buildSpec: func(projectDir string) config.ProductBuildSpecWithDeps {
-				specWithDeps, err := config.NewProductBuildSpecWithDeps(config.NewProductBuildSpec(projectDir, "publish-test-service", git.ProjectInfo{
+			buildSpec: func(projectDir string) params.ProductBuildSpecWithDeps {
+				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(projectDir, "publish-test-service", git.ProjectInfo{
 					Version:  "0.0.1",
 					Branch:   "0.0.1",
 					Revision: "0",
-				}, config.ProductConfig{
-					Build: config.BuildConfig{
+				}, params.Product{
+					Build: params.Build{
 						MainPkg: "./.",
 					},
-					DefaultPublish: config.PublishConfig{
+					DefaultPublish: params.Publish{
 						GroupID: "com.palantir.distgo-publish-test",
 					},
-				}, config.ProjectConfig{}), nil)
+				}, params.Project{}), nil)
 				require.NoError(t, err)
 				return specWithDeps
 			},
@@ -139,35 +137,31 @@ func TestPublishLocal(t *testing.T) {
 			},
 		},
 		{
-			buildSpec: func(projectDir string) config.ProductBuildSpecWithDeps {
-				specWithDeps, err := config.NewProductBuildSpecWithDeps(config.NewProductBuildSpec(projectDir, "test", git.ProjectInfo{
+			buildSpec: func(projectDir string) params.ProductBuildSpecWithDeps {
+				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(projectDir, "test", git.ProjectInfo{
 					Version:  "0.0.1",
 					Branch:   "0.0.1",
 					Revision: "0",
-				}, config.ProductConfig{
-					Build: config.BuildConfig{
+				}, params.Product{
+					Build: params.Build{
 						MainPkg: "./.",
 					},
-					Dist: config.DistConfigs{{
-						DistType: config.DistTypeConfig{
-							Type: config.BinDistType,
-						},
+					Dist: []params.Dist{{
+						Info:      &params.BinDistInfo{},
 						OutputDir: "dist/bin",
 						Script:    "touch $DIST_DIR/dist-1.txt",
 					}, {
-						DistType: config.DistTypeConfig{
-							Type: config.RPMDistType,
-						},
+						Info:      &params.RPMDistInfo{},
 						OutputDir: "dist/rpm",
 						Script:    "touch $DIST_DIR/dist-2.txt",
-						Publish: config.PublishConfig{
+						Publish: params.Publish{
 							GroupID: "com.palantir.pcloud-rpm",
 						},
 					}},
-					DefaultPublish: config.PublishConfig{
+					DefaultPublish: params.Publish{
 						GroupID: "com.palantir.pcloud-bin",
 					},
-				}, config.ProjectConfig{}), nil)
+				}, params.Project{}), nil)
 				require.NoError(t, err)
 				return specWithDeps
 			},

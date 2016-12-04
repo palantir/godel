@@ -28,15 +28,15 @@ import (
 
 	"github.com/palantir/godel/apps/distgo/cmd"
 	"github.com/palantir/godel/apps/distgo/cmd/build"
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 	"github.com/palantir/godel/apps/distgo/pkg/script"
 	"github.com/palantir/godel/apps/distgo/pkg/slsspec"
 )
 
-func Products(products []string, cfg config.ProjectConfig, forceBuild bool, wd string, stdout io.Writer) error {
-	return build.RunBuildFunc(func(buildSpecWithDeps []config.ProductBuildSpecWithDeps, stdout io.Writer) error {
-		var specsToBuild []config.ProductBuildSpec
+func Products(products []string, cfg params.Project, forceBuild bool, wd string, stdout io.Writer) error {
+	return build.RunBuildFunc(func(buildSpecWithDeps []params.ProductBuildSpecWithDeps, stdout io.Writer) error {
+		var specsToBuild []params.ProductBuildSpec
 		for _, currSpecWithDeps := range buildSpecWithDeps {
 			if forceBuild {
 				specsToBuild = append(specsToBuild, currSpecWithDeps.AllSpecs()...)
@@ -56,7 +56,7 @@ func Products(products []string, cfg config.ProjectConfig, forceBuild bool, wd s
 // Run produces a directory and artifact (tgz or rpm) for the specified product using the specified build specification.
 // The binaries for the distribution must already exist in the expected locations. The distribution directory and
 // artifact are written to the directory specified by "buildSpecWithDeps.Spec.DistCfgs.*.OutputDir".
-func Run(buildSpecWithDeps config.ProductBuildSpecWithDeps, stdout io.Writer) error {
+func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) error {
 	// verify that required build outputs exist
 	missingBinaries := build.RequiresBuild(buildSpecWithDeps, nil).Specs()
 	if len(missingBinaries) > 0 {
@@ -69,7 +69,7 @@ func Run(buildSpecWithDeps config.ProductBuildSpecWithDeps, stdout io.Writer) er
 
 	buildSpec := buildSpecWithDeps.Spec
 	for _, currDistCfg := range buildSpec.Dist {
-		if currDistCfg.DistType.Type == config.RPMDistType {
+		if currDistCfg.Info.Type() == params.RPMDistType {
 			osArchs := buildSpec.Build.OSArchs
 			expected := osarch.OSArch{OS: "linux", Arch: "amd64"}
 			if len(osArchs) != 1 || osArchs[0] != expected {
@@ -132,21 +132,21 @@ func Run(buildSpecWithDeps config.ProductBuildSpecWithDeps, stdout io.Writer) er
 
 		var packager Packager
 		var err error
-		switch currDistCfg.DistType.Type {
-		case config.SLSDistType:
+		switch currDistCfg.Info.Type() {
+		case params.SLSDistType:
 			if packager, err = slsDist(buildSpecWithDeps, currDistCfg, outputProductDir, spec, values); err != nil {
 				return err
 			}
-		case config.BinDistType:
+		case params.BinDistType:
 			if packager, err = binDist(buildSpecWithDeps, currDistCfg, outputProductDir); err != nil {
 				return err
 			}
-		case config.RPMDistType:
+		case params.RPMDistType:
 			if packager, err = rpmDist(buildSpecWithDeps, currDistCfg, outputProductDir, stdout); err != nil {
 				return err
 			}
 		default:
-			return errors.Errorf("unknown dist type: %v", currDistCfg.DistType)
+			return errors.Errorf("unknown dist type: %v", currDistCfg.Info.Type())
 		}
 
 		// execute dist script
@@ -166,13 +166,13 @@ func Run(buildSpecWithDeps config.ProductBuildSpecWithDeps, stdout io.Writer) er
 	return nil
 }
 
-func tgzPackager(buildSpec config.ProductBuildSpec, distCfg config.DistConfig, outputProductDir string) packager {
+func tgzPackager(buildSpec params.ProductBuildSpec, distCfg params.Dist, outputProductDir string) packager {
 	return packager(func() error {
 		return archiver.TarGz(ArtifactPath(buildSpec, distCfg), []string{outputProductDir})
 	})
 }
 
-func copyBuildArtifactsToBinDir(buildSpecWithDeps config.ProductBuildSpecWithDeps, binSpecDir specdir.SpecDir) error {
+func copyBuildArtifactsToBinDir(buildSpecWithDeps params.ProductBuildSpecWithDeps, binSpecDir specdir.SpecDir) error {
 	buildSpec := buildSpecWithDeps.Spec
 
 	// copy build artifacts for primary product
@@ -190,7 +190,7 @@ func copyBuildArtifactsToBinDir(buildSpecWithDeps config.ProductBuildSpecWithDep
 	return nil
 }
 
-func copyBuildArtifacts(buildSpec config.ProductBuildSpec, binSpecDir specdir.SpecDir) error {
+func copyBuildArtifacts(buildSpec params.ProductBuildSpec, binSpecDir specdir.SpecDir) error {
 	artifactPaths := build.ArtifactPaths(buildSpec)
 	for _, currOSArch := range buildSpec.Build.OSArchs {
 		currBuildArtifact, ok := artifactPaths[currOSArch]
@@ -198,7 +198,7 @@ func copyBuildArtifacts(buildSpec config.ProductBuildSpec, binSpecDir specdir.Sp
 			return fmt.Errorf("could not determine artifact path for %s for %s", buildSpec.ProductName, currOSArch.String())
 		}
 		if binOSArchDir := binSpecDir.Path(currOSArch.String()); binOSArchDir != "" {
-			dst := path.Join(binOSArchDir, config.ExecutableName(buildSpec.ProductName, currOSArch.OS))
+			dst := path.Join(binOSArchDir, build.ExecutableName(buildSpec.ProductName, currOSArch.OS))
 			if _, err := shutil.Copy(currBuildArtifact, dst, false); err != nil {
 				return errors.Wrapf(err, "failed to copy build artifact from %v to %v", currBuildArtifact, dst)
 			}
@@ -207,17 +207,17 @@ func copyBuildArtifacts(buildSpec config.ProductBuildSpec, binSpecDir specdir.Sp
 	return nil
 }
 
-func ArtifactPath(buildSpec config.ProductBuildSpec, distCfg config.DistConfig) string {
+func ArtifactPath(buildSpec params.ProductBuildSpec, distCfg params.Dist) string {
 	var fileName string
-	switch distCfg.DistType.Type {
-	case config.SLSDistType:
+	switch distCfg.Info.Type() {
+	case params.SLSDistType:
 		values := slsspec.TemplateValues(buildSpec.ProductName, buildSpec.ProductVersion)
 		fileName = slsspec.New().RootDirName(values) + ".sls.tgz"
-	case config.BinDistType:
+	case params.BinDistType:
 		fileName = fmt.Sprintf("%v-%v.tgz", buildSpec.ProductName, buildSpec.ProductVersion)
-	case config.RPMDistType:
+	case params.RPMDistType:
 		release := defaultRPMRelease
-		if rpmDistInfo, ok := distCfg.DistType.Info.(config.RPMDistInfo); ok && rpmDistInfo.Release != "" {
+		if rpmDistInfo, ok := distCfg.Info.(*params.RPMDistInfo); ok && rpmDistInfo.Release != "" {
 			release = rpmDistInfo.Release
 		}
 		fileName = fmt.Sprintf("%v-%v-%v.x86_64.rpm", buildSpec.ProductName, buildSpec.ProductVersion, release)

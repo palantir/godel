@@ -33,7 +33,7 @@ import (
 
 	"github.com/palantir/godel/apps/distgo/cmd"
 	"github.com/palantir/godel/apps/distgo/cmd/build"
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/binspec"
 	"github.com/palantir/godel/apps/distgo/pkg/git"
 	"github.com/palantir/godel/apps/distgo/pkg/git/gittest"
@@ -94,7 +94,7 @@ func TestBuildAll(t *testing.T) {
 		productName     string
 		mainFileContent string
 		mainFilePath    string
-		cfg             config.ProductConfig
+		params          params.Product
 		wantError       bool
 		runExecutable   bool
 		wantOutput      string
@@ -103,8 +103,8 @@ func TestBuildAll(t *testing.T) {
 			productName:     "randomProduct",
 			mainFileContent: testMain,
 			mainFilePath:    "main.go",
-			cfg: config.ProductConfig{
-				Build: config.BuildConfig{
+			params: params.Product{
+				Build: params.Build{
 					MainPkg:    "./.",
 					VersionVar: "main.testVersionVar",
 					OSArchs: []osarch.OSArch{
@@ -120,8 +120,8 @@ func TestBuildAll(t *testing.T) {
 			productName:     "CProduct",
 			mainFileContent: testCMain,
 			mainFilePath:    "main.go",
-			cfg: config.ProductConfig{
-				Build: config.BuildConfig{
+			params: params.Product{
+				Build: params.Build{
 					MainPkg: "./.",
 					Environment: map[string]string{
 						"CGO_ENABLED": "1",
@@ -139,8 +139,8 @@ func TestBuildAll(t *testing.T) {
 			productName:     "CProduct",
 			mainFileContent: testCMain,
 			mainFilePath:    "main.go",
-			cfg: config.ProductConfig{
-				Build: config.BuildConfig{
+			params: params.Product{
+				Build: params.Build{
 					MainPkg: "./.",
 					Environment: map[string]string{
 						"CGO_ENABLED": "0",
@@ -156,8 +156,8 @@ func TestBuildAll(t *testing.T) {
 			productName:     "preBuildScript",
 			mainFileContent: testBuildScript,
 			mainFilePath:    "main.go",
-			cfg: config.ProductConfig{
-				Build: config.BuildConfig{
+			params: params.Product{
+				Build: params.Build{
 					Script: "" +
 						"mkdir dependency\n" +
 						"echo 'package dependency\n\nvar V = `success`\n' > dependency/lib.go\n",
@@ -173,8 +173,8 @@ func TestBuildAll(t *testing.T) {
 			productName:     "customBuildScriptProduct",
 			mainFileContent: testMain,
 			mainFilePath:    "main.go",
-			cfg: config.ProductConfig{
-				Build: config.BuildConfig{
+			params: params.Product{
+				Build: params.Build{
 					MainPkg: "./.",
 					BuildArgsScript: `set -eu pipefail
 VALUE="foo bar"
@@ -192,8 +192,8 @@ echo "-X \"main.testVersionVar=$VALUE\""`,
 			productName:     "foo",
 			mainFileContent: testMain,
 			mainFilePath:    "foo/main.go",
-			cfg: config.ProductConfig{
-				Build: config.BuildConfig{
+			params: params.Product{
+				Build: params.Build{
 					MainPkg: "./foo",
 					OSArchs: []osarch.OSArch{
 						{
@@ -235,26 +235,26 @@ echo "-X \"main.testVersionVar=$VALUE\""`,
 		pkgPath, err := pkgpath.NewAbsPkgPath(path.Dir(mainFilePath)).Rel(currTmpDir)
 		require.NoError(t, err)
 
-		spec := binspec.New(currCase.cfg.Build.OSArchs, path.Base(pkgPath))
+		spec := binspec.New(currCase.params.Build.OSArchs, path.Base(pkgPath))
 		err = spec.CreateDirectoryStructure(binDir, nil, false)
 		require.NoError(t, err)
 
 		gitProductInfo, err := git.NewProjectInfo(currTmpDir)
 		require.NoError(t, err)
 
-		buildSpec := config.NewProductBuildSpec(
+		buildSpec := params.NewProductBuildSpec(
 			currTmpDir,
 			currCase.productName,
 			gitProductInfo,
-			currCase.cfg,
-			config.ProjectConfig{
+			currCase.params,
+			params.Project{
 				BuildOutputDir: "bin",
 			},
 		)
 
 		foundExecForCurrOsArch := false
 
-		err = build.Run([]config.ProductBuildSpec{buildSpec}, nil, build.Context{
+		err = build.Run([]params.ProductBuildSpec{buildSpec}, nil, build.Context{
 			Parallel: false,
 		}, ioutil.Discard)
 
@@ -264,7 +264,7 @@ echo "-X \"main.testVersionVar=$VALUE\""`,
 			assert.NoError(t, err, "Case %d", i)
 
 			artifactPaths := build.ArtifactPaths(buildSpec)
-			for _, currOSArch := range currCase.cfg.Build.OSArchs {
+			for _, currOSArch := range currCase.params.Build.OSArchs {
 				pathToCurrExecutable, ok := artifactPaths[currOSArch]
 				require.True(t, ok, "Case %d: could not find path for %s for %s", buildSpec.ProductName, currOSArch.String())
 				fileInfo, err := os.Stat(pathToCurrExecutable)
@@ -280,7 +280,7 @@ echo "-X \"main.testVersionVar=$VALUE\""`,
 			}
 
 			if currCase.runExecutable {
-				assert.True(t, foundExecForCurrOsArch, "Case %d: executable for current os/arch (%v) not found in %v", osarch.Current(), currCase.cfg.Build.OSArchs)
+				assert.True(t, foundExecForCurrOsArch, "Case %d: executable for current os/arch (%v) not found in %v", osarch.Current(), currCase.params.Build.OSArchs)
 			}
 		}
 	}
@@ -297,22 +297,22 @@ func TestBuildOnlyDistinctSpecs(t *testing.T) {
 	err = ioutil.WriteFile(mainFilePath, []byte(testMain), 0644)
 	require.NoError(t, err)
 
-	buildSpec := config.NewProductBuildSpec(
+	buildSpec := params.NewProductBuildSpec(
 		tmp,
 		"foo",
 		git.ProjectInfo{},
-		config.ProductConfig{
-			Build: config.BuildConfig{
+		params.Product{
+			Build: params.Build{
 				MainPkg: "./foo",
 			},
 		},
-		config.ProjectConfig{
+		params.Project{
 			BuildOutputDir: "bin",
 		},
 	)
 
 	buf := &bytes.Buffer{}
-	err = build.Run([]config.ProductBuildSpec{buildSpec, buildSpec}, nil, build.Context{
+	err = build.Run([]params.ProductBuildSpec{buildSpec, buildSpec}, nil, build.Context{
 		Parallel: false,
 	}, buf)
 	require.NoError(t, err)
@@ -366,23 +366,23 @@ func TestBuildOnlySpecifiedOSArchs(t *testing.T) {
 			},
 		},
 	} {
-		buildSpec := config.NewProductBuildSpec(
+		buildSpec := params.NewProductBuildSpec(
 			tmp,
 			"foo",
 			git.ProjectInfo{},
-			config.ProductConfig{
-				Build: config.BuildConfig{
+			params.Product{
+				Build: params.Build{
 					MainPkg: "./foo",
 					OSArchs: currCase.specOSArchs,
 				},
 			},
-			config.ProjectConfig{
+			params.Project{
 				BuildOutputDir: "bin",
 			},
 		)
 
 		buf := &bytes.Buffer{}
-		err = build.Run([]config.ProductBuildSpec{buildSpec}, cmd.OSArchFilter(currCase.osArchs), build.Context{
+		err = build.Run([]params.ProductBuildSpec{buildSpec}, cmd.OSArchFilter(currCase.osArchs), build.Context{
 			Parallel: false,
 		}, buf)
 		require.NoError(t, err)
@@ -408,16 +408,16 @@ func TestBuildErrorMessage(t *testing.T) {
 	err = ioutil.WriteFile(mainFilePath, []byte(`package main; asdfa`), 0644)
 	require.NoError(t, err)
 
-	buildSpec := config.NewProductBuildSpec(
+	buildSpec := params.NewProductBuildSpec(
 		tmp,
 		"foo",
 		git.ProjectInfo{},
-		config.ProductConfig{
-			Build: config.BuildConfig{
+		params.Product{
+			Build: params.Build{
 				MainPkg: "./foo",
 			},
 		},
-		config.ProjectConfig{
+		params.Project{
 			BuildOutputDir: "bin",
 		},
 	)
@@ -425,7 +425,7 @@ func TestBuildErrorMessage(t *testing.T) {
 	want := `(?s)^go install failed: build command \[.+go install ./foo\] run with additional environment variables \[GOOS=.+ GOARCH=.+\] failed with output:.+foo/main.go:1: syntax error: non-declaration statement outside function body$`
 
 	buf := &bytes.Buffer{}
-	err = build.Run([]config.ProductBuildSpec{buildSpec, buildSpec}, nil, build.Context{
+	err = build.Run([]params.ProductBuildSpec{buildSpec, buildSpec}, nil, build.Context{
 		Install:  true,
 		Parallel: false,
 	}, buf)
@@ -466,12 +466,12 @@ func TestBuildInstallErrorMessage(t *testing.T) {
 	err = ioutil.WriteFile(mainFilePath, []byte(`package main`), 0644)
 	require.NoError(t, err)
 
-	buildSpec := config.NewProductBuildSpec(
+	buildSpec := params.NewProductBuildSpec(
 		tmp,
 		"foo",
 		git.ProjectInfo{},
-		config.ProductConfig{
-			Build: config.BuildConfig{
+		params.Product{
+			Build: params.Build{
 				MainPkg: "./foo",
 				OSArchs: []osarch.OSArch{
 					{
@@ -481,7 +481,7 @@ func TestBuildInstallErrorMessage(t *testing.T) {
 				},
 			},
 		},
-		config.ProjectConfig{
+		params.Project{
 			BuildOutputDir: "bin",
 		},
 	)
@@ -498,7 +498,7 @@ func TestBuildInstallErrorMessage(t *testing.T) {
 		`go install .+: mkdir .+: permission denied$`
 
 	buf := &bytes.Buffer{}
-	err = build.Run([]config.ProductBuildSpec{buildSpec, buildSpec}, nil, build.Context{
+	err = build.Run([]params.ProductBuildSpec{buildSpec, buildSpec}, nil, build.Context{
 		Install:  true,
 		Parallel: false,
 	}, buf)
@@ -512,18 +512,18 @@ func TestBuildAllParallel(t *testing.T) {
 
 	for i, currCase := range []struct {
 		mainFiles map[string]string
-		specs     []config.ProductBuildSpec
+		specs     []params.ProductBuildSpec
 	}{
 		{
 			mainFiles: map[string]string{
 				"foo/main.go": longCompileMain,
 				"bar/main.go": longCompileMain,
 			},
-			specs: []config.ProductBuildSpec{
+			specs: []params.ProductBuildSpec{
 				{
 					ProductName: "foo",
-					ProductConfig: config.ProductConfig{
-						Build: config.BuildConfig{
+					Product: params.Product{
+						Build: params.Build{
 							MainPkg: "./foo",
 							OSArchs: []osarch.OSArch{
 								{
@@ -544,8 +544,8 @@ func TestBuildAllParallel(t *testing.T) {
 				},
 				{
 					ProductName: "bar",
-					ProductConfig: config.ProductConfig{
-						Build: config.BuildConfig{
+					Product: params.Product{
+						Build: params.Build{
 							MainPkg: "./bar",
 							OSArchs: []osarch.OSArch{
 								{

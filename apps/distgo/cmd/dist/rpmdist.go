@@ -23,7 +23,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/script"
 )
 
@@ -43,12 +43,12 @@ func checkRPMDependencies() error {
 	return nil
 }
 
-func rpmDist(buildSpecWithDeps config.ProductBuildSpecWithDeps, distCfg config.DistConfig, outputProductDir string, stdout io.Writer) (p Packager, rErr error) {
+func rpmDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, stdout io.Writer) (p Packager, rErr error) {
 	buildSpec := buildSpecWithDeps.Spec
-	rpmDistInfo, ok := distCfg.DistType.Info.(config.RPMDistInfo)
+	rpmDistInfo, ok := distCfg.Info.(*params.RPMDistInfo)
 	if !ok {
-		rpmDistInfo = config.RPMDistInfo{}
-		distCfg.DistType.Info = rpmDistInfo
+		rpmDistInfo = &params.RPMDistInfo{}
+		distCfg.Info = rpmDistInfo
 	}
 
 	release := defaultRPMRelease

@@ -15,11 +15,11 @@
 package cmd
 
 import (
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/git"
 )
 
-func ScriptEnvVariables(buildSpec config.ProductBuildSpec, outputProductDir string) map[string]string {
+func ScriptEnvVariables(buildSpec params.ProductBuildSpec, outputProductDir string) map[string]string {
 	snapshotStr := "0"
 	if git.IsSnapshotVersion(buildSpec.VersionInfo.Version) {
 		snapshotStr = "1"

@@ -15,28 +15,23 @@
 package config_test
 
 import (
-	"io/ioutil"
 	"strings"
 	"testing"
 
-	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/pkg/matcher"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 )
 
-func TestLoadConfig(t *testing.T) {
-	tmpDir, cleanup, err := dirs.TempDir("", "")
-	defer cleanup()
-	require.NoError(t, err)
-
+func TestReadConfig(t *testing.T) {
 	for i, currCase := range []struct {
 		yml  string
 		json string
-		want func() config.ProjectConfig
+		want func() config.RawProjectConfig
 	}{
 		{
 			yml: `
@@ -80,15 +75,11 @@ func TestLoadConfig(t *testing.T) {
 			    - "vendor"
 			`,
 			json: `{"exclude":{"names":["distgo"],"paths":["generated_src"]}}`,
-			want: func() config.ProjectConfig {
-				excludeCfg := matcher.NamesPathsCfg{
-					Names: []string{`.*test`, `distgo`},
-					Paths: []string{`vendor`, `generated_src`},
-				}
-				return config.ProjectConfig{
-					Products: map[string]config.ProductConfig{
+			want: func() config.RawProjectConfig {
+				return config.RawProjectConfig{
+					Products: map[string]config.RawProductConfig{
 						"test": {
-							Build: config.BuildConfig{
+							Build: config.RawBuildConfig{
 								MainPkg:   "./cmd/test",
 								OutputDir: "build",
 								BuildArgsScript: `YEAR=$(date +%Y)
@@ -113,12 +104,12 @@ echo "main.year=$YEAR"
 									},
 								},
 							},
-							Dist: []config.DistConfig{{
+							Dist: []config.RawDistConfig{{
 								OutputDir: "dist",
 								InputDir:  "resources/input",
-								DistType: config.DistTypeConfig{
-									Type: config.SLSDistType,
-									Info: config.SLSDistInfo{
+								DistType: config.RawDistInfoConfig{
+									Type: string(params.SLSDistType),
+									Info: config.RawSLSDistConfig{
 										ManifestTemplateFile: "resources/input/manifest.yml",
 										ProductType:          "service.v1",
 										YMLValidationExclude: matcher.NamesPathsCfg{
@@ -130,7 +121,10 @@ echo "main.year=$YEAR"
 							}},
 						},
 					},
-					Exclude: excludeCfg.Matcher(),
+					Exclude: matcher.NamesPathsCfg{
+						Names: []string{`.*test`, `distgo`},
+						Paths: []string{`vendor`, `generated_src`},
+					},
 				}
 			},
 		},
@@ -155,30 +149,30 @@ echo "main.year=$YEAR"
 			          after-remove-script: |
 			              systemctl daemon-reload
 			`,
-			want: func() config.ProjectConfig {
-				excludeCfg := matcher.NamesPathsCfg{}
-				return config.ProjectConfig{
-					Products: map[string]config.ProductConfig{
+			want: func() config.RawProjectConfig {
+				return config.RawProjectConfig{
+					Products: map[string]config.RawProductConfig{
 						"test": {
-							Dist: []config.DistConfig{{
-								DistType: config.DistTypeConfig{
-									Type: config.RPMDistType,
-									Info: config.RPMDistInfo{
-										ConfigFiles: []string{"/usr/lib/systemd/system/orchestrator.service"},
-										BeforeInstallScript: "" +
-											"/usr/bin/getent group orchestrator || /usr/sbin/groupadd \\\n" +
-											"    -g 380 orchestrator\n" +
-											"/usr/bin/getent passwd orchestrator || /usr/sbin/useradd -r \\\n" +
-											"    -d /var/lib/orchestrator -g orchestrator -u 380 -m \\\n" +
-											"    -s /sbin/nologin orchestrator\n",
-										AfterInstallScript: "systemctl daemon-reload\n",
-										AfterRemoveScript:  "systemctl daemon-reload\n",
+							Dist: []config.RawDistConfig{
+								{
+									DistType: config.RawDistInfoConfig{
+										Type: string(params.RPMDistType),
+										Info: config.RawRPMDistConfig{
+											ConfigFiles: []string{"/usr/lib/systemd/system/orchestrator.service"},
+											BeforeInstallScript: "" +
+												"/usr/bin/getent group orchestrator || /usr/sbin/groupadd \\\n" +
+												"    -g 380 orchestrator\n" +
+												"/usr/bin/getent passwd orchestrator || /usr/sbin/useradd -r \\\n" +
+												"    -d /var/lib/orchestrator -g orchestrator -u 380 -m \\\n" +
+												"    -s /sbin/nologin orchestrator\n",
+											AfterInstallScript: "systemctl daemon-reload\n",
+											AfterRemoveScript:  "systemctl daemon-reload\n",
+										},
 									},
 								},
-							}},
+							},
 						},
 					},
-					Exclude: excludeCfg.Matcher(),
 				}
 			},
 		},
@@ -204,46 +198,44 @@ echo "main.year=$YEAR"
 			        tags:
 			          - "borked"
 			`,
-			want: func() config.ProjectConfig {
-				excludeCfg := matcher.NamesPathsCfg{}
-				return config.ProjectConfig{
-					Products: map[string]config.ProductConfig{
+			want: func() config.RawProjectConfig {
+				return config.RawProjectConfig{
+					Products: map[string]config.RawProductConfig{
 						"test": {
-							Dist: []config.DistConfig{{
-								DistType: config.DistTypeConfig{
-									Type: config.SLSDistType,
-									Info: config.SLSDistInfo{
+							Dist: []config.RawDistConfig{{
+								DistType: config.RawDistInfoConfig{
+									Type: string(params.SLSDistType),
+									Info: config.RawSLSDistConfig{
 										ManifestTemplateFile: "resources/input/manifest.yml",
 									},
 								},
 							}, {
-								DistType: config.DistTypeConfig{
-									Type: config.RPMDistType,
-									Info: config.RPMDistInfo{
+								DistType: config.RawDistInfoConfig{
+									Type: string(params.RPMDistType),
+									Info: config.RawRPMDistConfig{
 										AfterInstallScript: "systemctl daemon-reload\n",
 									},
 								},
 							}},
-							DefaultPublish: config.PublishConfig{
+							DefaultPublish: config.RawPublishConfig{
 								GroupID: "com.palantir.pcloud",
-								Almanac: config.AlmanacConfig{
+								Almanac: config.RawAlmanacConfig{
 									Metadata: map[string]string{"k": "v"},
 									Tags:     []string{"borked"},
 								},
 							},
 						},
 					},
-					Exclude: excludeCfg.Matcher(),
 				}
 			},
 		},
 	} {
-		path, err := ioutil.TempFile(tmpDir, "")
-		require.NoError(t, err, "Case %d", i)
-		err = ioutil.WriteFile(path.Name(), []byte(unindent(currCase.yml)), 0644)
+		// load config
+		got, err := config.Read(unindent(currCase.yml), currCase.json)
 		require.NoError(t, err, "Case %d", i)
 
-		got, err := config.Load(path.Name(), currCase.json)
+		// require that it is valid
+		_, err = got.ToParams()
 		require.NoError(t, err, "Case %d", i)
 
 		assert.Equal(t, currCase.want(), got, "Case %d", i)
@@ -252,23 +244,23 @@ echo "main.year=$YEAR"
 
 func TestFilteredProducts(t *testing.T) {
 	for i, currCase := range []struct {
-		cfg  func() config.ProjectConfig
-		want map[string]config.ProductConfig
+		cfg  func() params.Project
+		want map[string]params.Product
 	}{
 		{
-			cfg: func() config.ProjectConfig {
+			cfg: func() params.Project {
 				excludeCfg := matcher.NamesPathsCfg{
 					Paths: []string{"vendor"},
 				}
-				return config.ProjectConfig{
-					Products: map[string]config.ProductConfig{
+				return params.Project{
+					Products: map[string]params.Product{
 						"test": {
-							Build: config.BuildConfig{
+							Build: params.Build{
 								MainPkg: "./test/main",
 							},
 						},
 						"vendored": {
-							Build: config.BuildConfig{
+							Build: params.Build{
 								MainPkg: "./vendor/test/main",
 							},
 						},
@@ -276,9 +268,9 @@ func TestFilteredProducts(t *testing.T) {
 					Exclude: excludeCfg.Matcher(),
 				}
 			},
-			want: map[string]config.ProductConfig{
+			want: map[string]params.Product{
 				"test": {
-					Build: config.BuildConfig{
+					Build: params.Build{
 						MainPkg: "./test/main",
 					},
 				},

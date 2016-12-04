@@ -17,6 +17,8 @@ package config_test
 import (
 	"fmt"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/palantir/godel/apps/distgo/config"
 )
 
@@ -41,12 +43,9 @@ products:
             cache: true
 group-id: com.palantir.cache`
 
-	cfg, err := config.LoadFromString(yml, "")
-	if err != nil {
-		panic(err)
-	}
+	cfg := configFromYML(yml)
 	fmt.Printf("%q", fmt.Sprintf("%+v", cfg))
-	// Output: "{Products:map[cache-service:{Build:{Script: MainPkg:./main/cache OutputDir: BuildArgsScript: VersionVar:main.Version Environment:map[] OSArchs:[linux-amd64]} Run:{Args:[]} Dist:[{OutputDir:cache/build/distributions InputDir:cache/dist/sls InputProducts:[] Script: DistType:{Type:sls Info:{InitShTemplateFile: ManifestTemplateFile: ServiceArgs:--config var/conf/cache.yml server ProductType: ManifestExtensions:map[cache:true] YMLValidationExclude:{Names:[] Paths:[]}}} Publish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] DefaultPublish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] BuildOutputDir: DistOutputDir: DistScriptInclude: GroupID:com.palantir.cache Exclude:[[] []]}"
+	// Output: "{Products:map[cache-service:{Build:{Script: MainPkg:./main/cache OutputDir: BuildArgsScript: VersionVar:main.Version Environment:map[] OSArchs:[linux-amd64]} Run:{Args:[]} Dist:[{OutputDir:cache/build/distributions InputDir:cache/dist/sls InputProducts:[] Script: DistType:{Type:sls Info:{InitShTemplateFile: ManifestTemplateFile: ServiceArgs:--config var/conf/cache.yml server ProductType: ManifestExtensions:map[cache:true] YMLValidationExclude:{Names:[] Paths:[]}}} Publish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] DefaultPublish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] BuildOutputDir: DistOutputDir: GroupID:com.palantir.cache DistScriptInclude: Exclude:{Names:[] Paths:[]}}"
 }
 
 func Example_bin() {
@@ -78,12 +77,9 @@ products:
               setup_wrapper "$DIST_DIR/wrapper"
 group-id: com.palantir.godel`
 
-	cfg, err := config.LoadFromString(yml, "")
-	if err != nil {
-		panic(err)
-	}
+	cfg := configFromYML(yml)
 	fmt.Printf("%q", fmt.Sprintf("%+v", cfg))
-	// Output: "{Products:map[godel:{Build:{Script: MainPkg:./cmd/godel OutputDir: BuildArgsScript: VersionVar:main.Version Environment:map[CGO_ENABLED:0] OSArchs:[darwin-amd64 linux-amd64]} Run:{Args:[]} Dist:[{OutputDir: InputDir: InputProducts:[] Script:function setup_wrapper {\n  # logic for function (omitted for brevity)\n}\n\n# copy contents of resources directory\nmkdir -p \"$DIST_DIR/wrapper\"\nsetup_wrapper \"$DIST_DIR/wrapper\"\n DistType:{Type:bin Info:{OmitInitSh:true InitShTemplateFile:}} Publish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] DefaultPublish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] BuildOutputDir: DistOutputDir: DistScriptInclude: GroupID:com.palantir.godel Exclude:[[] []]}"
+	// Output: "{Products:map[godel:{Build:{Script: MainPkg:./cmd/godel OutputDir: BuildArgsScript: VersionVar:main.Version Environment:map[CGO_ENABLED:0] OSArchs:[darwin-amd64 linux-amd64]} Run:{Args:[]} Dist:[{OutputDir: InputDir: InputProducts:[] Script:function setup_wrapper {\n  # logic for function (omitted for brevity)\n}\n\n# copy contents of resources directory\nmkdir -p \"$DIST_DIR/wrapper\"\nsetup_wrapper \"$DIST_DIR/wrapper\"\n DistType:{Type:bin Info:{OmitInitSh:true InitShTemplateFile:}} Publish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] DefaultPublish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] BuildOutputDir: DistOutputDir: GroupID:com.palantir.godel DistScriptInclude: Exclude:{Names:[] Paths:[]}}"
 }
 
 func Example_rpm() {
@@ -112,10 +108,18 @@ products:
           cp build/linux-amd64/orchestrator "$DIST_DIR"/usr/libexec/orchestrator
 group-id: com.palantir.pcloud`
 
-	cfg, err := config.LoadFromString(yml, "")
-	if err != nil {
+	cfg := configFromYML(yml)
+	fmt.Printf("%q", fmt.Sprintf("%+v", cfg))
+	// Output: "{Products:map[orchestrator:{Build:{Script: MainPkg: OutputDir: BuildArgsScript: VersionVar: Environment:map[] OSArchs:[]} Run:{Args:[]} Dist:[{OutputDir: InputDir:./rpm InputProducts:[] Script:mkdir \"$DIST_DIR\"/usr/libexec/orchestrator\ncp build/linux-amd64/orchestrator \"$DIST_DIR\"/usr/libexec/orchestrator\n DistType:{Type:rpm Info:{Release: ConfigFiles:[/usr/lib/systemd/system/orchestrator.service] BeforeInstallScript:/usr/bin/getent group orchestrator || /usr/sbin/groupadd \\\n        -g 380 orchestrator\n/usr/bin/getent passwd orchestrator || /usr/sbin/useradd -r \\\n        -d /var/lib/orchestrator -g orchestrator -u 380 -m \\\n        -s /sbin/nologin orchestrator\n AfterInstallScript:systemctl daemon-reload\n AfterRemoveScript:systemctl daemon-reload\n}} Publish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] DefaultPublish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] BuildOutputDir: DistOutputDir: GroupID:com.palantir.pcloud DistScriptInclude: Exclude:{Names:[] Paths:[]}}"
+}
+
+func configFromYML(yml string) config.RawProjectConfig {
+	cfg := config.RawProjectConfig{}
+	if err := yaml.Unmarshal([]byte(yml), &cfg); err != nil {
 		panic(err)
 	}
-	fmt.Printf("%q", fmt.Sprintf("%+v", cfg))
-	// Output: "{Products:map[orchestrator:{Build:{Script: MainPkg: OutputDir: BuildArgsScript: VersionVar: Environment:map[] OSArchs:[]} Run:{Args:[]} Dist:[{OutputDir: InputDir:./rpm InputProducts:[] Script:mkdir \"$DIST_DIR\"/usr/libexec/orchestrator\ncp build/linux-amd64/orchestrator \"$DIST_DIR\"/usr/libexec/orchestrator\n DistType:{Type:rpm Info:{Release: ConfigFiles:[/usr/lib/systemd/system/orchestrator.service] BeforeInstallScript:/usr/bin/getent group orchestrator || /usr/sbin/groupadd \\\n        -g 380 orchestrator\n/usr/bin/getent passwd orchestrator || /usr/sbin/useradd -r \\\n        -d /var/lib/orchestrator -g orchestrator -u 380 -m \\\n        -s /sbin/nologin orchestrator\n AfterInstallScript:systemctl daemon-reload\n AfterRemoveScript:systemctl daemon-reload\n}} Publish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] DefaultPublish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] BuildOutputDir: DistOutputDir: DistScriptInclude: GroupID:com.palantir.pcloud Exclude:[[] []]}"
+	if _, err := cfg.ToParams(); err != nil {
+		panic(err)
+	}
+	return cfg
 }

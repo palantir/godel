@@ -26,7 +26,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/palantir/godel/apps/distgo/cmd"
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/git"
 	"github.com/palantir/godel/apps/distgo/pkg/imports"
 	"github.com/palantir/godel/apps/distgo/pkg/osarch"
@@ -36,7 +36,7 @@ import (
 // ProductBuildSpecWithDeps matching the provided osArchs filter. A product is considered to require building if its
 // output executable does not exist or if the output executable's modification date is older than any of the Go files
 // required to build the product.
-func RequiresBuild(specWithDeps config.ProductBuildSpecWithDeps, osArchs cmd.OSArchFilter) RequiresBuildInfo {
+func RequiresBuild(specWithDeps params.ProductBuildSpecWithDeps, osArchs cmd.OSArchFilter) RequiresBuildInfo {
 	info := newRequiresBuildInfo(specWithDeps, osArchs)
 	for _, currSpec := range specWithDeps.AllSpecs() {
 		paths := ArtifactPaths(currSpec)
@@ -60,16 +60,16 @@ func RequiresBuild(specWithDeps config.ProductBuildSpecWithDeps, osArchs cmd.OSA
 }
 
 type RequiresBuildInfo interface {
-	Specs() []config.ProductBuildSpec
+	Specs() []params.ProductBuildSpec
 	RequiresBuild(product string, osArch osarch.OSArch) bool
-	addInfo(spec config.ProductBuildSpec, osArch osarch.OSArch)
+	addInfo(spec params.ProductBuildSpec, osArch osarch.OSArch)
 }
 
 type requiresBuildInfo struct {
 	// ordered slice of product names
 	orderedProducts []string
 	// map from product name to build spec for the product
-	products map[string]config.ProductBuildSpec
+	products map[string]params.ProductBuildSpec
 	// map from product name to OS/Archs for which product requires build
 	productsRequiresBuildOSArch map[string][]osarch.OSArch
 	// the products that were examined in creating this requiresBuildInfo
@@ -78,21 +78,21 @@ type requiresBuildInfo struct {
 	examinedOSArchs cmd.OSArchFilter
 }
 
-func newRequiresBuildInfo(specWithDeps config.ProductBuildSpecWithDeps, osArchs cmd.OSArchFilter) RequiresBuildInfo {
+func newRequiresBuildInfo(specWithDeps params.ProductBuildSpecWithDeps, osArchs cmd.OSArchFilter) RequiresBuildInfo {
 	examinedProducts := make(map[string]struct{})
 	for _, spec := range specWithDeps.AllSpecs() {
 		examinedProducts[spec.ProductName] = struct{}{}
 	}
 
 	return &requiresBuildInfo{
-		products:                    make(map[string]config.ProductBuildSpec),
+		products:                    make(map[string]params.ProductBuildSpec),
 		productsRequiresBuildOSArch: make(map[string][]osarch.OSArch),
 		examinedProducts:            examinedProducts,
 		examinedOSArchs:             osArchs,
 	}
 }
 
-func (b *requiresBuildInfo) addInfo(spec config.ProductBuildSpec, osArch osarch.OSArch) {
+func (b *requiresBuildInfo) addInfo(spec params.ProductBuildSpec, osArch osarch.OSArch) {
 	k := spec.ProductName
 	_, productSeen := b.products[k]
 	if !productSeen {
@@ -115,15 +115,15 @@ func (b *requiresBuildInfo) RequiresBuild(product string, osArch osarch.OSArch) 
 	return false
 }
 
-func (b *requiresBuildInfo) Specs() []config.ProductBuildSpec {
-	specs := make([]config.ProductBuildSpec, len(b.orderedProducts))
+func (b *requiresBuildInfo) Specs() []params.ProductBuildSpec {
+	specs := make([]params.ProductBuildSpec, len(b.orderedProducts))
 	for i, k := range b.orderedProducts {
 		specs[i] = b.products[k]
 	}
 	return specs
 }
 
-func RunBuildFunc(buildActionFunc cmd.BuildFunc, cfg config.ProjectConfig, products []string, wd string, stdout io.Writer) error {
+func RunBuildFunc(buildActionFunc cmd.BuildFunc, cfg params.Project, products []string, wd string, stdout io.Writer) error {
 	buildSpecsWithDeps, err := SpecsWithDepsForArgs(cfg, products, wd)
 	if err != nil {
 		return err
@@ -134,10 +134,10 @@ func RunBuildFunc(buildActionFunc cmd.BuildFunc, cfg config.ProjectConfig, produ
 	return nil
 }
 
-func SpecsWithDepsForArgs(cfg config.ProjectConfig, products []string, wd string) ([]config.ProductBuildSpecWithDeps, error) {
+func SpecsWithDepsForArgs(cfg params.Project, products []string, wd string) ([]params.ProductBuildSpecWithDeps, error) {
 	// if configuration is empty, default to all main pkgs
 	if len(cfg.Products) == 0 {
-		cfg.Products = make(map[string]config.ProductConfig)
+		cfg.Products = make(map[string]params.Product)
 		if err := addMainPkgsToConfig(cfg, wd); err != nil {
 			return nil, errors.Wrapf(err, "failed to get main packages from %v", wd)
 		}
@@ -151,9 +151,9 @@ func SpecsWithDepsForArgs(cfg config.ProjectConfig, products []string, wd string
 	}
 
 	// create BuildSpec for all products
-	allBuildSpecs := make(map[string]config.ProductBuildSpec)
+	allBuildSpecs := make(map[string]params.ProductBuildSpec)
 	for currProduct, currProductCfg := range cfg.Products {
-		allBuildSpecs[currProduct] = config.NewProductBuildSpec(wd, currProduct, productInfo, currProductCfg, cfg)
+		allBuildSpecs[currProduct] = params.NewProductBuildSpec(wd, currProduct, productInfo, currProductCfg, cfg)
 	}
 
 	// get products that aren't excluded by configuration
@@ -200,9 +200,9 @@ func SpecsWithDepsForArgs(cfg config.ProjectConfig, products []string, wd string
 	}
 	sort.Strings(sortedFilteredProducts)
 
-	var buildSpecsWithDeps []config.ProductBuildSpecWithDeps
+	var buildSpecsWithDeps []params.ProductBuildSpecWithDeps
 	for _, currProduct := range sortedFilteredProducts {
-		currSpec, err := config.NewProductBuildSpecWithDeps(allBuildSpecs[currProduct], allBuildSpecs)
+		currSpec, err := params.NewProductBuildSpecWithDeps(allBuildSpecs[currProduct], allBuildSpecs)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to create build spec for %v", currProduct)
 		}
@@ -212,7 +212,7 @@ func SpecsWithDepsForArgs(cfg config.ProjectConfig, products []string, wd string
 	return buildSpecsWithDeps, nil
 }
 
-func addMainPkgsToConfig(cfg config.ProjectConfig, projectDir string) error {
+func addMainPkgsToConfig(cfg params.Project, projectDir string) error {
 	mainPkgPaths, err := mainPkgPaths(projectDir)
 	if err != nil {
 		return errors.Wrapf(err, "failed to determine paths to main packages in %v", projectDir)
@@ -221,8 +221,8 @@ func addMainPkgsToConfig(cfg config.ProjectConfig, projectDir string) error {
 	for _, currMainPkgPath := range mainPkgPaths {
 		currMainPkgAbsPath := path.Join(projectDir, currMainPkgPath)
 		productName := path.Base(currMainPkgAbsPath)
-		cfg.Products[productName] = config.ProductConfig{
-			Build: config.BuildConfig{
+		cfg.Products[productName] = params.Product{
+			Build: params.Build{
 				MainPkg: currMainPkgPath,
 			},
 		}

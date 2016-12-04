@@ -31,6 +31,7 @@ import (
 	"github.com/palantir/godel/apps/distgo/cmd/build"
 	"github.com/palantir/godel/apps/distgo/cmd/dist"
 	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 )
 
 const (
@@ -241,9 +242,9 @@ func publishAction(publisher Publisher, products []string, almanacInfo *AlmanacI
 		return err
 	}
 
-	return build.RunBuildFunc(func(buildSpecWithDeps []config.ProductBuildSpecWithDeps, stdout io.Writer) error {
+	return build.RunBuildFunc(func(buildSpecWithDeps []params.ProductBuildSpecWithDeps, stdout io.Writer) error {
 		distsNotBuilt := DistsNotBuilt(buildSpecWithDeps)
-		var specsToBuild []config.ProductBuildSpec
+		var specsToBuild []params.ProductBuildSpec
 		for _, currSpecWithDeps := range distsNotBuilt {
 			specsToBuild = append(specsToBuild, build.RequiresBuild(currSpecWithDeps, nil).Specs()...)
 		}
@@ -264,7 +265,7 @@ func publishAction(publisher Publisher, products []string, almanacInfo *AlmanacI
 			processFunc = cmd.ProcessSeriallyBatchErrors
 		}
 
-		if err := processFunc(func(buildSpecWithDeps config.ProductBuildSpecWithDeps, stdout io.Writer) error {
+		if err := processFunc(func(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) error {
 			return Run(buildSpecWithDeps, publisher, almanacInfo, stdout)
 		})(buildSpecWithDeps, stdout); err != nil {
 			// if publish failed with bulk errors, print nice error message

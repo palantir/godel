@@ -19,10 +19,10 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 )
 
-func almanacPublish(artifactURL string, almanacInfo AlmanacInfo, buildSpec config.ProductBuildSpec, distCfg config.DistConfig, stdout io.Writer) error {
+func almanacPublish(artifactURL string, almanacInfo AlmanacInfo, buildSpec params.ProductBuildSpec, distCfg params.Dist, stdout io.Writer) error {
 	if err := almanacInfo.CheckProduct(buildSpec.ProductName); err != nil {
 		if err := almanacInfo.CreateProduct(buildSpec.ProductName); err != nil {
 			return fmt.Errorf("failed to create product %s: %v", buildSpec.ProductName, err)

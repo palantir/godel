@@ -23,14 +23,14 @@ import (
 	"github.com/pkg/errors"
 	"github.com/termie/go-shutil"
 
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 )
 
 type LocalPublishInfo struct {
 	Path string
 }
 
-func (l LocalPublishInfo) Publish(buildSpec config.ProductBuildSpec, paths ProductPaths, stdout io.Writer) (string, error) {
+func (l LocalPublishInfo) Publish(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) (string, error) {
 	productPath := path.Join(l.Path, paths.productPath)
 	if err := os.MkdirAll(productPath, 0755); err != nil {
 		return "", errors.Wrapf(err, "Failed to create path to %v", productPath)

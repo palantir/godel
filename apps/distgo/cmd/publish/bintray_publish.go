@@ -25,7 +25,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 )
 
 type BintrayConnectionInfo struct {
@@ -36,7 +36,7 @@ type BintrayConnectionInfo struct {
 	DownloadsList bool
 }
 
-func (b BintrayConnectionInfo) Publish(buildSpec config.ProductBuildSpec, paths ProductPaths, stdout io.Writer) (string, error) {
+func (b BintrayConnectionInfo) Publish(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) (string, error) {
 	baseURL := strings.Join([]string{b.URL, "content", b.Subject, b.Repository, buildSpec.ProductName, buildSpec.ProductVersion, paths.productPath}, "/")
 	artifactURL, err := b.uploadArtifacts(baseURL, paths, nil, stdout)
 	if err != nil {
@@ -55,12 +55,12 @@ func (b BintrayConnectionInfo) Publish(buildSpec config.ProductBuildSpec, paths 
 	return artifactURL, err
 }
 
-func (b BintrayConnectionInfo) release(buildSpec config.ProductBuildSpec, stdout io.Writer) (rErr error) {
+func (b BintrayConnectionInfo) release(buildSpec params.ProductBuildSpec, stdout io.Writer) (rErr error) {
 	publishURLString := strings.Join([]string{b.URL, "content", b.Subject, b.Repository, buildSpec.ProductName, buildSpec.ProductVersion, "publish"}, "/")
 	return b.runBintrayCommand(publishURLString, http.MethodPost, `{"publish_wait_for_secs":-1}`, "running Bintray publish for uploaded artifacts", stdout)
 }
 
-func (b BintrayConnectionInfo) addToDownloadsList(buildSpec config.ProductBuildSpec, paths ProductPaths, stdout io.Writer) (rErr error) {
+func (b BintrayConnectionInfo) addToDownloadsList(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) (rErr error) {
 	downloadsListURLString := strings.Join([]string{b.URL, "file_metadata", b.Subject, b.Repository, paths.productPath, path.Base(paths.artifactPath)}, "/")
 	return b.runBintrayCommand(downloadsListURLString, http.MethodPut, `{"list_in_downloads":true}`, "adding artifact to Bintray downloads list for package", stdout)
 }
