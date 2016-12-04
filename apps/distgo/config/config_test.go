@@ -231,7 +231,7 @@ echo "main.year=$YEAR"
 		},
 	} {
 		// load config
-		got, err := config.Read(unindent(currCase.yml), currCase.json)
+		got, err := config.LoadRawConfig(unindent(currCase.yml), currCase.json)
 		require.NoError(t, err, "Case %d", i)
 
 		// require that it is valid

@@ -26,6 +26,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/palantir/checks/golicense"
+	"github.com/palantir/checks/golicense/config"
 )
 
 const (
@@ -61,13 +62,13 @@ func Command() cli.Command {
 				return err
 			}
 
-			cfg, err := golicense.Load(cfgcli.ConfigPath, cfgcli.ConfigJSON)
+			params, err := config.Load(cfgcli.ConfigPath, cfgcli.ConfigJSON)
 			if err != nil {
 				return err
 			}
 
 			// if header and matchers do not exist, return (nothing to check)
-			if cfg.Header == "" && len(cfg.CustomHeaders) == 0 {
+			if params.Header == "" && params.CustomHeaders.Len() == 0 {
 				return nil
 			}
 
@@ -89,7 +90,7 @@ func Command() cli.Command {
 			switch {
 			case verify:
 				// run verify
-				modified, err := golicense.LicenseFiles(files, cfg, !verify)
+				modified, err := golicense.LicenseFiles(files, params, !verify)
 				if err != nil {
 					return err
 				}
@@ -106,12 +107,12 @@ func Command() cli.Command {
 				}
 			case ctx.Has(removeFlagName) && ctx.Bool(removeFlagName):
 				// run unlicense
-				if _, err := golicense.UnlicenseFiles(files, cfg, true); err != nil {
+				if _, err := golicense.UnlicenseFiles(files, params, true); err != nil {
 					return err
 				}
 			default:
 				// run license
-				if _, err := golicense.LicenseFiles(files, cfg, !verify); err != nil {
+				if _, err := golicense.LicenseFiles(files, params, !verify); err != nil {
 					return err
 				}
 			}

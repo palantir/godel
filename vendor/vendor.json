@@ -193,128 +193,140 @@
 		{
 			"checksumSHA1": "OuLHZaJ5mDpYdhK5e3YhgkICGs0=",
 			"path": "github.com/palantir/checks/compiles",
-			"revision": "c5a9fc278417f07e1304b315e3d87630ea261ba8",
-			"revisionTime": "2016-12-02T03:17:37Z"
+			"revision": "13cb0d98319d3f9ecae1b05805e887f9a4ba4fd0",
+			"revisionTime": "2016-12-04T19:06:58Z"
 		},
 		{
 			"checksumSHA1": "vuAntIl8pPnwhUYDvwbHZuQssMM=",
 			"path": "github.com/palantir/checks/extimport",
-			"revision": "c5a9fc278417f07e1304b315e3d87630ea261ba8",
-			"revisionTime": "2016-12-02T03:17:37Z"
+			"revision": "13cb0d98319d3f9ecae1b05805e887f9a4ba4fd0",
+			"revisionTime": "2016-12-04T19:06:58Z"
 		},
 		{
-			"checksumSHA1": "KlvuyXJCKl2wnkg1B6pLq5tzdBc=",
+			"checksumSHA1": "DsBOF0RRLfIJNlS2mHl/zD6ZVXk=",
 			"path": "github.com/palantir/checks/gocd",
-			"revision": "c5a9fc278417f07e1304b315e3d87630ea261ba8",
-			"revisionTime": "2016-12-02T03:17:37Z"
+			"revision": "13cb0d98319d3f9ecae1b05805e887f9a4ba4fd0",
+			"revisionTime": "2016-12-04T19:06:58Z"
 		},
 		{
-			"checksumSHA1": "dd42tr255JRMMePiwkqDuH2Tu+w=",
+			"checksumSHA1": "YywxDu0f04cPD9LuWqe7R6uhXXc=",
 			"path": "github.com/palantir/checks/gocd/cmd",
-			"revision": "c5a9fc278417f07e1304b315e3d87630ea261ba8",
-			"revisionTime": "2016-12-02T03:17:37Z"
+			"revision": "13cb0d98319d3f9ecae1b05805e887f9a4ba4fd0",
+			"revisionTime": "2016-12-04T19:06:58Z"
 		},
 		{
 			"checksumSHA1": "4RPr1kGPVZvuE492gPw7CRXnJKQ=",
 			"path": "github.com/palantir/checks/gocd/cmd/gocd",
-			"revision": "c5a9fc278417f07e1304b315e3d87630ea261ba8",
-			"revisionTime": "2016-12-02T03:17:37Z"
+			"revision": "13cb0d98319d3f9ecae1b05805e887f9a4ba4fd0",
+			"revisionTime": "2016-12-04T19:06:58Z"
 		},
 		{
-			"checksumSHA1": "Ga6yWBp+i5yJp1bSjj71obzKrz8=",
+			"checksumSHA1": "13r9FHRaLIi0b5cpdaKl9V+6Cbk=",
+			"path": "github.com/palantir/checks/gocd/config",
+			"revision": "13cb0d98319d3f9ecae1b05805e887f9a4ba4fd0",
+			"revisionTime": "2016-12-04T19:06:58Z"
+		},
+		{
+			"checksumSHA1": "CLRXuhifTbZu8Vjm8rjRJ1xvbGs=",
 			"path": "github.com/palantir/checks/golicense",
-			"revision": "c5a9fc278417f07e1304b315e3d87630ea261ba8",
-			"revisionTime": "2016-12-02T03:17:37Z"
+			"revision": "13cb0d98319d3f9ecae1b05805e887f9a4ba4fd0",
+			"revisionTime": "2016-12-04T19:06:58Z"
 		},
 		{
-			"checksumSHA1": "DY4fxDQPcXXUNvIfPGZsKXPoDwE=",
+			"checksumSHA1": "s5ZfHFCPQCZO0+MvXMPB5KElb+8=",
 			"path": "github.com/palantir/checks/golicense/cmd",
-			"revision": "c5a9fc278417f07e1304b315e3d87630ea261ba8",
-			"revisionTime": "2016-12-02T03:17:37Z"
+			"revision": "13cb0d98319d3f9ecae1b05805e887f9a4ba4fd0",
+			"revisionTime": "2016-12-04T19:06:58Z"
 		},
 		{
 			"checksumSHA1": "6ahBfVKtEOJCMdVsazwEZqfm2f8=",
 			"path": "github.com/palantir/checks/golicense/cmd/golicense",
-			"revision": "c5a9fc278417f07e1304b315e3d87630ea261ba8",
-			"revisionTime": "2016-12-02T03:17:37Z"
+			"revision": "13cb0d98319d3f9ecae1b05805e887f9a4ba4fd0",
+			"revisionTime": "2016-12-04T19:06:58Z"
+		},
+		{
+			"checksumSHA1": "NbFuzwGq1BXX/BlppkpDk+NrO4g=",
+			"path": "github.com/palantir/checks/golicense/config",
+			"revision": "13cb0d98319d3f9ecae1b05805e887f9a4ba4fd0",
+			"revisionTime": "2016-12-04T19:06:58Z"
 		},
 		{
 			"checksumSHA1": "aR+uZkxl3rmdjE6XyZ5L8kHhTXo=",
 			"path": "github.com/palantir/checks/novendor",
-			"revision": "c5a9fc278417f07e1304b315e3d87630ea261ba8",
-			"revisionTime": "2016-12-02T03:17:37Z"
+			"revision": "13cb0d98319d3f9ecae1b05805e887f9a4ba4fd0",
+			"revisionTime": "2016-12-04T19:06:58Z"
 		},
 		{
 			"checksumSHA1": "pjkYZTO+ulbnHeAQ/o0pFBtXOEA=",
 			"path": "github.com/palantir/checks/outparamcheck",
-			"revision": "c5a9fc278417f07e1304b315e3d87630ea261ba8",
-			"revisionTime": "2016-12-02T03:17:37Z"
+			"revision": "13cb0d98319d3f9ecae1b05805e887f9a4ba4fd0",
+			"revisionTime": "2016-12-04T19:06:58Z"
 		},
 		{
 			"checksumSHA1": "Is2FPtTkmaF6qoD/vmijuqvULFM=",
 			"path": "github.com/palantir/checks/outparamcheck/exprs",
-			"revision": "c5a9fc278417f07e1304b315e3d87630ea261ba8",
-			"revisionTime": "2016-12-02T03:17:37Z"
+			"revision": "13cb0d98319d3f9ecae1b05805e887f9a4ba4fd0",
+			"revisionTime": "2016-12-04T19:06:58Z"
 		},
 		{
 			"checksumSHA1": "PyE1iOXaE/zv71K8ABY1HUQFxIc=",
 			"path": "github.com/palantir/checks/outparamcheck/main/outparamcheck",
-			"revision": "c5a9fc278417f07e1304b315e3d87630ea261ba8",
-			"revisionTime": "2016-12-02T03:17:37Z"
+			"revision": "13cb0d98319d3f9ecae1b05805e887f9a4ba4fd0",
+			"revisionTime": "2016-12-04T19:06:58Z"
 		},
 		{
 			"checksumSHA1": "Vb0mBC9BJSzvhivFDCLtjWO1gDk=",
 			"path": "github.com/palantir/checks/ptimports",
-			"revision": "c5a9fc278417f07e1304b315e3d87630ea261ba8",
-			"revisionTime": "2016-12-02T03:17:37Z"
+			"revision": "13cb0d98319d3f9ecae1b05805e887f9a4ba4fd0",
+			"revisionTime": "2016-12-04T19:06:58Z"
 		},
 		{
 			"checksumSHA1": "VoAmm8Kfvuu7VAKLwagKEI8fn7k=",
 			"path": "github.com/palantir/checks/ptimports/main/ptimports",
-			"revision": "c5a9fc278417f07e1304b315e3d87630ea261ba8",
-			"revisionTime": "2016-12-02T03:17:37Z"
+			"revision": "13cb0d98319d3f9ecae1b05805e887f9a4ba4fd0",
+			"revisionTime": "2016-12-04T19:06:58Z"
 		},
 		{
-			"checksumSHA1": "qdbQdCYR8MzaW44Mzx9SJlaXp9g=",
+			"checksumSHA1": "csaM9q2Qqj12DpxMSXS3V+a5qdY=",
 			"path": "github.com/palantir/pkg/cli",
-			"revision": "7d15307c5e5d5726dd8fcdd0328d536345a51684",
-			"revisionTime": "2016-11-21T06:26:24Z"
+			"revision": "c60ea2d471b77fae0cd4219bd329bd7e0e01d5b8",
+			"revisionTime": "2016-12-02T17:17:08Z"
 		},
 		{
-			"checksumSHA1": "NOszkW7MveldLRUv0M0o78ePJ0U=",
+			"checksumSHA1": "qsyt9pmFPbq8o/+8ks06HrU4rjo=",
 			"path": "github.com/palantir/pkg/cli/cfgcli",
-			"revision": "7d15307c5e5d5726dd8fcdd0328d536345a51684",
-			"revisionTime": "2016-11-21T06:26:24Z"
+			"revision": "c60ea2d471b77fae0cd4219bd329bd7e0e01d5b8",
+			"revisionTime": "2016-12-02T17:17:08Z"
 		},
 		{
-			"checksumSHA1": "urN2eEc2qO1H3DbgX/1Miri90NY=",
+			"checksumSHA1": "uziLDbeXqsphfpZyOiovCRx9l8Q=",
 			"path": "github.com/palantir/pkg/cli/completion",
-			"revision": "7d15307c5e5d5726dd8fcdd0328d536345a51684",
-			"revisionTime": "2016-11-21T06:26:24Z"
+			"revision": "c60ea2d471b77fae0cd4219bd329bd7e0e01d5b8",
+			"revisionTime": "2016-12-02T17:17:08Z"
 		},
 		{
-			"checksumSHA1": "MYLruyWmnr8OAL5ROTtmyYr4wi8=",
+			"checksumSHA1": "S06fl4e2OO9T2WfePffUC4TG03o=",
 			"path": "github.com/palantir/pkg/cli/flag",
-			"revision": "7d15307c5e5d5726dd8fcdd0328d536345a51684",
-			"revisionTime": "2016-11-21T06:26:24Z"
+			"revision": "c60ea2d471b77fae0cd4219bd329bd7e0e01d5b8",
+			"revisionTime": "2016-12-02T17:17:08Z"
 		},
 		{
-			"checksumSHA1": "iPLWt0k348BeKfBRe9z2gV00ChY=",
+			"checksumSHA1": "MhrjempJy/hQiqcj1axZp/oox9Q=",
 			"path": "github.com/palantir/pkg/matcher",
-			"revision": "7d15307c5e5d5726dd8fcdd0328d536345a51684",
-			"revisionTime": "2016-11-21T06:26:24Z"
+			"revision": "c60ea2d471b77fae0cd4219bd329bd7e0e01d5b8",
+			"revisionTime": "2016-12-02T17:17:08Z"
 		},
 		{
-			"checksumSHA1": "77vECq5+ECRBIcDwpiBUxlyx1MI=",
+			"checksumSHA1": "wFdDjAqsTus/qC39RSSB7liU124=",
 			"path": "github.com/palantir/pkg/pkgpath",
-			"revision": "7d15307c5e5d5726dd8fcdd0328d536345a51684",
-			"revisionTime": "2016-11-21T06:26:24Z"
+			"revision": "c60ea2d471b77fae0cd4219bd329bd7e0e01d5b8",
+			"revisionTime": "2016-12-02T17:17:08Z"
 		},
 		{
-			"checksumSHA1": "Uwp8T6JLHQTWfZgzRSv0fC79vis=",
+			"checksumSHA1": "cYHVn6ZfN+UH2SW5PWHSn1ym0wo=",
 			"path": "github.com/palantir/pkg/specdir",
-			"revision": "7d15307c5e5d5726dd8fcdd0328d536345a51684",
-			"revisionTime": "2016-11-21T06:26:24Z"
+			"revision": "c60ea2d471b77fae0cd4219bd329bd7e0e01d5b8",
+			"revisionTime": "2016-12-02T17:17:08Z"
 		},
 		{
 			"checksumSHA1": "JAeK0zQn4QpNfxpE3ElBksT+v3E=",

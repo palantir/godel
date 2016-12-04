@@ -21,37 +21,18 @@ import (
 	"testing"
 
 	"github.com/nmiyake/pkg/dirs"
-	"github.com/palantir/amalgomate/amalgomated"
 	"github.com/palantir/pkg/matcher"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/godel/apps/okgo/checkoutput"
-	"github.com/palantir/godel/apps/okgo/cmd/cmdlib"
 	"github.com/palantir/godel/apps/okgo/config"
 )
 
 func TestLoadRawConfig(t *testing.T) {
-	tmpDir, cleanup, err := dirs.TempDir("", "")
-	defer cleanup()
-	require.NoError(t, err)
-
-	emptyExcludeCfg := matcher.NamesPathsCfg{}
-	excludeCfg := matcher.NamesPathsCfg{
-		Names: []string{
-			"m?cks",
-			"exclude.*",
-		},
-		Paths: []string{
-			"vendor",
-			"generated_src",
-		},
-	}
-
 	for i, currCase := range []struct {
 		yml  string
 		json string
-		want config.Config
+		want config.RawConfig
 	}{
 		{
 			yml: `
@@ -70,19 +51,31 @@ func TestLoadRawConfig(t *testing.T) {
 			    - "vendor"
 			`,
 			json: `{"exclude":{"names":["exclude.*"],"paths":["generated_src"]}}`,
-			want: config.Config{
-				Checks: map[amalgomated.Cmd]config.SingleCheckerConfig{
-					getCmd("errcheck", t): {
+			want: config.RawConfig{
+				Checks: map[string]config.RawSingleCheckerConfig{
+					"errcheck": {
 						Args: []string{
 							"-ignore",
 							"github.com/seelog:(Info|Warn|Error|Critical)f?",
 						},
-						LineFilters: []checkoutput.Filterer{
-							checkoutput.MessageRegexpFilter(`\w+`),
+						Filters: []config.RawFilterConfig{
+							{
+								Type:  "message",
+								Value: `\w+`,
+							},
 						},
 					},
 				},
-				Exclude: excludeCfg.Matcher(),
+				Exclude: matcher.NamesPathsCfg{
+					Names: []string{
+						"m?cks",
+						"exclude.*",
+					},
+					Paths: []string{
+						"vendor",
+						"generated_src",
+					},
+				},
 			},
 		},
 		{
@@ -92,24 +85,20 @@ func TestLoadRawConfig(t *testing.T) {
 			    filters:
 			      - value: "\\w+"
 			`,
-			want: config.Config{
-				Checks: map[amalgomated.Cmd]config.SingleCheckerConfig{
-					getCmd("errcheck", t): {
-						LineFilters: []checkoutput.Filterer{
-							checkoutput.MessageRegexpFilter(`\w+`),
+			want: config.RawConfig{
+				Checks: map[string]config.RawSingleCheckerConfig{
+					"errcheck": {
+						Filters: []config.RawFilterConfig{
+							{
+								Value: `\w+`,
+							},
 						},
 					},
 				},
-				Exclude: emptyExcludeCfg.Matcher(),
 			},
 		},
 	} {
-		path, err := ioutil.TempFile(tmpDir, "")
-		require.NoError(t, err, "Case %d", i)
-		err = ioutil.WriteFile(path.Name(), []byte(unindent(currCase.yml)), 0644)
-		require.NoError(t, err, "Case %d", i)
-
-		got, err := config.Load(path.Name(), currCase.json)
+		got, err := config.LoadRawConfig(unindent(currCase.yml), currCase.json)
 		assert.Equal(t, currCase.want, got, "Case %d", i)
 		require.NoError(t, err, "Case %d", i)
 	}
@@ -156,10 +145,4 @@ func TestLoadBadConfig(t *testing.T) {
 
 func unindent(input string) string {
 	return strings.Replace(input, "\n\t\t\t", "\n", -1)
-}
-
-func getCmd(key string, t *testing.T) amalgomated.Cmd {
-	cmd, err := cmdlib.Instance().NewCmd(key)
-	require.NoError(t, err)
-	return cmd
 }

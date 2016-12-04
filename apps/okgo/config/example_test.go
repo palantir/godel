@@ -31,10 +31,13 @@ checks:
       - type: "message"
         value: "\\w+"
 `
-	cfg, err := config.LoadFromString(yml, "")
+	cfg, err := config.LoadRawConfig(yml, "")
 	if err != nil {
 		panic(err)
 	}
+	if _, err := cfg.ToParams(); err != nil {
+		panic(err)
+	}
 	fmt.Printf("%q", fmt.Sprintf("%+v", cfg))
-	// Output: "{Checks:map[errcheck:{Skip:false Args:[-ignore github.com/seelog:(Info|Warn|Error|Critical)f?] LineFilters:[{exp:\\w+}]}] Exclude:[[] []]}"
+	// Output: "{Checks:map[errcheck:{Skip:false Args:[-ignore github.com/seelog:(Info|Warn|Error|Critical)f?] Filters:[{Type:message Value:\\w+}]}] Exclude:{Names:[] Paths:[]}}"
 }

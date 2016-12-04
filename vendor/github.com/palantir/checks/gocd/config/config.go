@@ -12,46 +12,49 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package gocd
+package config
 
 import (
 	"io/ioutil"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
+
+	"github.com/palantir/checks/gocd"
 )
 
-type Config struct {
-	RootDirs []string
-}
-
-type rawConfig struct {
+type RawConfig struct {
 	RootDirs []string `yaml:"root-dirs"`
 }
 
-func Load(configPath, _ string) (Config, error) {
-	rawCfg := rawConfig{}
-	if configPath != "" {
-		var err error
-		rawCfg, err = loadRawConfig(configPath)
-		if err != nil {
-			return Config{}, errors.Wrapf(err, "failed to read YML configuration")
-		}
+func (r *RawConfig) ToParams() gocd.Params {
+	return gocd.Params{
+		RootDirs: r.RootDirs,
 	}
-
-	return Config{
-		RootDirs: rawCfg.RootDirs,
-	}, nil
 }
 
-func loadRawConfig(configPath string) (rawConfig, error) {
-	file, err := ioutil.ReadFile(configPath)
-	if err != nil {
-		return rawConfig{}, errors.Wrapf(err, "failed to read file %s", configPath)
+func Load(configPath, _ string) (gocd.Params, error) {
+	var yml []byte
+	if configPath != "" {
+		var err error
+		yml, err = ioutil.ReadFile(configPath)
+		if err != nil {
+			return gocd.Params{}, errors.Wrapf(err, "failed to read file %s", configPath)
+		}
 	}
-	cfg := rawConfig{}
-	if err := yaml.Unmarshal(file, &cfg); err != nil {
-		return rawConfig{}, errors.Wrapf(err, "failed to unmarshal file %s", configPath)
+	cfg, err := LoadRawConfig(string(yml))
+	if err != nil {
+		return gocd.Params{}, err
+	}
+	return cfg.ToParams(), nil
+}
+
+func LoadRawConfig(yml string) (RawConfig, error) {
+	cfg := RawConfig{}
+	if yml != "" {
+		if err := yaml.Unmarshal([]byte(yml), &cfg); err != nil {
+			return RawConfig{}, errors.Wrapf(err, "failed to unmarshal YML %s", yml)
+		}
 	}
 	return cfg, nil
 }

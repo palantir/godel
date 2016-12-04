@@ -16,22 +16,16 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"regexp"
-	"sort"
 
 	"github.com/palantir/pkg/matcher"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
+
+	"github.com/palantir/godel/apps/gunit/params"
 )
 
-type Config struct {
-	Tags    map[string]matcher.Matcher
-	Exclude matcher.Matcher
-}
-
-type rawConfig struct {
+type RawConfig struct {
 	// Tags group tests into different sets. The key is the name of the tag and the value is a matcher.NamesPathsCfg
 	// that specifies the rules for matching the tests that are part of the tag. Any test that matches the provided
 	// matcher is considered part of the tag.
@@ -39,59 +33,46 @@ type rawConfig struct {
 	Exclude matcher.NamesPathsCfg            `yaml:"exclude" json:"exclude"`
 }
 
-func Load(cfgPath, jsonContent string) (Config, error) {
-	var ymlContent string
-	if cfgPath != "" {
-		file, err := ioutil.ReadFile(cfgPath)
-		if err != nil {
-			return Config{}, errors.Wrapf(err, "failed to read file %s", cfgPath)
-		}
-		ymlContent = string(file)
+func (r *RawConfig) ToParams() params.Params {
+	m := make(map[string]matcher.Matcher, len(r.Tags))
+	for k, v := range r.Tags {
+		m[k] = v.Matcher()
 	}
-	return LoadFromString(ymlContent, jsonContent)
+	return params.Params{
+		Tags:    m,
+		Exclude: r.Exclude.Matcher(),
+	}
 }
 
-func LoadFromString(ymlContent, jsonContent string) (Config, error) {
-	rawCfg := rawConfig{}
+func Load(cfgPath, jsonContent string) (params.Params, error) {
+	var yml []byte
+	if cfgPath != "" {
+		var err error
+		yml, err = ioutil.ReadFile(cfgPath)
+		if err != nil {
+			return params.Params{}, errors.Wrapf(err, "failed to read file %s", cfgPath)
+		}
+	}
+	cfg, err := LoadRawConfig(string(yml), jsonContent)
+	if err != nil {
+		return params.Params{}, err
+	}
+	return cfg.ToParams(), nil
+}
+
+func LoadRawConfig(ymlContent, jsonContent string) (RawConfig, error) {
+	cfg := RawConfig{}
 	if ymlContent != "" {
-		if err := yaml.Unmarshal([]byte(ymlContent), &rawCfg); err != nil {
-			return Config{}, errors.Wrapf(err, "failed to unmarshal YML %s", ymlContent)
+		if err := yaml.Unmarshal([]byte(ymlContent), &cfg); err != nil {
+			return RawConfig{}, errors.Wrapf(err, "failed to unmarshal YML %s", ymlContent)
 		}
 	}
-
 	if jsonContent != "" {
-		jsonCfg := rawConfig{}
+		jsonCfg := RawConfig{}
 		if err := json.Unmarshal([]byte(jsonContent), &jsonCfg); err != nil {
-			return Config{}, err
+			return RawConfig{}, err
 		}
-		rawCfg.Exclude.Add(jsonCfg.Exclude)
-	}
-
-	cfg := Config{
-		Exclude: rawCfg.Exclude.Matcher(),
-	}
-
-	if len(rawCfg.Tags) > 0 {
-		var invalidTagNames []string
-
-		cfg.Tags = make(map[string]matcher.Matcher, len(rawCfg.Tags))
-		for k, v := range rawCfg.Tags {
-			if !validTagName(k) {
-				invalidTagNames = append(invalidTagNames, k)
-			}
-			cfg.Tags[k] = v.Matcher()
-		}
-
-		if len(invalidTagNames) > 0 {
-			sort.Strings(invalidTagNames)
-			return Config{}, fmt.Errorf("invalid tag names: %v", invalidTagNames)
-		}
+		cfg.Exclude.Add(jsonCfg.Exclude)
 	}
 	return cfg, nil
-}
-
-var tagRegExp = regexp.MustCompile(`[A-Za-z0-9_-]+`)
-
-func validTagName(tag string) bool {
-	return len(tagRegExp.ReplaceAllString(tag, "")) == 0
 }

@@ -31,6 +31,7 @@ import (
 	"github.com/palantir/godel/apps/okgo/checks"
 	"github.com/palantir/godel/apps/okgo/cmd/cmdlib"
 	"github.com/palantir/godel/apps/okgo/config"
+	"github.com/palantir/godel/apps/okgo/params"
 )
 
 const packagesFlagName = "packages"
@@ -62,7 +63,7 @@ func RunAllCommand(supplier amalgomated.CmderSupplier) cli.Command {
 	}
 }
 
-func DoRunAll(pkgs []string, cfg config.Config, supplier amalgomated.CmderSupplier, wd string, stdout io.Writer) error {
+func DoRunAll(pkgs []string, cfg params.Params, supplier amalgomated.CmderSupplier, wd string, stdout io.Writer) error {
 	var checksWithOutput []amalgomated.Cmd
 	for _, cmd := range cmdlib.Instance().Cmds() {
 		// if "omit" is true, skip the check
@@ -126,7 +127,7 @@ func SingleCheckCommand(cmd amalgomated.Cmd, supplier amalgomated.CmderSupplier)
 
 // executeSingleCheckWithOutput runs the specified check and outputs the result to stdOut. Returns true if the check
 // produced any output, false otherwise.
-func executeSingleCheckWithOutput(cmd amalgomated.Cmd, cmder amalgomated.Cmder, cfg config.Config, pkgs []string, wd string, stdout io.Writer) (bool, error) {
+func executeSingleCheckWithOutput(cmd amalgomated.Cmd, cmder amalgomated.Cmder, cfg params.Params, pkgs []string, wd string, stdout io.Writer) (bool, error) {
 	output, err := singleCheck(cmd, cmder, cfg, pkgs, wd, stdout)
 	if err != nil {
 		return false, err
@@ -143,7 +144,7 @@ func executeSingleCheckWithOutput(cmd amalgomated.Cmd, cmder amalgomated.Cmder, 
 	return producedOutput, nil
 }
 
-func singleCheck(cmd amalgomated.Cmd, cmder amalgomated.Cmder, cfg config.Config, pkgs []string, cmdWd string, stdout io.Writer) ([]checkoutput.Issue, error) {
+func singleCheck(cmd amalgomated.Cmd, cmder amalgomated.Cmder, cfg params.Params, pkgs []string, cmdWd string, stdout io.Writer) ([]checkoutput.Issue, error) {
 	checker, err := checks.GetChecker(cmd)
 	if err != nil {
 		return nil, err

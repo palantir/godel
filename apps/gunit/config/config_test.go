@@ -16,11 +16,9 @@ package config_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"strings"
 	"testing"
 
-	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/pkg/matcher"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -29,14 +27,10 @@ import (
 )
 
 func TestLoadConfig(t *testing.T) {
-	tmpDir, cleanup, err := dirs.TempDir("", "")
-	defer cleanup()
-	require.NoError(t, err)
-
 	for i, currCase := range []struct {
 		yml  string
 		json string
-		want func() config.Config
+		want func() config.RawConfig
 	}{
 		{
 			yml: `
@@ -54,43 +48,32 @@ func TestLoadConfig(t *testing.T) {
 			    - "vendor"
 			`,
 			json: `{"exclude":{"names":["gunit"],"paths":["generated_src"]}}`,
-			want: func() config.Config {
-				includeCfg := matcher.NamesPathsCfg{
-					Names: []string{`integration_tests`},
-					Paths: []string{`test`},
-				}
-				excludeCfg := matcher.NamesPathsCfg{
-					Names: []string{`.*test`, `m?cks`, `gunit`},
-					Paths: []string{`vendor`, `generated_src`},
-				}
-				return config.Config{
-					Tags: map[string]matcher.Matcher{
-						"integration": includeCfg.Matcher(),
+			want: func() config.RawConfig {
+				return config.RawConfig{
+					Tags: map[string]matcher.NamesPathsCfg{
+						"integration": {
+							Names: []string{`integration_tests`},
+							Paths: []string{`test`},
+						},
 					},
-					Exclude: excludeCfg.Matcher(),
+					Exclude: matcher.NamesPathsCfg{
+						Names: []string{`.*test`, `m?cks`, `gunit`},
+						Paths: []string{`vendor`, `generated_src`},
+					},
 				}
 			},
 		},
 	} {
-		path, err := ioutil.TempFile(tmpDir, "")
+		got, err := config.LoadRawConfig(unindent(currCase.yml), currCase.json)
 		require.NoError(t, err, "Case %d", i)
-		err = ioutil.WriteFile(path.Name(), []byte(unindent(currCase.yml)), 0644)
-		require.NoError(t, err, "Case %d", i)
-
-		got, err := config.Load(path.Name(), currCase.json)
+		p := got.ToParams()
+		err = p.Validate()
 		require.NoError(t, err, "Case %d", i)
 		assert.Equal(t, currCase.want(), got, "Case %d", i)
-
-		_, err = config.Load(path.Name(), currCase.json)
-		assert.NoError(t, err, "Case %d", i)
 	}
 }
 
 func TestLoadInvalidConfig(t *testing.T) {
-	tmpDir, cleanup, err := dirs.TempDir("", "")
-	defer cleanup()
-	require.NoError(t, err)
-
 	for i, currCase := range []struct {
 		yml       string
 		wantError string
@@ -117,12 +100,10 @@ func TestLoadInvalidConfig(t *testing.T) {
 			wantError: "invalid tag names: [another bad invalid,entry]",
 		},
 	} {
-		path, err := ioutil.TempFile(tmpDir, "")
-		require.NoError(t, err, "Case %d", i)
-		err = ioutil.WriteFile(path.Name(), []byte(unindent(currCase.yml)), 0644)
-		require.NoError(t, err, "Case %d", i)
-
-		_, err = config.Load(path.Name(), "")
+		got, err := config.LoadRawConfig(unindent(currCase.yml), "")
+		require.NoError(t, err, fmt.Sprintf("Case %d", i))
+		p := got.ToParams()
+		err = p.Validate()
 		require.Error(t, err, fmt.Sprintf("Case %d", i))
 		assert.Equal(t, currCase.wantError, err.Error(), "Case %d", i)
 	}

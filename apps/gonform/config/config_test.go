@@ -15,11 +15,9 @@
 package config_test
 
 import (
-	"io/ioutil"
 	"strings"
 	"testing"
 
-	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/pkg/matcher"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -28,14 +26,10 @@ import (
 )
 
 func TestLoad(t *testing.T) {
-	tempDir, cleanup, err := dirs.TempDir("", "")
-	defer cleanup()
-	require.NoError(t, err)
-
 	for i, currCase := range []struct {
 		yml  string
 		json string
-		want func() config.Config
+		want func() config.RawConfig
 	}{
 		{
 			yml: `
@@ -51,36 +45,26 @@ func TestLoad(t *testing.T) {
 			    - "vendor"
 			`,
 			json: `{"exclude":{"names":["gonform"],"paths":["generated_src"]}}`,
-			want: func() config.Config {
-				excludeCfg := matcher.NamesPathsCfg{
-					Names: []string{`.*test`, `m?cks`, `gonform`},
-					Paths: []string{`vendor`, `generated_src`},
-				}
-				return config.Config{
-					Formatters: map[string]config.FormatterConfig{
+			want: func() config.RawConfig {
+				return config.RawConfig{
+					Formatters: map[string]config.RawFormatterConfig{
 						"gofmt": {
 							Args: []string{
 								"-s",
 							},
 						},
 					},
-					Exclude: excludeCfg.Matcher(),
+					Exclude: matcher.NamesPathsCfg{
+						Names: []string{`.*test`, `m?cks`, `gonform`},
+						Paths: []string{`vendor`, `generated_src`},
+					},
 				}
 			},
 		},
 	} {
-		path, err := ioutil.TempFile(tempDir, "")
-		require.NoError(t, err)
-		err = ioutil.WriteFile(path.Name(), []byte(unindent(currCase.yml)), 0644)
+		got, err := config.LoadRawConfig(unindent(currCase.yml), currCase.json)
 		require.NoError(t, err, "Case %d", i)
-
-		got, err := config.Load(path.Name(), currCase.json)
-		require.NoError(t, err, "Case %d", i)
-
 		assert.Equal(t, currCase.want(), got, "Case %d", i)
-
-		_, err = config.Load(path.Name(), currCase.json)
-		assert.NoError(t, err, "Case %d", i)
 	}
 }
 

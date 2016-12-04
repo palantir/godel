@@ -15,7 +15,6 @@
 package golicense
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"sort"
@@ -24,45 +23,6 @@ import (
 	"github.com/palantir/pkg/matcher"
 	"github.com/pkg/errors"
 )
-
-type LicenseParams struct {
-	Header        string
-	CustomHeaders []CustomLicenseParam
-	Exclude       matcher.Matcher
-}
-
-func (p *LicenseParams) validate() error {
-	var emptyNameParams []CustomLicenseParam
-	nameToParams := make(map[string][]CustomLicenseParam)
-
-	for _, v := range p.CustomHeaders {
-		if v.Name == "" {
-			emptyNameParams = append(emptyNameParams, v)
-		}
-		nameToParams[v.Name] = append(nameToParams[v.Name], v)
-	}
-
-	if len(emptyNameParams) > 0 {
-		return errors.Errorf("custom header entries have blank names: %+v", emptyNameParams)
-	}
-
-	var nameCollisionMsgs []string
-	for k, v := range nameToParams {
-		if len(v) > 1 {
-			nameCollisionMsgs = append(nameCollisionMsgs, fmt.Sprintf("\t%s: %+v", k, v))
-		}
-	}
-	if len(nameCollisionMsgs) > 0 {
-		return errors.Errorf(strings.Join(append([]string{"multiple custom header entries have the same name:"}, nameCollisionMsgs...), "\n"))
-	}
-	return nil
-}
-
-type CustomLicenseParam struct {
-	Name    string
-	Header  string
-	Include matcher.Matcher
-}
 
 func LicenseFiles(files []string, params LicenseParams, modify bool) ([]string, error) {
 	return processFiles(files, params, modify, applyLicenseToFiles)
@@ -73,10 +33,6 @@ func UnlicenseFiles(files []string, params LicenseParams, modify bool) ([]string
 }
 
 func processFiles(files []string, params LicenseParams, modify bool, f func(files []string, header string, modify bool) ([]string, error)) ([]string, error) {
-	if err := params.validate(); err != nil {
-		return nil, errors.Wrapf(err, "license parameters invalid")
-	}
-
 	goFileMatcher := matcher.Name(`.*\.go`)
 	var goFiles []string
 	for _, f := range files {
@@ -85,16 +41,24 @@ func processFiles(files []string, params LicenseParams, modify bool, f func(file
 		}
 	}
 
+	// name of custom matcher -> files to process for the matcher
 	m := make(map[string][]string)
-	for _, v := range params.CustomHeaders {
-		for _, f := range goFiles {
-			if v.Include != nil && v.Include.Match(f) {
-				m[v.Name] = append(m[v.Name], f)
+	for _, f := range goFiles {
+		var longestMatcher string
+		longestMatchLen := 0
+		for _, v := range params.CustomHeaders.headers() {
+			for _, p := range v.IncludePaths {
+				if matcher.PathLiteral(p).Match(f) && len(p) >= longestMatchLen {
+					longestMatcher = v.Name
+					longestMatchLen = len(p)
+				}
 			}
 		}
-	}
-	if err := keysWithCommonValuesError(m); err != nil {
-		return nil, err
+		// file may match multiple custom header params -- if that is the case, use the longest match. Allows
+		// for hierarchical matching.
+		if longestMatcher != "" {
+			m[longestMatcher] = append(m[longestMatcher], f)
+		}
 	}
 
 	// all files that were processed (considered by a matcher)
@@ -103,7 +67,7 @@ func processFiles(files []string, params LicenseParams, modify bool, f func(file
 	var modified []string
 
 	// process custom matchers
-	for _, v := range params.CustomHeaders {
+	for _, v := range params.CustomHeaders.headers() {
 		currModified, err := f(m[v.Name], v.Header, modify)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to process headers for matcher %s", v.Name)
@@ -132,55 +96,6 @@ func processFiles(files []string, params LicenseParams, modify bool, f func(file
 
 	sort.Strings(modified)
 	return modified, nil
-}
-
-func keysWithCommonValuesError(in map[string][]string) error {
-	// create map from k -> set of values
-	m := make(map[string]map[string]struct{}, len(in))
-	for k, v := range in {
-		m[k] = make(map[string]struct{}, len(v))
-		for _, vv := range v {
-			m[k][vv] = struct{}{}
-		}
-	}
-
-	sortedKeys := make([]string, 0, len(in))
-	for k := range in {
-		sortedKeys = append(sortedKeys, k)
-	}
-	sort.Strings(sortedKeys)
-
-	var commonFileMessages []string
-	for i := range sortedKeys {
-		for j := i + 1; j < len(sortedKeys); j++ {
-			common := intersection(m[sortedKeys[i]], m[sortedKeys[j]])
-			if len(common) > 0 {
-				commonFileMessages = append(commonFileMessages, fmt.Sprintf("%s and %s both match files: %v", sortedKeys[i], sortedKeys[j], common))
-			}
-		}
-	}
-
-	if len(commonFileMessages) > 0 {
-		return errors.Errorf(strings.Join(append([]string{"overlap exists between custom matchers"}, commonFileMessages...), "\n"))
-	}
-	return nil
-}
-
-func intersection(a, b map[string]struct{}) []string {
-	smallerMap := a
-	largerMap := b
-	if len(b) < len(a) {
-		smallerMap = b
-		largerMap = a
-	}
-	var intersection []string
-	for k := range smallerMap {
-		if _, ok := largerMap[k]; ok {
-			intersection = append(intersection, k)
-		}
-	}
-	sort.Strings(intersection)
-	return intersection
 }
 
 func applyLicenseToFiles(files []string, header string, modify bool) ([]string, error) {

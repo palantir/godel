@@ -21,54 +21,65 @@ import (
 	"github.com/palantir/pkg/matcher"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
+
+	"github.com/palantir/godel/apps/gonform/params"
 )
 
-type rawConfig struct {
-	Formatters map[string]FormatterConfig `yaml:"formatters" json:"formatters"` // custom configuration provided to formatters
-	Exclude    matcher.NamesPathsCfg      `yaml:"exclude" json:"exclude"`
+type RawConfig struct {
+	Formatters map[string]RawFormatterConfig `yaml:"formatters" json:"formatters"` // custom configuration provided to formatters
+	Exclude    matcher.NamesPathsCfg         `yaml:"exclude" json:"exclude"`
 }
 
-type FormatterConfig struct {
-	// Args is a slice of the arguments provided to the formatter. Each element in the slice is provided as a
-	// separate argument for the formatter.
+func (r *RawConfig) ToParams() params.Params {
+	m := make(map[string]params.FormatterParams, len(r.Formatters))
+	for k, v := range r.Formatters {
+		m[k] = v.ToParams()
+	}
+	return params.Params{
+		Formatters: m,
+		Exclude:    r.Exclude.Matcher(),
+	}
+}
+
+type RawFormatterConfig struct {
 	Args []string `yaml:"args" json:"args"`
 }
 
-type Config struct {
-	Formatters map[string]FormatterConfig
-	Exclude    matcher.Matcher
-}
-
-func Load(cfgPath, jsonContent string) (Config, error) {
-	var ymlContent string
-	if cfgPath != "" {
-		content, err := ioutil.ReadFile(cfgPath)
-		if err != nil {
-			return Config{}, errors.Wrapf(err, "failed to read file %s", cfgPath)
-		}
-		ymlContent = string(content)
+func (r *RawFormatterConfig) ToParams() params.FormatterParams {
+	return params.FormatterParams{
+		Args: r.Args,
 	}
-	return LoadFromString(ymlContent, jsonContent)
 }
 
-func LoadFromString(ymlContent, jsonContent string) (Config, error) {
-	cfg := rawConfig{}
+func Load(cfgPath, jsonContent string) (params.Params, error) {
+	var yml []byte
+	if cfgPath != "" {
+		var err error
+		yml, err = ioutil.ReadFile(cfgPath)
+		if err != nil {
+			return params.Params{}, errors.Wrapf(err, "failed to read file %s", cfgPath)
+		}
+	}
+	cfg, err := LoadRawConfig(string(yml), jsonContent)
+	if err != nil {
+		return params.Params{}, err
+	}
+	return cfg.ToParams(), nil
+}
+
+func LoadRawConfig(ymlContent, jsonContent string) (RawConfig, error) {
+	cfg := RawConfig{}
 	if ymlContent != "" {
 		if err := yaml.Unmarshal([]byte(ymlContent), &cfg); err != nil {
-			return Config{}, errors.Wrapf(err, "failed to unmarshal YML %s", ymlContent)
+			return RawConfig{}, errors.Wrapf(err, "failed to unmarshal YML %s", ymlContent)
 		}
 	}
-
 	if jsonContent != "" {
-		jsonCfg := rawConfig{}
+		jsonCfg := RawConfig{}
 		if err := json.Unmarshal([]byte(jsonContent), &jsonCfg); err != nil {
-			return Config{}, err
+			return RawConfig{}, err
 		}
 		cfg.Exclude.Add(jsonCfg.Exclude)
 	}
-
-	return Config{
-		Formatters: cfg.Formatters,
-		Exclude:    cfg.Exclude.Matcher(),
-	}, nil
+	return cfg, nil
 }

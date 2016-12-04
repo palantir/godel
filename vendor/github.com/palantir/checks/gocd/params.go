@@ -12,25 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package config_test
+package gocd
 
-import (
-	"fmt"
-
-	"github.com/palantir/godel/apps/gonform/config"
-)
-
-func Example() {
-	yml := `
-formatters:
-  gofmt:
-    args:
-      - "-s"
-`
-	cfg, err := config.LoadRawConfig(yml, "")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("%q", fmt.Sprintf("%+v", cfg))
-	// Output: "{Formatters:map[gofmt:{Args:[-s]}] Exclude:{Names:[] Paths:[]}}"
+type Params struct {
+	RootDirs []string
 }

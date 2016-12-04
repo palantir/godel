@@ -25,36 +25,61 @@ import (
 
 	"github.com/palantir/godel/apps/okgo/checkoutput"
 	"github.com/palantir/godel/apps/okgo/cmd/cmdlib"
+	"github.com/palantir/godel/apps/okgo/params"
 )
 
-type Config struct {
-	Checks  map[amalgomated.Cmd]SingleCheckerConfig
-	Exclude matcher.Matcher
+type RawConfig struct {
+	Checks  map[string]RawSingleCheckerConfig `yaml:"checks" json:"checks"` // configuration for checkers
+	Exclude matcher.NamesPathsCfg             `yaml:"exclude" json:"exclude"`
 }
 
-type SingleCheckerConfig struct {
-	Skip        bool
-	Args        []string
-	LineFilters []checkoutput.Filterer
+func (r *RawConfig) ToParams() (params.Params, error) {
+	checks := make(map[amalgomated.Cmd]params.SingleCheckerParam)
+	for key, value := range r.Checks {
+		singleParam, err := value.ToParam()
+		if err != nil {
+			return params.Params{}, err
+		}
+		cmd, err := cmdlib.Instance().NewCmd(key)
+		if err != nil {
+			return params.Params{}, errors.Wrapf(err, "unable to convert %s into a command", key)
+		}
+		checks[cmd] = singleParam
+	}
+	return params.Params{
+		Checks:  checks,
+		Exclude: r.Exclude.Matcher(),
+	}, nil
 }
 
-type rawConfig struct {
-	Checks  map[string]rawCheckConfig `yaml:"checks" json:"checks"` // configuration for checkers
-	Exclude matcher.NamesPathsCfg     `yaml:"exclude" json:"exclude"`
+type RawSingleCheckerConfig struct {
+	Skip    bool              `yaml:"skip" json:"skip"`       // skip this check if true
+	Args    []string          `yaml:"args" json:"args"`       // arguments provided to the check
+	Filters []RawFilterConfig `yaml:"filters" json:"filters"` // defines filters that filters out raw output lines that match the filters from consideration
 }
 
-type rawCheckConfig struct {
-	Skip    bool        `yaml:"skip" json:"skip"`       // skip this check if true
-	Args    []string    `yaml:"args" json:"args"`       // arguments provided to the check
-	Filters []rawFilter `yaml:"filters" json:"filters"` // defines filters that filters out raw output lines that match the filters from consideration
+func (r *RawSingleCheckerConfig) ToParam() (params.SingleCheckerParam, error) {
+	var lineFilters []checkoutput.Filterer
+	for _, cfg := range r.Filters {
+		checkFilter, err := cfg.toFilter(checkoutput.MessageRegexpFilter)
+		if err != nil {
+			return params.SingleCheckerParam{}, errors.Wrapf(err, "failed to parse filter: %v", cfg)
+		}
+		lineFilters = append(lineFilters, checkFilter)
+	}
+	return params.SingleCheckerParam{
+		Skip:        r.Skip,
+		Args:        r.Args,
+		LineFilters: lineFilters,
+	}, nil
 }
 
-type rawFilter struct {
+type RawFilterConfig struct {
 	Type  string `yaml:"type" json:"type"`   // type of filter: "message", "name" or "path"
 	Value string `yaml:"value" json:"value"` // value of the filter
 }
 
-func (f *rawFilter) toFilter(filterForBlankType func(name string) checkoutput.Filterer) (checkoutput.Filterer, error) {
+func (f *RawFilterConfig) toFilter(filterForBlankType func(name string) checkoutput.Filterer) (checkoutput.Filterer, error) {
 	switch f.Type {
 	case "message":
 		return checkoutput.MessageRegexpFilter(f.Value), nil
@@ -72,94 +97,35 @@ func (f *rawFilter) toFilter(filterForBlankType func(name string) checkoutput.Fi
 	}
 }
 
-// ArgsForCheck returns the arguments for the requested check stored in the Config, or nil if no configuration for the
-// specified check was present in the configuration. The second return value indicates whether or not configuration for
-// the requested check was present.
-func (c *Config) ArgsForCheck(check amalgomated.Cmd) ([]string, bool) {
-	checkConfig, ok := c.Checks[check]
-	if !ok {
-		return nil, false
-	}
-	return checkConfig.Args, true
-}
-
-// FiltersForCheck returns the filters that should be used for the requested check. The returned slice is a
-// concatenation of the global filters derived from the package excludes specified in the configuration followed by the
-// filters specified for the provided check in the configuration. Returns an empty slice if no filters are present
-// globally or for the specified check.The derivation from the global filters is done in case the packages can't be
-// excluded before the check is run (can happen if the check only supports the "all" mode).
-func (c *Config) FiltersForCheck(check amalgomated.Cmd) []checkoutput.Filterer {
-	filters := append([]checkoutput.Filterer{}, checkoutput.MatcherFilter(c.Exclude))
-	checkConfig, ok := c.Checks[check]
-	if ok {
-		filters = append(filters, checkConfig.LineFilters...)
-	}
-	return filters
-}
-
-func (c *Config) checkCommands() []amalgomated.Cmd {
-	var cmds []amalgomated.Cmd
-	for _, currCmd := range cmdlib.Instance().Cmds() {
-		if _, ok := c.Checks[currCmd]; ok {
-			cmds = append(cmds, currCmd)
-		}
-	}
-	return cmds
-}
-
-func Load(configPath, jsonContent string) (Config, error) {
-	var ymlContent string
+func Load(configPath, jsonContent string) (params.Params, error) {
+	var yml []byte
 	if configPath != "" {
-		file, err := ioutil.ReadFile(configPath)
+		var err error
+		yml, err = ioutil.ReadFile(configPath)
 		if err != nil {
-			return Config{}, errors.Wrapf(err, "failed to read file %s", configPath)
+			return params.Params{}, errors.Wrapf(err, "failed to read file %s", configPath)
 		}
-		ymlContent = string(file)
 	}
-	return LoadFromString(ymlContent, jsonContent)
+	cfg, err := LoadRawConfig(string(yml), jsonContent)
+	if err != nil {
+		return params.Params{}, err
+	}
+	return cfg.ToParams()
 }
 
-func LoadFromString(ymlContent, jsonContent string) (Config, error) {
-	rawCfg := rawConfig{}
+func LoadRawConfig(ymlContent, jsonContent string) (RawConfig, error) {
+	rawCfg := RawConfig{}
 	if ymlContent != "" {
 		if err := yaml.Unmarshal([]byte(ymlContent), &rawCfg); err != nil {
-			return Config{}, errors.Wrapf(err, "failed to unmarshal YML %s", ymlContent)
+			return RawConfig{}, errors.Wrapf(err, "failed to unmarshal YML %s", ymlContent)
 		}
 	}
-
 	if jsonContent != "" {
-		jsonCfg := rawConfig{}
+		jsonCfg := RawConfig{}
 		if err := json.Unmarshal([]byte(jsonContent), &jsonCfg); err != nil {
-			return Config{}, errors.Wrapf(err, "failed to parse JSON %s", jsonContent)
+			return RawConfig{}, errors.Wrapf(err, "failed to parse JSON %s", jsonContent)
 		}
 		rawCfg.Exclude.Add(jsonCfg.Exclude)
 	}
-
-	checks := make(map[amalgomated.Cmd]SingleCheckerConfig)
-	for key, value := range rawCfg.Checks {
-		checkFilters := make([]checkoutput.Filterer, len(value.Filters))
-		for i, rawCheckFilter := range value.Filters {
-			checkFilter, err := rawCheckFilter.toFilter(checkoutput.MessageRegexpFilter)
-			if err != nil {
-				return Config{}, errors.Wrapf(err, "failed to parse filter: %v", rawCheckFilter)
-			}
-			checkFilters[i] = checkFilter
-		}
-
-		cmd, err := cmdlib.Instance().NewCmd(key)
-		if err != nil {
-			return Config{}, errors.Wrapf(err, "unable to convert %s into a command", key)
-		}
-
-		checks[cmd] = SingleCheckerConfig{
-			Skip:        value.Skip,
-			Args:        value.Args,
-			LineFilters: checkFilters,
-		}
-	}
-
-	return Config{
-		Checks:  checks,
-		Exclude: rawCfg.Exclude.Matcher(),
-	}, nil
+	return rawCfg, nil
 }

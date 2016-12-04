@@ -24,7 +24,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/palantir/godel/apps/okgo/checkoutput"
-	"github.com/palantir/godel/apps/okgo/config"
+	"github.com/palantir/godel/apps/okgo/params"
 )
 
 type Checker interface {
@@ -36,7 +36,7 @@ type Checker interface {
 	// that the checker is run on. Conceptually, this method uses "config" and "rootDir" to generate the arguments
 	// required to check "all" packages (excluding any that the config specifies should be excluded), invokes the
 	// Cmder using those arguments in the given working directory, and returns the filtered output.
-	Check(runner amalgomated.Cmder, rootDir string, config config.Config) ([]checkoutput.Issue, error)
+	Check(runner amalgomated.Cmder, rootDir string, config params.Params) ([]checkoutput.Issue, error)
 
 	// CheckPackages runs the current checker on the specified packages using the provided configuration and returns
 	// the output. The provided Cmder is used to invoke the check. The root directory contained in the "packages"
@@ -44,7 +44,7 @@ type Checker interface {
 	// "packages" to generate the arguments required to check the specified packages (excluding any that the config
 	// specifies should be excluded), invokes the Cmder using those arguments in the given working directory, and
 	// returns the filtered output.
-	CheckPackages(runner amalgomated.Cmder, packages pkgpath.Packages, config config.Config) ([]checkoutput.Issue, error)
+	CheckPackages(runner amalgomated.Cmder, packages pkgpath.Packages, config params.Params) ([]checkoutput.Issue, error)
 }
 
 const (
@@ -72,7 +72,7 @@ func (c *checkerDefinition) GetParser(rootDir string) checkoutput.IssueParser {
 	}
 }
 
-func (c *checkerDefinition) Check(cmder amalgomated.Cmder, rootDir string, config config.Config) ([]checkoutput.Issue, error) {
+func (c *checkerDefinition) Check(cmder amalgomated.Cmder, rootDir string, config params.Params) ([]checkoutput.Issue, error) {
 	if c.allArg == packages {
 		// this Checker should handle "all" by calling "CheckPackages" with "all" packages
 		packages, err := pkgpath.PackagesInDir(rootDir, config.Exclude)
@@ -87,7 +87,7 @@ func (c *checkerDefinition) Check(cmder amalgomated.Cmder, rootDir string, confi
 	return c.checkWithFilters(cmder, append(checkArgsFromConfig, allArg), rootDir, config.FiltersForCheck(c.cmd))
 }
 
-func (c *checkerDefinition) CheckPackages(cmder amalgomated.Cmder, packages pkgpath.Packages, config config.Config) ([]checkoutput.Issue, error) {
+func (c *checkerDefinition) CheckPackages(cmder amalgomated.Cmder, packages pkgpath.Packages, config params.Params) ([]checkoutput.Issue, error) {
 	if c.globalCheck {
 		// this check does not support package-specific checks
 		return nil, errors.Errorf("checker %s does not support specifying packages", c.cmd.Name())
