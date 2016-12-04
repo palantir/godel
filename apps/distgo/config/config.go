@@ -343,26 +343,26 @@ func (cfg *RawAlmanacConfig) ToParams() params.Almanac {
 }
 
 func Load(cfgPath, jsonContent string) (params.Project, error) {
-	var cfgYML string
+	var yml []byte
 	if cfgPath != "" {
-		file, err := ioutil.ReadFile(cfgPath)
+		var err error
+		yml, err = ioutil.ReadFile(cfgPath)
 		if err != nil {
 			return params.Project{}, errors.Wrapf(err, "failed to read file %s", cfgPath)
 		}
-		cfgYML = string(file)
 	}
-	cfg, err := Read(cfgYML, jsonContent)
+	cfg, err := LoadRawConfig(string(yml), jsonContent)
 	if err != nil {
 		return params.Project{}, err
 	}
 	return cfg.ToParams()
 }
 
-func Read(cfgYML, jsonContent string) (RawProjectConfig, error) {
+func LoadRawConfig(ymlContent, jsonContent string) (RawProjectConfig, error) {
 	cfg := RawProjectConfig{}
-	if cfgYML != "" {
-		if err := yaml.Unmarshal([]byte(cfgYML), &cfg); err != nil {
-			return RawProjectConfig{}, errors.Wrapf(err, "failed to unmarshal yml %s", cfgYML)
+	if ymlContent != "" {
+		if err := yaml.Unmarshal([]byte(ymlContent), &cfg); err != nil {
+			return RawProjectConfig{}, errors.Wrapf(err, "failed to unmarshal yml %s", ymlContent)
 		}
 	}
 	if jsonContent != "" {

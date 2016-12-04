@@ -32,6 +32,7 @@ import (
 	"github.com/palantir/godel/apps/okgo/checks"
 	"github.com/palantir/godel/apps/okgo/cmd/cmdlib"
 	"github.com/palantir/godel/apps/okgo/config"
+	"github.com/palantir/godel/apps/okgo/params"
 	"github.com/palantir/godel/pkg/products"
 )
 
@@ -108,7 +109,7 @@ func TestCheckers(t *testing.T) {
 		require.NoError(t, err)
 
 		runner := amalgomated.PathCmder(cli, amalgomated.ProxyCmdPrefix+currCase.check.Name())
-		lineInfo, err := checker.Check(runner, "./testdata/standard", config.Config{})
+		lineInfo, err := checker.Check(runner, "./testdata/standard", params.Params{})
 		require.NoError(t, err, "Case %d", i)
 
 		assert.Equal(t, currCase.want, toStringSlice(lineInfo), "Case %d", i)
@@ -222,7 +223,7 @@ func Foo() {
 		require.NoError(t, err, "Case %d", i)
 
 		runner := amalgomated.PathCmder(cli, amalgomated.ProxyCmdPrefix+currCase.check.Name())
-		lineInfo, err := checker.Check(runner, currCase.pathToCheck(currCaseProjectDir), config.Config{})
+		lineInfo, err := checker.Check(runner, currCase.pathToCheck(currCaseProjectDir), params.Params{})
 		require.NoError(t, err, "Case %d", i)
 
 		want := currCase.want(files)
@@ -280,7 +281,7 @@ func TestFilters(t *testing.T) {
 			want: []string{},
 		},
 	} {
-		lineInfo, err := checker.Check(runner, "./testdata/filter", config.Config{})
+		lineInfo, err := checker.Check(runner, "./testdata/filter", params.Params{})
 		require.NoError(t, err, "Case %d", i)
 
 		filteredLines, err := checkoutput.ApplyFilters(lineInfo, currCase.filters)

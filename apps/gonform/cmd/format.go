@@ -28,6 +28,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/palantir/godel/apps/gonform/config"
+	"github.com/palantir/godel/apps/gonform/params"
 )
 
 var (
@@ -95,8 +96,8 @@ func formatCommand(cmd amalgomated.Cmd, usage string, supplier amalgomated.Cmder
 	}
 }
 
-type params struct {
-	Formatters map[string]config.FormatterConfig
+type formatterParams struct {
+	Formatters map[string]params.FormatterParams
 	Files      []string
 	List       bool
 	Verbose    bool
@@ -110,18 +111,18 @@ func doSingleFormat(cmd amalgomated.Cmd, filesParam []string, ctx cli.Context, s
 	return doFormat(cmd, params, ctx, supplier, wd)
 }
 
-func createParams(filesParam []string, ctx cli.Context, wd string) (params, error) {
+func createParams(filesParam []string, ctx cli.Context, wd string) (formatterParams, error) {
 	cfg, err := config.Load(cfgcli.ConfigPath, cfgcli.ConfigJSON)
 	if err != nil {
-		return params{}, errors.Wrapf(err, "failed to load configuration")
+		return formatterParams{}, errors.Wrapf(err, "failed to load configuration")
 	}
 
 	files, err := getFiles(filesParam, cfg.Exclude, wd)
 	if err != nil {
-		return params{}, errors.Wrapf(err, "failed to get files")
+		return formatterParams{}, errors.Wrapf(err, "failed to get files")
 	}
 
-	return params{
+	return formatterParams{
 		Formatters: cfg.Formatters,
 		Files:      files,
 		List:       ctx.Bool(listFlagName),
@@ -129,7 +130,7 @@ func createParams(filesParam []string, ctx cli.Context, wd string) (params, erro
 	}, nil
 }
 
-func doFormat(cmd amalgomated.Cmd, params params, ctx cli.Context, supplier amalgomated.CmderSupplier, wd string) error {
+func doFormat(cmd amalgomated.Cmd, params formatterParams, ctx cli.Context, supplier amalgomated.CmderSupplier, wd string) error {
 	if len(params.Files) == 0 {
 		return nil
 	}

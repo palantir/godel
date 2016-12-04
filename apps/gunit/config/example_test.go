@@ -29,10 +29,10 @@ tags:
     paths:
       - "test"
 `
-	cfg, err := config.LoadFromString(yml, "")
+	cfg, err := config.LoadRawConfig(yml, "")
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("%q", fmt.Sprintf("%+v", cfg))
-	// Output: "{Tags:map[integration:[[integration_tests] [test]]] Exclude:[[] []]}"
+	// Output: "{Tags:map[integration:{Names:[integration_tests] Paths:[test]}] Exclude:{Names:[] Paths:[]}}"
 }
