@@ -50,7 +50,7 @@ func runTestMain(m *testing.M) int {
 	if err != nil {
 		panic(err)
 	}
-	gödelProjectDir := path.Join(wd, "..", "..")
+	gödelProjectDir := path.Join(wd, "..")
 	version, err = git.ProjectVersion(gödelProjectDir)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to get version from directory %s: %v", gödelProjectDir, err))
