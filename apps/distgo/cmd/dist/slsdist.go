@@ -25,7 +25,7 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/binspec"
 	"github.com/palantir/godel/apps/distgo/pkg/slsspec"
 	"github.com/palantir/godel/apps/distgo/templating"
@@ -62,7 +62,7 @@ OS_ARCH="$(uname -s | awk '{print tolower($0)}')-amd64"
 
 ACTION=$1
 SERVICE="{{.ProductName}}"
-SERVICE_CMD="$SERVICE_HOME/service/bin/$OS_ARCH/$SERVICE {{.Dist.Info.ServiceArgs}}"
+SERVICE_CMD="$SERVICE_HOME/service/bin/$OS_ARCH/$SERVICE {{.Dist.ServiceArgs}}"
 PIDFILE="var/run/$SERVICE.pid"
 
 if [ -f service/bin/config.sh ]; then
@@ -170,14 +170,16 @@ restart)
 esac
 `
 
-func slsDist(buildSpecWithDeps config.ProductBuildSpecWithDeps, distCfg config.DistConfig, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues) (Packager, error) {
+func slsDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues) (Packager, error) {
 	buildSpec := buildSpecWithDeps.Spec
 	outputSLSDir := path.Join(buildSpec.ProjectDir, distCfg.OutputDir, spec.RootDirName(values))
 
-	slsDistInfo, ok := distCfg.DistType.Info.(config.SLSDistInfo)
-	if !ok {
-		slsDistInfo = config.SLSDistInfo{}
-		distCfg.DistType.Info = slsDistInfo
+	var slsDistInfo params.SLSDistInfo
+	if info, ok := distCfg.Info.(*params.SLSDistInfo); ok {
+		slsDistInfo = *info
+	} else {
+		slsDistInfo = params.SLSDistInfo{}
+		distCfg.Info = &slsDistInfo
 	}
 
 	// create init.sh and manifest.yml
@@ -206,7 +208,7 @@ func slsDist(buildSpecWithDeps config.ProductBuildSpecWithDeps, distCfg config.D
 	}
 
 	return packager(func() error {
-		if err := slsspec.Validate(outputProductDir, values, slsDistInfo.YMLValidationExclude.Matcher()); err != nil {
+		if err := slsspec.Validate(outputProductDir, values, slsDistInfo.YMLValidationExclude); err != nil {
 			return errors.Wrapf(err, "distribution directory failed SLS validation")
 		}
 		if err := tgzPackager(buildSpec, distCfg, outputProductDir).Package(); err != nil {
@@ -216,7 +218,7 @@ func slsDist(buildSpecWithDeps config.ProductBuildSpecWithDeps, distCfg config.D
 	}), nil
 }
 
-func writeSLSManifest(buildSpec config.ProductBuildSpec, distCfg config.DistConfig, slsDistInfo config.SLSDistInfo, specDir specdir.SpecDir) error {
+func writeSLSManifest(buildSpec params.ProductBuildSpec, distCfg params.Dist, slsDistInfo params.SLSDistInfo, specDir specdir.SpecDir) error {
 	var manifestTemplateString string
 	if slsDistInfo.ManifestTemplateFile != "" {
 		manifestTemplateFilePath := path.Join(buildSpec.ProjectDir, slsDistInfo.ManifestTemplateFile)
@@ -284,7 +286,7 @@ func manifest(groupID, name, version, productType string, extensions map[string]
 	return string(manifestBytes), nil
 }
 
-func writeSLSInitSh(buildSpec config.ProductBuildSpec, distCfg config.DistConfig, slsDistInfo config.SLSDistInfo, specDir specdir.SpecDir) error {
+func writeSLSInitSh(buildSpec params.ProductBuildSpec, distCfg params.Dist, slsDistInfo params.SLSDistInfo, specDir specdir.SpecDir) error {
 	var initShTemplateBytes []byte
 	if slsDistInfo.InitShTemplateFile != "" {
 		initShTemplateFilePath := path.Join(buildSpec.ProjectDir, slsDistInfo.InitShTemplateFile)

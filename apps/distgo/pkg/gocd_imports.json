@@ -1,9 +1,9 @@
 {
     "imports": [
         {
-            "path": "github.com/palantir/godel/apps/distgo/config",
-            "numGoFiles": 4,
-            "numImportedGoFiles": 25,
+            "path": "github.com/palantir/godel/apps/distgo/params",
+            "numGoFiles": 6,
+            "numImportedGoFiles": 9,
             "importedFrom": [
                 "github.com/palantir/godel/apps/distgo/pkg/script"
             ]

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package config
+package params
 
 import (
 	"sort"
@@ -26,7 +26,7 @@ import (
 
 // ProductBuildSpec defines all of the parameters for building a specific product.
 type ProductBuildSpec struct {
-	ProductConfig
+	Product
 	ProjectDir     string
 	ProductName    string
 	ProductVersion string
@@ -78,9 +78,9 @@ func NewProductBuildSpecWithDeps(spec ProductBuildSpec, allSpecs map[string]Prod
 // NewProductBuildSpec returns a fully initialized ProductBuildSpec that is a combination of the provided parameters.
 // If any of the required fields in the provided configuration is blank, the returned ProjectBuildSpec will have default
 // values populated in the returned object.
-func NewProductBuildSpec(projectDir, productName string, gitProductInfo git.ProjectInfo, productCfg ProductConfig, projectCfg ProjectConfig) ProductBuildSpec {
+func NewProductBuildSpec(projectDir, productName string, gitProductInfo git.ProjectInfo, productCfg Product, projectCfg Project) ProductBuildSpec {
 	buildSpec := ProductBuildSpec{
-		ProductConfig:  productCfg,
+		Product:        productCfg,
 		ProjectDir:     projectDir,
 		ProductName:    productName,
 		ProductVersion: gitProductInfo.Version,
@@ -97,7 +97,7 @@ func NewProductBuildSpec(projectDir, productName string, gitProductInfo git.Proj
 
 	if len(buildSpec.Dist) == 0 {
 		// One dist with all default values.
-		buildSpec.Dist = []DistConfig{{}}
+		buildSpec.Dist = []Dist{{}}
 	}
 	for i := range buildSpec.Dist {
 		currDistCfg := &buildSpec.Dist[i]
@@ -106,8 +106,8 @@ func NewProductBuildSpec(projectDir, productName string, gitProductInfo git.Proj
 			currDistCfg.OutputDir = firstNonEmpty(projectCfg.DistOutputDir, defaultDistOutputDir)
 		}
 
-		if currDistCfg.DistType.Type == "" {
-			currDistCfg.DistType.Type = SLSDistType
+		if currDistCfg.Info == nil || currDistCfg.Info.Type() == "" {
+			currDistCfg.Info = &SLSDistInfo{}
 		}
 
 		if currDistCfg.Publish.empty() {
@@ -119,7 +119,7 @@ func NewProductBuildSpec(projectDir, productName string, gitProductInfo git.Proj
 		}
 
 		// if distribution is SLSv2, ensure that SLSv2 tag exists for Almanac
-		if currDistCfg.DistType.Type == SLSDistType {
+		if currDistCfg.Info.Type() == SLSDistType {
 			slsv2TagExists := false
 			for _, currTag := range currDistCfg.Publish.Almanac.Tags {
 				if currTag == "slsv2" {
@@ -138,14 +138,6 @@ func NewProductBuildSpec(projectDir, productName string, gitProductInfo git.Proj
 	}
 
 	return buildSpec
-}
-
-func ExecutableName(productName, goos string) string {
-	executableName := productName
-	if goos == "windows" {
-		executableName += ".exe"
-	}
-	return executableName
 }
 
 func firstNonEmpty(first, second string) string {

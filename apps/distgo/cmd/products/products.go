@@ -19,11 +19,11 @@ import (
 	"io"
 
 	"github.com/palantir/godel/apps/distgo/cmd/build"
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 )
 
-func PrintProducts(cfg config.ProjectConfig, wd string, stdout io.Writer) error {
-	return build.RunBuildFunc(func(buildSpec []config.ProductBuildSpecWithDeps, stdout io.Writer) error {
+func PrintProducts(cfg params.Project, wd string, stdout io.Writer) error {
+	return build.RunBuildFunc(func(buildSpec []params.ProductBuildSpecWithDeps, stdout io.Writer) error {
 		for _, spec := range buildSpec {
 			fmt.Fprintln(stdout, spec.Spec.ProductName)
 		}

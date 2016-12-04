@@ -12,18 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package templating
+package params
 
-import (
-	"github.com/palantir/godel/apps/distgo/params"
-)
-
-func ConvertSpec(buildSpec params.ProductBuildSpec, distCfg params.Dist) Config {
-	return Config{
-		ProductName:    buildSpec.ProductName,
-		ProductVersion: buildSpec.ProductVersion,
-		VersionInfo:    buildSpec.VersionInfo,
-		Dist:           distCfg.Info,
-		Publish:        distCfg.Publish,
-	}
+type Run struct {
+	// Args contain the arguments provided to the product when invoked using the "run" task.
+	Args []string
 }

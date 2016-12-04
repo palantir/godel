@@ -18,16 +18,16 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 )
 
-type ProcessFunc func(f func(buildSpec config.ProductBuildSpecWithDeps, stdout io.Writer) error) BuildFunc
-type BuildFunc func(buildSpecWithDeps []config.ProductBuildSpecWithDeps, stdout io.Writer) error
+type ProcessFunc func(f func(buildSpec params.ProductBuildSpecWithDeps, stdout io.Writer) error) BuildFunc
+type BuildFunc func(buildSpecWithDeps []params.ProductBuildSpecWithDeps, stdout io.Writer) error
 
 // ProcessSerially returns a BuildFunc that processes each of the provided specs in order using the provided function.
 // If the function returns an error for any of the specifications, the function immediately returns that error.
-func ProcessSerially(f func(buildSpec config.ProductBuildSpecWithDeps, stdout io.Writer) error) BuildFunc {
-	return func(buildSpec []config.ProductBuildSpecWithDeps, stdout io.Writer) error {
+func ProcessSerially(f func(buildSpec params.ProductBuildSpecWithDeps, stdout io.Writer) error) BuildFunc {
+	return func(buildSpec []params.ProductBuildSpecWithDeps, stdout io.Writer) error {
 		for _, currSpec := range buildSpec {
 			if err := f(currSpec, stdout); err != nil {
 				return err
@@ -49,8 +49,8 @@ func (e *SpecErrors) Error() string {
 // function. If the function returns an error for any of the specifications, it is stored, but the function will
 // will continue processing the provided specifications. The function return nil if no errors occurred; otherwise, it
 // returns a SpecErrors error that contains the individual errors.
-func ProcessSeriallyBatchErrors(f func(buildSpec config.ProductBuildSpecWithDeps, stdout io.Writer) error) BuildFunc {
-	return func(buildSpec []config.ProductBuildSpecWithDeps, stdout io.Writer) error {
+func ProcessSeriallyBatchErrors(f func(buildSpec params.ProductBuildSpecWithDeps, stdout io.Writer) error) BuildFunc {
+	return func(buildSpec []params.ProductBuildSpecWithDeps, stdout io.Writer) error {
 		errors := make(map[string]error)
 		for _, currSpec := range buildSpec {
 			if err := f(currSpec, stdout); err != nil {

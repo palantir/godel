@@ -27,10 +27,10 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 )
 
-func DoRun(buildSpec config.ProductBuildSpec, runArgs []string, stdout, stderr io.Writer) error {
+func DoRun(buildSpec params.ProductBuildSpec, runArgs []string, stdout, stderr io.Writer) error {
 	mainPkgDir := path.Join(buildSpec.ProjectDir, buildSpec.Build.MainPkg)
 	mainPkgFileNames, err := mainPkgFileNames(mainPkgDir)
 	if err != nil {

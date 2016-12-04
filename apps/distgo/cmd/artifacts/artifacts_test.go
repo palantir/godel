@@ -27,7 +27,7 @@ import (
 
 	"github.com/palantir/godel/apps/distgo/cmd/artifacts"
 	"github.com/palantir/godel/apps/distgo/cmd/build"
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 )
 
@@ -37,26 +37,26 @@ func TestBuildArtifacts(t *testing.T) {
 	require.NoError(t, err)
 
 	for i, currCase := range []struct {
-		specs   func(projectDir string) []config.ProductBuildSpecWithDeps
+		specs   func(projectDir string) []params.ProductBuildSpecWithDeps
 		osArchs []osarch.OSArch
 		want    map[string][]string
 	}{
 		// empty spec
 		{
-			specs: func(projectDir string) []config.ProductBuildSpecWithDeps {
-				return []config.ProductBuildSpecWithDeps{}
+			specs: func(projectDir string) []params.ProductBuildSpecWithDeps {
+				return []params.ProductBuildSpecWithDeps{}
 			},
 			want: map[string][]string{},
 		},
 		// returns paths for all OS/arch combinations if requested osArchs is empty
 		{
-			specs: func(projectDir string) []config.ProductBuildSpecWithDeps {
-				return []config.ProductBuildSpecWithDeps{
+			specs: func(projectDir string) []params.ProductBuildSpecWithDeps {
+				return []params.ProductBuildSpecWithDeps{
 					createSpec(projectDir, "foo", "0.1.0", []osarch.OSArch{
 						{OS: "darwin", Arch: "amd64"},
 						{OS: "darwin", Arch: "386"},
 						{OS: "linux", Arch: "amd64"},
-					}, config.SLSDistType),
+					}, &params.SLSDistInfo{}),
 				}
 			},
 			want: map[string][]string{
@@ -69,12 +69,12 @@ func TestBuildArtifacts(t *testing.T) {
 		},
 		// returns only path to requested OS/arch
 		{
-			specs: func(projectDir string) []config.ProductBuildSpecWithDeps {
-				return []config.ProductBuildSpecWithDeps{
+			specs: func(projectDir string) []params.ProductBuildSpecWithDeps {
+				return []params.ProductBuildSpecWithDeps{
 					createSpec(projectDir, "foo", "0.1.0", []osarch.OSArch{
 						{OS: "darwin", Arch: "amd64"},
 						{OS: "linux", Arch: "amd64"},
-					}, config.SLSDistType),
+					}, &params.SLSDistInfo{}),
 				}
 			},
 			osArchs: []osarch.OSArch{{OS: "darwin", Arch: "amd64"}},
@@ -86,11 +86,11 @@ func TestBuildArtifacts(t *testing.T) {
 		},
 		// path to windows executable includes ".exe"
 		{
-			specs: func(projectDir string) []config.ProductBuildSpecWithDeps {
-				return []config.ProductBuildSpecWithDeps{
+			specs: func(projectDir string) []params.ProductBuildSpecWithDeps {
+				return []params.ProductBuildSpecWithDeps{
 					createSpec(projectDir, "foo", "0.1.0", []osarch.OSArch{
 						{OS: "windows", Arch: "amd64"},
-					}, config.SLSDistType),
+					}, &params.SLSDistInfo{}),
 				}
 			},
 			want: map[string][]string{
@@ -101,12 +101,12 @@ func TestBuildArtifacts(t *testing.T) {
 		},
 		// returns empty if os/arch that is not part of the spec is requested
 		{
-			specs: func(projectDir string) []config.ProductBuildSpecWithDeps {
-				return []config.ProductBuildSpecWithDeps{
+			specs: func(projectDir string) []params.ProductBuildSpecWithDeps {
+				return []params.ProductBuildSpecWithDeps{
 					createSpec(projectDir, "foo", "0.1.0", []osarch.OSArch{
 						{OS: "darwin", Arch: "amd64"},
 						{OS: "linux", Arch: "amd64"},
-					}, config.SLSDistType),
+					}, &params.SLSDistInfo{}),
 				}
 			},
 			osArchs: []osarch.OSArch{{OS: "windows", Arch: "amd64"}},
@@ -142,20 +142,20 @@ func TestBuildArtifactsRequiresBuild(t *testing.T) {
 	require.NoError(t, err)
 
 	for i, currCase := range []struct {
-		specs         func(projectDir string) config.ProductBuildSpecWithDeps
+		specs         func(projectDir string) params.ProductBuildSpecWithDeps
 		osArchs       []osarch.OSArch
 		requiresBuild bool
-		beforeAction  func(projectDir string, specs []config.ProductBuildSpec)
+		beforeAction  func(projectDir string, specs []params.ProductBuildSpec)
 		want          map[string][]string
 	}{
 		// returns paths to all artifacts if build has not happened
 		{
-			specs: func(projectDir string) config.ProductBuildSpecWithDeps {
+			specs: func(projectDir string) params.ProductBuildSpecWithDeps {
 				return createSpec(projectDir, "foo", "0.1.0", []osarch.OSArch{
 					{OS: "darwin", Arch: "amd64"},
 					{OS: "darwin", Arch: "386"},
 					{OS: "linux", Arch: "amd64"},
-				}, config.SLSDistType)
+				}, &params.SLSDistInfo{})
 			},
 			want: map[string][]string{
 				"foo": {
@@ -167,14 +167,14 @@ func TestBuildArtifactsRequiresBuild(t *testing.T) {
 		},
 		// returns empty if all artifacts exist and are up-to-date
 		{
-			specs: func(projectDir string) config.ProductBuildSpecWithDeps {
+			specs: func(projectDir string) params.ProductBuildSpecWithDeps {
 				return createSpec(projectDir, "foo", "0.1.0", []osarch.OSArch{
 					{OS: "darwin", Arch: "amd64"},
 					{OS: "darwin", Arch: "386"},
 					{OS: "linux", Arch: "amd64"},
-				}, config.SLSDistType)
+				}, &params.SLSDistInfo{})
 			},
-			beforeAction: func(projectDir string, specs []config.ProductBuildSpec) {
+			beforeAction: func(projectDir string, specs []params.ProductBuildSpec) {
 				// build products
 				err = build.Run(specs, nil, build.Context{
 					Parallel: false,
@@ -185,14 +185,14 @@ func TestBuildArtifactsRequiresBuild(t *testing.T) {
 		},
 		// returns paths to all artifacts if input source file has been modified
 		{
-			specs: func(projectDir string) config.ProductBuildSpecWithDeps {
+			specs: func(projectDir string) params.ProductBuildSpecWithDeps {
 				return createSpec(projectDir, "foo", "0.1.0", []osarch.OSArch{
 					{OS: "darwin", Arch: "amd64"},
 					{OS: "darwin", Arch: "386"},
 					{OS: "linux", Arch: "amd64"},
-				}, config.SLSDistType)
+				}, &params.SLSDistInfo{})
 			},
-			beforeAction: func(projectDir string, specs []config.ProductBuildSpec) {
+			beforeAction: func(projectDir string, specs []params.ProductBuildSpec) {
 				// build products
 				err := build.Run(specs, nil, build.Context{
 					Parallel: false,
@@ -216,12 +216,12 @@ func TestBuildArtifactsRequiresBuild(t *testing.T) {
 		},
 		// if OS/Archs are specified, results are filtered base on that
 		{
-			specs: func(projectDir string) config.ProductBuildSpecWithDeps {
+			specs: func(projectDir string) params.ProductBuildSpecWithDeps {
 				return createSpec(projectDir, "foo", "0.1.0", []osarch.OSArch{
 					{OS: "darwin", Arch: "amd64"},
 					{OS: "darwin", Arch: "386"},
 					{OS: "linux", Arch: "amd64"},
-				}, config.SLSDistType)
+				}, &params.SLSDistInfo{})
 			},
 			osArchs: []osarch.OSArch{
 				{OS: "windows", Arch: "amd64"},
@@ -240,7 +240,7 @@ func TestBuildArtifactsRequiresBuild(t *testing.T) {
 			currCase.beforeAction(currProjectDir, specWithDeps.AllSpecs())
 		}
 
-		got, err := artifacts.BuildArtifacts([]config.ProductBuildSpecWithDeps{specWithDeps}, artifacts.BuildArtifactsParams{
+		got, err := artifacts.BuildArtifacts([]params.ProductBuildSpecWithDeps{specWithDeps}, artifacts.BuildArtifactsParams{
 			RequiresBuild: true,
 			OSArchs:       currCase.osArchs,
 		})
@@ -255,19 +255,19 @@ func TestDistArtifacts(t *testing.T) {
 	require.NoError(t, err)
 
 	for i, currCase := range []struct {
-		specs func(projectDir string) []config.ProductBuildSpecWithDeps
+		specs func(projectDir string) []params.ProductBuildSpecWithDeps
 		want  map[string][]string
 	}{
 		{
-			specs: func(projectDir string) []config.ProductBuildSpecWithDeps {
-				return []config.ProductBuildSpecWithDeps{}
+			specs: func(projectDir string) []params.ProductBuildSpecWithDeps {
+				return []params.ProductBuildSpecWithDeps{}
 			},
 			want: map[string][]string{},
 		},
 		{
-			specs: func(projectDir string) []config.ProductBuildSpecWithDeps {
-				return []config.ProductBuildSpecWithDeps{
-					createSpec(projectDir, "foo", "0.1.0", nil, config.SLSDistType),
+			specs: func(projectDir string) []params.ProductBuildSpecWithDeps {
+				return []params.ProductBuildSpecWithDeps{
+					createSpec(projectDir, "foo", "0.1.0", nil, &params.SLSDistInfo{}),
 				}
 			},
 			want: map[string][]string{
@@ -275,15 +275,15 @@ func TestDistArtifacts(t *testing.T) {
 			},
 		},
 		{
-			specs: func(projectDir string) []config.ProductBuildSpecWithDeps {
-				return []config.ProductBuildSpecWithDeps{
-					createSpec(projectDir, "foo", "0.1.0", nil, config.SLSDistType),
-					createSpec(projectDir, "bar", "unspecified", nil, config.BinDistType),
+			specs: func(projectDir string) []params.ProductBuildSpecWithDeps {
+				return []params.ProductBuildSpecWithDeps{
+					createSpec(projectDir, "foo", "0.1.0", nil, &params.SLSDistInfo{}),
+					createSpec(projectDir, "bar", "unspecified", nil, &params.SLSDistInfo{}),
 				}
 			},
 			want: map[string][]string{
 				"foo": {"foo-0.1.0.sls.tgz"},
-				"bar": {"bar-unspecified.tgz"},
+				"bar": {"bar-unspecified.sls.tgz"},
 			},
 		},
 	} {
@@ -313,18 +313,16 @@ func toAbs(input map[string][]string, baseDir string) map[string][]string {
 	return absWant
 }
 
-func createSpec(projectDir, productName, productVersion string, osArchs []osarch.OSArch, distType config.DistType) config.ProductBuildSpecWithDeps {
-	return config.ProductBuildSpecWithDeps{
-		Spec: config.ProductBuildSpec{
-			ProductConfig: config.ProductConfig{
-				Build: config.BuildConfig{
+func createSpec(projectDir, productName, productVersion string, osArchs []osarch.OSArch, distInfo params.DistInfo) params.ProductBuildSpecWithDeps {
+	return params.ProductBuildSpecWithDeps{
+		Spec: params.ProductBuildSpec{
+			Product: params.Product{
+				Build: params.Build{
 					OutputDir: "build",
 					OSArchs:   osArchs,
 				},
-				Dist: []config.DistConfig{{
-					DistType: config.DistTypeConfig{
-						Type: distType,
-					},
+				Dist: []params.Dist{{
+					Info: distInfo,
 				}},
 			},
 			ProjectDir:     projectDir,

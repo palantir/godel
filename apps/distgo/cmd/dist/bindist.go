@@ -23,7 +23,7 @@ import (
 	"github.com/palantir/pkg/specdir"
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/binspec"
 	"github.com/palantir/godel/apps/distgo/templating"
 )
@@ -60,12 +60,12 @@ fi
 $CMD "$@"
 `
 
-func binDist(buildSpecWithDeps config.ProductBuildSpecWithDeps, distCfg config.DistConfig, outputProductDir string) (Packager, error) {
+func binDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string) (Packager, error) {
 	buildSpec := buildSpecWithDeps.Spec
-	binDistInfo, ok := distCfg.DistType.Info.(config.BinDistInfo)
+	binDistInfo, ok := distCfg.Info.(*params.BinDistInfo)
 	if !ok {
-		binDistInfo = config.BinDistInfo{}
-		distCfg.DistType.Info = binDistInfo
+		binDistInfo = &params.BinDistInfo{}
+		distCfg.Info = binDistInfo
 	}
 
 	binSpec := binspec.New(buildSpec.Build.OSArchs, buildSpec.ProductName)

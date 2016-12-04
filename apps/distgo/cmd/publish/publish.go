@@ -34,7 +34,7 @@ import (
 	"gopkg.in/cheggaaa/pb.v1"
 
 	"github.com/palantir/godel/apps/distgo/cmd/dist"
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/slsspec"
 	"github.com/palantir/godel/apps/distgo/templating"
 )
@@ -53,7 +53,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 )
 
 type Publisher interface {
-	Publish(buildSpec config.ProductBuildSpec, paths ProductPaths, stdout io.Writer) (string, error)
+	Publish(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) (string, error)
 }
 
 type BasicConnectionInfo struct {
@@ -62,7 +62,7 @@ type BasicConnectionInfo struct {
 	Password string
 }
 
-func Run(buildSpecWithDeps config.ProductBuildSpecWithDeps, publisher Publisher, almanacInfo *AlmanacInfo, stdout io.Writer) error {
+func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, publisher Publisher, almanacInfo *AlmanacInfo, stdout io.Writer) error {
 	buildSpec := buildSpecWithDeps.Spec
 	for _, currDistCfg := range buildSpec.Dist {
 		// verify that distribution to publish exists
@@ -90,8 +90,8 @@ func Run(buildSpecWithDeps config.ProductBuildSpecWithDeps, publisher Publisher,
 	return nil
 }
 
-func DistsNotBuilt(buildSpecWithDeps []config.ProductBuildSpecWithDeps) []config.ProductBuildSpecWithDeps {
-	var distsNotBuilt []config.ProductBuildSpecWithDeps
+func DistsNotBuilt(buildSpecWithDeps []params.ProductBuildSpecWithDeps) []params.ProductBuildSpecWithDeps {
+	var distsNotBuilt []params.ProductBuildSpecWithDeps
 	for _, currBuildSpecWithDeps := range buildSpecWithDeps {
 		currBuildSpec := currBuildSpecWithDeps.Spec
 		for _, currDistCfg := range currBuildSpec.Dist {
@@ -111,10 +111,10 @@ type ProductPaths struct {
 	artifactPath string
 }
 
-func productPath(buildSpecWithDeps config.ProductBuildSpecWithDeps, distCfg config.DistConfig) (ProductPaths, error) {
+func productPath(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist) (ProductPaths, error) {
 	buildSpec := buildSpecWithDeps.Spec
 
-	distType, err := packagingType(distCfg.DistType.Type)
+	distType, err := packagingType(distCfg.Info.Type())
 	if err != nil {
 		return ProductPaths{}, err
 	}
@@ -141,13 +141,13 @@ func productPath(buildSpecWithDeps config.ProductBuildSpecWithDeps, distCfg conf
 	}, nil
 }
 
-func packagingType(distType config.DistType) (string, error) {
+func packagingType(distType params.DistInfoType) (string, error) {
 	switch distType {
-	case config.SLSDistType:
+	case params.SLSDistType:
 		return "sls.tgz", nil
-	case config.BinDistType:
+	case params.BinDistType:
 		return "tgz", nil
-	case config.RPMDistType:
+	case params.RPMDistType:
 		return "rpm", nil
 	default:
 		return "", fmt.Errorf("unknown dist type: %v", distType)
@@ -294,7 +294,7 @@ func addChecksumToHeader(header http.Header, checksumName string, checksum strin
 	header.Add(fmt.Sprintf("X-Checksum-%v", checksumName), checksum)
 }
 
-func pomFilePath(buildSpec config.ProductBuildSpec, distCfg config.DistConfig) string {
+func pomFilePath(buildSpec params.ProductBuildSpec, distCfg params.Dist) string {
 	outputDir := path.Join(buildSpec.ProjectDir, distCfg.OutputDir)
 	values := slsspec.TemplateValues(buildSpec.ProductName, buildSpec.ProductVersion)
 	outputSlsDir := slsspec.New().RootDirName(values)

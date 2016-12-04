@@ -23,10 +23,10 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 )
 
-func Write(buildSpec config.ProductBuildSpec, script string) (name string, cleanup func() error, rErr error) {
+func Write(buildSpec params.ProductBuildSpec, script string) (name string, cleanup func() error, rErr error) {
 	tmpFile, err := ioutil.TempFile(buildSpec.ProjectDir, "")
 	if err != nil {
 		return "", nil, errors.Wrapf(err, "Failed to create script file")
@@ -60,7 +60,7 @@ func Write(buildSpec config.ProductBuildSpec, script string) (name string, clean
 	return tmpFile.Name(), cleanup, nil
 }
 
-func WriteAndExecute(buildSpec config.ProductBuildSpec, script string, stdOut, stdErr io.Writer, additionalEnvVars map[string]string) (rErr error) {
+func WriteAndExecute(buildSpec params.ProductBuildSpec, script string, stdOut, stdErr io.Writer, additionalEnvVars map[string]string) (rErr error) {
 	// if script exists, write it as a temporary file and execute it
 	if script != "" {
 		tmpFile, cleanup, err := Write(buildSpec, script)

@@ -28,7 +28,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/palantir/godel/apps/distgo/cmd/run"
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/git"
 )
 
@@ -69,24 +69,24 @@ func TestRun(t *testing.T) {
 	require.NoError(t, err)
 
 	for i, currCase := range []struct {
-		spec         func(projectDir string) config.ProductBuildSpec
+		spec         func(projectDir string) params.ProductBuildSpec
 		runArgs      []string
 		preRunAction func(projectDir string)
 		validate     func(runErr error, caseNum int, projectDir string)
 	}{
 		{
 			// "run" runs main file
-			spec: func(projectDir string) config.ProductBuildSpec {
-				return config.NewProductBuildSpec(
+			spec: func(projectDir string) params.ProductBuildSpec {
+				return params.NewProductBuildSpec(
 					projectDir,
 					"foo",
 					git.ProjectInfo{},
-					config.ProductConfig{
-						Build: config.BuildConfig{
+					params.Product{
+						Build: params.Build{
 							MainPkg: "./.",
 						},
 					},
-					config.ProjectConfig{},
+					params.Project{},
 				)
 			},
 			preRunAction: func(projectDir string) {
@@ -102,16 +102,16 @@ func TestRun(t *testing.T) {
 		},
 		{
 			// "run" uses arguments provided in configuration (but does not evaluate them)
-			spec: func(projectDir string) config.ProductBuildSpec {
-				return config.NewProductBuildSpec(
+			spec: func(projectDir string) params.ProductBuildSpec {
+				return params.NewProductBuildSpec(
 					projectDir,
 					"foo",
 					git.ProjectInfo{},
-					config.ProductConfig{
-						Build: config.BuildConfig{
+					params.Product{
+						Build: params.Build{
 							MainPkg: "./.",
 						},
-						Run: config.RunConfig{
+						Run: params.Run{
 							Args: []string{
 								"foo",
 								"bar",
@@ -119,7 +119,7 @@ func TestRun(t *testing.T) {
 							},
 						},
 					},
-					config.ProjectConfig{},
+					params.Project{},
 				)
 			},
 			preRunAction: func(projectDir string) {
@@ -135,17 +135,17 @@ func TestRun(t *testing.T) {
 		},
 		{
 			// "run" uses arguments provided in slice
-			spec: func(projectDir string) config.ProductBuildSpec {
-				return config.NewProductBuildSpec(
+			spec: func(projectDir string) params.ProductBuildSpec {
+				return params.NewProductBuildSpec(
 					projectDir,
 					"foo",
 					git.ProjectInfo{},
-					config.ProductConfig{
-						Build: config.BuildConfig{
+					params.Product{
+						Build: params.Build{
 							MainPkg: "./.",
 						},
 					},
-					config.ProjectConfig{},
+					params.Project{},
 				)
 			},
 			runArgs: []string{"foo", "bar", "$GOPATH"},
@@ -162,16 +162,16 @@ func TestRun(t *testing.T) {
 		},
 		{
 			// "run" combines arguments in configuration with provided arguments
-			spec: func(projectDir string) config.ProductBuildSpec {
-				return config.NewProductBuildSpec(
+			spec: func(projectDir string) params.ProductBuildSpec {
+				return params.NewProductBuildSpec(
 					projectDir,
 					"foo",
 					git.ProjectInfo{},
-					config.ProductConfig{
-						Build: config.BuildConfig{
+					params.Product{
+						Build: params.Build{
 							MainPkg: "./.",
 						},
-						Run: config.RunConfig{
+						Run: params.Run{
 							Args: []string{
 								"cfgArg_foo",
 								"cfgArg_bar",
@@ -179,7 +179,7 @@ func TestRun(t *testing.T) {
 							},
 						},
 					},
-					config.ProjectConfig{},
+					params.Project{},
 				)
 			},
 			runArgs: []string{"runArg_foo", "runArg_bar", "$runArg"},
@@ -196,17 +196,17 @@ func TestRun(t *testing.T) {
 		},
 		{
 			// "run" works with multiple main package files as long as there is a single main function
-			spec: func(projectDir string) config.ProductBuildSpec {
-				return config.NewProductBuildSpec(
+			spec: func(projectDir string) params.ProductBuildSpec {
+				return params.NewProductBuildSpec(
 					projectDir,
 					"foo",
 					git.ProjectInfo{},
-					config.ProductConfig{
-						Build: config.BuildConfig{
+					params.Product{
+						Build: params.Build{
 							MainPkg: "./foo",
 						},
 					},
-					config.ProjectConfig{},
+					params.Project{},
 				)
 			},
 			preRunAction: func(projectDir string) {
@@ -238,17 +238,17 @@ func Bar() string {
 		},
 		{
 			// "run" works with multiple main package files with tests
-			spec: func(projectDir string) config.ProductBuildSpec {
-				return config.NewProductBuildSpec(
+			spec: func(projectDir string) params.ProductBuildSpec {
+				return params.NewProductBuildSpec(
 					projectDir,
 					"foo",
 					git.ProjectInfo{},
-					config.ProductConfig{
-						Build: config.BuildConfig{
+					params.Product{
+						Build: params.Build{
 							MainPkg: "./foo",
 						},
 					},
-					config.ProjectConfig{},
+					params.Project{},
 				)
 			},
 			preRunAction: func(projectDir string) {
@@ -273,17 +273,17 @@ func TestBar(t *testing.T) {
 		},
 		{
 			// "run" fails if a main package does not exist
-			spec: func(projectDir string) config.ProductBuildSpec {
-				return config.NewProductBuildSpec(
+			spec: func(projectDir string) params.ProductBuildSpec {
+				return params.NewProductBuildSpec(
 					projectDir,
 					"foo",
 					git.ProjectInfo{},
-					config.ProductConfig{
-						Build: config.BuildConfig{
+					params.Product{
+						Build: params.Build{
 							MainPkg: "./foo",
 						},
 					},
-					config.ProjectConfig{},
+					params.Project{},
 				)
 			},
 			preRunAction: func(projectDir string) {
@@ -303,17 +303,17 @@ func main() {
 		},
 		{
 			// "run" fails if main function does not exist in a main pkg
-			spec: func(projectDir string) config.ProductBuildSpec {
-				return config.NewProductBuildSpec(
+			spec: func(projectDir string) params.ProductBuildSpec {
+				return params.NewProductBuildSpec(
 					projectDir,
 					"foo",
 					git.ProjectInfo{},
-					config.ProductConfig{
-						Build: config.BuildConfig{
+					params.Product{
+						Build: params.Build{
 							MainPkg: "./foo",
 						},
 					},
-					config.ProjectConfig{},
+					params.Project{},
 				)
 			},
 			preRunAction: func(projectDir string) {

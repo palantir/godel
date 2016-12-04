@@ -23,6 +23,7 @@ import (
 	"github.com/palantir/godel/apps/distgo/cmd"
 	"github.com/palantir/godel/apps/distgo/cmd/build"
 	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 )
 
 const (
@@ -101,9 +102,9 @@ func buildArtifactsCommand(name, usage string) cli.Command {
 	return buildCmd
 }
 
-type artifactsAction func(ctx cli.Context, specs []config.ProductBuildSpecWithDeps, absPath bool) (map[string]OrderedStringMap, error)
+type artifactsAction func(ctx cli.Context, specs []params.ProductBuildSpecWithDeps, absPath bool) (map[string]OrderedStringMap, error)
 
-func buildArtifactsAction(ctx cli.Context, specs []config.ProductBuildSpecWithDeps, absPath bool) (map[string]OrderedStringMap, error) {
+func buildArtifactsAction(ctx cli.Context, specs []params.ProductBuildSpecWithDeps, absPath bool) (map[string]OrderedStringMap, error) {
 	osArchsFilter, err := cmd.NewOSArchFilter(ctx.String(cmd.OSArchFlagName))
 	if err != nil {
 		return nil, err
@@ -115,6 +116,6 @@ func buildArtifactsAction(ctx cli.Context, specs []config.ProductBuildSpecWithDe
 	})
 }
 
-func distArtifactsAction(ctx cli.Context, specs []config.ProductBuildSpecWithDeps, absPath bool) (map[string]OrderedStringMap, error) {
+func distArtifactsAction(ctx cli.Context, specs []params.ProductBuildSpecWithDeps, absPath bool) (map[string]OrderedStringMap, error) {
 	return DistArtifacts(specs, absPath)
 }

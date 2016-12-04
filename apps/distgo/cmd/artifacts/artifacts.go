@@ -20,18 +20,18 @@ import (
 	"github.com/palantir/godel/apps/distgo/cmd"
 	"github.com/palantir/godel/apps/distgo/cmd/build"
 	"github.com/palantir/godel/apps/distgo/cmd/dist"
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 )
 
 // DistArtifacts returns a map from product name to OrderedStringMap, where the values of the OrderedStringMap contains
 // the mapping from the DistType to the path for the artifact for that type.
-func DistArtifacts(buildSpecsWithDeps []config.ProductBuildSpecWithDeps, absPath bool) (map[string]OrderedStringMap, error) {
-	return artifacts(buildSpecsWithDeps, func(spec config.ProductBuildSpec) buildSpecWithPaths {
+func DistArtifacts(buildSpecsWithDeps []params.ProductBuildSpecWithDeps, absPath bool) (map[string]OrderedStringMap, error) {
+	return artifacts(buildSpecsWithDeps, func(spec params.ProductBuildSpec) buildSpecWithPaths {
 		distTypeToPathMap := newOrderedStringMap()
 
 		for _, currDistCfg := range spec.Dist {
-			distTypeToPathMap.Put(string(currDistCfg.DistType.Type), dist.ArtifactPath(spec, currDistCfg))
+			distTypeToPathMap.Put(string(currDistCfg.Info.Type()), dist.ArtifactPath(spec, currDistCfg))
 		}
 		return buildSpecWithPaths{spec: &spec, paths: distTypeToPathMap}
 	}, absPath)
@@ -45,27 +45,27 @@ type BuildArtifactsParams struct {
 
 // BuildArtifacts returns a map from product name to OrderedStringMap, where the values of the OrderedStringMap contains
 // the mapping from the OSArch to the path for the artifact for that OSArch.
-func BuildArtifacts(buildSpecsWithDeps []config.ProductBuildSpecWithDeps, params BuildArtifactsParams) (map[string]OrderedStringMap, error) {
-	artifacts, err := artifacts(buildSpecsWithDeps, func(spec config.ProductBuildSpec) buildSpecWithPaths {
+func BuildArtifacts(buildSpecsWithDeps []params.ProductBuildSpecWithDeps, buildParams BuildArtifactsParams) (map[string]OrderedStringMap, error) {
+	artifacts, err := artifacts(buildSpecsWithDeps, func(spec params.ProductBuildSpec) buildSpecWithPaths {
 		osArchToPathMap := newOrderedStringMap()
 		buildPaths := build.ArtifactPaths(spec)
 
 		for _, osArch := range spec.Build.OSArchs {
-			if v, ok := buildPaths[osArch]; ok && params.OSArchs.Matches(osArch) {
+			if v, ok := buildPaths[osArch]; ok && buildParams.OSArchs.Matches(osArch) {
 				osArchToPathMap.Put(osArch.String(), v)
 			}
 		}
 		return buildSpecWithPaths{spec: &spec, paths: osArchToPathMap}
-	}, params.AbsPath)
+	}, buildParams.AbsPath)
 
 	// if error occurred or requiresBuild is not true, return
-	if err != nil || !params.RequiresBuild {
+	if err != nil || !buildParams.RequiresBuild {
 		return artifacts, err
 	}
 
 	// otherwise, filter to artifacts that require build
 	for _, spec := range buildSpecsWithDeps {
-		requiresBuildInfo := build.RequiresBuild(spec, params.OSArchs)
+		requiresBuildInfo := build.RequiresBuild(spec, buildParams.OSArchs)
 		for product := range artifacts {
 			// copy keys over which iteration occurs because keys are removed during traversal
 			src := artifacts[product].Keys()
@@ -92,7 +92,7 @@ func BuildArtifacts(buildSpecsWithDeps []config.ProductBuildSpecWithDeps, params
 	return artifacts, err
 }
 
-func artifacts(buildSpecsWithDeps []config.ProductBuildSpecWithDeps, f artifactPathsFunc, absPath bool) (map[string]OrderedStringMap, error) {
+func artifacts(buildSpecsWithDeps []params.ProductBuildSpecWithDeps, f artifactPathsFunc, absPath bool) (map[string]OrderedStringMap, error) {
 	artifacts := make(map[string]OrderedStringMap)
 	for _, currBuildSpecWithDeps := range buildSpecsWithDeps {
 		specWithPaths := f(currBuildSpecWithDeps.Spec)
@@ -114,10 +114,10 @@ func artifacts(buildSpecsWithDeps []config.ProductBuildSpecWithDeps, f artifactP
 
 type buildSpecWithPaths struct {
 	paths OrderedStringMap
-	spec  *config.ProductBuildSpec
+	spec  *params.ProductBuildSpec
 }
 
-type artifactPathsFunc func(spec config.ProductBuildSpec) buildSpecWithPaths
+type artifactPathsFunc func(spec params.ProductBuildSpec) buildSpecWithPaths
 
 // OrderedStringMap represents an ordered map with strings as the keys and values.
 type OrderedStringMap interface {

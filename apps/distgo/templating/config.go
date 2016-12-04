@@ -15,7 +15,7 @@
 package templating
 
 import (
-	"github.com/palantir/godel/apps/distgo/config"
+	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/git"
 )
 
@@ -32,11 +32,11 @@ type Config struct {
 	VersionInfo git.ProjectInfo
 
 	// {{.Dist.Type}} is "sls" or "bin" or "rpm"
-	// {{.Dist.Info}} is a fully customizable map
-	Dist config.DistTypeConfig
+	// {{.Dist}} is a fully customizable map
+	Dist params.DistInfo
 
 	// {{.Publish.GroupID}} is a string
 	// {{.Publish.Metadata}} is a map of string to string
 	// {{.Publish.Tags}} is a slice of strings
-	Publish config.PublishConfig
+	Publish params.Publish
 }
