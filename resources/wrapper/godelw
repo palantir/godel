@@ -31,7 +31,7 @@ function download {
         # if curl command exists, download using curl
         echo "Downloading $url to $dst..."
         set +e
-        curl -o "$dst" "$url"
+        curl -f -L -o "$dst" "$url"
         rv=$?
         set -e
         if [ ! $rv -eq 0 ]; then
