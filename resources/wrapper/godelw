@@ -50,7 +50,7 @@ function verify_checksum {
     local file=$1
     local expected_checksum=$2
     local computed_checksum=$(compute_sha256 $file)
-    if [ ! $expected_checksum = $computed_checksum ]; then
+    if [ "$expected_checksum" != "$computed_checksum" ]; then
         echo "SHA-256 checksum for $file did not match expected value."
         echo "Expected: $expected_checksum"
         echo "Actual:   $computed_checksum"
