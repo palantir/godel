@@ -13,7 +13,7 @@ Download and install gödel from a distribution
 * Copy the `godelw` script and the `godel` directory to the top-level directory of the destination project:
 
 ```bash
-> cp -r ~/Downloads/godel-0.10.0-bootstrap/wrapper/* $GOPATH/src/github.com/<USER>/<REPO>
+> cp -r ~/Downloads/godel-0.11.1/wrapper/* $GOPATH/src/github.com/<USER>/<REPO>
 ```
 
 * Find and add the checksum for the distribution (optional: see instructions at the end)
@@ -36,14 +36,14 @@ manually expand the distribution directory to the expected location as follows (
 
 ```bash
 mkdir -p ~/.godel/dists
-tar -C ~/.godel/dists -xzf ~/Downloads/godel-0.10.0-bootstrap.tgz
+tar -C ~/.godel/dists -xzf ~/Downloads/godel-0.11.1.tgz
 ```
 
 Alternatively, the expanded directory can also be moved/copied into place:
 
 ```bash
 mkdir -p ~/.godel/dists
-cp -r ~/Downloads/godel-0.10.0-bootstrap ~/.godel/dists
+cp -r ~/Downloads/godel-0.11.1 ~/.godel/dists
 ```
 
 Add checksum
@@ -61,19 +61,19 @@ If a user has obtained a trusted distribution locally, it is also possible to ma
 some examples of how to compute the SHA-256 checksum of a local file:
 
 ```bash
-> openssl dgst -sha256 ~/Downloads/godel-0.10.0-bootstrap.tgz
-SHA256(/Users/<USER>/Downloads/godel-0.10.0-bootstrap.tgz)= 6c471386282440931f02b5483ed40f22f54cb4734618529a4d6e939620356ccf
+> openssl dgst -sha256 ~/Downloads/godel-0.11.1.tgz
+SHA256(/Users/<USER>/Downloads/godel-0.11.1.tgz)= 01dde9336b284ba26952a19d741fd97be1fde2d61c8684b5c04f9e4fae17571f
 ```
 
 ```bash
-> shasum -a 256 ~/Downloads/godel-0.10.0-bootstrap.tgz
-6c471386282440931f02b5483ed40f22f54cb4734618529a4d6e939620356ccf  /Users/<USER>/Downloads/godel-0.10.0-bootstrap.tgz
+> shasum -a 256 ~/Downloads/godel-0.11.1.tgz
+01dde9336b284ba26952a19d741fd97be1fde2d61c8684b5c04f9e4fae17571f  /Users/<USER>/Downloads/godel-0.11.1.tgz
 ```
 
 Once the digest value is obtained, open the `godel/config/godel.properties` file and enter the value after the
 `distributionSHA256=` key. After doing so, the contents of the file should resemble the following:
 
 ```
-distributionURL=https://palantir.bintray.com/releases/com/palantir/godel/godel/0.10.0-bootstrap/godel-0.10.0-bootstrap.tgz
-distributionSHA256=6c471386282440931f02b5483ed40f22f54cb4734618529a4d6e939620356ccf
+distributionURL=https://palantir.bintray.com/releases/com/palantir/godel/godel/0.11.1/godel-0.11.1.tgz
+distributionSHA256=01dde9336b284ba26952a19d741fd97be1fde2d61c8684b5c04f9e4fae17571f
 ```
