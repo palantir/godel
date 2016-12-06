@@ -12,8 +12,22 @@ function download {
     local url=$1
     local dst=$2
 
-    if command -v wget >/dev/null 2>&1; then
-        # if wget command exists, download using wget
+    # determine whether wget, curl or both are present
+    set +e
+    command -v wget >/dev/null 2>&1
+    local wget_exists=$?
+    command -v curl >/dev/null 2>&1
+    local curl_exists=$?
+    set -e
+
+    # if one of wget or curl is not present, exit with error
+    if [ "$wget_exists" -ne 0 -a "$curl_exists" -ne 0 ]; then
+        echo "wget or curl must be present to download distribution. Install one of these programs and try again or install the distribution manually."
+        exit 1
+    fi
+
+    if [ "$wget_exists" -eq 0 ]; then
+        # attempt download using wget
         echo "Downloading $url to $dst..."
         local progress_opt=""
         if wget --help | grep -q '\--show-progress'; then
@@ -23,23 +37,35 @@ function download {
         wget -O "$dst" $progress_opt "$url"
         rv=$?
         set -e
-        if [ ! $rv -eq 0 ]; then
-            echo "Download failed"
+        if [ "$rv" -eq 0 ]; then
+            # success
+            return
+        fi
+
+        echo "Download failed using command: wget -O $dst $progress_opt $url"
+
+        # curl does not exist, so nothing more to try: exit
+        if [ "$curl_exists" -ne 0 ]; then
+            echo "Download failed using wget and curl was not found. Verify that the distribution URL is correct and try again or install the distribution manually."
             exit 1
         fi
-    elif command -v curl >/dev/null 2>&1; then
-        # if curl command exists, download using curl
-        echo "Downloading $url to $dst..."
-        set +e
-        curl -f -L -o "$dst" "$url"
-        rv=$?
-        set -e
-        if [ ! $rv -eq 0 ]; then
-            echo "Download failed"
-            exit 1
+        # curl exists, notify that download will be attempted using curl
+        echo "Attempting download using curl..."
+    fi
+
+    # attempt download using curl
+    echo "Downloading $url to $dst..."
+    set +e
+    curl -f -L -o "$dst" "$url"
+    rv=$?
+    set -e
+    if [ "$rv" -ne 0 ]; then
+        echo "Download failed using command: curl -f -L -o $dst $url"
+        if [ "$wget_exists" -eq 0 ]; then
+            echo "Download failed using wget and curl. Verify that the distribution URL is correct and try again or install the distribution manually."
+        else
+            echo "Download failed using curl and wget was not found. Verify that the distribution URL is correct and try again or install the distribution manually."
         fi
-    else
-        echo "wget or curl must be present to execute download"
         exit 1
     fi
 }
