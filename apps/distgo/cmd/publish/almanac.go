@@ -46,36 +46,36 @@ type AlmanacInfo struct {
 	Release  bool
 }
 
-func (a AlmanacInfo) CheckConnectivity() error {
-	_, err := a.get("/v1/units")
+func (a AlmanacInfo) CheckConnectivity(client *http.Client) error {
+	_, err := a.get(client, "/v1/units")
 	return err
 }
 
-func (a AlmanacInfo) CheckProduct(product string) error {
-	_, err := a.get(strings.Join([]string{"/v1/units", product}, "/"))
+func (a AlmanacInfo) CheckProduct(client *http.Client, product string) error {
+	_, err := a.get(client, strings.Join([]string{"/v1/units", product}, "/"))
 	return err
 }
 
-func (a AlmanacInfo) CreateProduct(product string) error {
-	_, err := a.do(http.MethodPost, "/v1/units/products", fmt.Sprintf(`{"name":"%v"}`, product))
+func (a AlmanacInfo) CreateProduct(client *http.Client, product string) error {
+	_, err := a.do(client, http.MethodPost, "/v1/units/products", fmt.Sprintf(`{"name":"%v"}`, product))
 	return err
 }
 
-func (a AlmanacInfo) CheckProductBranch(product, branch string) error {
-	_, err := a.get(strings.Join([]string{"/v1/units", product, branch}, "/"))
+func (a AlmanacInfo) CheckProductBranch(client *http.Client, product, branch string) error {
+	_, err := a.get(client, strings.Join([]string{"/v1/units", product, branch}, "/"))
 	return err
 }
 
-func (a AlmanacInfo) CreateProductBranch(product, branch string) error {
-	_, err := a.do(http.MethodPost, strings.Join([]string{"/v1/units", product}, "/"), fmt.Sprintf(`{"name":"%v"}`, branch))
+func (a AlmanacInfo) CreateProductBranch(client *http.Client, product, branch string) error {
+	_, err := a.do(client, http.MethodPost, strings.Join([]string{"/v1/units", product}, "/"), fmt.Sprintf(`{"name":"%v"}`, branch))
 	return err
 }
 
-func (a AlmanacInfo) GetUnit(product, branch, revision string) ([]byte, error) {
-	return a.get(strings.Join([]string{"/v1/units", product, branch, revision}, "/"))
+func (a AlmanacInfo) GetUnit(client *http.Client, product, branch, revision string) ([]byte, error) {
+	return a.get(client, strings.Join([]string{"/v1/units", product, branch, revision}, "/"))
 }
 
-func (a AlmanacInfo) CreateUnit(unit AlmanacUnit, version string) error {
+func (a AlmanacInfo) CreateUnit(client *http.Client, unit AlmanacUnit, version string) error {
 	endpoint := "/v1/units"
 
 	// set version field of metadata to be version
@@ -89,11 +89,11 @@ func (a AlmanacInfo) CreateUnit(unit AlmanacUnit, version string) error {
 		return errors.Wrapf(err, "Failed to marshal %v as JSON", unit)
 	}
 
-	_, err = a.do(http.MethodPost, endpoint, string(jsonBytes))
+	_, err = a.do(client, http.MethodPost, endpoint, string(jsonBytes))
 	return err
 }
 
-func (a AlmanacInfo) ReleaseProduct(product, branch, revision string) error {
+func (a AlmanacInfo) ReleaseProduct(client *http.Client, product, branch, revision string) error {
 	gaBody := map[string]string{
 		"name": "GA",
 	}
@@ -102,15 +102,15 @@ func (a AlmanacInfo) ReleaseProduct(product, branch, revision string) error {
 		return errors.Wrapf(err, "Failed to marshal %v as JSON", gaBody)
 	}
 
-	_, err = a.do(http.MethodPost, strings.Join([]string{"/v1/units", product, branch, revision, "releases"}, "/"), string(jsonBytes))
+	_, err = a.do(client, http.MethodPost, strings.Join([]string{"/v1/units", product, branch, revision, "releases"}, "/"), string(jsonBytes))
 	return err
 }
 
-func (a AlmanacInfo) get(endpoint string) ([]byte, error) {
-	return a.do(http.MethodGet, endpoint, "")
+func (a AlmanacInfo) get(client *http.Client, endpoint string) ([]byte, error) {
+	return a.do(client, http.MethodGet, endpoint, "")
 }
 
-func (a AlmanacInfo) do(method, endpoint, body string) (rBody []byte, rErr error) {
+func (a AlmanacInfo) do(client *http.Client, method, endpoint, body string) (rBody []byte, rErr error) {
 	destURL, err := url.Parse(a.URL + endpoint)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Failed")
@@ -133,8 +133,10 @@ func (a AlmanacInfo) do(method, endpoint, body string) (rBody []byte, rErr error
 		return nil, errors.Wrapf(err, "Failed to add Almanac authorization info to header for request %v", req)
 	}
 
-	resp, err := http.DefaultClient.Do(&req)
+	resp, err := client.Do(&req)
 	if err != nil {
+		// remove authorization information from header before returning as part of error
+		req.Header.Del("X-authorization")
 		return nil, errors.Wrapf(err, "Almanac request failed: %v", req)
 	}
 
