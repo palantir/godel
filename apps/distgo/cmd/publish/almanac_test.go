@@ -21,11 +21,18 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/palantir/godel/apps/distgo/cmd/publish"
 )
+
+type errorRoundTripper struct{}
+
+func (s *errorRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
+	return nil, errors.Errorf("Unable to connect")
+}
 
 func TestAlmanacConnectionInfo(t *testing.T) {
 	var handlerFunc func(w http.ResponseWriter, r *http.Request)
@@ -46,7 +53,7 @@ func TestAlmanacConnectionInfo(t *testing.T) {
 	}{
 		{
 			action: func(a publish.AlmanacInfo) error {
-				return a.CheckConnectivity()
+				return a.CheckConnectivity(http.DefaultClient)
 			},
 			handler: func(w http.ResponseWriter, r *http.Request) {
 				assert.Equal(t, "/v1/units", r.URL.String())
@@ -64,7 +71,7 @@ func TestAlmanacConnectionInfo(t *testing.T) {
 		},
 		{
 			action: func(a publish.AlmanacInfo) error {
-				return a.CheckConnectivity()
+				return a.CheckConnectivity(http.DefaultClient)
 			},
 			handler: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusNotFound)
@@ -75,7 +82,18 @@ func TestAlmanacConnectionInfo(t *testing.T) {
 		},
 		{
 			action: func(a publish.AlmanacInfo) error {
-				return a.CreateUnit(publish.AlmanacUnit{
+				client := &http.Client{Transport: &errorRoundTripper{}}
+				return a.CreateProduct(client, "foo")
+			},
+			verifier: func(caseNum int, err error) {
+				assert.Regexp(t, `Almanac request failed: .+`, err.Error(), "Case %d", caseNum)
+				// error should not contain authorization header
+				assert.NotRegexp(t, `X-Authorization`, err.Error(), "Case %d", caseNum)
+			},
+		},
+		{
+			action: func(a publish.AlmanacInfo) error {
+				return a.CreateUnit(http.DefaultClient, publish.AlmanacUnit{
 					Product: "testProduct",
 					Tags:    []string{"tag-1", "tag2"},
 				}, "0.0.1")
@@ -101,7 +119,7 @@ func TestAlmanacConnectionInfo(t *testing.T) {
 		},
 		{
 			action: func(a publish.AlmanacInfo) error {
-				return a.ReleaseProduct("testProduct", "testBranch", "testRevision")
+				return a.ReleaseProduct(http.DefaultClient, "testProduct", "testBranch", "testRevision")
 			},
 			handler: func(w http.ResponseWriter, r *http.Request) {
 				assert.Equal(t, "/v1/units/testProduct/testBranch/testRevision/releases", r.URL.String())

@@ -18,24 +18,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 
 	"github.com/palantir/godel/apps/distgo/params"
 )
 
 func almanacPublish(artifactURL string, almanacInfo AlmanacInfo, buildSpec params.ProductBuildSpec, distCfg params.Dist, stdout io.Writer) error {
-	if err := almanacInfo.CheckProduct(buildSpec.ProductName); err != nil {
-		if err := almanacInfo.CreateProduct(buildSpec.ProductName); err != nil {
+	client := http.DefaultClient
+	if err := almanacInfo.CheckProduct(client, buildSpec.ProductName); err != nil {
+		if err := almanacInfo.CreateProduct(client, buildSpec.ProductName); err != nil {
 			return fmt.Errorf("failed to create product %s: %v", buildSpec.ProductName, err)
 		}
 	}
 
-	if err := almanacInfo.CheckProductBranch(buildSpec.ProductName, buildSpec.VersionInfo.Branch); err != nil {
-		if err := almanacInfo.CreateProductBranch(buildSpec.ProductName, buildSpec.VersionInfo.Branch); err != nil {
+	if err := almanacInfo.CheckProductBranch(client, buildSpec.ProductName, buildSpec.VersionInfo.Branch); err != nil {
+		if err := almanacInfo.CreateProductBranch(client, buildSpec.ProductName, buildSpec.VersionInfo.Branch); err != nil {
 			return fmt.Errorf("failed to create branch %s for product %s: %v", buildSpec.VersionInfo.Branch, buildSpec.ProductName, err)
 		}
 	}
 
-	if bytes, err := almanacInfo.GetUnit(buildSpec.ProductName, buildSpec.VersionInfo.Branch, buildSpec.VersionInfo.Revision); err == nil {
+	if bytes, err := almanacInfo.GetUnit(client, buildSpec.ProductName, buildSpec.VersionInfo.Branch, buildSpec.VersionInfo.Revision); err == nil {
 		// unit exists -- check if URL matches artifact URL
 		if almanacURLMatches(artifactURL, bytes) {
 			fmt.Fprintf(stdout, "Unit for product %s branch %s revision %s with URL %s already exists; skipping publish.\n", buildSpec.ProductName, buildSpec.VersionInfo.Branch, buildSpec.VersionInfo.Revision, artifactURL)
@@ -44,7 +46,7 @@ func almanacPublish(artifactURL string, almanacInfo AlmanacInfo, buildSpec param
 		return fmt.Errorf("unit for product %s branch %s revision %s already exists; not overwriting it", buildSpec.ProductName, buildSpec.VersionInfo.Branch, buildSpec.VersionInfo.Revision)
 	}
 
-	if err := almanacInfo.CreateUnit(AlmanacUnit{
+	if err := almanacInfo.CreateUnit(client, AlmanacUnit{
 		Product:  buildSpec.ProductName,
 		Branch:   buildSpec.VersionInfo.Branch,
 		Revision: buildSpec.VersionInfo.Revision,
@@ -56,7 +58,7 @@ func almanacPublish(artifactURL string, almanacInfo AlmanacInfo, buildSpec param
 	}
 
 	if almanacInfo.Release {
-		if err := almanacInfo.ReleaseProduct(buildSpec.ProductName, buildSpec.VersionInfo.Branch, buildSpec.VersionInfo.Revision); err != nil {
+		if err := almanacInfo.ReleaseProduct(client, buildSpec.ProductName, buildSpec.VersionInfo.Branch, buildSpec.VersionInfo.Revision); err != nil {
 			return fmt.Errorf("failed to release unit: %v", err)
 		}
 	}
