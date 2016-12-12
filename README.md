@@ -1,3 +1,5 @@
+[![Circle CI](https://circleci.com/gh/palantir/godel.svg?style=svg)](https://circleci.com/gh/palantir/godel)
+
 gödel
 =====
 gödel is a Go build tool that provides tasks for configuring, formatting, checking, testing, building and publishing Go
