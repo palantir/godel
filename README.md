@@ -1,7 +1,5 @@
-[![Circle CI](https://circleci.com/gh/palantir/godel.svg?style=svg)](https://circleci.com/gh/palantir/godel)
+# gödel [![Circle CI](https://circleci.com/gh/palantir/godel.svg?style=svg)](https://circleci.com/gh/palantir/godel)
 
-gödel
-=====
 gödel is a Go build tool that provides tasks for configuring, formatting, checking, testing, building and publishing Go
 projects in a declarative, consistent and reproducible manner across different platforms and environments. gödel can be
 used in both local development environments and for verifying the correctness of project in CI environments. gödel uses
