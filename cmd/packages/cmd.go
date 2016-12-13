@@ -35,7 +35,7 @@ func Command() cli.Command {
 			excludeCfg := matcher.NamesPathsCfg{}
 			if cfgDir, _ := cmd.ConfigDirPath(ctx); cfgDir != "" {
 				var err error
-				excludeCfg, err = config.GetExcludeCfgFromYML(path.Join(cfgDir, config.ExcludeYML))
+				excludeCfg, err = config.LoadFromFile(path.Join(cfgDir, config.ExcludeYML))
 				if err != nil {
 					return err
 				}
