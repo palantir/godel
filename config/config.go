@@ -17,7 +17,6 @@ package config
 import (
 	"encoding/json"
 	"io/ioutil"
-	"os"
 	"path"
 
 	"github.com/palantir/pkg/matcher"
@@ -38,25 +37,24 @@ type Exclude struct {
 	Exclude matcher.NamesPathsCfg `json:"exclude"`
 }
 
-func GetExcludeCfgFromYML(cfgPath string) (matcher.NamesPathsCfg, error) {
-	if _, err := os.Stat(cfgPath); os.IsNotExist(err) {
-		return matcher.NamesPathsCfg{}, nil
-	}
-
+func LoadFromFile(cfgPath string) (matcher.NamesPathsCfg, error) {
 	fileBytes, err := ioutil.ReadFile(cfgPath)
 	if err != nil {
 		return matcher.NamesPathsCfg{}, errors.Wrapf(err, "Failed to read file %s", cfgPath)
 	}
+	return LoadFromYML(string(fileBytes))
+}
 
+func LoadFromYML(ymlContent string) (matcher.NamesPathsCfg, error) {
 	excludeCfg := matcher.NamesPathsCfg{}
-	if err := yaml.Unmarshal(fileBytes, &excludeCfg); err != nil {
-		return matcher.NamesPathsCfg{}, errors.Wrapf(err, "Failed to unmarshal file %s", cfgPath)
+	if err := yaml.Unmarshal([]byte(ymlContent), &excludeCfg); err != nil {
+		return matcher.NamesPathsCfg{}, errors.Wrapf(err, "Failed to unmarshal YML %s", ymlContent)
 	}
 	return excludeCfg, nil
 }
 
 func ReadExcludeJSONFromYML(cfgPath string) ([]byte, error) {
-	excludeCfg, err := GetExcludeCfgFromYML(cfgPath)
+	excludeCfg, err := LoadFromFile(cfgPath)
 	if err != nil {
 		return nil, err
 	}
