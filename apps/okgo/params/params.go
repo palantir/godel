@@ -22,15 +22,31 @@ import (
 	"github.com/palantir/godel/apps/okgo/cmd/cmdlib"
 )
 
-type Params struct {
-	Checks  map[amalgomated.Cmd]SingleCheckerParam
+type OKGo struct {
+	// Checks specifies the configuration used by the checks. The key is the name of the check and the value is the
+	// custom configuration for that check.
+	Checks map[amalgomated.Cmd]Checker
+
+	// Exclude specifies the files that should be excluded from tests.
 	Exclude matcher.Matcher
+}
+
+type Checker struct {
+	// Skip specifies whether or not the check should be skipped entirely.
+	Skip bool
+
+	// Args specifies the commnand-line arguments provided to the check.
+	Args []string
+
+	// LineFilters specifies the filter definitions. Raw output lines that match the filter are excluded from
+	// processing.
+	LineFilters []checkoutput.Filterer
 }
 
 // ArgsForCheck returns the arguments for the requested check stored in the Config, or nil if no configuration for the
 // specified check was present in the configuration. The second return value indicates whether or not configuration for
 // the requested check was present.
-func (p *Params) ArgsForCheck(check amalgomated.Cmd) ([]string, bool) {
+func (p *OKGo) ArgsForCheck(check amalgomated.Cmd) ([]string, bool) {
 	checkConfig, ok := p.Checks[check]
 	if !ok {
 		return nil, false
@@ -43,7 +59,7 @@ func (p *Params) ArgsForCheck(check amalgomated.Cmd) ([]string, bool) {
 // filters specified for the provided check in the configuration. Returns an empty slice if no filters are present
 // globally or for the specified check.The derivation from the global filters is done in case the packages can't be
 // excluded before the check is run (can happen if the check only supports the "all" mode).
-func (p *Params) FiltersForCheck(check amalgomated.Cmd) []checkoutput.Filterer {
+func (p *OKGo) FiltersForCheck(check amalgomated.Cmd) []checkoutput.Filterer {
 	filters := append([]checkoutput.Filterer{}, checkoutput.MatcherFilter(p.Exclude))
 	checkConfig, ok := p.Checks[check]
 	if ok {
@@ -52,7 +68,7 @@ func (p *Params) FiltersForCheck(check amalgomated.Cmd) []checkoutput.Filterer {
 	return filters
 }
 
-func (p *Params) checkCommands() []amalgomated.Cmd {
+func (p *OKGo) checkCommands() []amalgomated.Cmd {
 	var cmds []amalgomated.Cmd
 	for _, currCmd := range cmdlib.Instance().Cmds() {
 		if _, ok := p.Checks[currCmd]; ok {
@@ -60,10 +76,4 @@ func (p *Params) checkCommands() []amalgomated.Cmd {
 		}
 	}
 	return cmds
-}
-
-type SingleCheckerParam struct {
-	Skip        bool
-	Args        []string
-	LineFilters []checkoutput.Filterer
 }

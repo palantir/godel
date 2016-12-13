@@ -32,6 +32,12 @@ const (
 	ExcludeYML = "exclude.yml"
 )
 
+type Exclude struct {
+	// Exclude specifies the files and directories that should be excluded from gödel operations. This parameter is
+	// also passed to subtasks to augment their notion of included and excluded files and directories.
+	Exclude matcher.NamesPathsCfg `json:"exclude"`
+}
+
 func GetExcludeCfgFromYML(cfgPath string) (matcher.NamesPathsCfg, error) {
 	if _, err := os.Stat(cfgPath); os.IsNotExist(err) {
 		return matcher.NamesPathsCfg{}, nil
@@ -49,16 +55,12 @@ func GetExcludeCfgFromYML(cfgPath string) (matcher.NamesPathsCfg, error) {
 	return excludeCfg, nil
 }
 
-type excludeCfgStruct struct {
-	Exclude matcher.NamesPathsCfg `json:"exclude"`
-}
-
 func ReadExcludeJSONFromYML(cfgPath string) ([]byte, error) {
 	excludeCfg, err := GetExcludeCfgFromYML(cfgPath)
 	if err != nil {
 		return nil, err
 	}
-	return json.Marshal(excludeCfgStruct{
+	return json.Marshal(Exclude{
 		Exclude: excludeCfg,
 	})
 }

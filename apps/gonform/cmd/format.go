@@ -97,7 +97,7 @@ func formatCommand(cmd amalgomated.Cmd, usage string, supplier amalgomated.Cmder
 }
 
 type formatterParams struct {
-	Formatters map[string]params.FormatterParams
+	Formatters map[string]params.Formatter
 	Files      []string
 	List       bool
 	Verbose    bool

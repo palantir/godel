@@ -74,7 +74,7 @@ func JUnitOutputPath(ctx cli.Context) string {
 // TagsMatcher returns a Matcher that matches the provided tags. Returns nil if the provided slice of tags is empty or
 // if the provided tags do not match any of the tags specified in the configuration. Returns an error if any of the
 // provided tags are not specified in the configuration.
-func TagsMatcher(tags []string, cfg params.Params) (matcher.Matcher, error) {
+func TagsMatcher(tags []string, cfg params.GUnit) (matcher.Matcher, error) {
 	if err := cfg.Validate(); err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func TagsMatcher(tags []string, cfg params.Params) (matcher.Matcher, error) {
 
 // AllTagsMatcher returns a matcher that matches paths that are part of any of the tags defined in the provided
 // configuration.
-func AllTagsMatcher(cfg params.Params) matcher.Matcher {
+func AllTagsMatcher(cfg params.GUnit) matcher.Matcher {
 	tags := make([]string, 0, len(cfg.Tags))
 	for tag := range cfg.Tags {
 		tags = append(tags, tag)

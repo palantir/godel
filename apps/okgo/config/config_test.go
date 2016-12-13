@@ -32,7 +32,7 @@ func TestLoadRawConfig(t *testing.T) {
 	for i, currCase := range []struct {
 		yml  string
 		json string
-		want config.RawConfig
+		want config.OKGo
 	}{
 		{
 			yml: `
@@ -51,14 +51,14 @@ func TestLoadRawConfig(t *testing.T) {
 			    - "vendor"
 			`,
 			json: `{"exclude":{"names":["exclude.*"],"paths":["generated_src"]}}`,
-			want: config.RawConfig{
-				Checks: map[string]config.RawSingleCheckerConfig{
+			want: config.OKGo{
+				Checks: map[string]config.Checker{
 					"errcheck": {
 						Args: []string{
 							"-ignore",
 							"github.com/seelog:(Info|Warn|Error|Critical)f?",
 						},
-						Filters: []config.RawFilterConfig{
+						Filters: []config.Filter{
 							{
 								Type:  "message",
 								Value: `\w+`,
@@ -85,10 +85,10 @@ func TestLoadRawConfig(t *testing.T) {
 			    filters:
 			      - value: "\\w+"
 			`,
-			want: config.RawConfig{
-				Checks: map[string]config.RawSingleCheckerConfig{
+			want: config.OKGo{
+				Checks: map[string]config.Checker{
 					"errcheck": {
-						Filters: []config.RawFilterConfig{
+						Filters: []config.Filter{
 							{
 								Value: `\w+`,
 							},

@@ -109,7 +109,7 @@ func TestCheckers(t *testing.T) {
 		require.NoError(t, err)
 
 		runner := amalgomated.PathCmder(cli, amalgomated.ProxyCmdPrefix+currCase.check.Name())
-		lineInfo, err := checker.Check(runner, "./testdata/standard", params.Params{})
+		lineInfo, err := checker.Check(runner, "./testdata/standard", params.OKGo{})
 		require.NoError(t, err, "Case %d", i)
 
 		assert.Equal(t, currCase.want, toStringSlice(lineInfo), "Case %d", i)
@@ -223,7 +223,7 @@ func Foo() {
 		require.NoError(t, err, "Case %d", i)
 
 		runner := amalgomated.PathCmder(cli, amalgomated.ProxyCmdPrefix+currCase.check.Name())
-		lineInfo, err := checker.Check(runner, currCase.pathToCheck(currCaseProjectDir), params.Params{})
+		lineInfo, err := checker.Check(runner, currCase.pathToCheck(currCaseProjectDir), params.OKGo{})
 		require.NoError(t, err, "Case %d", i)
 
 		want := currCase.want(files)
@@ -281,7 +281,7 @@ func TestFilters(t *testing.T) {
 			want: []string{},
 		},
 	} {
-		lineInfo, err := checker.Check(runner, "./testdata/filter", params.Params{})
+		lineInfo, err := checker.Check(runner, "./testdata/filter", params.OKGo{})
 		require.NoError(t, err, "Case %d", i)
 
 		filteredLines, err := checkoutput.ApplyFilters(lineInfo, currCase.filters)

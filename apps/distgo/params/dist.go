@@ -70,8 +70,13 @@ type DistInfo interface {
 }
 
 type BinDistInfo struct {
-	OmitInitSh         bool   // if true, omit "init.sh" file from distribution.
-	InitShTemplateFile string // path to template to use for "init.sh" script.
+	// OmitInitSh specifies whether or not the distribution should omit the auto-generated "init.sh" invocation
+	// script. If true, the "init.sh" script will not be generated and included in the output distribution.
+	OmitInitSh bool
+
+	// InitShTemplateFile is the relative path to the template that should be used to generate the "init.sh" script.
+	// If the value is absent, the default template will be used.
+	InitShTemplateFile string
 }
 
 func (i *BinDistInfo) Type() DistInfoType {

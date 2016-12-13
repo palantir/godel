@@ -31,7 +31,7 @@ func TestReadConfig(t *testing.T) {
 	for i, currCase := range []struct {
 		yml  string
 		json string
-		want func() config.RawProjectConfig
+		want func() config.Project
 	}{
 		{
 			yml: `
@@ -75,11 +75,11 @@ func TestReadConfig(t *testing.T) {
 			    - "vendor"
 			`,
 			json: `{"exclude":{"names":["distgo"],"paths":["generated_src"]}}`,
-			want: func() config.RawProjectConfig {
-				return config.RawProjectConfig{
-					Products: map[string]config.RawProductConfig{
+			want: func() config.Project {
+				return config.Project{
+					Products: map[string]config.Product{
 						"test": {
-							Build: config.RawBuildConfig{
+							Build: config.Build{
 								MainPkg:   "./cmd/test",
 								OutputDir: "build",
 								BuildArgsScript: `YEAR=$(date +%Y)
@@ -104,12 +104,12 @@ echo "main.year=$YEAR"
 									},
 								},
 							},
-							Dist: []config.RawDistConfig{{
+							Dist: []config.Dist{{
 								OutputDir: "dist",
 								InputDir:  "resources/input",
-								DistType: config.RawDistInfoConfig{
+								DistType: config.DistInfo{
 									Type: string(params.SLSDistType),
-									Info: config.RawSLSDistConfig{
+									Info: config.SLSDist{
 										ManifestTemplateFile: "resources/input/manifest.yml",
 										ProductType:          "service.v1",
 										YMLValidationExclude: matcher.NamesPathsCfg{
@@ -149,15 +149,15 @@ echo "main.year=$YEAR"
 			          after-remove-script: |
 			              systemctl daemon-reload
 			`,
-			want: func() config.RawProjectConfig {
-				return config.RawProjectConfig{
-					Products: map[string]config.RawProductConfig{
+			want: func() config.Project {
+				return config.Project{
+					Products: map[string]config.Product{
 						"test": {
-							Dist: []config.RawDistConfig{
+							Dist: []config.Dist{
 								{
-									DistType: config.RawDistInfoConfig{
+									DistType: config.DistInfo{
 										Type: string(params.RPMDistType),
-										Info: config.RawRPMDistConfig{
+										Info: config.RPMDist{
 											ConfigFiles: []string{"/usr/lib/systemd/system/orchestrator.service"},
 											BeforeInstallScript: "" +
 												"/usr/bin/getent group orchestrator || /usr/sbin/groupadd \\\n" +
@@ -198,28 +198,28 @@ echo "main.year=$YEAR"
 			        tags:
 			          - "borked"
 			`,
-			want: func() config.RawProjectConfig {
-				return config.RawProjectConfig{
-					Products: map[string]config.RawProductConfig{
+			want: func() config.Project {
+				return config.Project{
+					Products: map[string]config.Product{
 						"test": {
-							Dist: []config.RawDistConfig{{
-								DistType: config.RawDistInfoConfig{
+							Dist: []config.Dist{{
+								DistType: config.DistInfo{
 									Type: string(params.SLSDistType),
-									Info: config.RawSLSDistConfig{
+									Info: config.SLSDist{
 										ManifestTemplateFile: "resources/input/manifest.yml",
 									},
 								},
 							}, {
-								DistType: config.RawDistInfoConfig{
+								DistType: config.DistInfo{
 									Type: string(params.RPMDistType),
-									Info: config.RawRPMDistConfig{
+									Info: config.RPMDist{
 										AfterInstallScript: "systemctl daemon-reload\n",
 									},
 								},
 							}},
-							DefaultPublish: config.RawPublishConfig{
+							DefaultPublish: config.Publish{
 								GroupID: "com.palantir.pcloud",
-								Almanac: config.RawAlmanacConfig{
+								Almanac: config.Almanac{
 									Metadata: map[string]string{"k": "v"},
 									Tags:     []string{"borked"},
 								},

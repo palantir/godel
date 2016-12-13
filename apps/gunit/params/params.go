@@ -22,12 +22,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Params struct {
-	Tags    map[string]matcher.Matcher
+type GUnit struct {
+	// Tags group tests into different sets. The key is the name of the tag and the value is a matcher.NamesPathsCfg
+	// that specifies the rules for matching the tests that are part of the tag. Any test that matches the provided
+	// matcher is considered part of the tag.
+	Tags map[string]matcher.Matcher
+
+	// Exclude specifies the files that should be excluded from tests.
 	Exclude matcher.Matcher
 }
 
-func (p *Params) Validate() error {
+func (p *GUnit) Validate() error {
 	var invalidTagNames []string
 	if len(p.Tags) > 0 {
 		for k := range p.Tags {

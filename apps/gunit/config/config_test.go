@@ -30,7 +30,7 @@ func TestLoadConfig(t *testing.T) {
 	for i, currCase := range []struct {
 		yml  string
 		json string
-		want func() config.RawConfig
+		want func() config.GUnit
 	}{
 		{
 			yml: `
@@ -48,8 +48,8 @@ func TestLoadConfig(t *testing.T) {
 			    - "vendor"
 			`,
 			json: `{"exclude":{"names":["gunit"],"paths":["generated_src"]}}`,
-			want: func() config.RawConfig {
-				return config.RawConfig{
+			want: func() config.GUnit {
+				return config.GUnit{
 					Tags: map[string]matcher.NamesPathsCfg{
 						"integration": {
 							Names: []string{`integration_tests`},
