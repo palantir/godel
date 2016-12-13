@@ -18,11 +18,16 @@ import (
 	"github.com/palantir/pkg/matcher"
 )
 
-type Params struct {
-	Formatters map[string]FormatterParams
-	Exclude    matcher.Matcher
+type Formatters struct {
+	// Formatters specifies the configuration used by the formatters. The key is the name of the formatter and the
+	// value is the custom configuration for that formatter.
+	Formatters map[string]Formatter
+
+	// Exclude specifies the files that should be excluded from formatting.
+	Exclude matcher.Matcher
 }
 
-type FormatterParams struct {
+type Formatter struct {
+	// Args specifies the command-line arguments that are provided to the formatter.
 	Args []string
 }

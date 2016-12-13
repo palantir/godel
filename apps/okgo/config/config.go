@@ -28,58 +28,71 @@ import (
 	"github.com/palantir/godel/apps/okgo/params"
 )
 
-type RawConfig struct {
-	Checks  map[string]RawSingleCheckerConfig `yaml:"checks" json:"checks"` // configuration for checkers
-	Exclude matcher.NamesPathsCfg             `yaml:"exclude" json:"exclude"`
+type OKGo struct {
+	// Checks specifies the configuration used by the checks. The key is the name of the check and the value is the
+	// custom configuration for that check.
+	Checks map[string]Checker `yaml:"checks" json:"checks"`
+
+	// Exclude specifies the files that should be excluded from tests.
+	Exclude matcher.NamesPathsCfg `yaml:"exclude" json:"exclude"`
 }
 
-func (r *RawConfig) ToParams() (params.Params, error) {
-	checks := make(map[amalgomated.Cmd]params.SingleCheckerParam)
+type Checker struct {
+	// Skip specifies whether or not the check should be skipped entirely.
+	Skip bool `yaml:"skip" json:"skip"`
+
+	// Args specifies the commnand-line arguments provided to the check.
+	Args []string `yaml:"args" json:"args"`
+
+	// Filters specifies the filter definitions. Raw output lines that match the filter are excluded from
+	// processing.
+	Filters []Filter `yaml:"filters" json:"filters"`
+}
+
+type Filter struct {
+	// Type specifies the type of the filter: "message", "name" or "path".
+	Type string `yaml:"type" json:"type"`
+
+	// The value of the filter.
+	Value string `yaml:"value" json:"value"`
+}
+
+func (r *OKGo) ToParams() (params.OKGo, error) {
+	checks := make(map[amalgomated.Cmd]params.Checker)
 	for key, value := range r.Checks {
 		singleParam, err := value.ToParam()
 		if err != nil {
-			return params.Params{}, err
+			return params.OKGo{}, err
 		}
 		cmd, err := cmdlib.Instance().NewCmd(key)
 		if err != nil {
-			return params.Params{}, errors.Wrapf(err, "unable to convert %s into a command", key)
+			return params.OKGo{}, errors.Wrapf(err, "unable to convert %s into a command", key)
 		}
 		checks[cmd] = singleParam
 	}
-	return params.Params{
+	return params.OKGo{
 		Checks:  checks,
 		Exclude: r.Exclude.Matcher(),
 	}, nil
 }
 
-type RawSingleCheckerConfig struct {
-	Skip    bool              `yaml:"skip" json:"skip"`       // skip this check if true
-	Args    []string          `yaml:"args" json:"args"`       // arguments provided to the check
-	Filters []RawFilterConfig `yaml:"filters" json:"filters"` // defines filters that filters out raw output lines that match the filters from consideration
-}
-
-func (r *RawSingleCheckerConfig) ToParam() (params.SingleCheckerParam, error) {
+func (r *Checker) ToParam() (params.Checker, error) {
 	var lineFilters []checkoutput.Filterer
 	for _, cfg := range r.Filters {
 		checkFilter, err := cfg.toFilter(checkoutput.MessageRegexpFilter)
 		if err != nil {
-			return params.SingleCheckerParam{}, errors.Wrapf(err, "failed to parse filter: %v", cfg)
+			return params.Checker{}, errors.Wrapf(err, "failed to parse filter: %v", cfg)
 		}
 		lineFilters = append(lineFilters, checkFilter)
 	}
-	return params.SingleCheckerParam{
+	return params.Checker{
 		Skip:        r.Skip,
 		Args:        r.Args,
 		LineFilters: lineFilters,
 	}, nil
 }
 
-type RawFilterConfig struct {
-	Type  string `yaml:"type" json:"type"`   // type of filter: "message", "name" or "path"
-	Value string `yaml:"value" json:"value"` // value of the filter
-}
-
-func (f *RawFilterConfig) toFilter(filterForBlankType func(name string) checkoutput.Filterer) (checkoutput.Filterer, error) {
+func (f *Filter) toFilter(filterForBlankType func(name string) checkoutput.Filterer) (checkoutput.Filterer, error) {
 	switch f.Type {
 	case "message":
 		return checkoutput.MessageRegexpFilter(f.Value), nil
@@ -97,33 +110,33 @@ func (f *RawFilterConfig) toFilter(filterForBlankType func(name string) checkout
 	}
 }
 
-func Load(configPath, jsonContent string) (params.Params, error) {
+func Load(configPath, jsonContent string) (params.OKGo, error) {
 	var yml []byte
 	if configPath != "" {
 		var err error
 		yml, err = ioutil.ReadFile(configPath)
 		if err != nil {
-			return params.Params{}, errors.Wrapf(err, "failed to read file %s", configPath)
+			return params.OKGo{}, errors.Wrapf(err, "failed to read file %s", configPath)
 		}
 	}
 	cfg, err := LoadRawConfig(string(yml), jsonContent)
 	if err != nil {
-		return params.Params{}, err
+		return params.OKGo{}, err
 	}
 	return cfg.ToParams()
 }
 
-func LoadRawConfig(ymlContent, jsonContent string) (RawConfig, error) {
-	rawCfg := RawConfig{}
+func LoadRawConfig(ymlContent, jsonContent string) (OKGo, error) {
+	rawCfg := OKGo{}
 	if ymlContent != "" {
 		if err := yaml.Unmarshal([]byte(ymlContent), &rawCfg); err != nil {
-			return RawConfig{}, errors.Wrapf(err, "failed to unmarshal YML %s", ymlContent)
+			return OKGo{}, errors.Wrapf(err, "failed to unmarshal YML %s", ymlContent)
 		}
 	}
 	if jsonContent != "" {
-		jsonCfg := RawConfig{}
+		jsonCfg := OKGo{}
 		if err := json.Unmarshal([]byte(jsonContent), &jsonCfg); err != nil {
-			return RawConfig{}, errors.Wrapf(err, "failed to parse JSON %s", jsonContent)
+			return OKGo{}, errors.Wrapf(err, "failed to parse JSON %s", jsonContent)
 		}
 		rawCfg.Exclude.Add(jsonCfg.Exclude)
 	}

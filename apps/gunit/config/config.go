@@ -25,52 +25,54 @@ import (
 	"github.com/palantir/godel/apps/gunit/params"
 )
 
-type RawConfig struct {
+type GUnit struct {
 	// Tags group tests into different sets. The key is the name of the tag and the value is a matcher.NamesPathsCfg
 	// that specifies the rules for matching the tests that are part of the tag. Any test that matches the provided
 	// matcher is considered part of the tag.
-	Tags    map[string]matcher.NamesPathsCfg `yaml:"tags" json:"tags"`
-	Exclude matcher.NamesPathsCfg            `yaml:"exclude" json:"exclude"`
+	Tags map[string]matcher.NamesPathsCfg `yaml:"tags" json:"tags"`
+
+	// Exclude specifies the files that should be excluded from tests.
+	Exclude matcher.NamesPathsCfg `yaml:"exclude" json:"exclude"`
 }
 
-func (r *RawConfig) ToParams() params.Params {
+func (r *GUnit) ToParams() params.GUnit {
 	m := make(map[string]matcher.Matcher, len(r.Tags))
 	for k, v := range r.Tags {
 		m[k] = v.Matcher()
 	}
-	return params.Params{
+	return params.GUnit{
 		Tags:    m,
 		Exclude: r.Exclude.Matcher(),
 	}
 }
 
-func Load(cfgPath, jsonContent string) (params.Params, error) {
+func Load(cfgPath, jsonContent string) (params.GUnit, error) {
 	var yml []byte
 	if cfgPath != "" {
 		var err error
 		yml, err = ioutil.ReadFile(cfgPath)
 		if err != nil {
-			return params.Params{}, errors.Wrapf(err, "failed to read file %s", cfgPath)
+			return params.GUnit{}, errors.Wrapf(err, "failed to read file %s", cfgPath)
 		}
 	}
 	cfg, err := LoadRawConfig(string(yml), jsonContent)
 	if err != nil {
-		return params.Params{}, err
+		return params.GUnit{}, err
 	}
 	return cfg.ToParams(), nil
 }
 
-func LoadRawConfig(ymlContent, jsonContent string) (RawConfig, error) {
-	cfg := RawConfig{}
+func LoadRawConfig(ymlContent, jsonContent string) (GUnit, error) {
+	cfg := GUnit{}
 	if ymlContent != "" {
 		if err := yaml.Unmarshal([]byte(ymlContent), &cfg); err != nil {
-			return RawConfig{}, errors.Wrapf(err, "failed to unmarshal YML %s", ymlContent)
+			return GUnit{}, errors.Wrapf(err, "failed to unmarshal YML %s", ymlContent)
 		}
 	}
 	if jsonContent != "" {
-		jsonCfg := RawConfig{}
+		jsonCfg := GUnit{}
 		if err := json.Unmarshal([]byte(jsonContent), &jsonCfg); err != nil {
-			return RawConfig{}, err
+			return GUnit{}, err
 		}
 		cfg.Exclude.Add(jsonCfg.Exclude)
 	}

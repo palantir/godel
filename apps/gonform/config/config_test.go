@@ -29,7 +29,7 @@ func TestLoad(t *testing.T) {
 	for i, currCase := range []struct {
 		yml  string
 		json string
-		want func() config.RawConfig
+		want func() config.Gonform
 	}{
 		{
 			yml: `
@@ -45,9 +45,9 @@ func TestLoad(t *testing.T) {
 			    - "vendor"
 			`,
 			json: `{"exclude":{"names":["gonform"],"paths":["generated_src"]}}`,
-			want: func() config.RawConfig {
-				return config.RawConfig{
-					Formatters: map[string]config.RawFormatterConfig{
+			want: func() config.Gonform {
+				return config.Gonform{
+					Formatters: map[string]config.Formatter{
 						"gofmt": {
 							Args: []string{
 								"-s",
