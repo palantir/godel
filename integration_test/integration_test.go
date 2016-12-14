@@ -74,11 +74,7 @@ func runTestMain(m *testing.M) int {
 func TestVersion(t *testing.T) {
 	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
 
-	cmd := exec.Command("./godelw", "--version")
-	cmd.Dir = testProjectDir
-	output, err := cmd.CombinedOutput()
-	require.NoError(t, err, "Command %v failed. Output:\n%v", cmd.Args, string(output))
-
+	output := execCommand(t, testProjectDir, "./godelw", "--version")
 	assert.Equal(t, fmt.Sprintf("godel version %v\n", version), string(output))
 }
 
@@ -105,10 +101,7 @@ func main() {
 	err := ioutil.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
-	cmd := exec.Command("./godelw", "format")
-	cmd.Dir = testProjectDir
-	output, err := cmd.CombinedOutput()
-	require.NoError(t, err, "Command %v failed. Output:\n%v", cmd.Args, string(output))
+	execCommand(t, testProjectDir, "./godelw", "format")
 
 	content, err := ioutil.ReadFile(path.Join(testProjectDir, "main.go"))
 	require.NoError(t, err)
@@ -152,10 +145,7 @@ func TestImports(t *testing.T) {
     "testOnlyImports": []
 }`, files["bar.go"].ImportPath, files["pkg/foo/foo.go"].ImportPath)
 
-	cmd := exec.Command("./godelw", "imports")
-	cmd.Dir = testProjectDir
-	output, err := cmd.CombinedOutput()
-	require.NoError(t, err, "Command %v failed. Output:\n%v", cmd.Args, string(output))
+	execCommand(t, testProjectDir, "./godelw", "imports")
 
 	content, err := ioutil.ReadFile(path.Join(testProjectDir, "pkg", "gocd_imports.json"))
 	require.NoError(t, err)
@@ -246,10 +236,7 @@ limitations under the License.
 
 package foo`
 
-	cmd := exec.Command("./godelw", "license")
-	cmd.Dir = testProjectDir
-	output, err := cmd.CombinedOutput()
-	require.NoError(t, err, "Command %v failed. Output:\n%v", cmd.Args, string(output))
+	execCommand(t, testProjectDir, "./godelw", "license")
 
 	content, err := ioutil.ReadFile(files["foo.go"].Path)
 	require.NoError(t, err)
@@ -336,10 +323,7 @@ func TestCheck(t *testing.T) {
 	err := ioutil.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
-	cmd := exec.Command("./godelw", "check")
-	cmd.Dir = testProjectDir
-	output, err := cmd.CombinedOutput()
-	require.NoError(t, err, "Command %v failed. Output:\n%v", cmd.Args, string(output))
+	execCommand(t, testProjectDir, "./godelw", "check")
 }
 
 func TestProducts(t *testing.T) {
@@ -373,11 +357,7 @@ products:
 	err = ioutil.WriteFile(path.Join(testProjectDir, "bar", "bar.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
-	cmd := exec.Command("./godelw", "products")
-	cmd.Dir = testProjectDir
-	output, err := cmd.CombinedOutput()
-	require.NoError(t, err, "Command %v failed. Output:\n%v", cmd.Args, string(output))
-	assert.Equal(t, "bar\nfoo\n", string(output))
+	execCommand(t, testProjectDir, "./godelw", "products")
 }
 
 func TestArtifactsBuild(t *testing.T) {
@@ -423,16 +403,13 @@ products:
 	gittest.CommitAllFiles(t, testProjectDir, "Commit files")
 	gittest.CreateGitTag(t, testProjectDir, "0.1.0")
 
-	cmd := exec.Command("./godelw", "artifacts", "build")
-	cmd.Dir = testProjectDir
-	output, err := cmd.CombinedOutput()
-	require.NoError(t, err, "Command %v failed. Output:\n%v", cmd.Args, string(output))
+	output := execCommand(t, testProjectDir, "./godelw", "artifacts", "build")
 
 	want := `build/0.1.0/windows-amd64/bar.exe
 build/0.1.0/darwin-amd64/foo
 build/0.1.0/linux-amd64/foo
 `
-	assert.Equal(t, want, string(output))
+	assert.Equal(t, want, output)
 }
 
 func TestArtifactsDist(t *testing.T) {
@@ -470,11 +447,8 @@ products:
 	gittest.CommitAllFiles(t, testProjectDir, "Commit files")
 	gittest.CreateGitTag(t, testProjectDir, "0.1.0")
 
-	cmd := exec.Command("./godelw", "artifacts", "dist")
-	cmd.Dir = testProjectDir
-	output, err := cmd.CombinedOutput()
-	require.NoError(t, err, "Command %v failed. Output:\n%v", cmd.Args, string(output))
-	assert.Equal(t, "dist/bar-0.1.0.sls.tgz\ndist/foo-0.1.0.sls.tgz\n", string(output))
+	output := execCommand(t, testProjectDir, "./godelw", "artifacts", "dist")
+	assert.Equal(t, "dist/bar-0.1.0.sls.tgz\ndist/foo-0.1.0.sls.tgz\n", output)
 }
 
 func TestTest(t *testing.T) {
@@ -486,10 +460,7 @@ func TestTest(t *testing.T) {
 	err := ioutil.WriteFile(path.Join(testProjectDir, "foo_test.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
-	cmd := exec.Command("./godelw", "test")
-	cmd.Dir = testProjectDir
-	output, err := cmd.CombinedOutput()
-	require.NoError(t, err, "Command %v failed. Output:\n%v", cmd.Args, string(output))
+	execCommand(t, testProjectDir, "./godelw", "test")
 }
 
 // Run "../godelw check" and ensure that it works (command supports being invoked from subdirectory). The action should
@@ -515,10 +486,7 @@ func TestCheckFromNestedDirectory(t *testing.T) {
 	err = ioutil.WriteFile(path.Join(childDir, "main.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
-	cmd := exec.Command("../godelw", "check")
-	cmd.Dir = childDir
-	output, err := cmd.CombinedOutput()
-	require.NoError(t, err, "Command %v failed. Output:\n%v", cmd.Args, string(output))
+	execCommand(t, childDir, "../godelw", "check")
 }
 
 // Run "../godelw build" and ensure that it works (command supports being invoked from sub-directory). The build action
@@ -538,10 +506,7 @@ func TestBuildFromNestedDirectory(t *testing.T) {
 	err = os.MkdirAll(childDir, 0755)
 	require.NoError(t, err)
 
-	cmd := exec.Command("../godelw", "build")
-	cmd.Dir = childDir
-	output, err := cmd.CombinedOutput()
-	require.NoError(t, err, "Command %v failed. Output:\n%v", cmd.Args, string(output))
+	execCommand(t, childDir, "../godelw", "build")
 
 	info, err := os.Stat(path.Join(testProjectDir, "build"))
 	require.NoError(t, err)
@@ -972,4 +937,12 @@ func TestCheckInGoPathNonSymLinkWhenGoPathIsSymLink(t *testing.T) {
 	cmd.Dir = testProjectDir
 	output, err := cmd.CombinedOutput()
 	require.NoError(t, err, "Command %v failed. Output:\n%v", cmd.Args, string(output))
+}
+
+func execCommand(t *testing.T, dir, cmdName string, args ...string) string {
+	cmd := exec.Command(cmdName, args...)
+	cmd.Dir = dir
+	output, err := cmd.CombinedOutput()
+	require.NoError(t, err, "Command %v failed. Output:\n%v", cmd.Args, string(output))
+	return string(output)
 }
