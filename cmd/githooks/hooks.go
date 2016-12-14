@@ -25,7 +25,8 @@ import (
 )
 
 var hooks = map[string]string{
-	"pre-commit": `gofiles=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')
+	"pre-commit": `#!/bin/bash
+gofiles=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')
 [ -z "$gofiles" ] && exit 0
 
 unformatted=$(./godelw format -l runAll $gofiles)
