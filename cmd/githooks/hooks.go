@@ -30,16 +30,16 @@ var hooks = map[string]string{
 
 unformatted=$(./godelw format -l runAll $gofiles)
 exitCode=$?
-[[ $exitCode -ne 0 ]] && exit $exitCode
-[ -z "$unformatted" ] && exit 0
+[ "$exitCode" -eq "0" ] && exit 0
 
-# Unformatted files exist -- print and exit
-echo "Unformatted files exist -- run ./godelw format to format these files:"
-for file in $unformatted; do
-	echo "  $file"
-done
+if [ -n "$unformatted" ]; then
+  echo "Unformatted files exist -- run ./godelw format to format these files:"
+  for file in $unformatted; do
+    echo "  $file"
+  done
+fi
 
-exit 1
+exit $exitCode
 `,
 }
 
