@@ -78,6 +78,64 @@ func TestVersion(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("godel version %v\n", version), string(output))
 }
 
+func TestGitHooksSuccess(t *testing.T) {
+	// create project directory in temporary location so primary project's repository is not modified by test
+	tmp, cleanup, err := dirs.TempDir("", "")
+	defer cleanup()
+	require.NoError(t, err)
+
+	testProjectDir := setUpGödelTestAndDownload(t, tmp, gödelTGZ, version)
+
+	// initialize git repository
+	gittest.InitGitDir(t, testProjectDir)
+
+	// install commit hooks
+	execCommand(t, testProjectDir, "./godelw", "git-hooks")
+
+	// committing Go file that is properly formatted works
+	formatted := `package main
+
+func main() {
+}
+`
+	err = ioutil.WriteFile(path.Join(testProjectDir, "main.go"), []byte(formatted), 0644)
+	require.NoError(t, err)
+	execCommand(t, testProjectDir, "git", "add", ".")
+	execCommand(t, testProjectDir, "git", "commit", "--author=testAuthor <test@author.com>", "-m", "Second commit")
+}
+
+func TestGitHooksFail(t *testing.T) {
+	// create project directory in temporary location so primary project's repository is not modified by test
+	tmp, cleanup, err := dirs.TempDir("", "")
+	defer cleanup()
+	require.NoError(t, err)
+
+	testProjectDir := setUpGödelTestAndDownload(t, tmp, gödelTGZ, version)
+
+	// initialize git repository
+	gittest.InitGitDir(t, testProjectDir)
+
+	// install commit hooks
+	execCommand(t, testProjectDir, "./godelw", "git-hooks")
+
+	// committing Go file that is not properly formatted causes error
+	notFormatted := `package main
+import "fmt"
+
+func Foo() {
+fmt.Println("foo")
+}`
+	err = ioutil.WriteFile(path.Join(testProjectDir, "helper.go"), []byte(notFormatted), 0644)
+	require.NoError(t, err)
+	execCommand(t, testProjectDir, "git", "add", ".")
+
+	cmd := exec.Command("git", "commit", "--author=testAuthor <test@author.com>", "-m", "Second commit")
+	cmd.Dir = testProjectDir
+	output, err := cmd.CombinedOutput()
+	assert.Error(t, err, "exit status 1")
+	assert.Regexp(t, `(?s)^Unformatted files exist -- run ./godelw format to format these files:\n  .+/helper.go\n$`, string(output))
+}
+
 func TestFormat(t *testing.T) {
 	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
 

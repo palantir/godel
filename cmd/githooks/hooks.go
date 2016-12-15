@@ -25,21 +25,22 @@ import (
 )
 
 var hooks = map[string]string{
-	"pre-commit": `gofiles=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')
+	"pre-commit": `#!/bin/bash
+gofiles=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')
 [ -z "$gofiles" ] && exit 0
 
 unformatted=$(./godelw format -l runAll $gofiles)
 exitCode=$?
-[[ $exitCode -ne 0 ]] && exit $exitCode
-[ -z "$unformatted" ] && exit 0
+[ "$exitCode" -eq "0" ] && exit 0
 
-# Unformatted files exist -- print and exit
-echo "Unformatted files exist -- run ./godelw format to format these files:"
-for file in $unformatted; do
-	echo "  $file"
-done
+if [ -n "$unformatted" ]; then
+  echo "Unformatted files exist -- run ./godelw format to format these files:"
+  for file in $unformatted; do
+    echo "  $file"
+  done
+fi
 
-exit 1
+exit $exitCode
 `,
 }
 
