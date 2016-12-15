@@ -26,7 +26,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/palantir/checks/gocd"
+	"github.com/palantir/checks/gocd/gocd"
 )
 
 func DoVerify(dirs []string) error {

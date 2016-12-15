@@ -22,18 +22,40 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 
-	"github.com/palantir/checks/golicense"
+	"github.com/palantir/checks/golicense/golicense"
 )
 
-type RawConfig struct {
-	Header        string                `yaml:"header" json:"header"`
-	CustomHeaders []RawLicenseConfig    `yaml:"custom-headers" json:"custom-headers"`
-	Exclude       matcher.NamesPathsCfg `yaml:"exclude" json:"exclude"`
+type GoLicense struct {
+	// Header is the expected license header. All applicable files are expected to start with this header followed
+	// by a newline.
+	Header string `yaml:"header" json:"header"`
+
+	// CustomHeaders specifies the custom header parameters. Custom header parameters can be used to specify that
+	// certain directories or files in the project should use a header that is different from "Header".
+	CustomHeaders []License `yaml:"custom-headers" json:"custom-headers"`
+
+	// Exclude matches the files and directories that should be excluded from consideration for verifying or
+	// applying licenses.
+	Exclude matcher.NamesPathsCfg `yaml:"exclude" json:"exclude"`
 }
 
-func (r *RawConfig) ToParams() (golicense.LicenseParams, error) {
-	customHeaders := make([]golicense.CustomLicenseParam, len(r.CustomHeaders))
-	for i, v := range r.CustomHeaders {
+type License struct {
+	// Name is the identifier used to identify this custom license parameter. Must be unique.
+	Name string `yaml:"name" json:"name"`
+
+	// Header is the expected license header. All applicable files are expected to start with this header followed
+	// by a newline.
+	Header string `yaml:"header" json:"header"`
+
+	// Paths specifies the paths for which this custom license is applicable. If multiple custom parameters match a
+	// file or directory, the parameter with the longest path match is used. If multiple custom parameters match a
+	// file or directory exactly (match length is equal), it is treated as an error.
+	Paths []string `yaml:"paths" json:"paths"`
+}
+
+func (l *GoLicense) ToParams() (golicense.LicenseParams, error) {
+	customHeaders := make([]golicense.CustomLicenseParam, len(l.CustomHeaders))
+	for i, v := range l.CustomHeaders {
 		customHeaders[i] = v.ToParam()
 	}
 	customParams, err := golicense.NewCustomLicenseParams(customHeaders)
@@ -41,23 +63,17 @@ func (r *RawConfig) ToParams() (golicense.LicenseParams, error) {
 		return golicense.LicenseParams{}, err
 	}
 	return golicense.LicenseParams{
-		Header:        r.Header,
+		Header:        l.Header,
 		CustomHeaders: customParams,
-		Exclude:       r.Exclude.Matcher(),
+		Exclude:       l.Exclude.Matcher(),
 	}, nil
 }
 
-type RawLicenseConfig struct {
-	Name   string   `yaml:"name" json:"name"`
-	Header string   `yaml:"header" json:"header"`
-	Paths  []string `yaml:"paths" json:"paths"`
-}
-
-func (r *RawLicenseConfig) ToParam() golicense.CustomLicenseParam {
+func (l *License) ToParam() golicense.CustomLicenseParam {
 	return golicense.CustomLicenseParam{
-		Name:         r.Name,
-		Header:       r.Header,
-		IncludePaths: r.Paths,
+		Name:         l.Name,
+		Header:       l.Header,
+		IncludePaths: l.Paths,
 	}
 }
 
@@ -70,24 +86,24 @@ func Load(configPath, jsonContent string) (golicense.LicenseParams, error) {
 			return golicense.LicenseParams{}, errors.Wrapf(err, "failed to read file %s", configPath)
 		}
 	}
-	cfg, err := LoadRawConfig(string(yml), jsonContent)
+	cfg, err := LoadFromStrings(string(yml), jsonContent)
 	if err != nil {
 		return golicense.LicenseParams{}, err
 	}
 	return cfg.ToParams()
 }
 
-func LoadRawConfig(ymlContent string, jsonContent string) (RawConfig, error) {
-	cfg := RawConfig{}
+func LoadFromStrings(ymlContent, jsonContent string) (GoLicense, error) {
+	cfg := GoLicense{}
 	if ymlContent != "" {
 		if err := yaml.Unmarshal([]byte(ymlContent), &cfg); err != nil {
-			return RawConfig{}, errors.Wrapf(err, "failed to unmarshal YML %s", ymlContent)
+			return GoLicense{}, errors.Wrapf(err, "failed to unmarshal YML %s", ymlContent)
 		}
 	}
 	if jsonContent != "" {
-		jsonCfg := RawConfig{}
+		jsonCfg := GoLicense{}
 		if err := json.Unmarshal([]byte(jsonContent), &jsonCfg); err != nil {
-			return RawConfig{}, err
+			return GoLicense{}, err
 		}
 		cfg.Exclude.Add(jsonCfg.Exclude)
 	}

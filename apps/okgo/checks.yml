@@ -17,8 +17,7 @@ packages:
   novendor:
     main: github.com/palantir/checks/novendor
   outparamcheck:
-    main: github.com/palantir/checks/outparamcheck/main/outparamcheck
-    distance-to-project-pkg: 2
+    main: github.com/palantir/checks/outparamcheck
   unconvert:
     main: github.com/mdempsky/unconvert
   varcheck:

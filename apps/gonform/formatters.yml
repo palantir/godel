@@ -2,4 +2,4 @@ packages:
   gofmt:
     main: cmd/gofmt
   ptimports:
-    main: github.com/palantir/checks/ptimports/main/ptimports
+    main: github.com/palantir/checks/ptimports

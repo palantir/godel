@@ -6,7 +6,7 @@ import (
 	"sort"
 
 	gofmt "github.com/palantir/godel/apps/gonform/generated_src/internal/cmd/gofmt"
-	ptimports "github.com/palantir/godel/apps/gonform/generated_src/internal/github.com/palantir/checks/ptimports/main/ptimports"
+	ptimports "github.com/palantir/godel/apps/gonform/generated_src/internal/github.com/palantir/checks/ptimports"
 )
 
 var programs = map[string]func(){"gofmt": func() {
