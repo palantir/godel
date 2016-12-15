@@ -24,7 +24,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/palantir/checks/gocd"
+	"github.com/palantir/checks/gocd/gocd"
 )
 
 const importsFileName = "gocd_imports.json"

@@ -24,9 +24,17 @@ import (
 )
 
 type LicenseParams struct {
-	Header        string
+	// Header is the expected license header. All applicable files are expected to start with this header followed
+	// by a newline.
+	Header string
+
+	// CustomHeaders specifies the custom header parameters. Custom header parameters can be used to specify that
+	// certain directories or files in the project should use a header that is different from "Header".
 	CustomHeaders CustomLicenseParams
-	Exclude       matcher.Matcher
+
+	// Exclude matches the files and directories that should be excluded from consideration for verifying or
+	// applying licenses.
+	Exclude matcher.Matcher
 }
 
 type CustomLicenseParams interface {
@@ -104,7 +112,15 @@ func NewCustomLicenseParams(customHeaders []CustomLicenseParam) (CustomLicensePa
 }
 
 type CustomLicenseParam struct {
-	Name         string
-	Header       string
+	// Name is the identifier used to identify this custom license parameter. Must be unique.
+	Name string
+
+	// Header is the expected license header. All applicable files are expected to start with this header followed
+	// by a newline.
+	Header string
+
+	// IncludePaths specifies the paths for which this custom license is applicable. If multiple custom parameters
+	// match a file or directory, the parameter with the longest path match is used. If multiple custom parameters
+	// match a file or directory exactly (match length is equal), it is treated as an error.
 	IncludePaths []string
 }

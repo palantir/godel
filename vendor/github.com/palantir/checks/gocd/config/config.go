@@ -20,14 +20,14 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 
-	"github.com/palantir/checks/gocd"
+	"github.com/palantir/checks/gocd/gocd"
 )
 
-type RawConfig struct {
+type GoCD struct {
 	RootDirs []string `yaml:"root-dirs"`
 }
 
-func (r *RawConfig) ToParams() gocd.Params {
+func (r *GoCD) ToParams() gocd.Params {
 	return gocd.Params{
 		RootDirs: r.RootDirs,
 	}
@@ -42,18 +42,18 @@ func Load(configPath, _ string) (gocd.Params, error) {
 			return gocd.Params{}, errors.Wrapf(err, "failed to read file %s", configPath)
 		}
 	}
-	cfg, err := LoadRawConfig(string(yml))
+	cfg, err := LoadFromYML(string(yml))
 	if err != nil {
 		return gocd.Params{}, err
 	}
 	return cfg.ToParams(), nil
 }
 
-func LoadRawConfig(yml string) (RawConfig, error) {
-	cfg := RawConfig{}
+func LoadFromYML(yml string) (GoCD, error) {
+	cfg := GoCD{}
 	if yml != "" {
 		if err := yaml.Unmarshal([]byte(yml), &cfg); err != nil {
-			return RawConfig{}, errors.Wrapf(err, "failed to unmarshal YML %s", yml)
+			return GoCD{}, errors.Wrapf(err, "failed to unmarshal YML %s", yml)
 		}
 	}
 	return cfg, nil

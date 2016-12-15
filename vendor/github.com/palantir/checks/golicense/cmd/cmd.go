@@ -25,8 +25,8 @@ import (
 	"github.com/palantir/pkg/matcher"
 	"github.com/pkg/errors"
 
-	"github.com/palantir/checks/golicense"
 	"github.com/palantir/checks/golicense/config"
+	"github.com/palantir/checks/golicense/golicense"
 )
 
 const (

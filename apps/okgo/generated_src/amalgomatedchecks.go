@@ -14,7 +14,7 @@ import (
 	compiles "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/palantir/checks/compiles"
 	extimport "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/palantir/checks/extimport"
 	novendor "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/palantir/checks/novendor"
-	outparamcheck "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/palantir/checks/outparamcheck/main/outparamcheck"
+	outparamcheck "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/palantir/checks/outparamcheck"
 	deadcode "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/remyoudompheng/go-misc/deadcode"
 )
 

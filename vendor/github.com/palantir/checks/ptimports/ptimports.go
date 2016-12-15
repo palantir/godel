@@ -18,11 +18,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package amalgomated
+package main
 
 import (
 	"bytes"
-	"github.com/palantir/godel/apps/gonform/generated_src/internal/github.com/palantir/checks/ptimports/main/ptimports/amalgomated_flag"
+	"flag"
 	"fmt"
 	"go/scanner"
 	"io"
@@ -32,13 +32,13 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/palantir/checks/ptimports"
+	"github.com/palantir/checks/ptimports/ptimports"
 )
 
 var (
-	exitCode	= 0
-	list		= flag.Bool("l", false, "list files whose formatting differs from ptimport's")
-	write		= flag.Bool("w", false, "Do not print reformatted sources to standard output. If a file's formatting is different from ptimports's, overwrite it with ptimports's version.")
+	exitCode = 0
+	list     = flag.Bool("l", false, "list files whose formatting differs from ptimport's")
+	write    = flag.Bool("w", false, "Do not print reformatted sources to standard output. If a file's formatting is different from ptimports's, overwrite it with ptimports's version.")
 )
 
 func report(err error) {
@@ -116,7 +116,7 @@ func shouldSkipDir(name string) bool {
 	return name == "Godeps" || name == "vendor"
 }
 
-func AmalgomatedMain() {
+func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	// call gofmtMain in a separate function
