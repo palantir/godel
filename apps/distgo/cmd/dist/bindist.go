@@ -28,7 +28,8 @@ import (
 	"github.com/palantir/godel/apps/distgo/templating"
 )
 
-const binDistInitSh = `set -euo pipefail
+const binDistInitSh = `#!/bin/bash
+set -euo pipefail
 
 BIN_DIR="$(cd "$(dirname "$0")" && pwd)"
 
