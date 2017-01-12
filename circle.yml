@@ -1,6 +1,6 @@
 machine:
   environment:
-    GODIST: "go1.7.3.linux-amd64.tar.gz"
+    GODIST: "go1.7.4.linux-amd64.tar.gz"
     GOPATH: "$HOME/.go_workspace"
     IMPORT_PATH: "github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME"
     GO_PROJECT_SRC_PATH: "$GOPATH/src/$IMPORT_PATH"
