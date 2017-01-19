@@ -256,10 +256,11 @@ type paramCreatorFunc func(ctx cli.Context) testCtxParams
 
 func testParamCreator(ctx cli.Context) testCtxParams {
 	return testCtxParams{
-		stdout:          ctx.App.Stdout,
 		junitOutputPath: cmd.JUnitOutputPath(ctx),
-		verbose:         cmd.Verbose(ctx),
+		race:            cmd.Race(ctx),
+		stdout:          ctx.App.Stdout,
 		tags:            cmd.Tags(ctx),
+		verbose:         cmd.Verbose(ctx),
 	}
 }
 
@@ -274,6 +275,7 @@ type testCtxParams struct {
 	coverageOutPath string
 	junitOutputPath string
 	verbose         bool
+	race            bool
 	tags            []string
 }
 
@@ -294,6 +296,9 @@ func runGoTest(cmder amalgomated.Cmder, pkgs []string, params testCtxParams, w i
 	// make test output verbose
 	if params.verbose {
 		cmder = amalgomated.CmderWithPrependedArgs(cmder, "-v")
+	}
+	if params.race {
+		cmder = amalgomated.CmderWithPrependedArgs(cmder, "-race")
 	}
 	return executeTestCommand(cmder.Cmd(pkgs, wd), params.stdout, w, longestPkgNameLen(pkgs, wd))
 }
@@ -327,7 +332,7 @@ func runGoTestCover(cmder amalgomated.Cmder, pkgs []string, params testCtxParams
 	for _, currPkg := range pkgs {
 		// if error existed, add package to failed tests
 		longestPkgNameLen := longestPkgNameLen(pkgs, wd)
-		failedPkgs, currPkgCoverageFilePath, err := coverSinglePkg(cmder, params.stdout, w, wd, params.verbose, currPkg, tmpDir, longestPkgNameLen)
+		failedPkgs, currPkgCoverageFilePath, err := coverSinglePkg(cmder, params.stdout, w, wd, params.verbose, params.race, currPkg, tmpDir, longestPkgNameLen)
 		if err != nil {
 			failedTests = append(failedTests, failedPkgs...)
 		}
@@ -372,7 +377,7 @@ func appendSingleCoverageOutputToCombined(singleCoverageFilePath string, isFirst
 // writer. The coverage profile for the file is written to a temporary file within the provided directory. The function
 // returns the names of any packages that failed (should be either empty or a slice containing the package name of the
 // package that was covered), the location that the coverage profile for this package was written and an error value.
-func coverSinglePkg(cmder amalgomated.Cmder, stdout io.Writer, rawWriter io.Writer, cmdWd string, verbose bool, currPkg, tmpDir string, longestPkgNameLen int) (rFailedPkgs []string, rTmpFile string, rErr error) {
+func coverSinglePkg(cmder amalgomated.Cmder, stdout io.Writer, rawWriter io.Writer, cmdWd string, verbose, race bool, currPkg, tmpDir string, longestPkgNameLen int) (rFailedPkgs []string, rTmpFile string, rErr error) {
 	currTmpFile, err := ioutil.TempFile(tmpDir, "")
 	if err != nil {
 		return nil, "", errors.Wrapf(err, "failed to create temporary file for coverage for package %s", currPkg)
@@ -387,6 +392,9 @@ func coverSinglePkg(cmder amalgomated.Cmder, stdout io.Writer, rawWriter io.Writ
 	var prependedArgs []string
 	if verbose {
 		prependedArgs = append(prependedArgs, "-v")
+	}
+	if race {
+		prependedArgs = append(prependedArgs, "-race")
 	}
 	prependedArgs = append(prependedArgs, "-covermode=count", "-coverprofile="+currTmpFile.Name())
 	wrappedCmder := amalgomated.CmderWithPrependedArgs(cmder, prependedArgs...)
