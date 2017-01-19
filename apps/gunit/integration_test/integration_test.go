@@ -332,6 +332,43 @@ func TestRun(t *testing.T) {
 			},
 			wantError: `invalid tags: "invalid", "n!otvalid"`,
 		},
+		{
+			name: "detects race conditions if race flag is supplied",
+			filesToCreate: []gofiles.GoFileSpec{
+				{
+					RelPath: "foo_test.go",
+					Src: `package foo
+					import (
+					  "fmt"
+					  "math/rand"
+					  "testing"
+					  "time"
+					)
+					func TestFoo(t *testing.T) {
+					    timeTest()
+					}
+					func timeTest() {
+					    start := time.Now()
+					     var t *time.Timer
+					     t = time.AfterFunc(randomDuration(), func() {
+						 fmt.Println(time.Now().Sub(start))
+						 t.Reset(randomDuration())
+					     })
+					     time.Sleep(1 * time.Second)
+					}
+					func randomDuration() time.Duration {
+					     return time.Duration(rand.Int63n(1e9))
+					}`,
+				},
+			},
+			args: []string{
+				"--race",
+			},
+			wantMatch: func(currCaseTmpDir string) string {
+				return `(?s).+WARNING: DATA RACE.+Found 1 data race\(s\).+`
+			},
+			wantError: `(?s).+WARNING: DATA RACE.+Found 1 data race\(s\).+`,
+		},
 	} {
 		currCaseTmpDir, err := ioutil.TempDir(tmpDir, "")
 		require.NoError(t, err, "Case %d: %s", i, currCase.name)

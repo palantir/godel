@@ -33,6 +33,7 @@ var Library = amalgomated.NewCmdLibrary(amalgomatedtesters.Instance())
 
 const (
 	junitOutputPathFlagName = "junit-output"
+	raceFlagName            = "race"
 	tagsFlagName            = "tags"
 	verboseFlagName         = "verbose"
 	verboseFlagAlias        = "v"
@@ -48,6 +49,10 @@ var (
 			Name:  verboseFlagName,
 			Alias: verboseFlagAlias,
 			Usage: "Enable verbose output for tests",
+		},
+		flag.BoolFlag{
+			Name:  raceFlagName,
+			Usage: "Enable race detector for tests",
 		},
 		flag.StringFlag{
 			Name:  junitOutputPathFlagName,
@@ -65,6 +70,10 @@ func Tags(ctx cli.Context) []string {
 
 func Verbose(ctx cli.Context) bool {
 	return ctx.Bool(verboseFlagName)
+}
+
+func Race(ctx cli.Context) bool {
+	return ctx.Bool(raceFlagName)
 }
 
 func JUnitOutputPath(ctx cli.Context) string {
