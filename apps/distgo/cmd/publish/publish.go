@@ -243,7 +243,7 @@ func (b BasicConnectionInfo) uploadFile(filePath, baseURL, artifactPath string, 
 		return rawUploadURL, errors.Wrapf(err, "Failed to parse %v as URL", rawUploadURL)
 	}
 
-	fmt.Fprintf(stdout, "Uploading %v to %v...\n", fileInfo.path, rawUploadURL)
+	fmt.Fprintf(stdout, "Uploading %v to %v\n", fileInfo.path, rawUploadURL)
 
 	header := http.Header{}
 	addChecksumToHeader(header, "Md5", fileInfo.checksums.MD5)

@@ -82,7 +82,7 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 
 		outputDir := path.Join(buildSpec.ProjectDir, currDistCfg.OutputDir)
 
-		fmt.Fprintf(stdout, "Creating distribution for %v at %v...\n", buildSpec.ProductName, ArtifactPath(buildSpec, currDistCfg))
+		fmt.Fprintf(stdout, "Creating distribution for %v at %v\n", buildSpec.ProductName, ArtifactPath(buildSpec, currDistCfg))
 
 		spec := slsspec.New()
 		values := slsspec.TemplateValues(buildSpec.ProductName, buildSpec.ProductVersion)
