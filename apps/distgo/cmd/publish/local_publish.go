@@ -49,6 +49,6 @@ func (l LocalPublishInfo) Publish(buildSpec params.ProductBuildSpec, paths Produ
 
 func copyArtifact(src, dstDir string, stdout io.Writer) error {
 	dst := path.Join(dstDir, path.Base(src))
-	fmt.Fprintf(stdout, "Copying %v to %v...\n", src, dst)
+	fmt.Fprintf(stdout, "Copying %v to %v\n", src, dst)
 	return shutil.CopyFile(src, dst, false)
 }

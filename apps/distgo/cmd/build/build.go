@@ -182,7 +182,7 @@ func executeBuild(stdout io.Writer, buildSpec params.ProductBuildSpec, ctx Conte
 		return fmt.Errorf("failed to determine artifact path for %s for %s", name, osArch.String())
 	}
 	currOutputDir := path.Dir(outputArtifactPath)
-	fmt.Fprintf(stdout, "Building %s for %s at %s...\n", name, osArch.String(), path.Join(currOutputDir, name))
+	fmt.Fprintf(stdout, "Building %s for %s at %s\n", name, osArch.String(), path.Join(currOutputDir, name))
 
 	if err := os.MkdirAll(currOutputDir, 0755); err != nil {
 		return errors.Wrapf(err, "failed to create directories for %s", currOutputDir)
