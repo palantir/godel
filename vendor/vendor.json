@@ -385,29 +385,29 @@
 			"revisionTime": "2016-06-17T18:51:20Z"
 		},
 		{
-			"checksumSHA1": "Pi0u97cPlWSJJ4O/YjfOcWsACNA=",
+			"checksumSHA1": "SoOfjYDw7R1N1P2aHxIjXYFmWUo=",
 			"origin": "github.com/palantir/checks/vendor/golang.org/x/tools/go/ast/astutil",
 			"path": "golang.org/x/tools/go/ast/astutil",
-			"revision": "e10c8aa87ca8557a2c8f1e4f6cba4473ed6c6788",
-			"revisionTime": "2016-11-19T01:18:18Z"
+			"revision": "9dcbf9708c0ae98c71f8182916e3882a44a8349d",
+			"revisionTime": "2017-01-22T04:55:41Z"
 		},
 		{
-			"checksumSHA1": "AVET+5jDH2MEvtFi1I22DFHJswI=",
+			"checksumSHA1": "VtflDqIRy6TlpT4Dbwr55lxmsh8=",
 			"path": "golang.org/x/tools/go/buildutil",
-			"revision": "c2ef61f450233d3c629ade8eb2083e43fa75c97a",
-			"revisionTime": "2016-09-23T21:57:19Z"
+			"revision": "fcfba28e23c7bbd8474b355ca7d6a9d88afcca00",
+			"revisionTime": "2017-01-17T23:39:01Z"
 		},
 		{
-			"checksumSHA1": "j3qnD5Q9y3oQgTiDxCI9GM6/pfw=",
+			"checksumSHA1": "6YT4sM9s9wAoJIk1mHt1ND1bDkg=",
 			"path": "golang.org/x/tools/go/gcimporter15",
-			"revision": "c2ef61f450233d3c629ade8eb2083e43fa75c97a",
-			"revisionTime": "2016-09-23T21:57:19Z"
+			"revision": "fcfba28e23c7bbd8474b355ca7d6a9d88afcca00",
+			"revisionTime": "2017-01-17T23:39:01Z"
 		},
 		{
-			"checksumSHA1": "6H8iekJjZCQtViKPe7T6O20KCJw=",
+			"checksumSHA1": "qbPByYAjuhYw/CWVOgI345PnDzQ=",
 			"path": "golang.org/x/tools/go/loader",
-			"revision": "c2ef61f450233d3c629ade8eb2083e43fa75c97a",
-			"revisionTime": "2016-09-23T21:57:19Z"
+			"revision": "fcfba28e23c7bbd8474b355ca7d6a9d88afcca00",
+			"revisionTime": "2017-01-17T23:39:01Z"
 		},
 		{
 			"checksumSHA1": "dSv7yfmuh8D1JZ07khtSmVeKIJo=",

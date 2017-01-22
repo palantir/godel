@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build go1.5
-
-// This file is a copy of $GOROOT/src/go/internal/gcimporter/bimport.go, tagged for go1.5.
+// This file is a copy of $GOROOT/src/go/internal/gcimporter/bimport.go.
 
 package gcimporter
 
@@ -27,7 +25,7 @@ type importer struct {
 	data    []byte
 	path    string
 	buf     []byte // for reading strings
-	version int
+	version int    // export format version
 
 	// object lists
 	strList       []string         // in order of appearance
@@ -102,10 +100,10 @@ func BImportData(fset *token.FileSet, imports map[string]*types.Package, data []
 
 	// read version specific flags - extend as necessary
 	switch p.version {
-	// case 3:
+	// case 5:
 	// 	...
 	//	fallthrough
-	case 2, 1:
+	case 4, 3, 2, 1:
 		p.debugFormat = p.rawStringln(p.rawByte()) == "debug"
 		p.trackAllTypes = p.int() != 0
 		p.posInfoFormat = p.int() != 0
@@ -186,7 +184,7 @@ func (p *importer) pkg() *types.Package {
 
 	// we should never see an empty package name
 	if name == "" {
-		panic("empty package name in import")
+		errorf("empty package name in import")
 	}
 
 	// an empty path denotes the package we are currently importing;
@@ -211,17 +209,45 @@ func (p *importer) pkg() *types.Package {
 	return pkg
 }
 
+// objTag returns the tag value for each object kind.
+func objTag(obj types.Object) int {
+	switch obj.(type) {
+	case *types.Const:
+		return constTag
+	case *types.TypeName:
+		return typeTag
+	case *types.Var:
+		return varTag
+	case *types.Func:
+		return funcTag
+	default:
+		errorf("unexpected object: %v (%T)", obj, obj) // panics
+		panic("unreachable")
+	}
+}
+
+func sameObj(a, b types.Object) bool {
+	// Because unnamed types are not canonicalized, we cannot simply compare types for
+	// (pointer) identity.
+	// Ideally we'd check equality of constant values as well, but this is good enough.
+	return objTag(a) == objTag(b) && types.Identical(a.Type(), b.Type())
+}
+
 func (p *importer) declare(obj types.Object) {
 	pkg := obj.Pkg()
 	if alt := pkg.Scope().Insert(obj); alt != nil {
-		// This could only trigger if we import a (non-type) object a second time.
-		// This should never happen because 1) we only import a package once; and
-		// b) we ignore compiler-specific export data which may contain functions
-		// whose inlined function bodies refer to other functions that were already
-		// imported.
-		// (See also the comment in cmd/compile/internal/gc/bimport.go importer.obj,
-		// switch case importing functions).
-		errorf("inconsistent import:\n\t%v\npreviously imported as:\n\t%v\n", alt, obj)
+		// This can only trigger if we import a (non-type) object a second time.
+		// Excluding type aliases, this cannot happen because 1) we only import a package
+		// once; and b) we ignore compiler-specific export data which may contain
+		// functions whose inlined function bodies refer to other functions that
+		// were already imported.
+		// However, type aliases require reexporting the original type, so we need
+		// to allow it (see also the comment in cmd/compile/internal/gc/bimport.go,
+		// method importer.obj, switch case importing functions).
+		// TODO(gri) review/update this comment once the gc compiler handles type aliases.
+		if !sameObj(obj, alt) {
+			errorf("inconsistent import:\n\t%v\npreviously imported as:\n\t%v\n", obj, alt)
+		}
 	}
 }
 
@@ -234,8 +260,15 @@ func (p *importer) obj(tag int) {
 		val := p.value()
 		p.declare(types.NewConst(pos, pkg, name, typ, val))
 
+	case aliasTag:
+		// TODO(gri) verify type alias hookup is correct
+		pos := p.pos()
+		pkg, name := p.qualifiedName()
+		typ := p.typ(nil)
+		p.declare(types.NewTypeName(pos, pkg, name, typ))
+
 	case typeTag:
-		_ = p.typ(nil)
+		p.typ(nil)
 
 	case varTag:
 		pos := p.pos()
@@ -462,7 +495,7 @@ func (p *importer) typ(parent *types.Package) types.Type {
 
 		// no embedded interfaces with gc compiler
 		if p.int() != 0 {
-			panic("unexpected embedded interface")
+			errorf("unexpected embedded interface")
 		}
 
 		t := types.NewInterface(p.methodList(parent), nil)
@@ -505,7 +538,7 @@ func (p *importer) typ(parent *types.Package) types.Type {
 		return t
 
 	default:
-		errorf("unexpected type tag %d", i)
+		errorf("unexpected type tag %d", i) // panics
 		panic("unreachable")
 	}
 }
@@ -515,17 +548,17 @@ func (p *importer) fieldList(parent *types.Package) (fields []*types.Var, tags [
 		fields = make([]*types.Var, n)
 		tags = make([]string, n)
 		for i := range fields {
-			fields[i] = p.field(parent)
-			tags[i] = p.string()
+			fields[i], tags[i] = p.field(parent)
 		}
 	}
 	return
 }
 
-func (p *importer) field(parent *types.Package) *types.Var {
+func (p *importer) field(parent *types.Package) (*types.Var, string) {
 	pos := p.pos()
-	pkg, name := p.fieldName(parent)
+	pkg, name, alias := p.fieldName(parent)
 	typ := p.typ(parent)
+	tag := p.string()
 
 	anonymous := false
 	if name == "" {
@@ -537,12 +570,15 @@ func (p *importer) field(parent *types.Package) *types.Var {
 		case *types.Named:
 			name = typ.Obj().Name()
 		default:
-			panic("anonymous field expected")
+			errorf("named base type expected")
 		}
+		anonymous = true
+	} else if alias {
+		// anonymous field: we have an explicit name because it's an alias
 		anonymous = true
 	}
 
-	return types.NewField(pos, pkg, name, typ, anonymous)
+	return types.NewField(pos, pkg, name, typ, anonymous), tag
 }
 
 func (p *importer) methodList(parent *types.Package) (methods []*types.Func) {
@@ -557,31 +593,42 @@ func (p *importer) methodList(parent *types.Package) (methods []*types.Func) {
 
 func (p *importer) method(parent *types.Package) *types.Func {
 	pos := p.pos()
-	pkg, name := p.fieldName(parent)
+	pkg, name, _ := p.fieldName(parent)
 	params, isddd := p.paramList()
 	result, _ := p.paramList()
 	sig := types.NewSignature(nil, params, result, isddd)
 	return types.NewFunc(pos, pkg, name, sig)
 }
 
-func (p *importer) fieldName(parent *types.Package) (*types.Package, string) {
-	name := p.string()
-	pkg := parent
+func (p *importer) fieldName(parent *types.Package) (pkg *types.Package, name string, alias bool) {
+	name = p.string()
+	pkg = parent
 	if pkg == nil {
 		// use the imported package instead
 		pkg = p.pkgList[0]
 	}
 	if p.version == 0 && name == "_" {
 		// version 0 didn't export a package for _ fields
-		return pkg, name
+		return
 	}
-	if name != "" && !exported(name) {
-		if name == "?" {
-			name = ""
-		}
+	switch name {
+	case "":
+		// 1) field name matches base type name and is exported: nothing to do
+	case "?":
+		// 2) field name matches base type name and is not exported: need package
+		name = ""
 		pkg = p.pkg()
+	case "@":
+		// 3) field name doesn't match type name (alias)
+		name = p.string()
+		alias = true
+		fallthrough
+	default:
+		if !exported(name) {
+			pkg = p.pkg()
+		}
 	}
-	return pkg, name
+	return
 }
 
 func (p *importer) paramList() (*types.Tuple, bool) {
@@ -616,7 +663,7 @@ func (p *importer) param(named bool) (*types.Var, bool) {
 	if named {
 		name = p.string()
 		if name == "" {
-			panic("expected named parameter")
+			errorf("expected named parameter")
 		}
 		if name != "_" {
 			pkg = p.pkg()
@@ -656,7 +703,7 @@ func (p *importer) value() constant.Value {
 	case unknownTag:
 		return constant.MakeUnknown()
 	default:
-		errorf("unexpected value tag %d", tag)
+		errorf("unexpected value tag %d", tag) // panics
 		panic("unreachable")
 	}
 }
@@ -720,7 +767,7 @@ func (p *importer) tagOrIndex() int {
 func (p *importer) int() int {
 	x := p.int64()
 	if int64(int(x)) != x {
-		panic("exported integer too large")
+		errorf("exported integer too large")
 	}
 	return int(x)
 }
@@ -807,7 +854,7 @@ func (p *importer) rawByte() byte {
 		case '|':
 			// nothing to do
 		default:
-			panic("unexpected escape sequence in export data")
+			errorf("unexpected escape sequence in export data")
 		}
 	}
 	p.data = p.data[r:]
@@ -849,7 +896,11 @@ const (
 	fractionTag // not used by gc
 	complexTag
 	stringTag
+	nilTag     // only used by gc (appears in exported inlined function bodies)
 	unknownTag // not used by gc (only appears in packages with errors)
+
+	// Type aliases
+	aliasTag
 )
 
 var predeclared = []types.Type{
@@ -872,7 +923,7 @@ var predeclared = []types.Type{
 	types.Typ[types.Complex128],
 	types.Typ[types.String],
 
-	// aliases
+	// basic type aliases
 	types.Universe.Lookup("byte").Type(),
 	types.Universe.Lookup("rune").Type(),
 
