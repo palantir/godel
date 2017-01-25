@@ -141,6 +141,13 @@ var (
 			pathToCfg:      []string{"dist.yml"},
 		},
 		{
+			name:           "clean",
+			app:            distgoCreator,
+			decorator:      distgoDecorator,
+			subcommandPath: []string{"clean"},
+			pathToCfg:      []string{"dist.yml"},
+		},
+		{
 			name:           "artifacts",
 			app:            distgoCreator,
 			decorator:      distgoDecorator,
