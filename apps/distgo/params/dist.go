@@ -60,9 +60,10 @@ type Dist struct {
 type DistInfoType string
 
 const (
-	SLSDistType DistInfoType = "sls" // distribution that uses the Standard Layout Specification
-	BinDistType DistInfoType = "bin" // distribution that includes all of the binaries for a product
-	RPMDistType DistInfoType = "rpm" // RPM distribution
+	SLSDistType    DistInfoType = "sls"    // distribution that uses the Standard Layout Specification
+	BinDistType    DistInfoType = "bin"    // distribution that includes all of the binaries for a product
+	DockerDistType DistInfoType = "docker" // Docker image of the product
+	RPMDistType    DistInfoType = "rpm"    // RPM distribution
 )
 
 type DistInfo interface {
@@ -81,6 +82,38 @@ type BinDistInfo struct {
 
 func (i *BinDistInfo) Type() DistInfoType {
 	return BinDistType
+}
+
+type DockerDistInfo struct {
+	// ManifestTemplateFile is the path to a template file that is used as the basis for the manifest.yml file of
+	// the distribution. The path is relative to the project root directory. The contents of the file is processed
+	// using Go templates and is provided with a distgo.ProductBuildSpec struct.
+	ManifestTemplateFile string
+
+	// ConfigurationFile is an optional path to an SLS services' configuration file. This will get turned into a label
+	// on the image at build time.
+	ConfigurationFile string
+
+	// Repo is the fully-qualified image name including the domain of the docker registry that you wish to push this
+	// image to (for docker hub, this is your username).
+	Repository string
+
+	// Tag is an optional field that left unspecified will be set to the version of the project.
+	Tag string
+
+	// Labels are arbitrary key-value pairs that get set on the image at build time. All labels are condensed into one
+	// layer on the resulting image to prevent bloat.
+	Labels map[string]string
+
+	// ProductType is the SLS product type for the distribution.
+	ProductType string
+
+	// ManifestExtensions contain the SLS manifest extensions for the distribution.
+	ManifestExtensions map[string]interface{}
+}
+
+func (i *DockerDistInfo) Type() DistInfoType {
+	return DockerDistType
 }
 
 type SLSDistInfo struct {

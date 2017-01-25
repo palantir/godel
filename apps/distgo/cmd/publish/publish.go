@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 	"text/template"
@@ -67,8 +68,14 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, publisher Publisher,
 	for _, currDistCfg := range buildSpec.Dist {
 		// verify that distribution to publish exists
 		artifactPath := dist.ArtifactPath(buildSpec, currDistCfg)
-		if _, err := os.Stat(artifactPath); os.IsNotExist(err) {
-			return errors.Errorf("distribution for %v does not exist at %v", buildSpec.ProductName, artifactPath)
+		if currDistCfg.Info.Type() != params.DockerDistType {
+			if _, err := os.Stat(artifactPath); os.IsNotExist(err) {
+				return errors.Errorf("distribution for %v does not exist at %v", buildSpec.ProductName, artifactPath)
+			}
+		} else {
+			if _, err := exec.Command("docker", "images", artifactPath).CombinedOutput(); err != nil {
+				return errors.Errorf("distribution image for %v does not exist locally", artifactPath)
+			}
 		}
 
 		paths, err := productPath(buildSpecWithDeps, currDistCfg)
@@ -149,6 +156,8 @@ func packagingType(distType params.DistInfoType) (string, error) {
 		return "tgz", nil
 	case params.RPMDistType:
 		return "rpm", nil
+	case params.DockerDistType:
+		return "docker", nil
 	default:
 		return "", fmt.Errorf("unknown dist type: %v", distType)
 	}

@@ -99,6 +99,7 @@ func Command() cli.Command {
 			local.createCommand(),
 			artifactory.createCommand(),
 			bintray.createCommand(),
+			docker.createCommand(),
 		},
 	}
 
@@ -195,6 +196,16 @@ var (
 				Release:             ctx.Bool(publishFlagName),
 				DownloadsList:       ctx.Bool(downloadsListFlagName),
 			}
+		},
+	}
+	docker = publisherType{
+		name:  "docker",
+		usage: "Publish an image to a remote registry",
+		flags: []flag.Flag{
+			failFastFlag,
+		},
+		publisher: func(ctx cli.Context) Publisher {
+			return DockerPublishInfo{}
 		},
 	}
 )

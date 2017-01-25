@@ -229,6 +229,44 @@ echo "main.year=$YEAR"
 				}
 			},
 		},
+		{
+			yml: `
+			products:
+			  test:
+			    dist:
+			      dist-type:
+			        type: docker
+			        info:
+			          repository: my.test.registry/my-cool-project/app
+			          tag: 1.0
+					  manifest-template-file:
+					  configuration-file:
+					  labels:
+					    my.test.label: super-cool-label
+			`,
+			want: func() config.Project {
+				return config.Project{
+					Products: map[string]config.Product{
+						"test": {
+							Dist: []config.Dist{{
+								DistType: config.DistInfo{
+									Type: string(params.DockerDistType),
+									Info: config.DockerDist{
+										ManifestTemplateFile: "resources/input/manifest.yml",
+										ConfigurationFile:    "resources/input/configuration.yml",
+										Repository:           "my.test.registry/my-cool-project/app",
+										Tag:                  "1.0",
+										Labels: map[string]string{
+											"my.test.label": "super-cool-label",
+										},
+									},
+								},
+							}},
+						},
+					},
+				}
+			},
+		},
 	} {
 		// load config
 		got, err := config.LoadRawConfig(unindent(currCase.yml), currCase.json)

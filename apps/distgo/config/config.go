@@ -179,6 +179,34 @@ type BinDist struct {
 	InitShTemplateFile string `yaml:"init-sh-template-file" json:"init-sh-template-file"`
 }
 
+type DockerDist struct {
+	// ManifestTemplateFile is the path to a template file that is used as the basis for the manifest.yml file of
+	// the distribution. The path is relative to the project root directory. The contents of the file is processed
+	// using Go templates and is provided with a distgo.ProductBuildSpec struct.
+	ManifestTemplateFile string `yaml:"manifest-template-file" json:"manifest-template-file"`
+
+	// ConfigurationFile is an optional path to an SLS services' configuration file. This will get turned into a label
+	// on the image at build time.
+	ConfigurationFile string `yaml:"configuration-file" json:"configuration-file"`
+
+	// Repo is the fully-qualified image name including the domain of the docker registry that you wish to push this
+	// image to (for docker hub, this is your username). If left empty, this will default to your product name.
+	Repository string `yaml:"repository" json:"repository"`
+
+	// Tag is an optional field that left unspecified will be set to the version of the project.
+	Tag string `yaml:"tag" json:"tag"`
+
+	// Labels are arbitrary key-value pairs that get set on the image at build time. All labels are condensed into one
+	// layer on the resulting image to prevent bloat.
+	Labels map[string]string `yaml:"labels" json:"labels"`
+
+	// ProductType is the SLS product type for the distribution (i.e. service.v1).
+	ProductType string `yaml:"product-type" json:"product-type"`
+
+	// ManifestExtensions contain the SLS manifest extensions for the distribution.
+	ManifestExtensions map[string]interface{} `yaml:"manifest-extensions" json:"manifest-extensions"`
+}
+
 type SLSDist struct {
 	// InitShTemplateFile is the path to a template file that is used as the basis for the init.sh script of the
 	// distribution. The path is relative to the project root directory. The contents of the file is processed using
@@ -373,6 +401,16 @@ func (cfg *DistInfo) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			return err
 		}
 		rawDistInfoConfig.Info = rawRPM.Info
+	case params.DockerDistType:
+		type typedRawConfig struct {
+			Type string
+			Info DockerDist
+		}
+		var rawDocker typedRawConfig
+		if err := unmarshal(&rawDocker); err != nil {
+			return err
+		}
+		rawDistInfoConfig.Info = rawDocker.Info
 	}
 	*cfg = rawDistInfoConfig
 	return nil
@@ -411,6 +449,18 @@ func (cfg *DistInfo) ToParam() (params.DistInfo, error) {
 				BeforeInstallScript: val.BeforeInstallScript,
 				AfterInstallScript:  val.AfterInstallScript,
 				AfterRemoveScript:   val.AfterRemoveScript,
+			}
+		case params.DockerDistType:
+			val := DockerDist{}
+			decodeErr = mapstructure.Decode(cfg.Info, &val)
+			distInfo = &params.DockerDistInfo{
+				ManifestTemplateFile: val.ManifestTemplateFile,
+				ConfigurationFile:    val.ConfigurationFile,
+				Repository:           val.Repository,
+				Tag:                  val.Tag,
+				Labels:               val.Labels,
+				ProductType:          val.ProductType,
+				ManifestExtensions:   val.ManifestExtensions,
 			}
 		default:
 			return nil, errors.Errorf("No unmarshaller found for type %s for %v", cfg.Type, *cfg)
