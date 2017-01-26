@@ -23,11 +23,23 @@ import (
 	"github.com/palantir/godel/apps/distgo/params"
 )
 
+const (
+	defaultBuildOutputDir = "build"
+	defaultDistOutputDir  = "dist"
+)
+
 func Clean(products []string, cfg params.Project) error {
 	// Only remove default output directories if no products specified
 	if len(products) == 0 {
+		if cfg.BuildOutputDir == "" {
+			cfg.BuildOutputDir = defaultBuildOutputDir
+		}
 		if err := remove(cfg.BuildOutputDir); err != nil {
 			return errors.WithStack(err)
+		}
+
+		if cfg.DistOutputDir == "" {
+			cfg.DistOutputDir = defaultDistOutputDir
 		}
 		if err := remove(cfg.DistOutputDir); err != nil {
 			return errors.WithStack(err)

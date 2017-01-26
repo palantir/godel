@@ -509,6 +509,140 @@ products:
 	assert.Equal(t, "dist/bar-0.1.0.sls.tgz\ndist/foo-0.1.0.sls.tgz\n", output)
 }
 
+func TestArtifactsBuildClean(t *testing.T) {
+	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	gittest.InitGitDir(t, testProjectDir)
+
+	distYml := `
+products:
+  foo:
+    build:
+      output-dir: ./foo/build
+      main-pkg: ./foo
+      os-archs:
+        - os: darwin
+          arch: amd64
+        - os: linux
+          arch: amd64
+  bar:
+    build:
+      main-pkg: ./bar
+      os-archs:
+        - os: linux
+          arch: amd64
+`
+	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "dist.yml"), []byte(distYml), 0644)
+	require.NoError(t, err)
+
+	src := `package main
+	import "fmt"
+
+	func main() {
+		fmt.Println("hello, world!")
+	}`
+	err = os.MkdirAll(path.Join(testProjectDir, "foo"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(testProjectDir, "foo", "foo.go"), []byte(src), 0644)
+	require.NoError(t, err)
+
+	err = os.MkdirAll(path.Join(testProjectDir, "bar"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(testProjectDir, "bar", "bar.go"), []byte(src), 0644)
+	require.NoError(t, err)
+
+	gittest.CommitAllFiles(t, testProjectDir, "Commit files")
+	gittest.CreateGitTag(t, testProjectDir, "0.1.0")
+
+	execCommand(t, testProjectDir, "./godelw", "build")
+	fooBuild := execCommand(t, testProjectDir, "find", "foo/build", "-type", "f")
+	barBuild := execCommand(t, testProjectDir, "find", "build", "-type", "f")
+
+	fooWant := `foo/build/0.1.0/darwin-amd64/foo
+foo/build/0.1.0/linux-amd64/foo
+`
+	barWant := `build/0.1.0/linux-amd64/bar
+`
+
+	assert.Equal(t, fooWant, fooBuild)
+	assert.Equal(t, barWant, barBuild)
+
+	execCommand(t, testProjectDir, "./godelw", "clean", "foo")
+	fooBuild = execCommand(t, testProjectDir, "ls", "foo")
+	barBuild = execCommand(t, testProjectDir, "find", "build", "-type", "f")
+
+	assert.NotContains(t, fooBuild, "build", "build directory should have been deleted for product foo")
+	assert.Equal(t, barWant, barBuild, "build directory for product bar should be untouched")
+
+	execCommand(t, testProjectDir, "./godelw", "clean")
+	barBuild = execCommand(t, testProjectDir, "ls")
+
+	assert.NotContains(t, barBuild, "build", "build directory should have been deleted for product bar")
+}
+
+func TestArtifactsDistClean(t *testing.T) {
+	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	gittest.InitGitDir(t, testProjectDir)
+
+	distYml := `
+group-id: com.palantir.godel
+products:
+  foo:
+    build:
+      main-pkg: ./foo
+      os-archs:
+        - os: linux
+          arch: amd64
+    dist:
+      output-dir: ./foo/dist
+  bar:
+    build:
+      main-pkg: ./bar
+      os-archs:
+        - os: darwin
+          arch: amd64
+`
+	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "dist.yml"), []byte(distYml), 0644)
+	require.NoError(t, err)
+
+	src := `package main
+	import "fmt"
+
+	func main() {
+		fmt.Println("hello, world!")
+	}`
+	err = os.MkdirAll(path.Join(testProjectDir, "foo"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(testProjectDir, "foo", "foo.go"), []byte(src), 0644)
+	require.NoError(t, err)
+
+	err = os.MkdirAll(path.Join(testProjectDir, "bar"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(testProjectDir, "bar", "bar.go"), []byte(src), 0644)
+	require.NoError(t, err)
+
+	gittest.CommitAllFiles(t, testProjectDir, "Commit files")
+	gittest.CreateGitTag(t, testProjectDir, "0.1.0")
+
+	execCommand(t, testProjectDir, "./godelw", "dist")
+	fooDist := execCommand(t, testProjectDir, "find", "foo/dist", "-type", "f")
+	barDist := execCommand(t, testProjectDir, "find", "dist", "-type", "f")
+
+	assert.Contains(t, fooDist, "foo/dist/foo-0.1.0.sls.tgz")
+	assert.Contains(t, barDist, "dist/bar-0.1.0.sls.tgz")
+
+	execCommand(t, testProjectDir, "./godelw", "clean", "foo")
+	fooDist = execCommand(t, testProjectDir, "ls", "foo")
+	barDist = execCommand(t, testProjectDir, "find", "dist", "-type", "f")
+
+	assert.NotContains(t, fooDist, "dist", "dist directory should have been deleted for product foo")
+	assert.Contains(t, barDist, "dist/bar-0.1.0.sls.tgz", "dist directory for product bar should be untouched")
+
+	execCommand(t, testProjectDir, "./godelw", "clean")
+	barDist = execCommand(t, testProjectDir, "ls")
+
+	assert.NotContains(t, barDist, "dist", "dist directory should have been deleted for product bar")
+}
+
 func TestTest(t *testing.T) {
 	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
 	src := `package foo_test
