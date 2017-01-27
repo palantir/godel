@@ -27,6 +27,7 @@ import (
 
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/nmiyake/pkg/gofiles"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -544,6 +545,10 @@ products:
 	require.NoError(t, err)
 	err = ioutil.WriteFile(path.Join(testProjectDir, "foo", "foo.go"), []byte(src), 0644)
 	require.NoError(t, err)
+	err = os.MkdirAll(path.Join(testProjectDir, "foo", "build"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(testProjectDir, "foo", "build", "test-file"), []byte("test"), 0644)
+	require.NoError(t, err)
 
 	err = os.MkdirAll(path.Join(testProjectDir, "bar"), 0755)
 	require.NoError(t, err)
@@ -554,29 +559,43 @@ products:
 	gittest.CreateGitTag(t, testProjectDir, "0.1.0")
 
 	execCommand(t, testProjectDir, "./godelw", "build")
-	fooBuild := execCommand(t, testProjectDir, "find", "foo/build", "-type", "f")
-	barBuild := execCommand(t, testProjectDir, "find", "build", "-type", "f")
+	fooBuildDir := path.Join(testProjectDir, "foo")
+	barBuildDir := path.Join(testProjectDir)
 
-	fooWant := `foo/build/0.1.0/darwin-amd64/foo
-foo/build/0.1.0/linux-amd64/foo
-`
-	barWant := `build/0.1.0/linux-amd64/bar
-`
+	// Builds exist for both products
+	fooBuildFiles, err := listRecursive(fooBuildDir)
+	require.NoError(t, err)
+	barBuildFiles, err := listRecursive(barBuildDir)
+	require.NoError(t, err)
+	assert.Contains(t, fooBuildFiles, "build/0.1.0/darwin-amd64/foo")
+	assert.Contains(t, fooBuildFiles, "build/0.1.0/linux-amd64/foo")
+	assert.Contains(t, barBuildFiles, "build/0.1.0/linux-amd64/bar")
 
-	assert.Equal(t, fooWant, fooBuild)
-	assert.Equal(t, barWant, barBuild)
-
+	// Cleaning foo only removes foo builds
 	execCommand(t, testProjectDir, "./godelw", "clean", "foo")
-	fooBuild = execCommand(t, testProjectDir, "ls", "foo")
-	barBuild = execCommand(t, testProjectDir, "find", "build", "-type", "f")
+	fooBuildFiles, err = listRecursive(fooBuildDir)
+	require.NoError(t, err)
+	barBuildFiles, err = listRecursive(barBuildDir)
+	require.NoError(t, err)
+	assert.Contains(t, fooBuildFiles, "build/test-file", "Non-build files in build dir should not be removed")
+	assert.NotContains(t, fooBuildFiles, "build/0.1.0/darwin-amd64/foo", "Build for foo should have been removed")
+	assert.NotContains(t, fooBuildFiles, "build/0.1.0/linux-amd64/foo", "Build for foo should have been removed")
+	assert.Contains(t, barBuildFiles, "build/0.1.0/linux-amd64/bar", "Build for bar should exist")
 
-	assert.NotContains(t, fooBuild, "build", "build directory should have been deleted for product foo")
-	assert.Equal(t, barWant, barBuild, "build directory for product bar should be untouched")
+	// Cleaning foo with force removes everything from the build dir
+	execCommand(t, testProjectDir, "./godelw", "clean", "foo", "--force")
+	fooBuildFiles, err = listRecursive(fooBuildDir)
+	require.NoError(t, err)
+	barBuildFiles, err = listRecursive(barBuildDir)
+	require.NoError(t, err)
+	assert.NotContains(t, fooBuildFiles, "build/test-file", "Non-build files in build dir should get removed with force")
+	assert.Contains(t, barBuildFiles, "build/0.1.0/linux-amd64/bar", "Build for bar should exist")
 
+	// Clean with no products removes default builds
 	execCommand(t, testProjectDir, "./godelw", "clean")
-	barBuild = execCommand(t, testProjectDir, "ls")
-
-	assert.NotContains(t, barBuild, "build", "build directory should have been deleted for product bar")
+	barBuildFiles, err = listRecursive(barBuildDir)
+	require.NoError(t, err)
+	assert.NotContains(t, barBuildFiles, "build/0.1.0/linux-amd64/bar", "Build for bar should have been removed")
 }
 
 func TestArtifactsDistClean(t *testing.T) {
@@ -624,23 +643,31 @@ products:
 	gittest.CreateGitTag(t, testProjectDir, "0.1.0")
 
 	execCommand(t, testProjectDir, "./godelw", "dist")
-	fooDist := execCommand(t, testProjectDir, "find", "foo/dist", "-type", "f")
-	barDist := execCommand(t, testProjectDir, "find", "dist", "-type", "f")
+	fooDistDir := path.Join(testProjectDir, "foo")
+	barDistDir := path.Join(testProjectDir)
 
-	assert.Contains(t, fooDist, "foo/dist/foo-0.1.0.sls.tgz")
-	assert.Contains(t, barDist, "dist/bar-0.1.0.sls.tgz")
+	// Dists exist for both products
+	fooDistFiles, err := listRecursive(fooDistDir)
+	require.NoError(t, err)
+	barDistFiles, err := listRecursive(barDistDir)
+	require.NoError(t, err)
+	assert.Contains(t, fooDistFiles, "dist/foo-0.1.0.sls.tgz")
+	assert.Contains(t, barDistFiles, "dist/bar-0.1.0.sls.tgz")
 
+	// Cleaning foo only removes foo dists
 	execCommand(t, testProjectDir, "./godelw", "clean", "foo")
-	fooDist = execCommand(t, testProjectDir, "ls", "foo")
-	barDist = execCommand(t, testProjectDir, "find", "dist", "-type", "f")
+	fooDistFiles, err = listRecursive(fooDistDir)
+	require.NoError(t, err)
+	barDistFiles, err = listRecursive(barDistDir)
+	require.NoError(t, err)
+	assert.NotContains(t, fooDistFiles, "dist/foo-0.1.0.sls.tgz", "Distribution for foo should have been removed")
+	assert.Contains(t, barDistFiles, "dist/bar-0.1.0.sls.tgz", "Distribution for bar should exist")
 
-	assert.NotContains(t, fooDist, "dist", "dist directory should have been deleted for product foo")
-	assert.Contains(t, barDist, "dist/bar-0.1.0.sls.tgz", "dist directory for product bar should be untouched")
-
+	// Clean with no products removes default dists
 	execCommand(t, testProjectDir, "./godelw", "clean")
-	barDist = execCommand(t, testProjectDir, "ls")
-
-	assert.NotContains(t, barDist, "dist", "dist directory should have been deleted for product bar")
+	barDistFiles, err = listRecursive(barDistDir)
+	require.NoError(t, err)
+	assert.NotContains(t, barDistFiles, "dist/bar-0.1.0.sls.tgz", "Distribution for bar should have been removed")
 }
 
 func TestTest(t *testing.T) {
@@ -1137,4 +1164,16 @@ func execCommand(t *testing.T, dir, cmdName string, args ...string) string {
 	output, err := cmd.CombinedOutput()
 	require.NoError(t, err, "Command %v failed. Output:\n%v", cmd.Args, string(output))
 	return string(output)
+}
+
+func listRecursive(dir string) ([]string, error) {
+	fileList := []string{}
+	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		fileList = append(fileList, strings.TrimPrefix(strings.TrimPrefix(path, dir), "/"))
+		return nil
+	})
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return fileList, nil
 }

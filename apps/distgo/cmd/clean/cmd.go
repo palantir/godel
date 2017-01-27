@@ -23,12 +23,24 @@ import (
 	"github.com/palantir/godel/apps/distgo/config"
 )
 
+const (
+	forceFlagName = "force"
+)
+
+var (
+	forceFlag = flag.BoolFlag{
+		Name:  forceFlagName,
+		Usage: "force removal of files in build and dist directories that weren't produced in a build",
+	}
+)
+
 func Command() cli.Command {
 	return cli.Command{
 		Name:  "clean",
 		Usage: "Clean product build and distribution directories",
 		Flags: []flag.Flag{
 			cmd.ProductsParam,
+			forceFlag,
 		},
 		Action: func(ctx cli.Context) error {
 			cfg, err := config.Load(cfgcli.ConfigPath, cfgcli.ConfigJSON)
@@ -36,7 +48,7 @@ func Command() cli.Command {
 				return err
 			}
 
-			return Clean(ctx.Slice(cmd.ProductsParamName), cfg)
+			return Clean(ctx.Slice(cmd.ProductsParamName), cfg, ctx.Bool(forceFlagName), ctx.App.Stdout)
 		},
 	}
 }
