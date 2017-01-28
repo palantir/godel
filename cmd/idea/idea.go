@@ -59,7 +59,7 @@ const (
         <array />
       </option>
       <option name="outputFromStdout" value="false" />
-      <option name="program" value="$ProjectFileDir$/godelw" />
+      <option name="program" value="$PROJECT_DIR$/godelw" />
       <option name="scopeName" value="Changed Files" />
       <option name="trackOnlyRoot" value="false" />
       <option name="workingDir" value="$ProjectFileDir$" />
