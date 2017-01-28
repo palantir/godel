@@ -27,6 +27,7 @@ import (
 
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/nmiyake/pkg/gofiles"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -507,6 +508,166 @@ products:
 
 	output := execCommand(t, testProjectDir, "./godelw", "artifacts", "dist")
 	assert.Equal(t, "dist/bar-0.1.0.sls.tgz\ndist/foo-0.1.0.sls.tgz\n", output)
+}
+
+func TestArtifactsBuildClean(t *testing.T) {
+	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	gittest.InitGitDir(t, testProjectDir)
+
+	distYml := `
+products:
+  foo:
+    build:
+      output-dir: ./foo/build
+      main-pkg: ./foo
+      os-archs:
+        - os: darwin
+          arch: amd64
+        - os: linux
+          arch: amd64
+  bar:
+    build:
+      main-pkg: ./bar
+      os-archs:
+        - os: linux
+          arch: amd64
+`
+	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "dist.yml"), []byte(distYml), 0644)
+	require.NoError(t, err)
+
+	src := `package main
+	import "fmt"
+
+	func main() {
+		fmt.Println("hello, world!")
+	}`
+	err = os.MkdirAll(path.Join(testProjectDir, "foo"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(testProjectDir, "foo", "foo.go"), []byte(src), 0644)
+	require.NoError(t, err)
+	err = os.MkdirAll(path.Join(testProjectDir, "foo", "build"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(testProjectDir, "foo", "build", "test-file"), []byte("test"), 0644)
+	require.NoError(t, err)
+
+	err = os.MkdirAll(path.Join(testProjectDir, "bar"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(testProjectDir, "bar", "bar.go"), []byte(src), 0644)
+	require.NoError(t, err)
+
+	gittest.CommitAllFiles(t, testProjectDir, "Commit files")
+	gittest.CreateGitTag(t, testProjectDir, "0.1.0")
+
+	execCommand(t, testProjectDir, "./godelw", "build")
+	fooBuildDir := path.Join(testProjectDir, "foo")
+	barBuildDir := path.Join(testProjectDir)
+
+	// Builds exist for both products
+	fooBuildFiles, err := listRecursive(fooBuildDir)
+	require.NoError(t, err)
+	barBuildFiles, err := listRecursive(barBuildDir)
+	require.NoError(t, err)
+	assert.Contains(t, fooBuildFiles, "build/0.1.0/darwin-amd64/foo")
+	assert.Contains(t, fooBuildFiles, "build/0.1.0/linux-amd64/foo")
+	assert.Contains(t, barBuildFiles, "build/0.1.0/linux-amd64/bar")
+
+	// Cleaning foo only removes foo builds
+	execCommand(t, testProjectDir, "./godelw", "clean", "foo")
+	fooBuildFiles, err = listRecursive(fooBuildDir)
+	require.NoError(t, err)
+	barBuildFiles, err = listRecursive(barBuildDir)
+	require.NoError(t, err)
+	assert.Contains(t, fooBuildFiles, "build/test-file", "Non-build files in build dir should not be removed")
+	assert.NotContains(t, fooBuildFiles, "build/0.1.0/darwin-amd64/foo", "Build for foo should have been removed")
+	assert.NotContains(t, fooBuildFiles, "build/0.1.0/linux-amd64/foo", "Build for foo should have been removed")
+	assert.Contains(t, barBuildFiles, "build/0.1.0/linux-amd64/bar", "Build for bar should exist")
+
+	// Cleaning foo with force removes everything from the build dir
+	execCommand(t, testProjectDir, "./godelw", "clean", "foo", "--force")
+	fooBuildFiles, err = listRecursive(fooBuildDir)
+	require.NoError(t, err)
+	barBuildFiles, err = listRecursive(barBuildDir)
+	require.NoError(t, err)
+	assert.NotContains(t, fooBuildFiles, "build/test-file", "Non-build files in build dir should get removed with force")
+	assert.Contains(t, barBuildFiles, "build/0.1.0/linux-amd64/bar", "Build for bar should exist")
+
+	// Clean with no products removes default builds
+	execCommand(t, testProjectDir, "./godelw", "clean")
+	barBuildFiles, err = listRecursive(barBuildDir)
+	require.NoError(t, err)
+	assert.NotContains(t, barBuildFiles, "build/0.1.0/linux-amd64/bar", "Build for bar should have been removed")
+}
+
+func TestArtifactsDistClean(t *testing.T) {
+	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	gittest.InitGitDir(t, testProjectDir)
+
+	distYml := `
+group-id: com.palantir.godel
+products:
+  foo:
+    build:
+      main-pkg: ./foo
+      os-archs:
+        - os: linux
+          arch: amd64
+    dist:
+      output-dir: ./foo/dist
+  bar:
+    build:
+      main-pkg: ./bar
+      os-archs:
+        - os: darwin
+          arch: amd64
+`
+	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "dist.yml"), []byte(distYml), 0644)
+	require.NoError(t, err)
+
+	src := `package main
+	import "fmt"
+
+	func main() {
+		fmt.Println("hello, world!")
+	}`
+	err = os.MkdirAll(path.Join(testProjectDir, "foo"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(testProjectDir, "foo", "foo.go"), []byte(src), 0644)
+	require.NoError(t, err)
+
+	err = os.MkdirAll(path.Join(testProjectDir, "bar"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(testProjectDir, "bar", "bar.go"), []byte(src), 0644)
+	require.NoError(t, err)
+
+	gittest.CommitAllFiles(t, testProjectDir, "Commit files")
+	gittest.CreateGitTag(t, testProjectDir, "0.1.0")
+
+	execCommand(t, testProjectDir, "./godelw", "dist")
+	fooDistDir := path.Join(testProjectDir, "foo")
+	barDistDir := path.Join(testProjectDir)
+
+	// Dists exist for both products
+	fooDistFiles, err := listRecursive(fooDistDir)
+	require.NoError(t, err)
+	barDistFiles, err := listRecursive(barDistDir)
+	require.NoError(t, err)
+	assert.Contains(t, fooDistFiles, "dist/foo-0.1.0.sls.tgz")
+	assert.Contains(t, barDistFiles, "dist/bar-0.1.0.sls.tgz")
+
+	// Cleaning foo only removes foo dists
+	execCommand(t, testProjectDir, "./godelw", "clean", "foo")
+	fooDistFiles, err = listRecursive(fooDistDir)
+	require.NoError(t, err)
+	barDistFiles, err = listRecursive(barDistDir)
+	require.NoError(t, err)
+	assert.NotContains(t, fooDistFiles, "dist/foo-0.1.0.sls.tgz", "Distribution for foo should have been removed")
+	assert.Contains(t, barDistFiles, "dist/bar-0.1.0.sls.tgz", "Distribution for bar should exist")
+
+	// Clean with no products removes default dists
+	execCommand(t, testProjectDir, "./godelw", "clean")
+	barDistFiles, err = listRecursive(barDistDir)
+	require.NoError(t, err)
+	assert.NotContains(t, barDistFiles, "dist/bar-0.1.0.sls.tgz", "Distribution for bar should have been removed")
 }
 
 func TestTest(t *testing.T) {
@@ -1003,4 +1164,16 @@ func execCommand(t *testing.T, dir, cmdName string, args ...string) string {
 	output, err := cmd.CombinedOutput()
 	require.NoError(t, err, "Command %v failed. Output:\n%v", cmd.Args, string(output))
 	return string(output)
+}
+
+func listRecursive(dir string) ([]string, error) {
+	fileList := []string{}
+	err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		fileList = append(fileList, strings.TrimPrefix(strings.TrimPrefix(path, dir), "/"))
+		return nil
+	})
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return fileList, nil
 }
