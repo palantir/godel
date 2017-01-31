@@ -509,6 +509,57 @@ products:
 	assert.Equal(t, "dist/bar-0.1.0.sls.tgz\ndist/foo-0.1.0.sls.tgz\n", output)
 }
 
+func TestRun(t *testing.T) {
+	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	gittest.InitGitDir(t, testProjectDir)
+
+	distYml := `
+products:
+  foo:
+    build:
+      main-pkg: ./foo
+  bar:
+    build:
+      main-pkg: ./bar
+`
+	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "dist.yml"), []byte(distYml), 0644)
+	require.NoError(t, err)
+
+	fooSrc := `package main
+	import (
+		"fmt"
+		"os"
+	)
+
+	func main() {
+		fmt.Println("foo:", os.Args[1:])
+	}`
+	err = os.MkdirAll(path.Join(testProjectDir, "foo"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(testProjectDir, "foo", "foo.go"), []byte(fooSrc), 0644)
+	require.NoError(t, err)
+
+	barSrc := `package main
+	import (
+		"fmt"
+	)
+
+	func main() {
+		fmt.Println("bar")
+	}`
+	err = os.MkdirAll(path.Join(testProjectDir, "bar"), 0755)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(testProjectDir, "bar", "bar.go"), []byte(barSrc), 0644)
+	require.NoError(t, err)
+
+	gittest.CommitAllFiles(t, testProjectDir, "Commit files")
+	gittest.CreateGitTag(t, testProjectDir, "0.1.0")
+
+	output := execCommand(t, testProjectDir, "./godelw", "run", "--product", "foo", "arg1", "arg2")
+	output = output[strings.Index(output, "\n")+1:]
+	assert.Equal(t, "foo: [arg1 arg2]\n", output)
+}
+
 func TestTest(t *testing.T) {
 	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
 	src := `package foo_test

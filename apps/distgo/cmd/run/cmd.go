@@ -25,7 +25,10 @@ import (
 	"github.com/palantir/godel/apps/distgo/config"
 )
 
-const productFlag = "product"
+const (
+	productFlagName = "product"
+	argsFlagName    = "args"
+)
 
 func Command() cli.Command {
 	return cli.Command{
@@ -33,9 +36,14 @@ func Command() cli.Command {
 		Usage: "Run a product in the project",
 		Flags: []flag.Flag{
 			flag.StringFlag{
-				Name:     productFlag,
+				Name:     productFlagName,
 				Usage:    "Product to run",
 				Required: false,
+			},
+			flag.StringSlice{
+				Name:     argsFlagName,
+				Usage:    "arguments to pass to product",
+				Optional: true,
 			},
 		},
 		Action: func(ctx cli.Context) error {
@@ -45,7 +53,7 @@ func Command() cli.Command {
 			}
 
 			var products []string
-			product := ctx.String(productFlag)
+			product := ctx.String(productFlagName)
 			if product != "" {
 				products = append(products, product)
 			}
@@ -65,10 +73,10 @@ func Command() cli.Command {
 				for i, currSpec := range buildSpecsWithDeps {
 					programNames[i] = currSpec.Spec.ProductName
 				}
-				return errors.Errorf("more than one product exists, so product to run must be specified using the '--%v' flag: %v", productFlag, programNames)
+				return errors.Errorf("more than one product exists, so product to run must be specified using the '--%v' flag: %v", productFlagName, programNames)
 			}
 
-			return DoRun(buildSpecsWithDeps[0].Spec, nil, ctx.App.Stdout, ctx.App.Stderr)
+			return DoRun(buildSpecsWithDeps[0].Spec, ctx.Slice(argsFlagName), ctx.App.Stdout, ctx.App.Stderr)
 		},
 	}
 }
