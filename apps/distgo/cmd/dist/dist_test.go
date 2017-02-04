@@ -926,6 +926,74 @@ daemon: true
 			},
 		},
 		{
+			name: "properly templatizes init.sh with Reloadable: false",
+			spec: func(projectDir string) params.ProductBuildSpecWithDeps {
+				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(
+					projectDir,
+					"foo",
+					git.ProjectInfo{
+						Version: "0.1.0",
+					},
+					params.Product{
+						Build: params.Build{
+							MainPkg: "./.",
+						},
+						Dist: []params.Dist{{
+							Info: &params.SLSDistInfo{},
+						}},
+					},
+					params.Project{
+						GroupID: "com.test.group",
+					},
+				), nil)
+				require.NoError(t, err)
+				return specWithDeps
+			},
+			preDistAction: func(projectDir string, buildSpec params.ProductBuildSpec) {
+				gittest.CreateGitTag(t, projectDir, "0.1.0")
+			},
+			validate: func(caseNum int, name string, projectDir string) {
+				bytes, err := ioutil.ReadFile(path.Join(projectDir, "dist", "foo-0.1.0", "service", "bin", "init.sh"))
+				require.NoError(t, err)
+				assert.Regexp(t, `does not support reload`, string(bytes), "Case %d: %s", caseNum, name)
+			},
+		},
+		{
+			name: "properly templatizes init.sh with Reloadable: true",
+			spec: func(projectDir string) params.ProductBuildSpecWithDeps {
+				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(
+					projectDir,
+					"foo",
+					git.ProjectInfo{
+						Version: "0.1.0",
+					},
+					params.Product{
+						Build: params.Build{
+							MainPkg: "./.",
+						},
+						Dist: []params.Dist{{
+							Info: &params.SLSDistInfo{
+								Reloadable: true,
+							},
+						}},
+					},
+					params.Project{
+						GroupID: "com.test.group",
+					},
+				), nil)
+				require.NoError(t, err)
+				return specWithDeps
+			},
+			preDistAction: func(projectDir string, buildSpec params.ProductBuildSpec) {
+				gittest.CreateGitTag(t, projectDir, "0.1.0")
+			},
+			validate: func(caseNum int, name string, projectDir string) {
+				bytes, err := ioutil.ReadFile(path.Join(projectDir, "dist", "foo-0.1.0", "service", "bin", "init.sh"))
+				require.NoError(t, err)
+				assert.Regexp(t, `Reloading`, string(bytes), "Case %d: %s", caseNum, name)
+			},
+		},
+		{
 			name: "creates outputs using bin mode",
 			spec: func(projectDir string) params.ProductBuildSpecWithDeps {
 				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(

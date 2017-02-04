@@ -63,6 +63,7 @@ func TestReadConfig(t *testing.T) {
 			                info:
 			                    manifest-template-file: resources/input/manifest.yml
 			                    product-type: service.v1
+			                    reloadable: true
 			                    yml-validation-exclude:
 			                      names:
 			                        - foo
@@ -112,6 +113,7 @@ echo "main.year=$YEAR"
 									Info: config.SLSDist{
 										ManifestTemplateFile: "resources/input/manifest.yml",
 										ProductType:          "service.v1",
+										Reloadable:           true,
 										YMLValidationExclude: matcher.NamesPathsCfg{
 											Names: []string{"foo"},
 											Paths: []string{"bar"},

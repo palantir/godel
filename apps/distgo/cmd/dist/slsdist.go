@@ -164,8 +164,25 @@ restart)
     service/bin/init.sh stop
     service/bin/init.sh start
 ;;
+reload){{if .Dist.Reloadable}}
+    printf "%-50s" "Reloading '$SERVICE'..."
+    if service/bin/init.sh status > /dev/null 2>&1; then
+        PID=$(cat $PIDFILE)
+        if ! kill -s HUP $PID; then
+            printf "%s\n" "Failed to send HUP ($PID)"
+            exit 1
+        fi
+        printf "%s\n" "Reloaded ($PID)"
+    else
+        printf "%s\n" "Service not running"
+        exit 7
+    fi
+{{else}}
+    printf "%s\n" "'$SERVICE' does not support reload"
+    exit 3
+{{end}};;
 *)
-    echo "Usage: $0 {status|start|stop|console|restart}"
+    echo "Usage: $0 status|start|stop|console|restart{{if .Dist.Reloadable}}|reload{{end}}"
     exit 1
 esac
 `

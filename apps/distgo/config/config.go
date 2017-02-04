@@ -200,6 +200,9 @@ type SLSDist struct {
 	// ManifestExtensions contain the SLS manifest extensions for the distribution.
 	ManifestExtensions map[string]interface{} `yaml:"manifest-extensions" json:"manifest-extensions"`
 
+	// Reloadable will enable the `init.sh reload` command which sends SIGHUP to the process.
+	Reloadable bool `yaml:"reloadable" json:"reloadable"`
+
 	// YMLValidationExclude specifies a matcher used to specify YML files or paths that should not be validated as
 	// part of creating the distribution. By default, the SLS distribution task verifies that all "*.yml" and
 	// "*.yaml" files in the distribution are syntactically valid. If a distribution is known to ship with YML files
@@ -393,6 +396,7 @@ func (cfg *DistInfo) ToParam() (params.DistInfo, error) {
 				ServiceArgs:          val.ServiceArgs,
 				ProductType:          val.ProductType,
 				ManifestExtensions:   val.ManifestExtensions,
+				Reloadable:           val.Reloadable,
 				YMLValidationExclude: val.YMLValidationExclude.Matcher(),
 			}
 		case params.BinDistType:
@@ -451,6 +455,7 @@ func (cfg *SLSDist) ToParams() params.SLSDistInfo {
 		ServiceArgs:          cfg.ServiceArgs,
 		ProductType:          cfg.ProductType,
 		ManifestExtensions:   cfg.ManifestExtensions,
+		Reloadable:           cfg.Reloadable,
 		YMLValidationExclude: cfg.YMLValidationExclude.Matcher(),
 	}
 }
