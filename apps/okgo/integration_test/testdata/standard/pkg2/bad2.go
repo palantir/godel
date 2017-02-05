@@ -1,6 +1,6 @@
 package pkg2
 
-import "encoding/json"
+import ejson "encoding/json"
 
 // Errcheck function.
 func Errcheck() {
@@ -13,7 +13,7 @@ func Errcheck() {
 
 // Outparamcheck function.
 func Outparamcheck() {
-	_ = json.Unmarshal(nil, "")
+	_ = ejson.Unmarshal(nil, "")
 }
 
 // Vet function.

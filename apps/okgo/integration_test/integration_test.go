@@ -75,6 +75,13 @@ func TestCheckers(t *testing.T) {
 			},
 		},
 		{
+			check: cmdlib.Instance().MustNewCmd("importalias"),
+			want: []string{
+				`pkg1/bad.go:3:8: uses alias "myjson" to import package "encoding/json". No consensus alias exists for this import in the project ("ejson" and "myjson" are both used once each).`,
+				`pkg2/bad2.go:3:8: uses alias "ejson" to import package "encoding/json". No consensus alias exists for this import in the project ("ejson" and "myjson" are both used once each).`,
+			},
+		},
+		{
 			check: cmdlib.Instance().MustNewCmd("ineffassign"),
 			want: []string{
 				"pkg1/bad.go:34:2: ineffectual assignment to kvs",
@@ -86,8 +93,8 @@ func TestCheckers(t *testing.T) {
 		{
 			check: cmdlib.Instance().MustNewCmd("outparamcheck"),
 			want: []string{
-				`github.com/palantir/godel/apps/okgo/integration_test/testdata/standard/pkg1/bad.go:16:26: _ = json.Unmarshal(nil, "")  // 2nd argument of 'Unmarshal' requires '&'`,
-				`github.com/palantir/godel/apps/okgo/integration_test/testdata/standard/pkg2/bad2.go:16:26: _ = json.Unmarshal(nil, "")  // 2nd argument of 'Unmarshal' requires '&'`,
+				`github.com/palantir/godel/apps/okgo/integration_test/testdata/standard/pkg1/bad.go:16:28: _ = myjson.Unmarshal(nil, "")  // 2nd argument of 'Unmarshal' requires '&'`,
+				`github.com/palantir/godel/apps/okgo/integration_test/testdata/standard/pkg2/bad2.go:16:27: _ = ejson.Unmarshal(nil, "")  // 2nd argument of 'Unmarshal' requires '&'`,
 			},
 		},
 		{

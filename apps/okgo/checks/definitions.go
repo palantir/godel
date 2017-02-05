@@ -77,6 +77,10 @@ func checkers() []Checker {
 			},
 		},
 		&checkerDefinition{
+			cmd:        cmdlib.Instance().MustNewCmd("importalias"),
+			lineParser: checkoutput.DefaultParser(pkgpath.Relative),
+		},
+		&checkerDefinition{
 			cmd:         cmdlib.Instance().MustNewCmd("ineffassign"),
 			lineParser:  checkoutput.DefaultParser(pkgpath.Absolute),
 			allArg:      rootDir,
