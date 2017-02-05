@@ -144,8 +144,8 @@ func branch(gitDir string) (string, error) {
 }
 
 func trimmedCombinedGitCmdOutput(gitDir string, args ...string) (string, error) {
-	gitArgs := []string{"-C", gitDir}
-	cmd := exec.Command("git", append(gitArgs, args...)...)
+	cmd := exec.Command("git", args...)
+	cmd.Dir = gitDir
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", errors.Wrapf(err, "Command %v failed. Output: %v", cmd.Args, string(out))
