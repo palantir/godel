@@ -104,6 +104,9 @@ type SLSDistInfo struct {
 	// ManifestExtensions contain the SLS manifest extensions for the distribution.
 	ManifestExtensions map[string]interface{}
 
+	// Reloadable will enable the `init.sh reload` command which sends SIGHUP to the process.
+	Reloadable bool
+
 	// YMLValidationExclude specifies a matcher used to specify YML files or paths that should not be validated as
 	// part of creating the distribution. By default, the SLS distribution task verifies that all "*.yml" and
 	// "*.yaml" files in the distribution are syntactically valid. If a distribution is known to ship with YML files
