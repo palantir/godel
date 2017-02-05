@@ -41,11 +41,12 @@ products:
           service-args: "--config var/conf/cache.yml server"
           manifest-extensions:
             cache: true
+          reloadable: true
 group-id: com.palantir.cache`
 
 	cfg := configFromYML(yml)
 	fmt.Printf("%q", fmt.Sprintf("%+v", cfg))
-	// Output: "{Products:map[cache-service:{Build:{Script: MainPkg:./main/cache OutputDir: BuildArgsScript: VersionVar:main.Version Environment:map[] OSArchs:[linux-amd64]} Run:{Args:[]} Dist:[{OutputDir:cache/build/distributions InputDir:cache/dist/sls InputProducts:[] Script: DistType:{Type:sls Info:{InitShTemplateFile: ManifestTemplateFile: ServiceArgs:--config var/conf/cache.yml server ProductType: ManifestExtensions:map[cache:true] YMLValidationExclude:{Names:[] Paths:[]}}} Publish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] DefaultPublish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] BuildOutputDir: DistOutputDir: DistScriptInclude: GroupID:com.palantir.cache Exclude:{Names:[] Paths:[]}}"
+	// Output: "{Products:map[cache-service:{Build:{Script: MainPkg:./main/cache OutputDir: BuildArgsScript: VersionVar:main.Version Environment:map[] OSArchs:[linux-amd64]} Run:{Args:[]} Dist:[{OutputDir:cache/build/distributions InputDir:cache/dist/sls InputProducts:[] Script: DistType:{Type:sls Info:{InitShTemplateFile: ManifestTemplateFile: ServiceArgs:--config var/conf/cache.yml server ProductType: ManifestExtensions:map[cache:true] Reloadable:true YMLValidationExclude:{Names:[] Paths:[]}}} Publish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] DefaultPublish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] BuildOutputDir: DistOutputDir: DistScriptInclude: GroupID:com.palantir.cache Exclude:{Names:[] Paths:[]}}"
 }
 
 func Example_bin() {
