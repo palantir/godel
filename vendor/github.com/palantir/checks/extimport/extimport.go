@@ -42,7 +42,7 @@ const (
 var (
 	pkgsFlag = flag.StringSlice{
 		Name:  pkgsFlagName,
-		Usage: "paths to the pacakges to check",
+		Usage: "paths to the packages to check",
 	}
 	listFlag = flag.BoolFlag{
 		Name:  listFlagName,

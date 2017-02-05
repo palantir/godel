@@ -12,6 +12,8 @@ packages:
     distance-to-project-pkg: 1
   govet:
     main: github.com/nmiyake/govet
+  importalias:
+    main: github.com/palantir/checks/importalias
   ineffassign:
     main: github.com/gordonklaus/ineffassign
   novendor:

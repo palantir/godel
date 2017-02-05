@@ -13,6 +13,7 @@ import (
 	varcheck "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/opennota/check/cmd/varcheck"
 	compiles "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/palantir/checks/compiles"
 	extimport "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/palantir/checks/extimport"
+	importalias "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/palantir/checks/importalias"
 	novendor "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/palantir/checks/novendor"
 	outparamcheck "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/palantir/checks/outparamcheck"
 	deadcode "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/remyoudompheng/go-misc/deadcode"
@@ -30,6 +31,8 @@ var programs = map[string]func(){"compiles": func() {
 	golint.AmalgomatedMain()
 }, "govet": func() {
 	govet.AmalgomatedMain()
+}, "importalias": func() {
+	importalias.AmalgomatedMain()
 }, "ineffassign": func() {
 	ineffassign.AmalgomatedMain()
 }, "novendor": func() {
