@@ -88,6 +88,7 @@ func rpmDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.D
 		"-p", ArtifactPath(buildSpec, distCfg),
 		"-s", "dir",
 		"-C", outputProductDir,
+		"--rpm-os", "linux",
 	}
 
 	for _, configFile := range rpmDistInfo.ConfigFiles {
