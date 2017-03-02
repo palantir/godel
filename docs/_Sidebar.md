@@ -1,5 +1,6 @@
 * [Home](https://github.com/palantir/godel/wiki)
 * [Add gödel to a project](https://github.com/palantir/godel/wiki/Add-g%C3%B6del-to-a-project)
+* [Configuration](https://github.com/palantir/godel/wiki/Configuration)
 * [IntelliJ IDEA setup](https://github.com/palantir/godel/wiki/IntelliJ-IDEA-setup)
 * [Enable command completion](https://github.com/palantir/godel/wiki/Enable-command-completion)
 * [Update gödel](https://github.com/palantir/godel/wiki/Update-g%C3%B6del)
