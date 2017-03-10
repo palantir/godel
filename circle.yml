@@ -1,120 +1,266 @@
-machine:
-  environment:
-    GODIST: "go1.7.4.linux-amd64.tar.gz"
-    GOPATH: "$HOME/.go_workspace"
-    IMPORT_PATH: "github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME"
-    GO_PROJECT_SRC_PATH: "$GOPATH/src/$IMPORT_PATH"
-    MIN_CIRCLE_NODES: 5
-  services:
-    - docker
-  post:
-    - if (( $CIRCLE_NODE_TOTAL < $MIN_CIRCLE_NODES )); then echo "Build requires at least $MIN_CIRCLE_NODES nodes, was ${CIRCLE_NODE_TOTAL}"; false; fi
-    - mkdir -p download
-    - test -e "download/$GODIST" || wget -O "download/$GODIST" "https://storage.googleapis.com/golang/$GODIST"
-    # create custom Go distribution with packages built for darwin-amd64 if it is not present
-    - |
-      if [ ! -e "download/$GODIST-custom.tgz" ]; then
-        sudo rm -rf /usr/local/go && \
-        sudo tar -C /usr/local -xzf "download/$GODIST" && \
-        sudo env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 /usr/local/go/bin/go install std && \
-        sudo env CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 /usr/local/go/bin/go install std && \
-        tar -C /usr/local -czf "download/$GODIST-custom.tgz" go
-      fi
-    - sudo rm -rf /usr/local/go
-    - sudo tar -C /usr/local -xzf "download/$GODIST-custom.tgz"
-
-checkout:
-  post:
-    # ensure all tags are fetched and up-to-date
-    - git tag -l | xargs git tag -d && git fetch -t
-
-dependencies:
-  override:
-    - mkdir -p "$GOPATH/src/$IMPORT_PATH"
-    - rsync -az --delete ./ "$GOPATH/src/$IMPORT_PATH/"
-    - cd "$GO_PROJECT_SRC_PATH" && ./godelw version
-  cache_directories:
-    - ~/.godel
-    - ~/download
-
-test:
-  override:
-    - ? |
-        case $CIRCLE_NODE_INDEX in
-          0)
-            cd "$GO_PROJECT_SRC_PATH" && CGO_ENABLED=0 go install $(./godelw packages) && \
-            mkdir -p "$CIRCLE_TEST_REPORTS/$CIRCLE_PROJECT_REPONAME" && \
-            cd "$GO_PROJECT_SRC_PATH" && ./godelw verify --apply=false --junit-output="$CIRCLE_TEST_REPORTS/$CIRCLE_PROJECT_REPONAME/$CIRCLE_PROJECT_REPONAME-tests.xml"
-            ;;
-          1)
-            cd "$GO_PROJECT_SRC_PATH" && CGO_ENABLED=0 go install $(./godelw packages) && \
-            mkdir -p "$CIRCLE_TEST_REPORTS/$CIRCLE_PROJECT_REPONAME" && \
-            mkdir -p "$CIRCLE_TEST_REPORTS/$CIRCLE_PROJECT_REPONAME-integration" && \
-            cd "$GO_PROJECT_SRC_PATH" && ./godelw test --tags=integration --junit-output="$CIRCLE_TEST_REPORTS/$CIRCLE_PROJECT_REPONAME-integration/$CIRCLE_PROJECT_REPONAME-integration-tests.xml"
-            ;;
-          2)
-            cd "$GO_PROJECT_SRC_PATH" && ./godelw dist godel && \
+version: 2
+executorType: machine
+stages:
+  build:
+    parallel: 7
+    workDir: ~/go/src/github.com/palantir/godel
+    machine:
+      reusable: true
+    environment:
+      PROJECT: godel
+      GODIST: "go1.7.5.linux-amd64.tar.gz"
+      IMPORT_PATH: "github.com/palantir/godel"
+      GO_PROJECT_SRC_PATH: "/home/circleci/go/src/github.com/palantir/godel"
+      GOPATH: "/home/circleci/go"
+    steps:
+      - type: shell
+        name: "Write GODIST to file"
+        command: echo "$GODIST" > ~/GODIST.txt
+      - type: cache-restore
+        key: GODIST-cache-{{ checksum "~/GODIST.txt" }}
+      - type: shell
+        name: "Get Go with linux-amd64 and darwin-amd64 packages installed without CGO"
+        command: |
+          set -eu
+          if [ ! -e "/home/circleci/download/$GODIST-custom.tgz" ]; then
+            mkdir -p "/home/circleci/download"
+            wget -O "/home/circleci/download/$GODIST" "https://storage.googleapis.com/golang/$GODIST"
+            sudo rm -rf /usr/local/go
+            sudo tar -C /usr/local -xzf "/home/circleci/download/$GODIST"
+            sudo env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 /usr/local/go/bin/go install std
+            sudo env CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 /usr/local/go/bin/go install std
+            tar -C /usr/local -czf "/home/circleci/download/$GODIST-custom.tgz" go
+          fi
+          sudo rm -rf /usr/local/go
+          sudo tar -C /usr/local -xzf "/home/circleci/download/$GODIST-custom.tgz"
+      - type: cache-save
+        key: GODIST-cache-{{ checksum "~/GODIST.txt" }}
+        paths:
+          - ~/download
+      - type: shell
+        name: "Re-create checkout directory"
+        command: |
+          set -eu
+          sudo rm -rf "$GO_PROJECT_SRC_PATH"
+          mkdir -p "$GO_PROJECT_SRC_PATH"
+      - type: checkout
+      - type: cache-restore
+        key: godel-{{ checksum "godelw" }}
+      - type: shell
+        name: "godel version"
+        command: ./godelw version
+      - type: shell
+        name: "Set ownership on home directory"
+        command: sudo chown -R circleci /home/circleci
+      - type: cache-save
+        key: godel-{{ checksum "godelw" }}
+        paths:
+          - ~/.godel
+      - type: shell
+        name: "Clear test results"
+        command: rm -rf /tmp/test-results
+      - type: shell
+        name: "Build distribution"
+        command: ./godelw dist godel
+      - type: shell
+        name: "Run unit tests on node 0 (native machine, Go 1.7)"
+        command: |
+          set -eu
+          if [ "$CIRCLE_NODE_INDEX" == "0" ]; then
+            CGO_ENABLED=0 go install $(./godelw packages)
+            TESTS_NAME=unit
+            TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
+            mkdir -p "$TESTS_DIR"
+            ./godelw verify --apply=false --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"
+          else
+            echo "Skipping: current node is $CIRCLE_NODE_INDEX"
+          fi
+      - type: shell
+        name: "Run integration tests on node 1 (native machine, Go 1.7)"
+        command: |
+          set -eu
+          if [ "$CIRCLE_NODE_INDEX" == "1" ]; then
+            TESTS_NAME=integration-go1.7
+            TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
+            mkdir -p "$TESTS_DIR"
+            ./godelw test --tags=integration --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"
+          else
+            echo "Skipping: current node is $CIRCLE_NODE_INDEX"
+          fi
+      - type: shell
+        name: "Run integration tests on node 2 (linux-brew Docker image, Go 1.8)"
+        command: |
+          set -eu
+          if [ "$CIRCLE_NODE_INDEX" == "2" ]; then
+            TESTS_NAME=integration-brew
+            TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
+            mkdir -p "$TESTS_DIR"
             docker run \
-            -v "$GO_PROJECT_SRC_PATH":/go/src/$IMPORT_PATH \
-            -v ~/.godel:/home/linuxbrew/.godel \
-            -e IMPORT_PATH \
-            nmiyake/go:brew-go \
-            /bin/sh -c 'cd /go/src/$IMPORT_PATH; go version; go env; ./godelw test --tags=integration'
-            ;;
-          3)
-            cd "$GO_PROJECT_SRC_PATH" && ./godelw dist godel && \
+              -v "$GO_PROJECT_SRC_PATH":/go/src/$IMPORT_PATH \
+              -v "$TESTS_DIR":"$TESTS_DIR" \
+              -v ~/.godel:/root/.godel \
+              -u root:root \
+              -e PROJECT \
+              -e IMPORT_PATH \
+              -e "TESTS_NAME=$TESTS_NAME" \
+              -e "TESTS_DIR=$TESTS_DIR" \
+              nmiyake/go:brew-go \
+              /bin/sh -c 'cd /go/src/$IMPORT_PATH; go version; go env; ./godelw test --tags=integration --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
+          else
+            echo "Skipping: current node is $CIRCLE_NODE_INDEX"
+          fi
+      - type: shell
+        name: "Run integration tests on node 3 (alpine-go Docker image, Go 1.8)"
+        command: |
+          set -eu
+          if [ "$CIRCLE_NODE_INDEX" == "3" ]; then
+            TESTS_NAME=integration-go1.8.0
+            TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
+            mkdir -p "$TESTS_DIR"
             docker run \
-            -v "$GO_PROJECT_SRC_PATH":/go/src/$IMPORT_PATH \
-            -v ~/.godel:/root/.godel \
-            -e IMPORT_PATH \
-            nmiyake/go:alpine-go-1.6 \
-            /bin/sh -c 'cd /go/src/$IMPORT_PATH; go version; go env; ./godelw test --tags=integration'
-            ;;
-          4)
-            sudo apt-get install rpm && \
-            gem install fpm && \
-            cd "$GO_PROJECT_SRC_PATH" && CGO_ENABLED=0 go install $(./godelw packages) && \
-            cd "$GO_PROJECT_SRC_PATH" && CGO_ENABLED=0 go install ./vendor/github.com/palantir/amalgomate && \
-            cd "$GO_PROJECT_SRC_PATH"/apps/gonform && go generate && \
-            if [[ -z $(git status --porcelain) ]]; then \
-                true; \
-            else \
-                echo "Generated source code differed from code in commit. See gonform_generated_code_diff.txt in artifacts directory for diff." && \
-                (git diff > $CIRCLE_ARTIFACTS/gonform_generated_code_diff.txt) && \
-                false; \
-            fi && \
-            if [[ -z $(git status --porcelain) ]]; then \
-                true; \
-            else \
-                echo "Generated source code differed from code in commit. See gunit_generated_code_diff.txt in artifacts directory for diff." && \
-                (git diff > $CIRCLE_ARTIFACTS/gunit_generated_code_diff.txt) && \
-                false; \
-            fi && \
-            cd "$GO_PROJECT_SRC_PATH"/apps/okgo && go generate && \
-            if [[ -z $(git status --porcelain) ]]; then \
-                true; \
-            else \
-                echo "Generated source code differed from code in commit. See okgo_generated_code_diff.txt in artifacts directory for diff." && \
-                (git diff > $CIRCLE_ARTIFACTS/okgo_generated_code_diff.txt) && \
-                false; \
-            fi && \
-            cd "$GO_PROJECT_SRC_PATH" && ./godelw test --tags=distgo,gonform,gunit,okgo
-            ;;
-          *)
-            echo "Unexpected node $CIRCLE_NODE_INDEX"
-            ;;
-        esac
-      :
-          parallel: true
+              -v "$GO_PROJECT_SRC_PATH":/go/src/$IMPORT_PATH \
+              -v "$TESTS_DIR":"$TESTS_DIR" \
+              -v ~/.godel:/root/.godel \
+              -u root:root \
+              -e PROJECT \
+              -e IMPORT_PATH \
+              -e "TESTS_NAME=$TESTS_NAME" \
+              -e "TESTS_DIR=$TESTS_DIR" \
+              nmiyake/go:alpine-go-1.8.0 \
+              /bin/sh -c 'cd /go/src/$IMPORT_PATH; go version; go env; ./godelw test --tags=integration --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
+          else
+            echo "Skipping: current node is $CIRCLE_NODE_INDEX"
+          fi
+      # Node 4
+      - type: shell
+        name: "Run tests for sub-projects"
+        command: |
+          set -eu
+          if [ "$CIRCLE_NODE_INDEX" == "4" ]; then
+            ./godelw dist distgo gonform
+            TESTS_NAME=distgo
+            TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
+            mkdir -p "$TESTS_DIR"
+            docker run \
+              -v "$GO_PROJECT_SRC_PATH":/go/src/$IMPORT_PATH \
+              -v "$TESTS_DIR":"$TESTS_DIR" \
+              -v ~/.godel:/home/gouser/.godel \
+              -e PROJECT \
+              -e IMPORT_PATH \
+              -e "TESTS_NAME=$TESTS_NAME" \
+              -e "TESTS_DIR=$TESTS_DIR" \
+              -e "USER_ID=$(id -u)" \
+              nmiyake/go:go-1.8-rpm-fpm \
+              /run-as-gouser.sh 'cd /go/src/$IMPORT_PATH; ./godelw test --tags=distgo --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
 
-deployment:
-  master:
-    branch: master
-    owner: palantir
-    commands:
-      - cd "$GO_PROJECT_SRC_PATH" && ./godelw github-wiki --docs-dir docs --repository=git@github.com:palantir/godel.wiki.git
-  release:
-    tag: /[0-9]+(\.[0-9]+)+(-rc[0-9]+)?(-alpha[0-9]+)?/
-    owner: palantir
-    commands:
-      - cd "$GO_PROJECT_SRC_PATH" && ./godelw publish bintray --url https://api.bintray.com --subject palantir --repository releases --user "$BINTRAY_USER" --password "$BINTRAY_PASSWORD" --publish --downloads-list godel
+            TESTS_NAME=gonform
+            TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
+            mkdir -p "$TESTS_DIR"
+            docker run \
+              -v "$GO_PROJECT_SRC_PATH":/go/src/$IMPORT_PATH \
+              -v "$TESTS_DIR":"$TESTS_DIR" \
+              -v ~/.godel:/home/gouser/.godel \
+              -e PROJECT \
+              -e IMPORT_PATH \
+              -e "TESTS_NAME=$TESTS_NAME" \
+              -e "TESTS_DIR=$TESTS_DIR" \
+              -e "USER_ID=$(id -u)" \
+              nmiyake/go:go-1.8-rpm-fpm \
+              /run-as-gouser.sh 'cd /go/src/$IMPORT_PATH; ./godelw test --tags=gonform --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
+          else
+            echo "Skipping: current node is $CIRCLE_NODE_INDEX"
+          fi
+      # Node 5
+      - type: shell
+        name: "Run tests for sub-projects"
+        command: |
+          set -eu
+          if [ "$CIRCLE_NODE_INDEX" == "5" ]; then
+            ./godelw dist gunit okgo
+            TESTS_NAME=gunit
+            TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
+            mkdir -p "$TESTS_DIR"
+            docker run \
+              -v "$GO_PROJECT_SRC_PATH":/go/src/$IMPORT_PATH \
+              -v "$TESTS_DIR":"$TESTS_DIR" \
+              -v ~/.godel:/home/gouser/.godel \
+              -e PROJECT \
+              -e IMPORT_PATH \
+              -e "TESTS_NAME=$TESTS_NAME" \
+              -e "TESTS_DIR=$TESTS_DIR" \
+              -e "USER_ID=$(id -u)" \
+              nmiyake/go:go-1.8-rpm-fpm \
+              /run-as-gouser.sh 'cd /go/src/$IMPORT_PATH; ./godelw test --tags=gunit --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
+
+            TESTS_NAME=okgo
+            TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
+            mkdir -p "$TESTS_DIR"
+            docker run \
+              -v "$GO_PROJECT_SRC_PATH":/go/src/$IMPORT_PATH \
+              -v "$TESTS_DIR":"$TESTS_DIR" \
+              -v ~/.godel:/home/gouser/.godel \
+              -e PROJECT \
+              -e IMPORT_PATH \
+              -e "TESTS_NAME=$TESTS_NAME" \
+              -e "TESTS_DIR=$TESTS_DIR" \
+              -e "USER_ID=$(id -u)" \
+              nmiyake/go:go-1.8-rpm-fpm \
+              /run-as-gouser.sh 'cd /go/src/$IMPORT_PATH; ./godelw test --tags=okgo --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
+          else
+            echo "Skipping: current node is $CIRCLE_NODE_INDEX"
+          fi
+      # Node 6
+      - type: shell
+        name: "Verify that generated Go files in sub-projects are up-to-date"
+        command: |
+          set -eu
+          if [ "$CIRCLE_NODE_INDEX" == "6" ]; then
+            TESTS_NAME=generated-code
+            TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
+            mkdir -p "$TESTS_DIR"
+            CGO_ENABLED=0 go install ./vendor/github.com/palantir/amalgomate
+            PATH=$PATH:$GOPATH/bin
+            cd "$GO_PROJECT_SRC_PATH"/apps/gonform
+            go generate
+            if [[ ! -z $(git status --porcelain) ]]; then
+                echo "Generated source code differed from code in commit. See gonform_generated_code_diff.txt in artifacts directory for diff."
+                (git diff > $TESTS_DIR/gonform_generated_code_diff.txt)
+                false
+            fi
+            cd "$GO_PROJECT_SRC_PATH"/apps/gunit && go generate
+            if [[ ! -z $(git status --porcelain) ]]; then
+                echo "Generated source code differed from code in commit. See gunit_generated_code_diff.txt in artifacts directory for diff."
+                (git diff > $TESTS_DIR/gunit_generated_code_diff.txt)
+                false
+            fi
+            cd "$GO_PROJECT_SRC_PATH"/apps/okgo && go generate
+            if [[ ! -z $(git status --porcelain) ]]; then
+                echo "Generated source code differed from code in commit. See okgo_generated_code_diff.txt in artifacts directory for diff."
+                (git diff > $TESTS_DIR/okgo_generated_code_diff.txt)
+                false
+            fi
+          else
+            echo "Skipping: current node is $CIRCLE_NODE_INDEX"
+          fi
+      - type: test-results-store
+        path: /tmp/test-results
+      - type: artifacts-store
+        path: /tmp/test-results
+        destination: test-results
+      - type: deploy
+        name: "Update GitHub Wiki on master branch"
+        command: |
+          set -eu
+          if [ "${CIRCLE_BRANCH}" == "master" ]; then
+            cd "$GO_PROJECT_SRC_PATH"
+            ./godelw github-wiki --docs-dir docs --repository=git@github.com:palantir/godel.wiki.git
+          fi
+      - type: deploy
+        name: "Publish on release tags"
+        command: |
+          set -eu
+          TAG=$(git describe --tags)
+          if [[ $TAG =~ ^[0-9]+(\.[0-9]+)+(-rc[0-9]+)?(-alpha[0-9]+)?$ ]]; then
+            cd "$GO_PROJECT_SRC_PATH"
+            ./godelw publish bintray --url https://api.bintray.com --subject palantir --repository releases --user "$BINTRAY_USER" --password "$BINTRAY_PASSWORD" --publish --downloads-list godel
+          fi
