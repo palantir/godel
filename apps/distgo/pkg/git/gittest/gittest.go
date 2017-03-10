@@ -23,41 +23,23 @@ import (
 )
 
 func InitGitDir(t *testing.T, gitDir string) {
-	cmd := exec.Command("git", "init")
-	cmd.Dir = gitDir
-	output, err := cmd.CombinedOutput()
-	require.NoError(t, err, string(output))
-
-	cmd = exec.Command("git", "config", "user.email", "test@author.com")
-	cmd.Dir = gitDir
-	output, err = cmd.CombinedOutput()
-	require.NoError(t, err, string(output))
-
-	cmd = exec.Command("git", "config", "user.name", "testAuthor")
-	cmd.Dir = gitDir
-	output, err = cmd.CombinedOutput()
-	require.NoError(t, err, string(output))
-
+	RunGitCommand(t, gitDir, "init")
+	RunGitCommand(t, gitDir, "config", "user.email", "test@author.com")
+	RunGitCommand(t, gitDir, "config", "user.name", "testAuthor")
 	CommitRandomFile(t, gitDir, "Initial commit")
 }
 
 func CreateGitTag(t *testing.T, gitDir, tagValue string) {
-	cmd := exec.Command("git", "tag", "-a", tagValue, "-m", "")
-	cmd.Dir = gitDir
-	output, err := cmd.CombinedOutput()
-	require.NoError(t, err, string(output))
+	RunGitCommand(t, gitDir, "tag", "-a", tagValue, "-m", "")
+}
+
+func CreateBranch(t *testing.T, gitDir, branch string) {
+	RunGitCommand(t, gitDir, "checkout", "-b", branch)
 }
 
 func CommitAllFiles(t *testing.T, gitDir, commitMessage string) {
-	cmd := exec.Command("git", "add", ".")
-	cmd.Dir = gitDir
-	output, err := cmd.CombinedOutput()
-	require.NoError(t, err, string(output))
-
-	cmd = exec.Command("git", "commit", "--author=testAuthor <test@author.com>", "-m", commitMessage)
-	cmd.Dir = gitDir
-	output, err = cmd.CombinedOutput()
-	require.NoError(t, err, string(output))
+	RunGitCommand(t, gitDir, "add", ".")
+	RunGitCommand(t, gitDir, "commit", "--author=testAuthor <test@author.com>", "-m", commitMessage)
 }
 
 func CommitRandomFile(t *testing.T, gitDir, commitMessage string) {
@@ -65,4 +47,15 @@ func CommitRandomFile(t *testing.T, gitDir, commitMessage string) {
 	require.NoError(t, err)
 	require.NoError(t, file.Close())
 	CommitAllFiles(t, gitDir, commitMessage)
+}
+
+func Merge(t *testing.T, gitDir, branch string) {
+	RunGitCommand(t, gitDir, "merge", "--no-ff", branch)
+}
+
+func RunGitCommand(t *testing.T, gitDir string, args ...string) {
+	cmd := exec.Command("git", args...)
+	cmd.Dir = gitDir
+	output, err := cmd.CombinedOutput()
+	require.NoError(t, err, string(output))
 }

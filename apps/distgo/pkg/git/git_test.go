@@ -111,6 +111,38 @@ func TestProjectInfo(t *testing.T) {
 				Version: "0.0.1-1-g[a-f0-9]{7}.dirty$",
 			},
 		},
+		{
+			gitOperations: func(gitDir string) {
+				gittest.CreateGitTag(t, gitDir, "0.0.1")
+
+				gittest.CreateBranch(t, gitDir, "hotfix-branch")
+				gittest.CommitRandomFile(t, gitDir, "hotfix commit")
+				gittest.CreateGitTag(t, gitDir, "0.0.1-hotfix")
+
+				gittest.RunGitCommand(t, gitDir, "checkout", "master")
+				gittest.Merge(t, gitDir, "hotfix-branch")
+			},
+			want: git.ProjectInfo{
+				Version: "^0.0.1-1-g[a-f0-9]{7}$",
+			},
+		},
+		{
+			gitOperations: func(gitDir string) {
+				gittest.CreateGitTag(t, gitDir, "0.0.1")
+
+				gittest.CreateBranch(t, gitDir, "hotfix-branch")
+				gittest.CommitRandomFile(t, gitDir, "hotfix commit")
+				gittest.CreateGitTag(t, gitDir, "0.0.1-hotfix")
+
+				gittest.RunGitCommand(t, gitDir, "checkout", "master")
+				gittest.Merge(t, gitDir, "hotfix-branch")
+
+				gittest.CreateGitTag(t, gitDir, "0.0.2")
+			},
+			want: git.ProjectInfo{
+				Version: "^0.0.2$",
+			},
+		},
 	} {
 		currTmp, err := ioutil.TempDir(tmp, "")
 		require.NoError(t, err)

@@ -73,7 +73,7 @@ func ProjectVersion(gitDir string) (string, error) {
 		return unspecified, nil
 	}
 
-	result, err := trimmedCombinedGitCmdOutput(gitDir, "describe", "--tags")
+	result, err := trimmedCombinedGitCmdOutput(gitDir, "describe", "--tags", "--first-parent")
 	if err != nil {
 		return "", err
 	}
@@ -140,7 +140,7 @@ func tags(gitDir string) (string, error) {
 }
 
 func branch(gitDir string) (string, error) {
-	return trimmedCombinedGitCmdOutput(gitDir, "describe", "--abbrev=0", "--tags")
+	return trimmedCombinedGitCmdOutput(gitDir, "describe", "--abbrev=0", "--tags", "--first-parent")
 }
 
 func trimmedCombinedGitCmdOutput(gitDir string, args ...string) (string, error) {
