@@ -365,9 +365,9 @@ func TestRun(t *testing.T) {
 				"--race",
 			},
 			wantMatch: func(currCaseTmpDir string) string {
-				return `(?s).+WARNING: DATA RACE.+Found 1 data race\(s\).+`
+				return `(?s).+WARNING: DATA RACE\n.+`
 			},
-			wantError: `(?s).+WARNING: DATA RACE.+Found 1 data race\(s\).+`,
+			wantError: `(?s).+WARNING: DATA RACE\n.+`,
 		},
 	} {
 		currCaseTmpDir, err := ioutil.TempDir(tmpDir, "")
