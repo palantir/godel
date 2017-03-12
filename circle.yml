@@ -37,12 +37,6 @@ stages:
         key: GODIST-cache-{{ checksum "~/GODIST.txt" }}
         paths:
           - ~/download
-      - type: shell
-        name: "Re-create checkout directory"
-        command: |
-          set -eu
-          sudo rm -rf "$GO_PROJECT_SRC_PATH"
-          mkdir -p "$GO_PROJECT_SRC_PATH"
       - type: checkout
       - type: cache-restore
         key: godel-{{ checksum "godelw" }}
