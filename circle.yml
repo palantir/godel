@@ -12,6 +12,9 @@ stages:
       IMPORT_PATH: "github.com/palantir/godel"
       GO_PROJECT_SRC_PATH: "/home/circleci/go/src/github.com/palantir/godel"
       GOPATH: "/home/circleci/go"
+      BREW_GO_IMAGE: "nmiyake/go:brew-go-t28"
+      ALPINE_1_7_IMAGE: "nmiyake/go:alpine-go-1.7.5-t28"
+      GO_1_8_RPM_FPM_IMAGE: "nmiyake/go:go-1.8-rpm-fpm-t28"
     steps:
       - type: shell
         name: "Write GODIST to file"
@@ -53,6 +56,15 @@ stages:
       - type: shell
         name: "Clear test results"
         command: rm -rf /tmp/test-results
+      - type: shell
+        name: "Pull brew-go Docker image"
+        command: docker pull "$BREW_GO_IMAGE"
+      - type: shell
+        name: "Pull alpine-go-1.7 Docker image"
+        command: docker pull "$ALPINE_1_7_IMAGE"
+      - type: shell
+        name: "Pull go-1.8-rpm-fpm Docker image"
+        command: docker pull "$GO_1_8_RPM_FPM_IMAGE"
       - type: shell
         name: "Build distribution"
         command: ./godelw dist godel
@@ -98,7 +110,7 @@ stages:
               -e IMPORT_PATH \
               -e "TESTS_NAME=$TESTS_NAME" \
               -e "TESTS_DIR=$TESTS_DIR" \
-              nmiyake/go:brew-go-t28 \
+              "$BREW_GO_IMAGE" \
               /bin/sh -c 'cd /go/src/$IMPORT_PATH; ./godelw test --tags=integration --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
           else
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
@@ -120,7 +132,7 @@ stages:
               -e IMPORT_PATH \
               -e "TESTS_NAME=$TESTS_NAME" \
               -e "TESTS_DIR=$TESTS_DIR" \
-              nmiyake/go:alpine-go-1.7.5-t28 \
+              "$ALPINE_1_7_IMAGE" \
               /bin/sh -c 'cd /go/src/$IMPORT_PATH; ./godelw test --tags=integration --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
           else
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
@@ -144,7 +156,7 @@ stages:
               -e "TESTS_NAME=$TESTS_NAME" \
               -e "TESTS_DIR=$TESTS_DIR" \
               -e "USER_ID=$(id -u)" \
-              nmiyake/go:go-1.8-rpm-fpm-t28 \
+              "$GO_1_8_RPM_FPM_IMAGE" \
               /run-as-gouser.sh 'cd /go/src/$IMPORT_PATH; ./godelw test --tags=distgo --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
 
             TESTS_NAME=gonform
@@ -159,7 +171,7 @@ stages:
               -e "TESTS_NAME=$TESTS_NAME" \
               -e "TESTS_DIR=$TESTS_DIR" \
               -e "USER_ID=$(id -u)" \
-              nmiyake/go:go-1.8-rpm-fpm-t28 \
+              "$GO_1_8_RPM_FPM_IMAGE" \
               /run-as-gouser.sh 'cd /go/src/$IMPORT_PATH; ./godelw test --tags=gonform --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
           else
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
@@ -183,7 +195,7 @@ stages:
               -e "TESTS_NAME=$TESTS_NAME" \
               -e "TESTS_DIR=$TESTS_DIR" \
               -e "USER_ID=$(id -u)" \
-              nmiyake/go:go-1.8-rpm-fpm-t28 \
+              "$GO_1_8_RPM_FPM_IMAGE" \
               /run-as-gouser.sh 'cd /go/src/$IMPORT_PATH; ./godelw test --tags=gunit --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
 
             TESTS_NAME=okgo
@@ -198,7 +210,7 @@ stages:
               -e "TESTS_NAME=$TESTS_NAME" \
               -e "TESTS_DIR=$TESTS_DIR" \
               -e "USER_ID=$(id -u)" \
-              nmiyake/go:go-1.8-rpm-fpm-t28 \
+              "$GO_1_8_RPM_FPM_IMAGE" \
               /run-as-gouser.sh 'cd /go/src/$IMPORT_PATH; ./godelw test --tags=okgo --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
           else
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
