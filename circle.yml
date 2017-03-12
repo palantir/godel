@@ -99,7 +99,7 @@ stages:
               -e "TESTS_NAME=$TESTS_NAME" \
               -e "TESTS_DIR=$TESTS_DIR" \
               nmiyake/go:brew-go-t28 \
-              /bin/sh -c 'cd /go/src/$IMPORT_PATH; go version; go env; ./godelw test --tags=integration --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
+              /bin/sh -c 'cd /go/src/$IMPORT_PATH; ./godelw test --tags=integration --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
           else
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
           fi
@@ -121,7 +121,7 @@ stages:
               -e "TESTS_NAME=$TESTS_NAME" \
               -e "TESTS_DIR=$TESTS_DIR" \
               nmiyake/go:alpine-go-1.7.5-t28 \
-              /bin/sh -c 'cd /go/src/$IMPORT_PATH; go version; go env; ./godelw test --tags=integration --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
+              /bin/sh -c 'cd /go/src/$IMPORT_PATH; ./godelw test --tags=integration --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
           else
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
           fi
