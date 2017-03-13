@@ -17,6 +17,7 @@ package cmd
 import (
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/nmiyake/pkg/dirs"
@@ -34,12 +35,30 @@ import (
 	"github.com/palantir/godel/apps/okgo/params"
 )
 
-const packagesFlagName = "packages"
+const (
+	// releaseTagEnvVar the environment variable used to override the latest release tag that should be used in the
+	// default Go build context. See #72 for details.
+	releaseTagEnvVar = "OKGO_RELEASE_TAG"
+	packagesFlagName = "packages"
+)
 
 var packagesFlag = flag.StringSlice{
 	Name:     packagesFlagName,
 	Usage:    "Packages to check",
 	Optional: true,
+}
+
+func SetReleaseTagEnvVar(releaseTag string) error {
+	if releaseTag != "" {
+		if err := os.Setenv(releaseTagEnvVar, releaseTag); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func GetReleaseTagEnvVar() string {
+	return os.Getenv(releaseTagEnvVar)
 }
 
 func RunAllCommand(supplier amalgomated.CmderSupplier) cli.Command {
@@ -107,6 +126,9 @@ func SingleCheckCommand(cmd amalgomated.Cmd, supplier amalgomated.CmderSupplier)
 			}
 			wd, err := dirs.GetwdEvalSymLinks()
 			if err != nil {
+				return err
+			}
+			if err := SetReleaseTagEnvVar(cfg.ReleaseTag); err != nil {
 				return err
 			}
 

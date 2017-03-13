@@ -22,6 +22,7 @@ import (
 
 func Example() {
 	yml := `
+release-tag: go1.7
 checks:
   errcheck:
     args:
@@ -39,5 +40,5 @@ checks:
 		panic(err)
 	}
 	fmt.Printf("%q", fmt.Sprintf("%+v", cfg))
-	// Output: "{Checks:map[errcheck:{Skip:false Args:[-ignore github.com/seelog:(Info|Warn|Error|Critical)f?] Filters:[{Type:message Value:\\w+}]}] Exclude:{Names:[] Paths:[]}}"
+	// Output: "{ReleaseTag:go1.7 Checks:map[errcheck:{Skip:false Args:[-ignore github.com/seelog:(Info|Warn|Error|Critical)f?] Filters:[{Type:message Value:\\w+}]}] Exclude:{Names:[] Paths:[]}}"
 }

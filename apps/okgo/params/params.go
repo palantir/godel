@@ -23,6 +23,9 @@ import (
 )
 
 type OKGo struct {
+	// ReleaseTag specifies the latest supported Go release tag. Empty if default should be used.
+	ReleaseTag string
+
 	// Checks specifies the configuration used by the checks. The key is the name of the check and the value is the
 	// custom configuration for that check.
 	Checks map[amalgomated.Cmd]Checker
