@@ -8,12 +8,12 @@ stages:
       reusable: true
     environment:
       PROJECT: godel
-      GODIST: "go1.8.linux-amd64.tar.gz"
+      GODIST: "go1.7.5.linux-amd64.tar.gz"
       IMPORT_PATH: "github.com/palantir/godel"
       GO_PROJECT_SRC_PATH: "/home/circleci/go/src/github.com/palantir/godel"
       GOPATH: "/home/circleci/go"
       BREW_GO_IMAGE: "nmiyake/go:brew-go-t28"
-      ALPINE_1_7_IMAGE: "nmiyake/go:alpine-go-1.7.5-t28"
+      ALPINE_1_8_IMAGE: "nmiyake/go:alpine-go-1.8-t28"
       GO_1_8_RPM_FPM_IMAGE: "nmiyake/go:go-1.8-rpm-fpm-t28"
     steps:
       - type: shell
@@ -60,8 +60,8 @@ stages:
         name: "Pull brew-go Docker image"
         command: docker pull "$BREW_GO_IMAGE"
       - type: shell
-        name: "Pull alpine-go-1.7 Docker image"
-        command: docker pull "$ALPINE_1_7_IMAGE"
+        name: "Pull alpine-go-1.8 Docker image"
+        command: docker pull "$ALPINE_1_8_IMAGE"
       - type: shell
         name: "Pull go-1.8-rpm-fpm Docker image"
         command: docker pull "$GO_1_8_RPM_FPM_IMAGE"
@@ -69,7 +69,7 @@ stages:
         name: "Build distribution"
         command: ./godelw dist godel
       - type: shell
-        name: "Run unit tests on node 0 (native machine, Go 1.8)"
+        name: "Run unit tests on node 0 (native machine, Go 1.7)"
         command: |
           set -eu
           if [ "$CIRCLE_NODE_INDEX" == "0" ]; then
@@ -82,11 +82,11 @@ stages:
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
           fi
       - type: shell
-        name: "Run integration tests on node 1 (native machine, Go 1.8)"
+        name: "Run integration tests on node 1 (native machine, Go 1.7)"
         command: |
           set -eu
           if [ "$CIRCLE_NODE_INDEX" == "1" ]; then
-            TESTS_NAME=integration-go1.8
+            TESTS_NAME=integration-go1.7
             TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
             mkdir -p "$TESTS_DIR"
             ./godelw test --tags=integration --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"
@@ -116,11 +116,11 @@ stages:
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
           fi
       - type: shell
-        name: "Run integration tests on node 3 (alpine-go Docker image, Go 1.7)"
+        name: "Run integration tests on node 3 (alpine-go Docker image, Go 1.8)"
         command: |
           set -eu
           if [ "$CIRCLE_NODE_INDEX" == "3" ]; then
-            TESTS_NAME=integration-go1.7
+            TESTS_NAME=integration-go1.8.0
             TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
             mkdir -p "$TESTS_DIR"
             docker run \
@@ -132,7 +132,7 @@ stages:
               -e IMPORT_PATH \
               -e "TESTS_NAME=$TESTS_NAME" \
               -e "TESTS_DIR=$TESTS_DIR" \
-              "$ALPINE_1_7_IMAGE" \
+              "$ALPINE_1_8_IMAGE" \
               /bin/sh -c 'cd /go/src/$IMPORT_PATH; ./godelw test --tags=integration --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
           else
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
