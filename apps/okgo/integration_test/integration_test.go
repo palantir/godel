@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 	"testing"
@@ -370,6 +371,107 @@ func TestCheckerUsesConfig(t *testing.T) {
 		require.NoError(t, err, "Case %d", i)
 
 		assert.Equal(t, currCase.want, toStringSlice(lineInfo), "Case %d", i)
+	}
+}
+
+func TestCheckerUsesReleaseTagConfig(t *testing.T) {
+	cli, err := products.Bin("okgo")
+	require.NoError(t, err)
+
+	tmpDir, cleanup, err := dirs.TempDir("", "")
+	defer cleanup()
+	require.NoError(t, err)
+
+	for i, currCase := range []struct {
+		name   string
+		files  []gofiles.GoFileSpec
+		config string
+		want   []string
+	}{
+		{
+			name: "file with go1.7 build tag processed",
+			files: []gofiles.GoFileSpec{
+				{
+					RelPath: "foo.go",
+					Src: `// +build go1.7
+
+					package foo
+					import "os"
+					func Foo() {
+						os.Setenv("foo", "bar")
+					}
+					`,
+				},
+				{
+					RelPath: "bar.go",
+					Src: `package foo
+					import "os"
+					func Bar() {
+						os.Setenv("foo", "bar")
+					}
+					`,
+				},
+			},
+			config: "",
+			want: []string{
+				"Running errcheck...",
+				"bar.go:4:16: os.Setenv(\"foo\", \"bar\")",
+				"foo.go:6:16: os.Setenv(\"foo\", \"bar\")",
+				"",
+			},
+		},
+		{
+			name: "file with go1.7 build tag ignored if release-tag set to go1.6",
+			files: []gofiles.GoFileSpec{
+				{
+					RelPath: "foo.go",
+					Src: `// +build go1.7
+
+					package foo
+					import "os"
+					func Foo() {
+						os.Setenv("foo", "bar")
+					}
+					`,
+				},
+				{
+					RelPath: "bar.go",
+					Src: `package foo
+					import "os"
+					func Bar() {
+						os.Setenv("foo", "bar")
+					}
+					`,
+				},
+			},
+			config: `release-tag: go1.6`,
+			want: []string{
+				"Running errcheck...",
+				"bar.go:4:16: os.Setenv(\"foo\", \"bar\")",
+				"",
+			},
+		},
+	} {
+		currCaseDir, err := ioutil.TempDir(tmpDir, "")
+		require.NoError(t, err, "Case %d: %s", i, currCase.name)
+
+		_, err = gofiles.Write(currCaseDir, currCase.files)
+		require.NoError(t, err, "Case %d: %s", i, currCase.name)
+
+		tmpFile, err := ioutil.TempFile(currCaseDir, "")
+		require.NoError(t, err, "Case %d: %s", i, currCase.name)
+		cfgFilePath := tmpFile.Name()
+		err = tmpFile.Close()
+		require.NoError(t, err, "Case %d: %s", i, currCase.name)
+		err = ioutil.WriteFile(cfgFilePath, []byte(unindent(currCase.config)), 0644)
+		require.NoError(t, err, "Case %d: %s", i, currCase.name)
+
+		cmd := exec.Command(cli, "--config", cfgFilePath, "errcheck", ".")
+		cmd.Dir = currCaseDir
+		output, err := cmd.CombinedOutput()
+		require.Error(t, err, fmt.Errorf("Expected command %v to fail. Output:\n%v", cmd.Args, string(output)))
+
+		assert.Equal(t, currCase.want, strings.Split(string(output), "\n"), "Case %d: %s", i, currCase.name)
 	}
 }
 

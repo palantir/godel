@@ -15,6 +15,8 @@
 package okgo
 
 import (
+	"go/build"
+
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/nmiyake/pkg/errorstringer"
 	"github.com/palantir/amalgomate/amalgomated"
@@ -31,6 +33,20 @@ func RunApp(args []string, supplier amalgomated.CmderSupplier) int {
 }
 
 func App(supplier amalgomated.CmderSupplier) *cli.App {
+	if releaseTag := cmd.GetReleaseTagEnvVar(); releaseTag != "" {
+		// if ReleaseTag is specified and is found in the default build config, update default build config to
+		// only include tags that occur before the provided release tag.
+		var newRelTags []string
+		for _, currTag := range build.Default.ReleaseTags {
+			newRelTags = append(newRelTags, currTag)
+			if releaseTag == currTag {
+				// if this tag matches, do not include any of the newer tags
+				break
+			}
+		}
+		build.Default.ReleaseTags = newRelTags
+	}
+
 	app := cli.NewApp(cfgcli.Handler(), cli.DebugHandler(errorstringer.StackWithInterleavedMessages))
 	app.Name = "okgo"
 	app.Usage = "Run static checks for project"
@@ -51,6 +67,9 @@ func App(supplier amalgomated.CmderSupplier) *cli.App {
 		}
 		wd, err := dirs.GetwdEvalSymLinks()
 		if err != nil {
+			return err
+		}
+		if err := cmd.SetReleaseTagEnvVar(cfg.ReleaseTag); err != nil {
 			return err
 		}
 		return cmd.DoRunAll(nil, cfg, supplier, wd, ctx.App.Stdout)
