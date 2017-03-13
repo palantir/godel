@@ -69,7 +69,7 @@ stages:
         name: "Build distribution"
         command: ./godelw dist godel
       - type: shell
-        name: "Run unit tests on node 0 (native machine, Go 1.7)"
+        name: "Node 0: run unit tests (native machine, Go 1.7)"
         command: |
           set -eu
           if [ "$CIRCLE_NODE_INDEX" == "0" ]; then
@@ -82,7 +82,7 @@ stages:
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
           fi
       - type: shell
-        name: "Run integration tests on node 1 (native machine, Go 1.7)"
+        name: "Node 1: run integration tests (native machine, Go 1.7)"
         command: |
           set -eu
           if [ "$CIRCLE_NODE_INDEX" == "1" ]; then
@@ -94,7 +94,7 @@ stages:
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
           fi
       - type: shell
-        name: "Run integration tests on node 2 (linux-brew Docker image, Go 1.8)"
+        name: "Node 2: run integration tests (linux-brew Docker image, Go 1.8)"
         command: |
           set -eu
           if [ "$CIRCLE_NODE_INDEX" == "2" ]; then
@@ -116,7 +116,7 @@ stages:
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
           fi
       - type: shell
-        name: "Run integration tests on node 3 (alpine-go Docker image, Go 1.8)"
+        name: "Node 3: run integration tests (alpine-go Docker image, Go 1.8)"
         command: |
           set -eu
           if [ "$CIRCLE_NODE_INDEX" == "3" ]; then
@@ -139,7 +139,7 @@ stages:
           fi
       # Node 4
       - type: shell
-        name: "Run tests for sub-projects"
+        name: "Node 4: run tests for distgo and gonform"
         command: |
           set -eu
           if [ "$CIRCLE_NODE_INDEX" == "4" ]; then
@@ -178,7 +178,7 @@ stages:
           fi
       # Node 5
       - type: shell
-        name: "Run tests for sub-projects"
+        name: "Node 5: run tests for gunit and okgo"
         command: |
           set -eu
           if [ "$CIRCLE_NODE_INDEX" == "5" ]; then
@@ -217,7 +217,7 @@ stages:
           fi
       # Node 6
       - type: shell
-        name: "Verify that generated Go files in sub-projects are up-to-date"
+        name: "Node 6: verify that generated Go files in sub-projects are up-to-date"
         command: |
           set -eu
           if [ "$CIRCLE_NODE_INDEX" == "6" ]; then
