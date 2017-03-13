@@ -94,7 +94,7 @@ func (b *boolValue) Set(s string) error {
 
 func (b *boolValue) Get() interface{} { return bool(*b) }
 
-func (b *boolValue) String() string { return strconv.FormatBool(bool(*b)) }
+func (b *boolValue) String() string { return fmt.Sprintf("%v", *b) }
 
 func (b *boolValue) IsBoolFlag() bool { return true }
 
@@ -121,7 +121,7 @@ func (i *intValue) Set(s string) error {
 
 func (i *intValue) Get() interface{} { return int(*i) }
 
-func (i *intValue) String() string { return strconv.Itoa(int(*i)) }
+func (i *intValue) String() string { return fmt.Sprintf("%v", *i) }
 
 // -- int64 Value
 type int64Value int64
@@ -139,7 +139,7 @@ func (i *int64Value) Set(s string) error {
 
 func (i *int64Value) Get() interface{} { return int64(*i) }
 
-func (i *int64Value) String() string { return strconv.FormatInt(int64(*i), 10) }
+func (i *int64Value) String() string { return fmt.Sprintf("%v", *i) }
 
 // -- uint Value
 type uintValue uint
@@ -157,7 +157,7 @@ func (i *uintValue) Set(s string) error {
 
 func (i *uintValue) Get() interface{} { return uint(*i) }
 
-func (i *uintValue) String() string { return strconv.FormatUint(uint64(*i), 10) }
+func (i *uintValue) String() string { return fmt.Sprintf("%v", *i) }
 
 // -- uint64 Value
 type uint64Value uint64
@@ -175,7 +175,7 @@ func (i *uint64Value) Set(s string) error {
 
 func (i *uint64Value) Get() interface{} { return uint64(*i) }
 
-func (i *uint64Value) String() string { return strconv.FormatUint(uint64(*i), 10) }
+func (i *uint64Value) String() string { return fmt.Sprintf("%v", *i) }
 
 // -- string Value
 type stringValue string
@@ -192,7 +192,7 @@ func (s *stringValue) Set(val string) error {
 
 func (s *stringValue) Get() interface{} { return string(*s) }
 
-func (s *stringValue) String() string { return string(*s) }
+func (s *stringValue) String() string { return fmt.Sprintf("%s", *s) }
 
 // -- float64 Value
 type float64Value float64
@@ -210,7 +210,7 @@ func (f *float64Value) Set(s string) error {
 
 func (f *float64Value) Get() interface{} { return float64(*f) }
 
-func (f *float64Value) String() string { return strconv.FormatFloat(float64(*f), 'g', -1, 64) }
+func (f *float64Value) String() string { return fmt.Sprintf("%v", *f) }
 
 // -- time.Duration Value
 type durationValue time.Duration
@@ -238,8 +238,6 @@ func (d *durationValue) String() string { return (*time.Duration)(d).String() }
 // rather than using the next command-line argument.
 //
 // Set is called once, in command line order, for each flag present.
-// The flag package may call the String method with a zero-valued receiver,
-// such as a nil pointer.
 type Value interface {
 	String() string
 	Set(string) error
@@ -502,7 +500,7 @@ func PrintDefaults() {
 }
 
 // defaultUsage is the default function to print a usage message.
-func (f *FlagSet) defaultUsage() {
+func defaultUsage(f *FlagSet) {
 	if f.name == "" {
 		fmt.Fprintf(f.out(), "Usage:\n")
 	} else {
@@ -821,7 +819,11 @@ func (f *FlagSet) failf(format string, a ...interface{}) error {
 // or the appropriate default usage function otherwise.
 func (f *FlagSet) usage() {
 	if f.Usage == nil {
-		f.defaultUsage()
+		if f == CommandLine {
+			Usage()
+		} else {
+			defaultUsage(f)
+		}
 	} else {
 		f.Usage()
 	}
@@ -951,18 +953,6 @@ func Parsed() bool {
 // methods of CommandLine.
 var CommandLine = NewFlagSet(os.Args[0], ExitOnError)
 
-func init() {
-	// Override generic FlagSet default Usage with call to global Usage.
-	// Note: This is not CommandLine.Usage = Usage,
-	// because we want any eventual call to use any updated value of Usage,
-	// not the value it has when this line is run.
-	CommandLine.Usage = commandLineUsage
-}
-
-func commandLineUsage() {
-	Usage()
-}
-
 // NewFlagSet returns a new, empty flag set with the specified name and
 // error handling property.
 func NewFlagSet(name string, errorHandling ErrorHandling) *FlagSet {
@@ -970,7 +960,6 @@ func NewFlagSet(name string, errorHandling ErrorHandling) *FlagSet {
 		name:          name,
 		errorHandling: errorHandling,
 	}
-	f.Usage = f.defaultUsage
 	return f
 }
 
