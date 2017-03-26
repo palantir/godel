@@ -412,7 +412,15 @@ func runGoJUnitReport(supplier amalgomated.CmderSupplier, cmdWd string, rawOutpu
 		return errors.Wrapf(err, "failed to create runner for gojunitreport")
 	}
 
-	execCmd := cmder.Cmd(nil, cmdWd)
+	var goVersionArgs []string
+	if versionOutput, err := exec.Command("go", "version").CombinedOutput(); err == nil {
+		if parts := strings.Split(string(versionOutput), " "); len(parts) >= 3 {
+			// expect output to be of form "go version go1.8 darwin/amd64", so get element 2
+			goVersionArgs = append(goVersionArgs, fmt.Sprintf("--go-version=%s", parts[2]))
+		}
+	}
+
+	execCmd := cmder.Cmd(goVersionArgs, cmdWd)
 	execCmd.Stdin = bufio.NewReader(rawOutputReader)
 	output, err := execCmd.CombinedOutput()
 	if err != nil {

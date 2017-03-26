@@ -69,16 +69,16 @@
 			"revisionTime": "2016-09-01T03:23:48Z"
 		},
 		{
-			"checksumSHA1": "6+BcK7W4egYTL9TvzyNHcB9UyrQ=",
+			"checksumSHA1": "9fVdptLklPLy38MtD2X3ebxASF8=",
 			"path": "github.com/jstemmer/go-junit-report",
-			"revision": "6aeed679b62e1c77721907cb77076f2168c7a0f6",
-			"revisionTime": "2016-11-10T00:58:00Z"
+			"revision": "c606832065764d547697f988510f26a02cb1423b",
+			"revisionTime": "2017-03-26T22:58:37Z"
 		},
 		{
 			"checksumSHA1": "r6Rt/to+HhaKTHhqLm4o7osC/ag=",
 			"path": "github.com/jstemmer/go-junit-report/parser",
-			"revision": "6aeed679b62e1c77721907cb77076f2168c7a0f6",
-			"revisionTime": "2016-11-10T00:58:00Z"
+			"revision": "c606832065764d547697f988510f26a02cb1423b",
+			"revisionTime": "2017-03-26T22:58:37Z"
 		},
 		{
 			"checksumSHA1": "Vzu6UjNWvY6L28mwcsW9b6Rb3Uc=",
