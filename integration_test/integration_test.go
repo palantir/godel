@@ -165,6 +165,113 @@ func main() {
 	assert.Equal(t, formattedSrc, string(content))
 }
 
+func TestGenerate(t *testing.T) {
+	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+
+	const generateYML = `
+generators:
+  foo:
+    go-generate-dir: gen
+    gen-paths:
+      paths:
+        - "gen/output.txt"
+`
+	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "generate.yml"), []byte(generateYML), 0644)
+	require.NoError(t, err)
+
+	specs := []gofiles.GoFileSpec{
+		{
+			RelPath: "gen/testbar.go",
+			Src: `package testbar
+
+//go:generate go run generator_main.go
+`,
+		},
+		{
+			RelPath: "gen/generator_main.go",
+			Src: `// +build ignore
+
+package main
+
+import (
+	"io/ioutil"
+)
+
+func main() {
+	if err := ioutil.WriteFile("output.txt", []byte("foo-output"), 0644); err != nil {
+		panic(err)
+	}
+}
+`,
+		},
+	}
+
+	_, err = gofiles.Write(testProjectDir, specs)
+	require.NoError(t, err)
+
+	execCommand(t, testProjectDir, "./godelw", "generate")
+
+	content, err := ioutil.ReadFile(path.Join(testProjectDir, "gen", "output.txt"))
+	require.NoError(t, err)
+	assert.Equal(t, "foo-output", string(content))
+}
+
+func TestGenerateVerify(t *testing.T) {
+	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+
+	const generateYML = `
+generators:
+  foo:
+    go-generate-dir: gen
+    gen-paths:
+      paths:
+        - "gen/output.txt"
+`
+	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "generate.yml"), []byte(generateYML), 0644)
+	require.NoError(t, err)
+
+	specs := []gofiles.GoFileSpec{
+		{
+			RelPath: "gen/testbar.go",
+			Src: `package testbar
+
+//go:generate go run generator_main.go
+`,
+		},
+		{
+			RelPath: "gen/generator_main.go",
+			Src: `// +build ignore
+
+package main
+
+import (
+	"io/ioutil"
+)
+
+func main() {
+	if err := ioutil.WriteFile("output.txt", []byte("foo-output"), 0644); err != nil {
+		panic(err)
+	}
+}
+`,
+		},
+	}
+
+	_, err = gofiles.Write(testProjectDir, specs)
+	require.NoError(t, err)
+
+	err = ioutil.WriteFile(path.Join(testProjectDir, "gen", "output.txt"), []byte("original"), 0644)
+	require.NoError(t, err)
+
+	cmd := exec.Command("./godelw", "generate", "--verify")
+	cmd.Dir = testProjectDir
+	output, err := cmd.CombinedOutput()
+	require.Error(t, err)
+
+	want := "Generators produced output that differed from what already exists: [foo]\n\tfoo:\n\t\tgen/output.txt: previously had checksum 0682c5f2076f099c34cfdd15a9e063849ed437a49677e6fcc5b4198c76575be5, now has checksum 380a300b764683667309818ff127a401c6ea6ab1959f386fe0f05505d660ba37\n"
+	assert.Equal(t, want, string(output))
+}
+
 func TestImports(t *testing.T) {
 	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
 
