@@ -31,6 +31,7 @@ const (
 	cmdName         = "verify"
 	apply           = "apply"
 	skipFormat      = "skip-format"
+	skipGenerate    = "skip-generate"
 	skipImports     = "skip-imports"
 	skipLicense     = "skip-license"
 	skipCheck       = "skip-check"
@@ -41,10 +42,11 @@ const (
 func Command(gödelPath string) cli.Command {
 	return cli.Command{
 		Name:  cmdName,
-		Usage: "Run format, check and test tasks",
+		Usage: "Run format, generate, imports, license, check and test tasks",
 		Flags: []flag.Flag{
 			flag.BoolFlag{Name: apply, Usage: "Apply changes when possible", Value: true},
 			flag.BoolFlag{Name: skipFormat, Usage: "Skip 'format' task"},
+			flag.BoolFlag{Name: skipGenerate, Usage: "Skip 'generate' task"},
 			flag.BoolFlag{Name: skipImports, Usage: "Skip 'imports' task"},
 			flag.BoolFlag{Name: skipLicense, Usage: "Skip 'license' task"},
 			flag.BoolFlag{Name: skipCheck, Usage: "Skip 'check' task"},
@@ -70,6 +72,17 @@ func Command(gödelPath string) cli.Command {
 				if !ctx.Bool(apply) {
 					args = append(args, "-l")
 				}
+				if err := runCmd(cmder, args, wd, ctx); err != nil {
+					failedChecks = append(failedChecks, strings.Join(args, " "))
+				}
+			}
+
+			if !ctx.Bool(skipGenerate) {
+				args := []string{"generate"}
+				if !ctx.Bool(apply) {
+					args = append(args, "--verify")
+				}
+				ctx.Println("Running gogenerate...")
 				if err := runCmd(cmder, args, wd, ctx); err != nil {
 					failedChecks = append(failedChecks, strings.Join(args, " "))
 				}
