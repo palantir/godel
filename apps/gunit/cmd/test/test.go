@@ -17,6 +17,7 @@ package test
 import (
 	"bufio"
 	"fmt"
+	"go/build"
 	"go/parser"
 	"go/token"
 	"io"
@@ -25,6 +26,7 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/nmiyake/pkg/dirs"
@@ -457,9 +459,23 @@ func createPlaceholderTestFiles(pkgs []string, wd string) ([]string, error) {
 				// get package name (should only be one since there are no tests in this directory and
 				// go requires one package per directory, but will work even if that is not the case)
 				pkgName := ""
-				for currName := range parsedPkgs {
-					pkgName = currName
-					break
+
+				// attempt to determine package by importing package using the default build context
+				// first. Useful because this will take build constraints into account (for example, if
+				// there are Go files in the directory with a "// +build ignore" tag, those should not
+				// be considered for generating the package name).
+				if importedPkg, err := build.Default.ImportDir(currPath, build.ImportComment); err == nil {
+					pkgName = importedPkg.Name
+				} else {
+					var sortedKeys []string
+					for k := range parsedPkgs {
+						sortedKeys = append(sortedKeys, k)
+					}
+					sort.Strings(sortedKeys)
+					for _, currName := range sortedKeys {
+						pkgName = currName
+						break
+					}
 				}
 
 				currPlaceholderFile := path.Join(currPath, "tmp_placeholder_test.go")
