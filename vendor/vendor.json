@@ -227,6 +227,30 @@
 			"revisionTime": "2017-02-05T21:14:14Z"
 		},
 		{
+			"checksumSHA1": "NavWih6yZOWQp78EBko2Czg7eI4=",
+			"path": "github.com/palantir/checks/gogenerate/cmd",
+			"revision": "6e06e697336f05daa750c76fd34e6c8c81adfb2f",
+			"revisionTime": "2017-03-26T18:29:48Z"
+		},
+		{
+			"checksumSHA1": "ISfYXG6ANgdaM73zLeeZuoCzrwE=",
+			"path": "github.com/palantir/checks/gogenerate/cmd/gogenerate",
+			"revision": "6e06e697336f05daa750c76fd34e6c8c81adfb2f",
+			"revisionTime": "2017-03-26T18:29:48Z"
+		},
+		{
+			"checksumSHA1": "gPJ1U9WgXhcz4B5snIbWZnqGE34=",
+			"path": "github.com/palantir/checks/gogenerate/config",
+			"revision": "6e06e697336f05daa750c76fd34e6c8c81adfb2f",
+			"revisionTime": "2017-03-26T18:29:48Z"
+		},
+		{
+			"checksumSHA1": "WBw/s2XxsItpo7n1r1qFIj6TT4A=",
+			"path": "github.com/palantir/checks/gogenerate/gogenerate",
+			"revision": "6e06e697336f05daa750c76fd34e6c8c81adfb2f",
+			"revisionTime": "2017-03-26T18:29:48Z"
+		},
+		{
 			"checksumSHA1": "CkZ462LKZ0w0bC41A2y9E0CObuI=",
 			"path": "github.com/palantir/checks/golicense/cmd",
 			"revision": "10da8023aca66638ce70ae91d94e565b802f759d",

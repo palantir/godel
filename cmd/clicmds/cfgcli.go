@@ -22,6 +22,7 @@ import (
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/amalgomate/amalgomated"
 	"github.com/palantir/checks/gocd/cmd/gocd"
+	"github.com/palantir/checks/gogenerate/cmd/gogenerate"
 	"github.com/palantir/checks/golicense/cmd/golicense"
 	"github.com/palantir/pkg/cli"
 	"github.com/palantir/pkg/cli/cfgcli"
@@ -104,6 +105,13 @@ var (
 			name:   "test",
 			app:    gunit.App,
 			runApp: gunit.RunApp,
+		},
+		{
+			name: "generate",
+			app: func(supplier amalgomated.CmderSupplier) *cli.App {
+				return gogenerate.App()
+			},
+			pathToCfg: []string{"generate.yml"},
 		},
 		{
 			name: "imports",
