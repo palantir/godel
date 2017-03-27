@@ -1,0 +1,16 @@
+generators:
+  gonform:
+    go-generate-dir: apps/gonform
+    gen-paths:
+      paths:
+        - apps/gonform/generated_src
+  gunit:
+    go-generate-dir: apps/gunit
+    gen-paths:
+      paths:
+        - apps/gunit/generated_src
+  okgo:
+    go-generate-dir: apps/okgo
+    gen-paths:
+      paths:
+        - apps/okgo/generated_src
