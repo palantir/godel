@@ -17,10 +17,13 @@ package params
 import (
 	"regexp"
 	"sort"
+	"strings"
 
 	"github.com/palantir/pkg/matcher"
 	"github.com/pkg/errors"
 )
+
+const AllTagName = "all"
 
 type GUnit struct {
 	// Tags group tests into different sets. The key is the name of the tag and the value is a matcher.NamesPathsCfg
@@ -34,17 +37,44 @@ type GUnit struct {
 
 func (p *GUnit) Validate() error {
 	var invalidTagNames []string
-	if len(p.Tags) > 0 {
-		for k := range p.Tags {
-			if !validTagName(k) {
-				invalidTagNames = append(invalidTagNames, k)
-			}
+	seenTagNames := make(map[string]struct{})
+	duplicateTagNames := make(map[string]struct{})
+
+	for k := range p.Tags {
+		if !validTagName(k) {
+			invalidTagNames = append(invalidTagNames, k)
+		}
+		normalized := strings.ToLower(k)
+		if _, ok := seenTagNames[normalized]; ok {
+			duplicateTagNames[normalized] = struct{}{}
+		}
+		seenTagNames[normalized] = struct{}{}
+
+		if normalized == AllTagName {
+			return errors.Errorf(`"all" is a reserved name that cannot be used as a tag name`)
 		}
 	}
+
 	if len(invalidTagNames) > 0 {
 		sort.Strings(invalidTagNames)
 		return errors.Errorf("invalid tag names: %v", invalidTagNames)
 	}
+
+	if len(duplicateTagNames) > 0 {
+		var sorted []string
+		for k := range duplicateTagNames {
+			sorted = append(sorted, k)
+		}
+		sort.Strings(sorted)
+		return errors.Errorf("tag names were defined multiple times (names must be unique in case-insensitive manner): %v", sorted)
+	}
+
+	// normalize tags to all lowercase
+	for k, v := range p.Tags {
+		delete(p.Tags, k)
+		p.Tags[strings.ToLower(k)] = v
+	}
+
 	return nil
 }
 

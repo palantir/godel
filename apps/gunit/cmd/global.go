@@ -65,7 +65,7 @@ func Tags(ctx cli.Context) []string {
 	if !ctx.Has(tagsFlagName) {
 		return nil
 	}
-	return strings.Split(ctx.String(tagsFlagName), ",")
+	return strings.Split(strings.ToLower(ctx.String(tagsFlagName)), ",")
 }
 
 func Verbose(ctx cli.Context) bool {
@@ -80,6 +80,12 @@ func JUnitOutputPath(ctx cli.Context) string {
 	return ctx.String(junitOutputPathFlagName)
 }
 
+type trueMatcher struct{}
+
+func (t *trueMatcher) Match(relPath string) bool {
+	return true
+}
+
 // TagsMatcher returns a Matcher that matches the provided tags. Returns nil if the provided slice of tags is empty or
 // if the provided tags do not match any of the tags specified in the configuration. Returns an error if any of the
 // provided tags are not specified in the configuration.
@@ -87,6 +93,18 @@ func TagsMatcher(tags []string, cfg params.GUnit) (matcher.Matcher, error) {
 	if err := cfg.Validate(); err != nil {
 		return nil, err
 	}
+
+	for _, tag := range tags {
+		if tag == params.AllTagName {
+			// contains "all" tag
+			if len(tags) == 1 {
+				// if "all" is the only tag specified, return a matcher that matches all paths
+				return &trueMatcher{}, nil
+			}
+			return nil, errors.Errorf(`if "all" tag is specified, it must be the only tag specified`)
+		}
+	}
+
 	var tagMatchers []matcher.Matcher
 	var missingTags []string
 	for _, tag := range tags {

@@ -28,9 +28,10 @@ import (
 
 func TestLoadConfig(t *testing.T) {
 	for i, currCase := range []struct {
-		yml  string
-		json string
-		want func() config.GUnit
+		yml           string
+		json          string
+		want          config.GUnit
+		wantParamKeys map[string]struct{}
 	}{
 		{
 			yml: `
@@ -48,19 +49,45 @@ func TestLoadConfig(t *testing.T) {
 			    - "vendor"
 			`,
 			json: `{"exclude":{"names":["gunit"],"paths":["generated_src"]}}`,
-			want: func() config.GUnit {
-				return config.GUnit{
-					Tags: map[string]matcher.NamesPathsCfg{
-						"integration": {
-							Names: []string{`integration_tests`},
-							Paths: []string{`test`},
-						},
+			want: config.GUnit{
+				Tags: map[string]matcher.NamesPathsCfg{
+					"integration": {
+						Names: []string{`integration_tests`},
+						Paths: []string{`test`},
 					},
-					Exclude: matcher.NamesPathsCfg{
-						Names: []string{`.*test`, `m?cks`, `gunit`},
-						Paths: []string{`vendor`, `generated_src`},
+				},
+				Exclude: matcher.NamesPathsCfg{
+					Names: []string{`.*test`, `m?cks`, `gunit`},
+					Paths: []string{`vendor`, `generated_src`},
+				},
+			},
+			wantParamKeys: map[string]struct{}{
+				"integration": {},
+			},
+		},
+		{
+			yml: `
+			tags:
+			  integration:
+			    names:
+			      - "integration_tests"
+			  mixedCasing:
+			    paths:
+			      - "test"
+			`,
+			want: config.GUnit{
+				Tags: map[string]matcher.NamesPathsCfg{
+					"integration": {
+						Names: []string{`integration_tests`},
 					},
-				}
+					"mixedCasing": {
+						Paths: []string{`test`},
+					},
+				},
+			},
+			wantParamKeys: map[string]struct{}{
+				"integration": {},
+				"mixedcasing": {},
 			},
 		},
 	} {
@@ -69,16 +96,24 @@ func TestLoadConfig(t *testing.T) {
 		p := got.ToParams()
 		err = p.Validate()
 		require.NoError(t, err, "Case %d", i)
-		assert.Equal(t, currCase.want(), got, "Case %d", i)
+		assert.Equal(t, currCase.want, got, "Case %d", i)
+
+		gotParamKeys := make(map[string]struct{})
+		for k := range p.Tags {
+			gotParamKeys[k] = struct{}{}
+		}
+		assert.Equal(t, currCase.wantParamKeys, gotParamKeys, "Case %d", i)
 	}
 }
 
 func TestLoadInvalidConfig(t *testing.T) {
 	for i, currCase := range []struct {
+		name      string
 		yml       string
 		wantError string
 	}{
 		{
+			name: "tags cannot contain illegal characters",
 			yml: `
 			tags:
 			  integration:
@@ -99,13 +134,36 @@ func TestLoadInvalidConfig(t *testing.T) {
 			`,
 			wantError: "invalid tag names: [another bad invalid,entry]",
 		},
+		{
+			name: "tags must be unique in a case-insensitive manner",
+			yml: `
+			tags:
+			  integration:
+			    names:
+			      - "integration_tests"
+			  INTEGRATION:
+			    paths:
+			     - "foo-bar"
+			`,
+			wantError: "tag names were defined multiple times (names must be unique in case-insensitive manner): [integration]",
+		},
+		{
+			name: `"all" is a reserved tag name`,
+			yml: `
+			tags:
+			  all:
+			    names:
+			      - "integration_tests"
+			`,
+			wantError: `"all" is a reserved name that cannot be used as a tag name`,
+		},
 	} {
 		got, err := config.LoadRawConfig(unindent(currCase.yml), "")
-		require.NoError(t, err, fmt.Sprintf("Case %d", i))
+		require.NoError(t, err, fmt.Sprintf("Case %d: %s", i, currCase.name))
 		p := got.ToParams()
 		err = p.Validate()
-		require.Error(t, err, fmt.Sprintf("Case %d", i))
-		assert.Equal(t, currCase.wantError, err.Error(), "Case %d", i)
+		require.Error(t, err, fmt.Sprintf("Case %d: %s", i, currCase.name))
+		assert.Equal(t, currCase.wantError, err.Error(), "Case %d: %s", i, currCase.name)
 	}
 }
 

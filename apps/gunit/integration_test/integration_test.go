@@ -117,7 +117,8 @@ func TestRun(t *testing.T) {
 				},
 			},
 			wantMatch: func(currCaseTmpDir string) string {
-				return `(?s)Foo\n--- FAIL: TestFoo (.+)\n.+foo_test.go:[0-9]+: myFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + "\t[0-9.]+s"
+				return `(?s)` +
+					`Foo\n--- FAIL: TestFoo (.+)\n.+foo_test.go:[0-9]+: myFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + "\t[0-9.]+s"
 			},
 			wantError: "(?s).+1 package had failing tests:.+",
 		},
@@ -151,7 +152,8 @@ func TestRun(t *testing.T) {
 				},
 			},
 			wantMatch: func(currCaseTmpDir string) string {
-				return `(?s)foo_test.go:[0-9]+:[0-9]+: cannot find package.+\nFAIL\t` + pkgName(t, currCaseTmpDir) + `\t\[setup failed\]`
+				return `(?s)` +
+					`foo_test.go:[0-9]+:[0-9]+: cannot find package.+\nFAIL\t` + pkgName(t, currCaseTmpDir) + `\t\[setup failed\]`
 			},
 			wantError: "(?s).+1 package had failing tests:.+",
 		},
@@ -187,7 +189,82 @@ func TestRun(t *testing.T) {
 				"--tags", "integration",
 			},
 			wantMatch: func(currCaseTmpDir string) string {
-				return `(?s)--- FAIL: TestBar (.+)\n.+bar_test.go:[0-9]+: barFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + "/integration\t[0-9.]+s"
+				return `(?s)` +
+					`--- FAIL: TestBar (.+)\n.+bar_test.go:[0-9]+: barFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + "/integration\t[0-9.]+s"
+			},
+			wantError: "(?s).+1 package had failing tests:.+",
+		},
+		{
+			name: "tags are case-insensitive",
+			filesToCreate: []gofiles.GoFileSpec{
+				{
+					RelPath: "foo_test.go",
+					Src: `package foo
+					import "testing"
+					func TestFoo(t *testing.T) {
+						t.Errorf("fooFail")
+					}`,
+				},
+				{
+					RelPath: "integration/bar_test.go",
+					Src: `package bar
+					import "testing"
+					func TestBar(t *testing.T) {
+						t.Errorf("barFail")
+					}`,
+				},
+			},
+			config: unindent(`tags:
+					  integration:
+					    names:
+					      - "integration"
+					exclude:
+					  paths:
+					    - "vendor"
+					`),
+			args: []string{
+				"--tags", "INTEGRATION",
+			},
+			wantMatch: func(currCaseTmpDir string) string {
+				return `(?s)` +
+					`--- FAIL: TestBar (.+)\n.+bar_test.go:[0-9]+: barFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + "/integration\t[0-9.]+s"
+			},
+			wantError: "(?s).+1 package had failing tests:.+",
+		},
+		{
+			name: "tags can be specified multiple times",
+			filesToCreate: []gofiles.GoFileSpec{
+				{
+					RelPath: "foo_test.go",
+					Src: `package foo
+					import "testing"
+					func TestFoo(t *testing.T) {
+						t.Errorf("fooFail")
+					}`,
+				},
+				{
+					RelPath: "integration/bar_test.go",
+					Src: `package bar
+					import "testing"
+					func TestBar(t *testing.T) {
+						t.Errorf("barFail")
+					}`,
+				},
+			},
+			config: unindent(`tags:
+					  integration:
+					    names:
+					      - "integration"
+					exclude:
+					  paths:
+					    - "vendor"
+					`),
+			args: []string{
+				"--tags", "INTEGRATION,integration",
+			},
+			wantMatch: func(currCaseTmpDir string) string {
+				return `(?s)` +
+					`--- FAIL: TestBar (.+)\n.+bar_test.go:[0-9]+: barFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + "/integration\t[0-9.]+s"
 			},
 			wantError: "(?s).+1 package had failing tests:.+",
 		},
@@ -259,7 +336,8 @@ func TestRun(t *testing.T) {
 				"--tags", "bar,baz",
 			},
 			wantMatch: func(currCaseTmpDir string) string {
-				return `(?s)--- FAIL: TestBar (.+)\n.+bar_test.go:[0-9]+: barFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `/bar\t[0-9.]+s.+` +
+				return `(?s)` +
+					`--- FAIL: TestBar (.+)\n.+bar_test.go:[0-9]+: barFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `/bar\t[0-9.]+s.+` +
 					`--- FAIL: TestBaz (.+)\n.+baz_test.go:[0-9]+: bazFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `/baz\t[0-9.]+s.+`
 			},
 			wantError: "(?s).+2 packages had failing tests:.+",
@@ -304,9 +382,60 @@ func TestRun(t *testing.T) {
 					    - "vendor"
 					`),
 			wantMatch: func(currCaseTmpDir string) string {
-				return `(?s)--- FAIL: TestFoo (.+)\n.+foo_test.go:[0-9]+: fooFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `\t[0-9.]+s.+`
+				return `(?s)` +
+					`--- FAIL: TestFoo (.+)\n.+foo_test.go:[0-9]+: fooFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `\t[0-9.]+s.+`
 			},
 			wantError: "(?s).+1 package had failing tests:.+",
+		},
+		{
+			name: "all tests (tagged and non-tagged) are run if 'all' is specified as the tag",
+			filesToCreate: []gofiles.GoFileSpec{
+				{
+					RelPath: "foo_test.go",
+					Src: `package foo
+					import "testing"
+					func TestFoo(t *testing.T) {
+						t.Errorf("fooFail")
+					}`,
+				},
+				{
+					RelPath: "bar/bar_test.go",
+					Src: `package bar
+					import "testing"
+					func TestBar(t *testing.T) {
+						t.Errorf("barFail")
+					}`,
+				},
+				{
+					RelPath: "baz/baz_test.go",
+					Src: `package baz
+					import "testing"
+					func TestBaz(t *testing.T) {
+						t.Errorf("bazFail")
+					}`,
+				},
+			},
+			config: unindent(`tags:
+					  bar:
+					    paths:
+					      - "bar"
+					  baz:
+					    paths:
+					      - "baz"
+					exclude:
+					  paths:
+					    - "vendor"
+					`),
+			args: []string{
+				"--tags", "all",
+			},
+			wantMatch: func(currCaseTmpDir string) string {
+				return `(?s)` +
+					`--- FAIL: TestFoo (.+)\n.+foo_test.go:[0-9]+: fooFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `\s+[0-9.]+s.+` +
+					`--- FAIL: TestBar (.+)\n.+bar_test.go:[0-9]+: barFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `/bar\s+[0-9.]+s.+` +
+					`--- FAIL: TestBaz (.+)\n.+baz_test.go:[0-9]+: bazFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `/baz\s+[0-9.]+s.+`
+			},
+			wantError: "(?s).+3 packages had failing tests:.+",
 		},
 		{
 			name: "fails if invalid tag is supplied",
@@ -331,6 +460,39 @@ func TestRun(t *testing.T) {
 				return `invalid tags: "invalid", "n!otvalid"`
 			},
 			wantError: `invalid tags: "invalid", "n!otvalid"`,
+		},
+		{
+			name: "fails if 'all' is supplied as a non-exclusive tag",
+			filesToCreate: []gofiles.GoFileSpec{
+				{
+					RelPath: "foo_test.go",
+					Src: `package foo
+					import "testing"
+					func TestFoo(t *testing.T) {
+						t.Errorf("fooFail")
+					}`,
+				},
+				{
+					RelPath: "integration/bar_test.go",
+					Src: `package bar
+					import "testing"
+					func TestBar(t *testing.T) {
+						t.Errorf("barFail")
+					}`,
+				},
+			},
+			config: unindent(`tags:
+					  integration:
+					    names:
+					      - "integration"
+					exclude:
+					  paths:
+					    - "vendor"
+					`),
+			args: []string{
+				"--tags", "integration,all",
+			},
+			wantError: regexp.QuoteMeta(`if "all" tag is specified, it must be the only tag specified`),
 		},
 		{
 			name: "detects race conditions if race flag is supplied",
@@ -401,9 +563,11 @@ func TestRun(t *testing.T) {
 			t.Fatalf("Case %d: %s\nexpected error %v, but was none.\nOutput: %v", i, currCase.name, currCase.wantError, output)
 		}
 
-		expectedExpr := currCase.wantMatch(currCaseTmpDir)
-		if !regexp.MustCompile(expectedExpr).MatchString(output) {
-			t.Errorf("Case %d: %s\nOutput did not match expected expression.\nExpected:\n%v\nActual:\n%v", i, currCase.name, expectedExpr, output)
+		if currCase.wantMatch != nil {
+			expectedExpr := currCase.wantMatch(currCaseTmpDir)
+			if !regexp.MustCompile(expectedExpr).MatchString(output) {
+				t.Errorf("Case %d: %s\nOutput did not match expected expression.\nExpected:\n%v\nActual:\n%v", i, currCase.name, expectedExpr, output)
+			}
 		}
 	}
 }
