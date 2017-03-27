@@ -2,7 +2,7 @@ version: 2
 executorType: machine
 stages:
   build:
-    parallel: 7
+    parallel: 6
     workDir: ~/go/src/github.com/palantir/godel
     machine:
       reusable: true
@@ -83,6 +83,8 @@ stages:
             TESTS_NAME=unit
             TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
             mkdir -p "$TESTS_DIR"
+            CGO_ENABLED=0 go install ./vendor/github.com/palantir/amalgomate
+            PATH=$PATH:$GOPATH/bin
             ./godelw verify --apply=false --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"
           else
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
@@ -218,39 +220,6 @@ stages:
               -e "USER_ID=$(id -u)" \
               "$GO_1_8_RPM_FPM_IMAGE" \
               /run-as-gouser.sh 'cd /go/src/$IMPORT_PATH; ./godelw test --tags=okgo --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
-          else
-            echo "Skipping: current node is $CIRCLE_NODE_INDEX"
-          fi
-      # Node 6
-      - type: shell
-        name: "Node 6: verify that generated Go files in sub-projects are up-to-date"
-        command: |
-          set -eu
-          if [ "$CIRCLE_NODE_INDEX" == "6" ]; then
-            TESTS_NAME=generated-code
-            TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
-            mkdir -p "$TESTS_DIR"
-            CGO_ENABLED=0 go install ./vendor/github.com/palantir/amalgomate
-            PATH=$PATH:$GOPATH/bin
-            cd "$GO_PROJECT_SRC_PATH"/apps/gonform
-            go generate
-            if [[ ! -z $(git status --porcelain) ]]; then
-                echo "Generated source code differed from code in commit. See gonform_generated_code_diff.txt in artifacts directory for diff."
-                (git diff > $TESTS_DIR/gonform_generated_code_diff.txt)
-                false
-            fi
-            cd "$GO_PROJECT_SRC_PATH"/apps/gunit && go generate
-            if [[ ! -z $(git status --porcelain) ]]; then
-                echo "Generated source code differed from code in commit. See gunit_generated_code_diff.txt in artifacts directory for diff."
-                (git diff > $TESTS_DIR/gunit_generated_code_diff.txt)
-                false
-            fi
-            cd "$GO_PROJECT_SRC_PATH"/apps/okgo && go generate
-            if [[ ! -z $(git status --porcelain) ]]; then
-                echo "Generated source code differed from code in commit. See okgo_generated_code_diff.txt in artifacts directory for diff."
-                (git diff > $TESTS_DIR/okgo_generated_code_diff.txt)
-                false
-            fi
           else
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
           fi
