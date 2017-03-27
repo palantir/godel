@@ -6,6 +6,8 @@ stages:
     workDir: ~/go/src/github.com/palantir/godel
     machine:
       reusable: true
+      services:
+        - docker
     environment:
       PROJECT: godel
       GODIST: "go1.8.linux-amd64.tar.gz"

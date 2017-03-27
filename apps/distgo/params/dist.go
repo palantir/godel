@@ -22,7 +22,7 @@ type Dist struct {
 	// OutputDir is the directory to which the distribution is written.
 	OutputDir string
 
-	// InputDir is the path (from the project root) to a directory whose contents will be copied into the output
+	// ContextDir is the path (from the project root) to a directory whose contents will be copied into the output
 	// distribution directory at the beginning of the "dist" command. Can be used to include static resources and
 	// other files required in a distribution.
 	InputDir string
@@ -60,13 +60,15 @@ type Dist struct {
 type DistInfoType string
 
 const (
-	SLSDistType DistInfoType = "sls" // distribution that uses the Standard Layout Specification
-	BinDistType DistInfoType = "bin" // distribution that includes all of the binaries for a product
-	RPMDistType DistInfoType = "rpm" // RPM distribution
+	SLSDistType    DistInfoType = "sls"    // distribution that uses the Standard Layout Specification
+	BinDistType    DistInfoType = "bin"    // distribution that includes all of the binaries for a product
+	RPMDistType    DistInfoType = "rpm"    // RPM distribution
+	DockerDistType DistInfoType = "docker" // docker image
 )
 
 type DistInfo interface {
 	Type() DistInfoType
+	Deps() []string
 }
 
 type BinDistInfo struct {
@@ -81,6 +83,11 @@ type BinDistInfo struct {
 
 func (i *BinDistInfo) Type() DistInfoType {
 	return BinDistType
+}
+
+func (i *BinDistInfo) Deps() []string {
+	// no deps for bin type
+	return []string{}
 }
 
 type SLSDistInfo struct {
@@ -118,6 +125,11 @@ func (i *SLSDistInfo) Type() DistInfoType {
 	return SLSDistType
 }
 
+func (i *SLSDistInfo) Deps() []string {
+	// no deps for sls type
+	return []string{}
+}
+
 type RPMDistInfo struct {
 	// Release is the release identifier that forms part of the name/version/release/architecture quadruplet
 	// uniquely identifying the RPM package. Default is "1".
@@ -135,4 +147,30 @@ type RPMDistInfo struct {
 
 func (i *RPMDistInfo) Type() DistInfoType {
 	return RPMDistType
+}
+
+func (i *RPMDistInfo) Deps() []string {
+	// no deps for rpm type
+	return []string{}
+}
+
+type DockerDeps map[string][]DistInfoType
+
+type DockerDistInfo struct {
+	Repository string
+	Tag        string
+	ContextDir string
+	DistDeps   DockerDeps
+}
+
+func (d *DockerDistInfo) Type() DistInfoType {
+	return DockerDistType
+}
+
+func (d *DockerDistInfo) Deps() []string {
+	var deps []string
+	for product := range d.DistDeps {
+		deps = append(deps, product)
+	}
+	return deps
 }
