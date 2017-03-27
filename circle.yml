@@ -19,8 +19,11 @@ stages:
       - type: shell
         name: "Write GODIST to file"
         command: echo "$GODIST" > ~/GODIST.txt
+      - type: shell
+        name: "Clear download directory"
+        command: sudo rm -rf ~/download
       - type: cache-restore
-        key: GODIST-cache-{{ checksum "~/GODIST.txt" }}
+        key: GODIST-cache-{{ checksum "~/GODIST.txt" }}-v1
       - type: shell
         name: "Get Go with linux-amd64 and darwin-amd64 packages installed without CGO"
         command: |
@@ -37,12 +40,15 @@ stages:
           sudo rm -rf /usr/local/go
           sudo tar -C /usr/local -xzf "/home/circleci/download/$GODIST-custom.tgz"
       - type: cache-save
-        key: GODIST-cache-{{ checksum "~/GODIST.txt" }}
+        key: GODIST-cache-{{ checksum "~/GODIST.txt" }}-v1
         paths:
           - ~/download
       - type: checkout
+      - type: shell
+        name: "Clear .godel"
+        command: sudo rm -rf ~/.godel
       - type: cache-restore
-        key: godel-{{ checksum "godelw" }}
+        key: godel-cache-{{ checksum "godelw" }}-v1
       - type: shell
         name: "godel version"
         command: ./godelw version
@@ -50,7 +56,7 @@ stages:
         name: "Set ownership on home directory"
         command: sudo chown -R circleci /home/circleci
       - type: cache-save
-        key: godel-{{ checksum "godelw" }}
+        key: godel-cache-{{ checksum "godelw" }}-v1
         paths:
           - ~/.godel
       - type: shell
