@@ -8,7 +8,7 @@ stages:
       reusable: true
     environment:
       PROJECT: godel
-      GODIST: "go1.7.5.linux-amd64.tar.gz"
+      GODIST: "go1.8.linux-amd64.tar.gz"
       IMPORT_PATH: "github.com/palantir/godel"
       GO_PROJECT_SRC_PATH: "/home/circleci/go/src/github.com/palantir/godel"
       GOPATH: "/home/circleci/go"
@@ -69,7 +69,7 @@ stages:
         name: "Build distribution"
         command: ./godelw dist godel
       - type: shell
-        name: "Node 0: run unit tests (native machine, Go 1.7)"
+        name: "Node 0: run unit tests (native machine, Go 1.8)"
         command: |
           set -eu
           if [ "$CIRCLE_NODE_INDEX" == "0" ]; then
@@ -82,11 +82,11 @@ stages:
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
           fi
       - type: shell
-        name: "Node 1: run integration tests (native machine, Go 1.7)"
+        name: "Node 1: run integration tests (native machine, Go 1.8)"
         command: |
           set -eu
           if [ "$CIRCLE_NODE_INDEX" == "1" ]; then
-            TESTS_NAME=integration-go1.7
+            TESTS_NAME=integration-go1.8
             TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
             mkdir -p "$TESTS_DIR"
             ./godelw test --tags=integration --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"
@@ -120,7 +120,7 @@ stages:
         command: |
           set -eu
           if [ "$CIRCLE_NODE_INDEX" == "3" ]; then
-            TESTS_NAME=integration-go1.8.0
+            TESTS_NAME=integration-alpine-go1.8
             TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
             mkdir -p "$TESTS_DIR"
             docker run \
