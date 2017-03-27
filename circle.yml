@@ -2,7 +2,7 @@ version: 2
 executorType: machine
 stages:
   build:
-    parallel: 6
+    parallel: 7
     workDir: ~/go/src/github.com/palantir/godel
     machine:
       reusable: true
@@ -14,6 +14,7 @@ stages:
       GOPATH: "/home/circleci/go"
       BREW_GO_IMAGE: "nmiyake/go:brew-go-t28"
       ALPINE_1_8_IMAGE: "nmiyake/go:alpine-go-1.8-t28"
+      ALPINE_1_7_IMAGE: "nmiyake/go:alpine-go-1.7.5-t28"
       GO_1_8_RPM_FPM_IMAGE: "nmiyake/go:go-1.8-rpm-fpm-t28"
     steps:
       - type: shell
@@ -68,6 +69,9 @@ stages:
       - type: shell
         name: "Pull alpine-go-1.8 Docker image"
         command: docker pull "$ALPINE_1_8_IMAGE"
+      - type: shell
+        name: "Pull alpine-go-1.7 Docker image"
+        command: docker pull "$ALPINE_1_7_IMAGE"
       - type: shell
         name: "Pull go-1.8-rpm-fpm Docker image"
         command: docker pull "$GO_1_8_RPM_FPM_IMAGE"
@@ -145,12 +149,33 @@ stages:
           else
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
           fi
-      # Node 4
       - type: shell
-        name: "Node 4: run tests for distgo and gonform"
+        name: "Node 4: run integration tests (alpine-go Docker image, Go 1.7.5)"
         command: |
           set -eu
           if [ "$CIRCLE_NODE_INDEX" == "4" ]; then
+            TESTS_NAME=integration-alpine-go1.7.5
+            TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
+            mkdir -p "$TESTS_DIR"
+            docker run \
+              -v "$GO_PROJECT_SRC_PATH":/go/src/$IMPORT_PATH \
+              -v "$TESTS_DIR":"$TESTS_DIR" \
+              -v ~/.godel:/root/.godel \
+              -u root:root \
+              -e PROJECT \
+              -e IMPORT_PATH \
+              -e "TESTS_NAME=$TESTS_NAME" \
+              -e "TESTS_DIR=$TESTS_DIR" \
+              "$ALPINE_1_7_IMAGE" \
+              /bin/sh -c 'cd /go/src/$IMPORT_PATH; ./godelw test --tags=integration --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
+          else
+            echo "Skipping: current node is $CIRCLE_NODE_INDEX"
+          fi
+      - type: shell
+        name: "Node 5: run tests for distgo and gonform"
+        command: |
+          set -eu
+          if [ "$CIRCLE_NODE_INDEX" == "5" ]; then
             ./godelw dist distgo gonform
             TESTS_NAME=distgo
             TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
@@ -184,12 +209,11 @@ stages:
           else
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
           fi
-      # Node 5
       - type: shell
-        name: "Node 5: run tests for gunit and okgo"
+        name: "Node 6: run tests for gunit and okgo"
         command: |
           set -eu
-          if [ "$CIRCLE_NODE_INDEX" == "5" ]; then
+          if [ "$CIRCLE_NODE_INDEX" == "6" ]; then
             ./godelw dist gunit okgo
             TESTS_NAME=gunit
             TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
