@@ -23,6 +23,7 @@ import (
 	"github.com/palantir/godel/apps/distgo/cmd/build"
 	"github.com/palantir/godel/apps/distgo/cmd/dist"
 	"github.com/palantir/godel/apps/distgo/cmd/products"
+	"github.com/palantir/godel/apps/distgo/cmd/projectversion"
 	"github.com/palantir/godel/apps/distgo/cmd/publish"
 	"github.com/palantir/godel/apps/distgo/cmd/run"
 )
@@ -32,6 +33,7 @@ func App() *cli.App {
 	app.Name = "distgo"
 	app.Usage = "Build, run, test and publish products in a Go project"
 	app.Subcommands = []cli.Command{
+		projectversion.Command(),
 		products.Command(),
 		artifacts.Command(),
 		build.Command(),
