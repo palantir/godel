@@ -77,6 +77,21 @@ func TestVersion(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("godel version %v\n", version), string(output))
 }
 
+func TestProjectVersion(t *testing.T) {
+	tmpDir, cleanup, err := dirs.TempDir("", "")
+	defer cleanup()
+	require.NoError(t, err)
+
+	gittest.InitGitDir(t, tmpDir)
+	gittest.CreateGitTag(t, tmpDir, "testTag")
+	err = ioutil.WriteFile(path.Join(tmpDir, "random.txt"), []byte(""), 0644)
+	require.NoError(t, err)
+
+	testProjectDir := setUpGödelTestAndDownload(t, tmpDir, gödelTGZ, version)
+	output := execCommand(t, testProjectDir, "./godelw", "project-version")
+	assert.Equal(t, "testTag.dirty\n", string(output))
+}
+
 func TestGitHooksSuccess(t *testing.T) {
 	// create project directory in temporary location so primary project's repository is not modified by test
 	tmp, cleanup, err := dirs.TempDir("", "")

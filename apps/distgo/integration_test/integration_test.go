@@ -27,6 +27,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/palantir/godel/apps/distgo/pkg/git/gittest"
 	"github.com/palantir/godel/pkg/products"
 )
 
@@ -119,16 +120,107 @@ products:
 		err = ioutil.WriteFile(configFile, []byte(currCase.config), 0644)
 		require.NoError(t, err)
 
-		err = os.Chdir(currCaseTmpDir)
-		require.NoError(t, err)
+		var output []byte
+		func() {
+			err := os.Chdir(currCaseTmpDir)
+			defer func() {
+				err := os.Chdir(wd)
+				require.NoError(t, err)
+			}()
+			require.NoError(t, err)
 
-		args := []string{"--config", configFile, "run"}
-		args = append(args, currCase.args...)
-		cmd := exec.Command(cli, args...)
-		output, err := cmd.CombinedOutput()
-		require.NoError(t, err, "Case %d: %s\nOutput: %s", i, currCase.name, string(output))
+			args := []string{"--config", configFile, "run"}
+			args = append(args, currCase.args...)
+			cmd := exec.Command(cli, args...)
+			output, err = cmd.CombinedOutput()
+			require.NoError(t, err, "Case %d: %s\nOutput: %s", i, currCase.name, string(output))
+		}()
 
 		content := string(output)[strings.Index(string(output), "\n")+1:]
 		assert.Equal(t, currCase.wantStdout, content, "Case %d: %s", i, currCase.name)
+	}
+}
+
+func TestProjectVersion(t *testing.T) {
+	cli, err := products.Bin("distgo")
+	require.NoError(t, err)
+
+	wd, err := os.Getwd()
+	require.NoError(t, err)
+
+	tmpDir, cleanup, err := dirs.TempDir("", "")
+	defer cleanup()
+	require.NoError(t, err)
+
+	for i, currCase := range []struct {
+		name       string
+		gitOps     func(t *testing.T, caseNum int, caseName, currCaseDir string)
+		wantStdout string
+	}{
+		{
+			name: "prints unspecified when project has no git directory",
+			gitOps: func(t *testing.T, caseNum int, caseName, currCaseDir string) {
+			},
+			wantStdout: "^unspecified\n$",
+		},
+		{
+			name: "prints tag for tagged commit",
+			gitOps: func(t *testing.T, caseNum int, caseName, currCaseDir string) {
+				gittest.InitGitDir(t, currCaseDir)
+				gittest.CreateGitTag(t, currCaseDir, "testCaseTag")
+			},
+			wantStdout: "^testCaseTag\n$",
+		},
+		{
+			name: "prints tag.dirty for tagged commit with uncommitted files",
+			gitOps: func(t *testing.T, caseNum int, caseName, currCaseDir string) {
+				gittest.InitGitDir(t, currCaseDir)
+				gittest.CreateGitTag(t, currCaseDir, "testCaseTag")
+				err := ioutil.WriteFile(path.Join(currCaseDir, "random.txt"), []byte(""), 0644)
+				require.NoError(t, err, "Case %d: %s", caseNum, caseName)
+			},
+			wantStdout: "^testCaseTag.dirty\n$",
+		},
+		{
+			name: "prints version for non-tagged commit",
+			gitOps: func(t *testing.T, caseNum int, caseName, currCaseDir string) {
+				gittest.InitGitDir(t, currCaseDir)
+				gittest.CreateGitTag(t, currCaseDir, "testCaseTag")
+				gittest.CommitRandomFile(t, currCaseDir, "Test commit message")
+			},
+			wantStdout: "^testCaseTag-1-g[a-f0-9]{7}\n$",
+		},
+		{
+			name: "prints version.dirty for non-tagged commit with uncommitted files",
+			gitOps: func(t *testing.T, caseNum int, caseName, currCaseDir string) {
+				gittest.InitGitDir(t, currCaseDir)
+				gittest.CreateGitTag(t, currCaseDir, "testCaseTag")
+				gittest.CommitRandomFile(t, currCaseDir, "Test commit message")
+				err := ioutil.WriteFile(path.Join(currCaseDir, "random.txt"), []byte(""), 0644)
+				require.NoError(t, err, "Case %d: %s", caseNum, caseName)
+			},
+			wantStdout: "^testCaseTag-1-g[a-f0-9]{7}.dirty\n$",
+		},
+	} {
+		currCaseTmpDir, err := ioutil.TempDir(tmpDir, "")
+		require.NoError(t, err)
+
+		currCase.gitOps(t, i, currCase.name, currCaseTmpDir)
+
+		var output []byte
+		func() {
+			err := os.Chdir(currCaseTmpDir)
+			defer func() {
+				err := os.Chdir(wd)
+				require.NoError(t, err)
+			}()
+			require.NoError(t, err)
+
+			cmd := exec.Command(cli, "project-version")
+			output, err = cmd.CombinedOutput()
+			require.NoError(t, err, "Case %d: %s\nOutput: %s", i, currCase.name, string(output))
+		}()
+
+		assert.Regexp(t, currCase.wantStdout, string(output))
 	}
 }

@@ -135,6 +135,13 @@ var (
 			pathToCfg:      []string{"dist.yml"},
 		},
 		{
+			name:           "project-version",
+			app:            distgoCreator,
+			decorator:      distgoDecorator,
+			subcommandPath: []string{"project-version"},
+			pathToCfg:      []string{"dist.yml"},
+		},
+		{
 			name:           "build",
 			app:            distgoCreator,
 			decorator:      distgoDecorator,
