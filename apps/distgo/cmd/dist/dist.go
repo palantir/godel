@@ -38,7 +38,7 @@ func Products(products []string, cfg params.Project, forceBuild bool, wd string,
 	if err != nil {
 		return errors.Wrapf(err, "failed to construct the spec from config")
 	}
-	// build the
+	// build the required artifacts before running dist
 	var specsToBuild []params.ProductBuildSpec
 	for _, currSpecWithDeps := range buildSpecsWithDeps {
 		if forceBuild {
@@ -52,9 +52,9 @@ func Products(products []string, cfg params.Project, forceBuild bool, wd string,
 			return errors.Wrapf(err, "Failed to build products required for dist")
 		}
 	}
-	orderedBuildSpecs, err := Schedule(buildSpecsWithDeps)
+	orderedBuildSpecs, err := OrderBuildSpecs(buildSpecsWithDeps)
 	if err != nil {
-		return errors.Wrapf(err, "")
+		return err
 	}
 	return cmd.ProcessSerially(Run)(orderedBuildSpecs, stdout)
 }
@@ -75,105 +75,93 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 
 	buildSpec := buildSpecWithDeps.Spec
 
-	distTypeOrdering := []params.DistInfoType{params.BinDistType, params.SLSDistType, params.RPMDistType, params.DockerDistType}
-	for _, curDistType := range distTypeOrdering {
-		// Order of executing dist types for each product:
-		// bin -> sls -> rpm -> docker
-		for _, currDistCfg := range buildSpec.Dist {
-			if currDistCfg.Info.Type() != curDistType {
-				continue
+	orderedDists := OrderProductDists(buildSpec.Dist)
+	for _, currDistCfg := range orderedDists {
+		outputDir := path.Join(buildSpec.ProjectDir, currDistCfg.OutputDir)
+
+		fmt.Fprintf(stdout, "Creating distribution for %v at %v\n", buildSpec.ProductName, ArtifactPath(buildSpec, currDistCfg))
+
+		spec := slsspec.New()
+		values := slsspec.TemplateValues(buildSpec.ProductName, buildSpec.ProductVersion)
+
+		// remove output directory if it already exists
+		outputProductDir := path.Join(outputDir, spec.RootDirName(values))
+		if err := os.RemoveAll(outputProductDir); err != nil {
+			return errors.Wrapf(err, "Failed to remove directory %v", outputProductDir)
+		}
+
+		// create output root directory
+		if err := os.MkdirAll(outputProductDir, 0755); err != nil {
+			return errors.Wrapf(err, "failed to create directories for %v", outputProductDir)
+		}
+
+		// if input directory is specified, copy its contents
+		if currDistCfg.InputDir != "" {
+			inputDir := path.Join(buildSpec.ProjectDir, currDistCfg.InputDir)
+
+			fileInfos, err := ioutil.ReadDir(inputDir)
+			if err != nil {
+				return errors.Wrapf(err, "failed to list files in directory %v", inputDir)
 			}
 
-			if currDistCfg.Info.Type() == params.DockerDistType {
+			for _, currFileInfo := range fileInfos {
+				currFileName := currFileInfo.Name()
+				srcPath := path.Join(inputDir, currFileName)
+				dstPath := path.Join(outputProductDir, currFileName)
 
-			}
-
-			outputDir := path.Join(buildSpec.ProjectDir, currDistCfg.OutputDir)
-
-			fmt.Fprintf(stdout, "Creating distribution for %v at %v\n", buildSpec.ProductName, ArtifactPath(buildSpec, currDistCfg))
-
-			spec := slsspec.New()
-			values := slsspec.TemplateValues(buildSpec.ProductName, buildSpec.ProductVersion)
-
-			// remove output directory if it already exists
-			outputProductDir := path.Join(outputDir, spec.RootDirName(values))
-			if err := os.RemoveAll(outputProductDir); err != nil {
-				return errors.Wrapf(err, "Failed to remove directory %v", outputProductDir)
-			}
-
-			// create output root directory
-			if err := os.MkdirAll(outputProductDir, 0755); err != nil {
-				return errors.Wrapf(err, "failed to create directories for %v", outputProductDir)
-			}
-
-			// if input directory is specified, copy its contents
-			if currDistCfg.InputDir != "" {
-				inputDir := path.Join(buildSpec.ProjectDir, currDistCfg.InputDir)
-
-				fileInfos, err := ioutil.ReadDir(inputDir)
-				if err != nil {
-					return errors.Wrapf(err, "failed to list files in directory %v", inputDir)
-				}
-
-				for _, currFileInfo := range fileInfos {
-					currFileName := currFileInfo.Name()
-					srcPath := path.Join(inputDir, currFileName)
-					dstPath := path.Join(outputProductDir, currFileName)
-
-					if currFileInfo.IsDir() {
-						if err := shutil.CopyTree(srcPath, dstPath, &shutil.CopyTreeOptions{
-							CopyFunction: shutil.Copy,
-							// do not copy ".gitkeep" files
-							Ignore: func(dir string, files []os.FileInfo) []string {
-								return []string{".gitkeep"}
-							},
-						}); err != nil {
-							return errors.Wrapf(err, "failed to copy directory %v", currFileName)
-						}
-					} else if currFileName != ".gitkeep" {
-						if _, err := shutil.Copy(srcPath, dstPath, false); err != nil {
-							return errors.Wrapf(err, "failed to copy directory %v", currFileName)
-						}
+				if currFileInfo.IsDir() {
+					if err := shutil.CopyTree(srcPath, dstPath, &shutil.CopyTreeOptions{
+						CopyFunction: shutil.Copy,
+						// do not copy ".gitkeep" files
+						Ignore: func(dir string, files []os.FileInfo) []string {
+							return []string{".gitkeep"}
+						},
+					}); err != nil {
+						return errors.Wrapf(err, "failed to copy directory %v", currFileName)
+					}
+				} else if currFileName != ".gitkeep" {
+					if _, err := shutil.Copy(srcPath, dstPath, false); err != nil {
+						return errors.Wrapf(err, "failed to copy directory %v", currFileName)
 					}
 				}
 			}
-
-			var packager Packager
-			var err error
-			switch currDistCfg.Info.Type() {
-			case params.SLSDistType:
-				if packager, err = slsDist(buildSpecWithDeps, currDistCfg, outputProductDir, spec, values); err != nil {
-					return err
-				}
-			case params.BinDistType:
-				if packager, err = binDist(buildSpecWithDeps, currDistCfg, outputProductDir); err != nil {
-					return err
-				}
-			case params.RPMDistType:
-				if packager, err = rpmDist(buildSpecWithDeps, currDistCfg, outputProductDir, stdout); err != nil {
-					return err
-				}
-			case params.DockerDistType:
-				if packager, err = dockerDist(buildSpecWithDeps, currDistCfg); err != nil {
-					return err
-				}
-			default:
-				return errors.Errorf("unknown dist type: %v", currDistCfg.Info.Type())
-			}
-
-			// execute dist script
-			distEnvVars := cmd.ScriptEnvVariables(buildSpec, outputProductDir)
-			if err := script.WriteAndExecute(buildSpec, currDistCfg.Script, stdout, os.Stderr, distEnvVars); err != nil {
-				return errors.Wrapf(err, "failed to execute dist script for %v", buildSpec.ProductName)
-			}
-
-			// create artifact for distribution
-			if err := packager.Package(); err != nil {
-				return errors.Wrapf(err, "failed to create artifact for %v from path %v", buildSpec.ProductName, outputProductDir)
-			}
-
-			fmt.Fprintf(stdout, "Finished creating distribution for %v\n", buildSpec.ProductName)
 		}
+
+		var packager Packager
+		var err error
+		switch currDistCfg.Info.Type() {
+		case params.SLSDistType:
+			if packager, err = slsDist(buildSpecWithDeps, currDistCfg, outputProductDir, spec, values); err != nil {
+				return err
+			}
+		case params.BinDistType:
+			if packager, err = binDist(buildSpecWithDeps, currDistCfg, outputProductDir); err != nil {
+				return err
+			}
+		case params.RPMDistType:
+			if packager, err = rpmDist(buildSpecWithDeps, currDistCfg, outputProductDir, stdout); err != nil {
+				return err
+			}
+		case params.DockerDistType:
+			if packager, err = dockerDist(buildSpecWithDeps, currDistCfg); err != nil {
+				return err
+			}
+		default:
+			return errors.Errorf("unknown dist type: %v", currDistCfg.Info.Type())
+		}
+
+		// execute dist script
+		distEnvVars := cmd.ScriptEnvVariables(buildSpec, outputProductDir)
+		if err := script.WriteAndExecute(buildSpec, currDistCfg.Script, stdout, os.Stderr, distEnvVars); err != nil {
+			return errors.Wrapf(err, "failed to execute dist script for %v", buildSpec.ProductName)
+		}
+
+		// create artifact for distribution
+		if err := packager.Package(); err != nil {
+			return errors.Wrapf(err, "failed to create artifact for %v from path %v", buildSpec.ProductName, outputProductDir)
+		}
+
+		fmt.Fprintf(stdout, "Finished creating distribution for %v\n", buildSpec.ProductName)
 	}
 
 	return nil

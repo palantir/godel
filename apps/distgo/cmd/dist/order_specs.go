@@ -22,26 +22,24 @@ import (
 	"github.com/palantir/godel/apps/distgo/params"
 )
 
-func Schedule(specsWithDeps []params.ProductBuildSpecWithDeps) ([]params.ProductBuildSpecWithDeps, error) {
+// OrderBuildSpecs orders the provided build specs topologically based on the dependencies among the product specs.
+func OrderBuildSpecs(specsWithDeps []params.ProductBuildSpecWithDeps) ([]params.ProductBuildSpecWithDeps, error) {
 	var schedule []params.ProductBuildSpecWithDeps
-	graph := make(map[string]map[string]bool)
+	graph := make(map[string]map[string]struct{})
 	specMap := make(map[string][]params.ProductBuildSpecWithDeps)
 	// create a graph of dependencies
 	for _, curSpec := range specsWithDeps {
 		product := curSpec.Spec.ProductName
-		if graph[product] == nil {
-			graph[product] = make(map[string]bool)
-		}
-		if specMap[product] == nil {
-			specMap[product] = make([]params.ProductBuildSpecWithDeps, 0)
-		}
 		specMap[product] = append(specMap[product], curSpec)
+		if graph[product] == nil {
+			graph[product] = make(map[string]struct{})
+		}
 		for _, curDist := range curSpec.Spec.Dist {
 			for _, dep := range curDist.Info.Deps() {
 				if graph[dep] == nil {
-					graph[dep] = make(map[string]bool)
+					graph[dep] = make(map[string]struct{})
 				}
-				graph[dep][product] = true
+				graph[dep][product] = struct{}{}
 			}
 		}
 	}
@@ -62,7 +60,7 @@ func Schedule(specsWithDeps []params.ProductBuildSpecWithDeps) ([]params.Product
 	return schedule, nil
 }
 
-func topologicalOrdering(graph map[string]map[string]bool) ([]string, error) {
+func topologicalOrdering(graph map[string]map[string]struct{}) ([]string, error) {
 	var order []string
 	// get all nodes in the graph and sort lexicographically for deterministic order
 	var nodes []string
@@ -74,8 +72,8 @@ func topologicalOrdering(graph map[string]map[string]bool) ([]string, error) {
 	sort.Strings(nodes)
 	// compute the incoming edges on each vertex
 	for _, v := range nodes {
-		for neighbour := range graph[v] {
-			indeg[neighbour]++
+		for neighbor := range graph[v] {
+			indeg[neighbor]++
 		}
 	}
 	// q contains all vertices with in-degree zero
@@ -89,21 +87,21 @@ func topologicalOrdering(graph map[string]map[string]bool) ([]string, error) {
 		cur := q[0]
 		q = q[1:]
 		order = append(order, cur)
-		var neighbours []string
+		var neighbors []string
 		// sort all the neighbours to ensure deterministic order
-		for neighbour := range graph[cur] {
-			neighbours = append(neighbours, neighbour)
+		for neighbor := range graph[cur] {
+			neighbors = append(neighbors, neighbor)
 		}
-		sort.Strings(neighbours)
-		for _, neighbour := range neighbours {
-			indeg[neighbour]--
-			if indeg[neighbour] == 0 {
-				q = append(q, neighbour)
+		sort.Strings(neighbors)
+		for _, neighbor := range neighbors {
+			indeg[neighbor]--
+			if indeg[neighbor] == 0 {
+				q = append(q, neighbor)
 			}
 		}
 	}
 	if len(order) != len(graph) {
-		return nil, errors.New("Please provide a valid DAG as input")
+		return nil, errors.New("Error generating an ordering. Provided DAG contains cyclic dependencies.")
 	}
 	return order, nil
 }
