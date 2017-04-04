@@ -194,6 +194,11 @@ stages:
               "$GO_1_8_RPM_FPM_IMAGE" \
               /run-as-gouser.sh 'cd /go/src/$IMPORT_PATH; ./godelw test --tags=distgo --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"'
 
+            TESTS_NAME=distgo-docker
+            TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
+            mkdir -p "$TESTS_DIR"
+            ./godelw test --tags=docker-distgo --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"
+
             TESTS_NAME=gonform
             TESTS_DIR=/tmp/test-results/$PROJECT-$TESTS_NAME-tests
             mkdir -p "$TESTS_DIR"

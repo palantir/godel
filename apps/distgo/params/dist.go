@@ -15,6 +15,8 @@
 package params
 
 import (
+	"sort"
+
 	"github.com/palantir/pkg/matcher"
 )
 
@@ -22,7 +24,7 @@ type Dist struct {
 	// OutputDir is the directory to which the distribution is written.
 	OutputDir string
 
-	// ContextDir is the path (from the project root) to a directory whose contents will be copied into the output
+	// InputDir is the path (from the project root) to a directory whose contents will be copied into the output
 	// distribution directory at the beginning of the "dist" command. Can be used to include static resources and
 	// other files required in a distribution.
 	InputDir string
@@ -87,7 +89,7 @@ func (i *BinDistInfo) Type() DistInfoType {
 
 func (i *BinDistInfo) Deps() []string {
 	// no deps for bin type
-	return []string{}
+	return nil
 }
 
 type SLSDistInfo struct {
@@ -127,7 +129,7 @@ func (i *SLSDistInfo) Type() DistInfoType {
 
 func (i *SLSDistInfo) Deps() []string {
 	// no deps for sls type
-	return []string{}
+	return nil
 }
 
 type RPMDistInfo struct {
@@ -151,7 +153,7 @@ func (i *RPMDistInfo) Type() DistInfoType {
 
 func (i *RPMDistInfo) Deps() []string {
 	// no deps for rpm type
-	return []string{}
+	return nil
 }
 
 type DockerDeps map[string][]DistInfoType
@@ -172,5 +174,6 @@ func (d *DockerDistInfo) Deps() []string {
 	for product := range d.DistDeps {
 		deps = append(deps, product)
 	}
+	sort.Strings(deps)
 	return deps
 }

@@ -25,12 +25,10 @@ import (
 )
 
 func dockerDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist) (Packager, error) {
-	var dockerDistInfo params.DockerDistInfo
-	if info, ok := distCfg.Info.(*params.DockerDistInfo); ok {
-		dockerDistInfo = *info
-	} else {
+	if _, ok := distCfg.Info.(*params.DockerDistInfo); !ok {
 		return nil, errors.New("Dist info provided is not of type docker info")
 	}
+	dockerDistInfo := *distCfg.Info.(*params.DockerDistInfo)
 	if dockerDistInfo.Tag == "" {
 		dockerDistInfo.Tag = buildSpecWithDeps.Spec.ProductVersion
 	}
@@ -56,7 +54,7 @@ func buildWithCmd(tag string, contextDir string) error {
 
 	dockerBuild := exec.Command("docker", args...)
 	if output, err := dockerBuild.CombinedOutput(); err != nil {
-		fmt.Printf("docker build failed with error:\n%s", string(output))
+		fmt.Printf("docker build failed with error:\n%s\n", string(output))
 		return errors.Wrap(err, "failed to run")
 	}
 	return nil

@@ -15,7 +15,6 @@
 package dist_test
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -25,9 +24,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/filters"
-	dockercli "github.com/docker/docker/client"
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/pkg/matcher"
 	"github.com/stretchr/testify/assert"
@@ -52,10 +48,7 @@ func main() {
 	fmt.Println(testVersionVar)
 }
 `
-	dockerfile = `FROM alpine:3.5
-`
-	dependentDockerFile = `FROM bar:0.1.0`
-	expectManifest      = `manifest-version: "1.0"
+	expectManifest = `manifest-version: "1.0"
 product-group: com.test.group
 product-name: foo
 product-version: 0.1.0
@@ -1183,172 +1176,6 @@ daemon: true
 
 		if currCase.validate != nil {
 			currCase.validate(i, currCase.name, currTmpDir)
-		}
-	}
-}
-
-func TestDockerDist(t *testing.T) {
-	tmp, cleanup, err := dirs.TempDir("", "")
-	defer cleanup()
-	require.NoError(t, err)
-
-	for i, currCase := range []struct {
-		name            string
-		skip            func() bool
-		spec            func(projectDir string) []params.ProductBuildSpecWithDeps
-		preDistAction   func(projectDir string, buildSpec []params.ProductBuildSpecWithDeps)
-		skipBuild       bool
-		wantErrorRegexp string
-		validate        func(caseNum int, name string, projectDir string, cli *dockercli.Client)
-	}{
-		{
-			name: "docker dist",
-			spec: func(projectDir string) []params.ProductBuildSpecWithDeps {
-				fooSpecWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(
-					projectDir,
-					"foo",
-					git.ProjectInfo{
-						Version: "0.1.0",
-					},
-					params.Product{
-						Build: params.Build{
-							MainPkg: "./foo",
-							OSArchs: []osarch.OSArch{
-								{
-									OS:   "linux",
-									Arch: "amd64",
-								},
-							},
-						},
-						Dist: []params.Dist{
-							{
-								Info: &params.DockerDistInfo{
-									Repository: "foo",
-									Tag:        "0.1.0",
-									ContextDir: "foo/docker",
-									DistDeps: params.DockerDeps{
-										"bar": {
-											params.DockerDistType,
-										},
-									},
-								},
-							}},
-					},
-					params.Project{
-						GroupID: "com.test.group",
-					},
-				), nil)
-				require.NoError(t, err)
-				barSpecWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(
-					projectDir,
-					"bar",
-					git.ProjectInfo{
-						Version: "0.1.0",
-					},
-					params.Product{
-						Build: params.Build{
-							MainPkg: "./bar",
-							OSArchs: []osarch.OSArch{
-								{
-									OS:   "linux",
-									Arch: "amd64",
-								},
-							},
-						},
-						Dist: []params.Dist{
-							{
-								Info: &params.DockerDistInfo{
-									Repository: "bar",
-									Tag:        "0.1.0",
-									ContextDir: "bar/docker",
-								},
-							},
-						},
-					}, params.Project{
-						GroupID: "com.test.group",
-					},
-				), nil)
-				require.NoError(t, err)
-				return []params.ProductBuildSpecWithDeps{fooSpecWithDeps, barSpecWithDeps}
-			},
-			preDistAction: func(projectDir string, buildSpec []params.ProductBuildSpecWithDeps) {
-				gittest.CreateGitTag(t, projectDir, "0.1.0")
-			},
-			validate: func(caseNum int, name string, projectDir string, cli *dockercli.Client) {
-				filter := filters.NewArgs()
-				filter.Add("reference", "foo:0.1.0")
-				images, err := cli.ImageList(context.Background(), types.ImageListOptions{Filters: filter})
-				require.NoError(t, err)
-				require.True(t, len(images) > 0)
-				filter = filters.NewArgs()
-				filter.Add("reference", "bar:0.1.0")
-				images, err = cli.ImageList(context.Background(), types.ImageListOptions{Filters: filter})
-				require.NoError(t, err)
-				require.True(t, len(images) > 0)
-			},
-		},
-	} {
-		if currCase.skip != nil && currCase.skip() {
-			fmt.Fprintln(os.Stderr, "SKIPPING CASE", i)
-			continue
-		}
-		cli, err := dockercli.NewEnvClient()
-		require.NoError(t, err)
-
-		currTmpDir, err := ioutil.TempDir(tmp, "")
-		require.NoError(t, err, "Case %d: %s", i, currCase.name)
-
-		gittest.InitGitDir(t, currTmpDir)
-		// initialize foo
-		fooDir := path.Join(currTmpDir, "foo")
-		err = os.Mkdir(fooDir, 0777)
-		require.NoError(t, err, "Case %d: %s", i, currCase.name)
-		err = ioutil.WriteFile(path.Join(fooDir, "main.go"), []byte(testMain), 0644)
-		require.NoError(t, err, "Case %d: %s", i, currCase.name)
-		fooDockerDir := path.Join(fooDir, "docker")
-		err = os.Mkdir(fooDockerDir, 0777)
-		require.NoError(t, err, "Case %d: %s", i, currCase.name)
-		err = ioutil.WriteFile(path.Join(fooDockerDir, "Dockerfile"), []byte(dependentDockerFile), 0777)
-		require.NoError(t, err, "Case %d: %s", i, currCase.name)
-
-		// initialize bar
-		barDir := path.Join(currTmpDir, "bar")
-		err = os.Mkdir(barDir, 0777)
-		require.NoError(t, err, "Case %d: %s", i, currCase.name)
-		err = ioutil.WriteFile(path.Join(barDir, "main.go"), []byte(testMain), 0644)
-		require.NoError(t, err, "Case %d: %s", i, currCase.name)
-		barDockerDir := path.Join(barDir, "docker")
-		err = os.Mkdir(barDockerDir, 0777)
-		require.NoError(t, err, "Case %d: %s", i, currCase.name)
-		err = ioutil.WriteFile(path.Join(barDockerDir, "Dockerfile"), []byte(dockerfile), 0777)
-		require.NoError(t, err, "Case %d: %s", i, currCase.name)
-
-		// commit
-		gittest.CommitAllFiles(t, currTmpDir, "Commit")
-
-		spec := currCase.spec(currTmpDir)
-		if currCase.preDistAction != nil {
-			currCase.preDistAction(currTmpDir, spec)
-		}
-
-		orderedSpec, err := dist.Schedule(spec)
-		require.NoError(t, err, "Case %d: %s", i, currCase.name)
-		for _, currSpecWithDeps := range orderedSpec {
-			if !currCase.skipBuild {
-				err = build.Run(build.RequiresBuild(currSpecWithDeps, nil).Specs(), nil, build.Context{}, ioutil.Discard)
-				require.NoError(t, err, "Case %d: %s", i, currCase.name)
-			}
-			err = dist.Run(currSpecWithDeps, ioutil.Discard)
-			if currCase.wantErrorRegexp == "" {
-				require.NoError(t, err, "Case %d: %s", i, currCase.name)
-			} else {
-				require.Error(t, err, fmt.Sprintf("Case %d: %s", i, currCase.name))
-				assert.Regexp(t, regexp.MustCompile(currCase.wantErrorRegexp), err.Error(), "Case %d: %s", i, currCase.name)
-			}
-		}
-
-		if currCase.validate != nil {
-			currCase.validate(i, currCase.name, currTmpDir, cli)
 		}
 	}
 }

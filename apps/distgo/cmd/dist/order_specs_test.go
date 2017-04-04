@@ -38,8 +38,7 @@ func generateSpec(product string, deps params.DockerDeps) params.ProductBuildSpe
 	}
 }
 
-func TestSchedule(t *testing.T) {
-
+func TestOrderBuildSpecs(t *testing.T) {
 	A := generateSpec("A", params.DockerDeps{
 		"B": {params.SLSDistType},
 		"C": {params.BinDistType},
@@ -96,7 +95,7 @@ func TestSchedule(t *testing.T) {
 			valid:    true,
 		},
 	} {
-		actual, err := dist.Schedule(testcase.input)
+		actual, err := dist.OrderBuildSpecs(testcase.input)
 		if !testcase.valid {
 			require.Error(t, err)
 			continue
@@ -107,5 +106,4 @@ func TestSchedule(t *testing.T) {
 			require.Equal(t, expectedSpec.Spec.ProductName, actual[i].Spec.ProductName)
 		}
 	}
-
 }
