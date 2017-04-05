@@ -61,10 +61,8 @@ func TestDockerDist(t *testing.T) {
 
 	for i, currCase := range []struct {
 		name          string
-		skip          func() bool
 		spec          func(projectDir string, randomPad string) []params.ProductBuildSpecWithDeps
 		preDistAction func(projectDir string, buildSpec []params.ProductBuildSpecWithDeps)
-		skipBuild     bool
 		validate      func(caseNum int, name string, pad string, cli *dockercli.Client)
 	}{
 		{
@@ -92,7 +90,7 @@ func TestDockerDist(t *testing.T) {
 									Repository: fullRepoName("foo", pad),
 									Tag:        "0.1.0",
 									ContextDir: "foo/docker",
-									DistDeps: params.DockerDeps{
+									DistDeps: map[string][]params.DistInfoType{
 										"bar": {
 											params.DockerDistType,
 										},
@@ -154,10 +152,6 @@ func TestDockerDist(t *testing.T) {
 			},
 		},
 	} {
-		if currCase.skip != nil && currCase.skip() {
-			fmt.Fprintln(os.Stderr, "SKIPPING CASE", i)
-			continue
-		}
 		cli, err := dockercli.NewEnvClient()
 		require.NoError(t, err)
 
@@ -215,10 +209,8 @@ func TestDockerDist(t *testing.T) {
 		orderedSpecs, err := dist.OrderBuildSpecs(spec)
 		require.NoError(t, err, "Case %d: %s", i, currCase.name)
 		for _, currSpecWithDeps := range orderedSpecs {
-			if !currCase.skipBuild {
-				err = build.Run(build.RequiresBuild(currSpecWithDeps, nil).Specs(), nil, build.Context{}, ioutil.Discard)
-				require.NoError(t, err, "Case %d: %s", i, currCase.name)
-			}
+			err = build.Run(build.RequiresBuild(currSpecWithDeps, nil).Specs(), nil, build.Context{}, ioutil.Discard)
+			require.NoError(t, err, "Case %d: %s", i, currCase.name)
 			err = dist.Run(currSpecWithDeps, ioutil.Discard)
 			require.NoError(t, err, "Case %d: %s", i, currCase.name)
 		}

@@ -15,25 +15,25 @@
 package dist
 
 import (
+	"sort"
+
 	"github.com/palantir/godel/apps/distgo/params"
 )
 
-var (
-	distTypeOrdering = []params.DistInfoType{params.BinDistType,
-		params.SLSDistType,
-		params.RPMDistType,
-		params.DockerDistType}
-)
+var distTypeWeight = map[params.DistInfoType]int{
+	params.BinDistType:    1,
+	params.SLSDistType:    2,
+	params.RPMDistType:    3,
+	params.DockerDistType: 4,
+}
 
 func OrderProductDists(dists []params.Dist) []params.Dist {
 	var orderedDists []params.Dist
-	for _, currDistType := range distTypeOrdering {
-		for _, currDist := range dists {
-			if currDist.Info.Type() != currDistType {
-				continue
-			}
-			orderedDists = append(orderedDists, currDist)
-		}
+	for _, currDist := range dists {
+		orderedDists = append(orderedDists, currDist)
 	}
+	sort.Slice(orderedDists, func(i, j int) bool {
+		return distTypeWeight[orderedDists[i].Info.Type()] < distTypeWeight[orderedDists[j].Info.Type()]
+	})
 	return orderedDists
 }

@@ -46,7 +46,7 @@ func dockerDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg param
 	}), nil
 }
 
-func buildWithCmd(tag string, contextDir string) error {
+func buildWithCmd(tag, contextDir string) error {
 	var args []string
 	args = append(args, "build")
 	args = append(args, "--tag", tag)
@@ -54,8 +54,7 @@ func buildWithCmd(tag string, contextDir string) error {
 
 	dockerBuild := exec.Command("docker", args...)
 	if output, err := dockerBuild.CombinedOutput(); err != nil {
-		fmt.Printf("docker build failed with error:\n%s\n", string(output))
-		return errors.Wrap(err, "failed to run")
+		return errors.Wrap(err, fmt.Sprintf("docker build failed with error:\n%s\n", string(output)))
 	}
 	return nil
 }
