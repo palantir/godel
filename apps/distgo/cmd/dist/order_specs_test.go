@@ -17,13 +17,14 @@ package dist_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/palantir/godel/apps/distgo/cmd/dist"
 	"github.com/palantir/godel/apps/distgo/params"
 )
 
-func generateSpec(product string, deps params.DockerDeps) params.ProductBuildSpec {
+func generateSpec(product string, deps map[string][]params.DistInfoType) params.ProductBuildSpec {
 	return params.ProductBuildSpec{
 		ProductName: product,
 		Product: params.Product{
@@ -39,71 +40,67 @@ func generateSpec(product string, deps params.DockerDeps) params.ProductBuildSpe
 }
 
 func TestOrderBuildSpecs(t *testing.T) {
-	A := generateSpec("A", params.DockerDeps{
+	A := generateSpec("A", map[string][]params.DistInfoType{
 		"B": {params.SLSDistType},
 		"C": {params.BinDistType},
 	})
-	B := generateSpec("B", params.DockerDeps{
+	B := generateSpec("B", map[string][]params.DistInfoType{
 		"D": {params.DockerDistType},
 	})
-	C := generateSpec("C", params.DockerDeps{
+	C := generateSpec("C", map[string][]params.DistInfoType{
 		"D": {params.SLSDistType},
 	})
-	D := generateSpec("D", params.DockerDeps{})
-	E := generateSpec("E", params.DockerDeps{
+	D := generateSpec("D", map[string][]params.DistInfoType{})
+	E := generateSpec("E", map[string][]params.DistInfoType{
 		"DepE": {params.SLSDistType},
 	})
-	DepE := generateSpec("DepE", params.DockerDeps{
+	DepE := generateSpec("DepE", map[string][]params.DistInfoType{
 		"E": {params.SLSDistType},
 	})
 
-	X := generateSpec("X", params.DockerDeps{
+	X := generateSpec("X", map[string][]params.DistInfoType{
 		"Y": {params.DockerDistType},
 	})
-	Y := generateSpec("Y", params.DockerDeps{
+	Y := generateSpec("Y", map[string][]params.DistInfoType{
 		"Z": {params.DockerDistType},
 	})
-	Z := generateSpec("Z", params.DockerDeps{})
+	Z := generateSpec("Z", map[string][]params.DistInfoType{})
 
 	for _, testcase := range []struct {
-		input    []params.ProductBuildSpecWithDeps
-		expected []params.ProductBuildSpecWithDeps
-		valid    bool
+		input     []params.ProductBuildSpecWithDeps
+		expected  []params.ProductBuildSpecWithDeps
+		expectErr string
 	}{
 		{
 			//  (A <- B,C <- D) = D, B, C, A
 			input:    []params.ProductBuildSpecWithDeps{{Spec: A}, {Spec: B}, {Spec: C}, {Spec: D}},
 			expected: []params.ProductBuildSpecWithDeps{{Spec: D}, {Spec: B}, {Spec: C}, {Spec: A}},
-			valid:    true,
 		},
 		{
 			// empty
 			input:    []params.ProductBuildSpecWithDeps{},
 			expected: []params.ProductBuildSpecWithDeps{},
-			valid:    true,
 		},
 		{
 			//  (E <- DepE <- E) = invalid
-			input:    []params.ProductBuildSpecWithDeps{{Spec: E}, {Spec: DepE}},
-			expected: nil,
-			valid:    false,
+			input:     []params.ProductBuildSpecWithDeps{{Spec: E}, {Spec: DepE}},
+			expected:  nil,
+			expectErr: "Failed to generate ordering among the products.",
 		},
 		{
 			//  (X <- Y <- Z) = Z, Y, X
 			input:    []params.ProductBuildSpecWithDeps{{Spec: Y}, {Spec: X}, {Spec: Z}},
 			expected: []params.ProductBuildSpecWithDeps{{Spec: Z}, {Spec: Y}, {Spec: X}},
-			valid:    true,
 		},
 	} {
 		actual, err := dist.OrderBuildSpecs(testcase.input)
-		if !testcase.valid {
-			require.Error(t, err)
+		if testcase.expectErr != "" {
+			require.Contains(t, err.Error(), testcase.expectErr)
 			continue
-
 		}
 		require.NoError(t, err)
 		for i, expectedSpec := range testcase.expected {
-			require.Equal(t, expectedSpec.Spec.ProductName, actual[i].Spec.ProductName)
+			assert.Equal(t, expectedSpec.Spec.ProductName, actual[i].Spec.ProductName)
 		}
 	}
 }

@@ -156,13 +156,11 @@ func (i *RPMDistInfo) Deps() []string {
 	return nil
 }
 
-type DockerDeps map[string][]DistInfoType
-
 type DockerDistInfo struct {
 	Repository string
 	Tag        string
 	ContextDir string
-	DistDeps   DockerDeps
+	DistDeps   map[string][]DistInfoType
 }
 
 func (d *DockerDistInfo) Type() DistInfoType {
