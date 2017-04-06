@@ -341,10 +341,10 @@
 			"revisionTime": "2016-12-02T17:17:08Z"
 		},
 		{
-			"checksumSHA1": "MhrjempJy/hQiqcj1axZp/oox9Q=",
+			"checksumSHA1": "rBe6S08Qg9PJd56jlY5knLgUQLk=",
 			"path": "github.com/palantir/pkg/matcher",
-			"revision": "c60ea2d471b77fae0cd4219bd329bd7e0e01d5b8",
-			"revisionTime": "2016-12-02T17:17:08Z"
+			"revision": "5d8e3ae75f4c1da9363692b04fcb4334bf09b82a",
+			"revisionTime": "2017-04-06T01:49:46Z"
 		},
 		{
 			"checksumSHA1": "wFdDjAqsTus/qC39RSSB7liU124=",

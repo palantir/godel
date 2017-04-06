@@ -28,11 +28,16 @@ tags:
       - "integration_tests"
     paths:
       - "test"
+    exclude:
+      names:
+        - "ignore"
+      paths:
+        - "test/exclude"
 `
 	cfg, err := config.LoadRawConfig(yml, "")
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("%q", fmt.Sprintf("%+v", cfg))
-	// Output: "{Tags:map[integration:{Names:[integration_tests] Paths:[test]}] Exclude:{Names:[] Paths:[]}}"
+	// Output: "{Tags:map[integration:{NamesPathsCfg:{Names:[integration_tests] Paths:[test]} Exclude:{Names:[ignore] Paths:[test/exclude]}}] Exclude:{Names:[] Paths:[]}}"
 }
