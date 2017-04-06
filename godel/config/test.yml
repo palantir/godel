@@ -2,9 +2,12 @@ tags:
   distgo:
     paths:
       - "apps/distgo"
+    exclude:
+      names:
+        - "dockertests"
   docker-distgo:
     paths:
-      - "apps/docker/distgo"
+      - "apps/distgo/cmd/dist/dockertests"
   gonform:
     paths:
       - "apps/gonform"

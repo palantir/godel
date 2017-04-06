@@ -17,7 +17,7 @@ package dist_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/palantir/godel/apps/distgo/cmd/dist"
 	"github.com/palantir/godel/apps/distgo/params"
@@ -55,7 +55,7 @@ func TestOrderProductDists(t *testing.T) {
 	} {
 		actual := dist.OrderProductDists(testCase.input)
 		for i, d := range actual {
-			require.True(t, d.Info.Type() == testCase.expected[i].Info.Type(), "Case: %v Index: %v", caseNum, i)
+			assert.Equal(t, d.Info.Type(), testCase.expected[i].Info.Type(), "Case: %v Index: %v", caseNum, i)
 		}
 	}
 }
