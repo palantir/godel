@@ -24,6 +24,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/palantir/godel/apps/distgo/params"
+	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 	"github.com/palantir/godel/apps/distgo/pkg/script"
 )
 
@@ -45,6 +46,14 @@ func checkRPMDependencies() error {
 
 func rpmDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, stdout io.Writer) (p Packager, rErr error) {
 	buildSpec := buildSpecWithDeps.Spec
+	osArchs := buildSpec.Build.OSArchs
+	expected := osarch.OSArch{OS: "linux", Arch: "amd64"}
+	if len(osArchs) != 1 || osArchs[0] != expected {
+		return nil, fmt.Errorf("RPM is only supported for %v", expected)
+	}
+	if err := checkRPMDependencies(); err != nil {
+		return nil, err
+	}
 	rpmDistInfo, ok := distCfg.Info.(*params.RPMDistInfo)
 	if !ok {
 		rpmDistInfo = &params.RPMDistInfo{}
