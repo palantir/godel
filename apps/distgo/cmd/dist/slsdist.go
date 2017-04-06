@@ -263,12 +263,12 @@ func writeSLSManifest(buildSpec params.ProductBuildSpec, distCfg params.Dist, sl
 }
 
 type slsManifest struct {
-	ManifestVersion string                 `yaml:"manifest-version"`
-	ProductGroup    string                 `yaml:"product-group"`
-	ProductName     string                 `yaml:"product-name"`
-	ProductVersion  string                 `yaml:"product-version"`
-	ProductType     string                 `yaml:"product-type,omitempty"`
-	Extensions      map[string]interface{} `yaml:"extensions,omitempty"`
+	ManifestVersion string                 `json:"manifest-version" yaml:"manifest-version"`
+	ProductGroup    string                 `json:"product-group" yaml:"product-group"`
+	ProductName     string                 `json:"product-name" yaml:"product-name"`
+	ProductVersion  string                 `json:"product-version" yaml:"product-version"`
+	ProductType     string                 `json:"product-type" yaml:"product-type,omitempty"`
+	Extensions      map[string]interface{} `json:"extensions,omitempty" yaml:"extensions,omitempty"`
 }
 
 func manifest(groupID, name, version, productType string, extensions map[string]interface{}) (string, error) {

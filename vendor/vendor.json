@@ -51,6 +51,13 @@
 			"revisionTime": "2016-07-21T06:51:13Z"
 		},
 		{
+			"checksumSHA1": "17vYJDDMJO63/G/tRFIUuSlMCbE=",
+			"origin": "k8s.io/client-go/vendor/github.com/ghodss/yaml",
+			"path": "github.com/ghodss/yaml",
+			"revision": "124670e99da15091e13916f0ad4b2b2df2a39cd5",
+			"revisionTime": "2016-12-04T11:39:55Z"
+		},
+		{
 			"checksumSHA1": "6RMqVbPAefVYUiq/l48oBKs0wCo=",
 			"path": "github.com/golang/lint",
 			"revision": "c7bacac2b21ca01afa1dee0acf64df3ce047c28f",
