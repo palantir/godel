@@ -26,10 +26,10 @@ import (
 )
 
 type GUnit struct {
-	// Tags group tests into different sets. The key is the name of the tag and the value is a matcher.NamesPathsCfg
-	// that specifies the rules for matching the tests that are part of the tag. Any test that matches the provided
-	// matcher is considered part of the tag.
-	Tags map[string]matcher.NamesPathsCfg `yaml:"tags" json:"tags"`
+	// Tags group tests into different sets. The key is the name of the tag and the value is a
+	// matcher.NamesPathsWithExcludeCfg that specifies the rules for matching the tests that are part of the tag.
+	// Any test that matches the provided matcher is considered part of the tag.
+	Tags map[string]matcher.NamesPathsWithExcludeCfg `yaml:"tags" json:"tags"`
 
 	// Exclude specifies the files that should be excluded from tests.
 	Exclude matcher.NamesPathsCfg `yaml:"exclude" json:"exclude"`

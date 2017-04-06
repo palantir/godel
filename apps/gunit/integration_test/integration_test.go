@@ -195,6 +195,63 @@ func TestRun(t *testing.T) {
 			wantError: "(?s).+1 package had failing tests:.+",
 		},
 		{
+			name: "tag will skip excluded tests",
+			filesToCreate: []gofiles.GoFileSpec{
+				{
+					RelPath: "foo_test.go",
+					Src: `package foo
+					import "testing"
+					func TestFoo(t *testing.T) {
+						t.Errorf("fooFail")
+					}`,
+				},
+				{
+					RelPath: "integration/bar_test.go",
+					Src: `package bar
+					import "testing"
+					func TestBar(t *testing.T) {
+						t.Errorf("barFail")
+					}`,
+				},
+				{
+					RelPath: "integration/baz/baz_test.go",
+					Src: `package baz
+					import "testing"
+					func TestBaz(t *testing.T) {
+						t.Errorf("bazFail")
+					}`,
+				},
+				{
+					RelPath: "integration/exclude/exclude_test.go",
+					Src: `package exclude
+					import "testing"
+					func TestExclude(t *testing.T) {
+						t.Errorf("exclude")
+					}`,
+				},
+			},
+			config: unindent(`tags:
+					  integration:
+					    names:
+					      - "integration"
+					    exclude:
+					      paths:
+					        - "integration/exclude"
+					exclude:
+					  paths:
+					    - "vendor"
+					`),
+			args: []string{
+				"--tags", "integration",
+			},
+			wantMatch: func(currCaseTmpDir string) string {
+				return `(?s)` +
+					`--- FAIL: TestBar (.+)\n.+bar_test.go:[0-9]+: barFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `/integration\s+[0-9.]+s.+` +
+					`--- FAIL: TestBaz (.+)\n.+baz_test.go:[0-9]+: bazFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `/integration/baz\s+[0-9.]+s.+`
+			},
+			wantError: "(?s).+2 packages had failing tests:.+",
+		},
+		{
 			name: "tags are case-insensitive",
 			filesToCreate: []gofiles.GoFileSpec{
 				{

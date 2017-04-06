@@ -41,6 +41,11 @@ func TestLoadConfig(t *testing.T) {
 			      - "integration_tests"
 			    paths:
 			      - "test"
+			    exclude:
+			      names:
+			        - "ignore"
+			      paths:
+			        - "test/foo"
 			exclude:
 			  names:
 			    - ".*test"
@@ -50,10 +55,16 @@ func TestLoadConfig(t *testing.T) {
 			`,
 			json: `{"exclude":{"names":["gunit"],"paths":["generated_src"]}}`,
 			want: config.GUnit{
-				Tags: map[string]matcher.NamesPathsCfg{
+				Tags: map[string]matcher.NamesPathsWithExcludeCfg{
 					"integration": {
-						Names: []string{`integration_tests`},
-						Paths: []string{`test`},
+						NamesPathsCfg: matcher.NamesPathsCfg{
+							Names: []string{`integration_tests`},
+							Paths: []string{`test`},
+						},
+						Exclude: matcher.NamesPathsCfg{
+							Names: []string{`ignore`},
+							Paths: []string{`test/foo`},
+						},
 					},
 				},
 				Exclude: matcher.NamesPathsCfg{
@@ -76,12 +87,16 @@ func TestLoadConfig(t *testing.T) {
 			      - "test"
 			`,
 			want: config.GUnit{
-				Tags: map[string]matcher.NamesPathsCfg{
+				Tags: map[string]matcher.NamesPathsWithExcludeCfg{
 					"integration": {
-						Names: []string{`integration_tests`},
+						NamesPathsCfg: matcher.NamesPathsCfg{
+							Names: []string{`integration_tests`},
+						},
 					},
 					"mixedCasing": {
-						Paths: []string{`test`},
+						NamesPathsCfg: matcher.NamesPathsCfg{
+							Paths: []string{`test`},
+						},
 					},
 				},
 			},
