@@ -16,6 +16,7 @@ package dist
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"path"
 
@@ -37,6 +38,31 @@ func dockerDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg param
 	}
 	completeTag := fmt.Sprintf("%s:%s", dockerDistInfo.Repository, dockerDistInfo.Tag)
 	contextDir := path.Join(buildSpecWithDeps.Spec.ProjectDir, dockerDistInfo.ContextDir)
+
+	// link dependent artifacts into the context directory
+	dockerDeps := dockerDistInfo.DistDeps
+	for depProduct := range dockerDeps {
+		for depDistType := range dockerDeps[depProduct] {
+			if depDistType == params.DockerDistType {
+				// no need to copy docker artifacts
+				continue
+			}
+			depProductSpec := buildSpecWithDeps.DistDeps[depProduct]
+			for _, depDist := range depProductSpec.Dist {
+				if depDist.Info.Type() != depDistType {
+					continue
+				}
+				artifactLocation := ArtifactPath(depProductSpec, depDist)
+				outputLink := dockerDeps[depProduct][depDistType]
+				if outputLink == "" {
+					outputLink = path.Base(artifactLocation)
+				}
+				if err := os.Link(artifactLocation, path.Join(contextDir, outputLink)); err != nil {
+					return nil, err
+				}
+			}
+		}
+	}
 
 	return packager(func() error {
 		if err := buildWithCmd(completeTag, contextDir); err != nil {

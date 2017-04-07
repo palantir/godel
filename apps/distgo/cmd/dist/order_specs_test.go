@@ -24,7 +24,7 @@ import (
 	"github.com/palantir/godel/apps/distgo/params"
 )
 
-func generateSpec(product string, deps map[string][]params.DistInfoType) params.ProductBuildSpec {
+func generateSpec(product string, deps params.DockerDistDeps) params.ProductBuildSpec {
 	return params.ProductBuildSpec{
 		ProductName: product,
 		Product: params.Product{
@@ -40,31 +40,24 @@ func generateSpec(product string, deps map[string][]params.DistInfoType) params.
 }
 
 func TestOrderBuildSpecs(t *testing.T) {
-	A := generateSpec("A", map[string][]params.DistInfoType{
-		"B": {params.SLSDistType},
-		"C": {params.BinDistType},
-	})
-	B := generateSpec("B", map[string][]params.DistInfoType{
-		"D": {params.DockerDistType},
-	})
-	C := generateSpec("C", map[string][]params.DistInfoType{
-		"D": {params.SLSDistType},
-	})
-	D := generateSpec("D", map[string][]params.DistInfoType{})
-	E := generateSpec("E", map[string][]params.DistInfoType{
-		"DepE": {params.SLSDistType},
-	})
-	DepE := generateSpec("DepE", map[string][]params.DistInfoType{
-		"E": {params.SLSDistType},
-	})
+	A := generateSpec("A", params.DockerDistDeps{}.
+		Add("B", params.SLSDistType, "").
+		Add("C", params.BinDistType, ""))
+	B := generateSpec("B", params.DockerDistDeps{}.
+		Add("D", params.DockerDistType, ""))
+	C := generateSpec("C", params.DockerDistDeps{}.
+		Add("D", params.SLSDistType, ""))
+	D := generateSpec("D", params.DockerDistDeps{})
+	E := generateSpec("E", params.DockerDistDeps{}.
+		Add("DepE", params.SLSDistType, ""))
+	DepE := generateSpec("DepE", params.DockerDistDeps{}.
+		Add("E", params.SLSDistType, ""))
 
-	X := generateSpec("X", map[string][]params.DistInfoType{
-		"Y": {params.DockerDistType},
-	})
-	Y := generateSpec("Y", map[string][]params.DistInfoType{
-		"Z": {params.DockerDistType},
-	})
-	Z := generateSpec("Z", map[string][]params.DistInfoType{})
+	X := generateSpec("X", params.DockerDistDeps{}.
+		Add("Y", params.DockerDistType, ""))
+	Y := generateSpec("Y", params.DockerDistDeps{}.
+		Add("Z", params.DockerDistType, ""))
+	Z := generateSpec("Z", params.DockerDistDeps{})
 
 	for _, testcase := range []struct {
 		input     []params.ProductBuildSpecWithDeps

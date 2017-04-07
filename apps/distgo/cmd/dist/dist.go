@@ -182,7 +182,7 @@ func copyBuildArtifactsToBinDir(buildSpecWithDeps params.ProductBuildSpecWithDep
 	}
 
 	// copy build artifacts for dependent products
-	for _, currDepSpec := range buildSpecWithDeps.Deps {
+	for _, currDepSpec := range buildSpecWithDeps.BuildDeps {
 		if err := copyBuildArtifacts(currDepSpec, binSpecDir); err != nil {
 			return errors.Wrapf(err, "failed to copy build artifacts for %v", currDepSpec.ProductName)
 		}

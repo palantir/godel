@@ -34,14 +34,15 @@ type ProductBuildSpec struct {
 }
 
 type ProductBuildSpecWithDeps struct {
-	Spec ProductBuildSpec
-	Deps map[string]ProductBuildSpec
+	Spec      ProductBuildSpec
+	BuildDeps map[string]ProductBuildSpec
+	DistDeps  map[string]ProductBuildSpec
 }
 
 func (p *ProductBuildSpecWithDeps) AllSpecs() []ProductBuildSpec {
-	allSpecs := make([]ProductBuildSpec, 0, len(p.Deps)+1)
+	allSpecs := make([]ProductBuildSpec, 0, len(p.BuildDeps)+1)
 	allSpecs = append(allSpecs, p.Spec)
-	for _, spec := range p.Deps {
+	for _, spec := range p.BuildDeps {
 		allSpecs = append(allSpecs, spec)
 	}
 	return allSpecs
@@ -53,7 +54,8 @@ const (
 )
 
 func NewProductBuildSpecWithDeps(spec ProductBuildSpec, allSpecs map[string]ProductBuildSpec) (ProductBuildSpecWithDeps, error) {
-	deps := make(map[string]ProductBuildSpec)
+	buildDeps := make(map[string]ProductBuildSpec)
+	distDeps := make(map[string]ProductBuildSpec)
 	for _, currDistCfg := range spec.Dist {
 		for _, currDepProduct := range currDistCfg.InputProducts {
 			currSpec, ok := allSpecs[currDepProduct]
@@ -65,13 +67,26 @@ func NewProductBuildSpecWithDeps(spec ProductBuildSpec, allSpecs map[string]Prod
 				sort.Strings(allProducts)
 				return ProductBuildSpecWithDeps{}, errors.Errorf("Spec %v declared %v as a dependent product, but could not find configuration for that product in %v", spec.ProductName, currDepProduct, allProducts)
 			}
-			deps[currDepProduct] = currSpec
+			buildDeps[currDepProduct] = currSpec
+		}
+		for _, currDepProduct := range currDistCfg.Info.Deps() {
+			currSpec, ok := allSpecs[currDepProduct]
+			if !ok {
+				allProducts := make([]string, 0, len(allSpecs))
+				for currName := range allSpecs {
+					allProducts = append(allProducts, currName)
+				}
+				sort.Strings(allProducts)
+				return ProductBuildSpecWithDeps{}, errors.Errorf("Spec %v declared %v as a dependent product, but could not find configuration for that product in %v", spec.ProductName, currDepProduct, allProducts)
+			}
+			distDeps[currDepProduct] = currSpec
 		}
 	}
 
 	return ProductBuildSpecWithDeps{
-		Spec: spec,
-		Deps: deps,
+		Spec:      spec,
+		BuildDeps: buildDeps,
+		DistDeps:  distDeps,
 	}, nil
 }
 

@@ -36,6 +36,10 @@ func OrderBuildSpecs(specsWithDeps []params.ProductBuildSpecWithDeps) ([]params.
 		}
 		for _, curDist := range curSpec.Spec.Dist {
 			for _, dep := range curDist.Info.Deps() {
+				if dep == product {
+					// allow self dependencies
+					continue
+				}
 				if graph[dep] == nil {
 					graph[dep] = make(map[string]struct{})
 				}
