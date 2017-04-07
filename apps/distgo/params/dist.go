@@ -157,14 +157,22 @@ func (i *RPMDistInfo) Deps() []string {
 	return nil
 }
 
-type DockerDistDeps map[string]map[DistInfoType]string
+type DockerDistDep struct {
+	Product    string
+	DistType   DistInfoType
+	TargetFile string
+}
+type DockerDistDeps []DockerDistDep
 
-func (d DockerDistDeps) Add(product string, distType DistInfoType, outputArtifact string) DockerDistDeps {
-	if d[product] == nil {
-		d[product] = make(map[DistInfoType]string)
+func (d DockerDistDeps) ToMap() map[string]map[DistInfoType]string {
+	m := make(map[string]map[DistInfoType]string)
+	for _, dep := range d {
+		if m[dep.Product] == nil {
+			m[dep.Product] = make(map[DistInfoType]string)
+		}
+		m[dep.Product][dep.DistType] = dep.TargetFile
 	}
-	d[product][distType] = outputArtifact
-	return d
+	return m
 }
 
 type DockerDistInfo struct {
@@ -175,8 +183,10 @@ type DockerDistInfo struct {
 	Tag        string
 	// ContextDir is the directory in which the docker build task is executed.
 	ContextDir string
-	// DistDeps is a map with key as a product and value as a map of dist types of that product
-	// to the filename of the link that needs to be created in the context directory.
+	// DistDeps is a slice of DockerDistDep.
+	// DockerDistDep contains a product, dist type and target file.
+	// For a particular product's dist type, we create a link from its output
+	// inside the ContextDir with the name specified in target file.
 	// This will be used to order the dist tasks such that all the dependent
 	// products' dist tasks will be executed first, after which the dist tasks for the
 	// current product are executed.
@@ -189,7 +199,7 @@ func (d *DockerDistInfo) Type() DistInfoType {
 
 func (d *DockerDistInfo) Deps() []string {
 	var deps []string
-	for product := range d.DistDeps {
+	for product := range d.DistDeps.ToMap() {
 		deps = append(deps, product)
 	}
 	sort.Strings(deps)

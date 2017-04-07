@@ -58,26 +58,16 @@ func NewProductBuildSpecWithDeps(spec ProductBuildSpec, allSpecs map[string]Prod
 	distDeps := make(map[string]ProductBuildSpec)
 	for _, currDistCfg := range spec.Dist {
 		for _, currDepProduct := range currDistCfg.InputProducts {
-			currSpec, ok := allSpecs[currDepProduct]
-			if !ok {
-				allProducts := make([]string, 0, len(allSpecs))
-				for currName := range allSpecs {
-					allProducts = append(allProducts, currName)
-				}
-				sort.Strings(allProducts)
-				return ProductBuildSpecWithDeps{}, errors.Errorf("Spec %v declared %v as a dependent product, but could not find configuration for that product in %v", spec.ProductName, currDepProduct, allProducts)
+			currSpec, err := getSpec(currDepProduct, spec, allSpecs)
+			if err != nil {
+				return ProductBuildSpecWithDeps{}, err
 			}
 			buildDeps[currDepProduct] = currSpec
 		}
 		for _, currDepProduct := range currDistCfg.Info.Deps() {
-			currSpec, ok := allSpecs[currDepProduct]
-			if !ok {
-				allProducts := make([]string, 0, len(allSpecs))
-				for currName := range allSpecs {
-					allProducts = append(allProducts, currName)
-				}
-				sort.Strings(allProducts)
-				return ProductBuildSpecWithDeps{}, errors.Errorf("Spec %v declared %v as a dependent product, but could not find configuration for that product in %v", spec.ProductName, currDepProduct, allProducts)
+			currSpec, err := getSpec(currDepProduct, spec, allSpecs)
+			if err != nil {
+				return ProductBuildSpecWithDeps{}, err
 			}
 			distDeps[currDepProduct] = currSpec
 		}
@@ -160,4 +150,17 @@ func firstNonEmpty(first, second string) string {
 		return first
 	}
 	return second
+}
+
+func getSpec(product string, spec ProductBuildSpec, allSpecs map[string]ProductBuildSpec) (ProductBuildSpec, error) {
+	currSpec, ok := allSpecs[product]
+	if !ok {
+		allProducts := make([]string, 0, len(allSpecs))
+		for currName := range allSpecs {
+			allProducts = append(allProducts, currName)
+		}
+		sort.Strings(allProducts)
+		return ProductBuildSpec{}, errors.Errorf("Spec %v declared %v as a dependent product, but could not find configuration for that product in %v", spec.ProductName, product, allProducts)
+	}
+	return currSpec, nil
 }

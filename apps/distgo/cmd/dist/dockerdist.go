@@ -40,24 +40,23 @@ func dockerDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg param
 	contextDir := path.Join(buildSpecWithDeps.Spec.ProjectDir, dockerDistInfo.ContextDir)
 
 	// link dependent artifacts into the context directory
-	dockerDeps := dockerDistInfo.DistDeps
-	for depProduct := range dockerDeps {
-		for depDistType := range dockerDeps[depProduct] {
-			if depDistType == params.DockerDistType {
+	for depProduct, distTypes := range dockerDistInfo.DistDeps.ToMap() {
+		for distType := range distTypes {
+			if distType == params.DockerDistType {
 				// no need to copy docker artifacts
 				continue
 			}
 			depProductSpec := buildSpecWithDeps.DistDeps[depProduct]
 			for _, depDist := range depProductSpec.Dist {
-				if depDist.Info.Type() != depDistType {
+				if depDist.Info.Type() != distType {
 					continue
 				}
 				artifactLocation := ArtifactPath(depProductSpec, depDist)
-				outputLink := dockerDeps[depProduct][depDistType]
-				if outputLink == "" {
-					outputLink = path.Base(artifactLocation)
+				targetFile := distTypes[distType]
+				if targetFile == "" {
+					targetFile = path.Base(artifactLocation)
 				}
-				if err := os.Link(artifactLocation, path.Join(contextDir, outputLink)); err != nil {
+				if err := os.Link(artifactLocation, path.Join(contextDir, targetFile)); err != nil {
 					return nil, err
 				}
 			}

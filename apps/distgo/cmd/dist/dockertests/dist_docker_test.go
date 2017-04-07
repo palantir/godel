@@ -171,9 +171,7 @@ func TestDockerDist(t *testing.T) {
 									Tag:        "0.1.0",
 									ContextDir: "foo/docker",
 									DistDeps: params.DockerDistDeps{
-										"bar": {
-											params.DockerDistType: "",
-										},
+										{Product: "bar", DistType: params.DockerDistType, TargetFile: ""},
 									},
 								},
 							},
@@ -303,13 +301,9 @@ func TestDockerDist(t *testing.T) {
 									Tag:        "0.1.0",
 									ContextDir: "bar/docker",
 									DistDeps: params.DockerDistDeps{
-										"bar": {
-											params.SLSDistType: "bar-sls.tgz",
-										},
-										"foo": {
-											params.SLSDistType: "foo-sls.tgz",
-											params.BinDistType: "foo-bin.tgz",
-										},
+										{Product: "bar", DistType: params.SLSDistType, TargetFile: "bar-sls.tgz"},
+										{Product: "foo", DistType: params.BinDistType, TargetFile: "foo-bin.tgz"},
+										{Product: "foo", DistType: params.SLSDistType, TargetFile: "foo-sls.tgz"},
 									},
 								},
 							},

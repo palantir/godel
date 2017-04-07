@@ -40,23 +40,30 @@ func generateSpec(product string, deps params.DockerDistDeps) params.ProductBuil
 }
 
 func TestOrderBuildSpecs(t *testing.T) {
-	A := generateSpec("A", params.DockerDistDeps{}.
-		Add("B", params.SLSDistType, "").
-		Add("C", params.BinDistType, ""))
-	B := generateSpec("B", params.DockerDistDeps{}.
-		Add("D", params.DockerDistType, ""))
-	C := generateSpec("C", params.DockerDistDeps{}.
-		Add("D", params.SLSDistType, ""))
+	A := generateSpec("A", params.DockerDistDeps{
+		{Product: "B", DistType: params.SLSDistType, TargetFile: ""},
+		{Product: "C", DistType: params.BinDistType, TargetFile: ""},
+	})
+	B := generateSpec("B", params.DockerDistDeps{
+		{Product: "D", DistType: params.DockerDistType, TargetFile: ""},
+	})
+	C := generateSpec("C", params.DockerDistDeps{
+		{Product: "D", DistType: params.SLSDistType, TargetFile: ""},
+	})
 	D := generateSpec("D", params.DockerDistDeps{})
-	E := generateSpec("E", params.DockerDistDeps{}.
-		Add("DepE", params.SLSDistType, ""))
-	DepE := generateSpec("DepE", params.DockerDistDeps{}.
-		Add("E", params.SLSDistType, ""))
+	E := generateSpec("E", params.DockerDistDeps{
+		{Product: "DepE", DistType: params.SLSDistType, TargetFile: ""},
+	})
+	DepE := generateSpec("DepE", params.DockerDistDeps{
+		{Product: "E", DistType: params.SLSDistType, TargetFile: ""},
+	})
 
-	X := generateSpec("X", params.DockerDistDeps{}.
-		Add("Y", params.DockerDistType, ""))
-	Y := generateSpec("Y", params.DockerDistDeps{}.
-		Add("Z", params.DockerDistType, ""))
+	X := generateSpec("X", params.DockerDistDeps{
+		{Product: "Y", DistType: params.DockerDistType, TargetFile: ""},
+	})
+	Y := generateSpec("Y", params.DockerDistDeps{
+		{Product: "Z", DistType: params.DockerDistType, TargetFile: ""},
+	})
 	Z := generateSpec("Z", params.DockerDistDeps{})
 
 	for _, testcase := range []struct {
