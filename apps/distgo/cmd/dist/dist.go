@@ -79,8 +79,6 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 	for _, currDistCfg := range orderedDists {
 		outputDir := path.Join(buildSpec.ProjectDir, currDistCfg.OutputDir)
 
-		fmt.Fprintf(stdout, "Creating distribution for %v at %v\n", buildSpec.ProductName, ArtifactPath(buildSpec, currDistCfg))
-
 		spec := slsspec.New()
 		values := slsspec.TemplateValues(buildSpec.ProductName, buildSpec.ProductVersion)
 
@@ -131,11 +129,11 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 		var err error
 		switch currDistCfg.Info.Type() {
 		case params.SLSDistType:
-			if packager, err = slsDist(buildSpecWithDeps, currDistCfg, outputProductDir, spec, values); err != nil {
+			if packager, err = slsDist(buildSpecWithDeps, currDistCfg, outputProductDir, spec, values, stdout); err != nil {
 				return err
 			}
 		case params.BinDistType:
-			if packager, err = binDist(buildSpecWithDeps, currDistCfg, outputProductDir); err != nil {
+			if packager, err = binDist(buildSpecWithDeps, currDistCfg, outputProductDir, stdout); err != nil {
 				return err
 			}
 		case params.RPMDistType:
@@ -143,7 +141,7 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 				return err
 			}
 		case params.DockerDistType:
-			if packager, err = dockerDist(buildSpecWithDeps, currDistCfg); err != nil {
+			if packager, err = dockerDist(buildSpecWithDeps, currDistCfg, stdout); err != nil {
 				return err
 			}
 		default:
@@ -158,7 +156,7 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 
 		// create artifact for distribution
 		if err := packager.Package(); err != nil {
-			return errors.Wrapf(err, "failed to create artifact for %v from path %v", buildSpec.ProductName, outputProductDir)
+			return errors.Wrapf(err, "failed to create artifact for %v", buildSpec.ProductName)
 		}
 
 		fmt.Fprintf(stdout, "Finished creating distribution for %v\n", buildSpec.ProductName)

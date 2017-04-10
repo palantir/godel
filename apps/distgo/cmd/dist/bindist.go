@@ -16,6 +16,8 @@ package dist
 
 import (
 	"bytes"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"path"
 	"text/template"
@@ -61,13 +63,14 @@ fi
 $CMD "$@"
 `
 
-func binDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string) (Packager, error) {
+func binDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, stdout io.Writer) (Packager, error) {
 	buildSpec := buildSpecWithDeps.Spec
 	binDistInfo, ok := distCfg.Info.(*params.BinDistInfo)
 	if !ok {
 		binDistInfo = &params.BinDistInfo{}
 		distCfg.Info = binDistInfo
 	}
+	fmt.Fprintf(stdout, "Creating bin distribution for %v at %v\n", buildSpecWithDeps.Spec.ProductName, ArtifactPath(buildSpec, distCfg))
 
 	binSpec := binspec.New(buildSpec.Build.OSArchs, buildSpec.ProductName)
 	binDir := path.Join(outputProductDir, "bin")

@@ -16,6 +16,8 @@ package dist
 
 import (
 	"bytes"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"path"
 	"strings"
@@ -187,9 +189,10 @@ reload){{if .Dist.Reloadable}}
 esac
 `
 
-func slsDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues) (Packager, error) {
+func slsDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (Packager, error) {
 	buildSpec := buildSpecWithDeps.Spec
 	outputSLSDir := path.Join(buildSpec.ProjectDir, distCfg.OutputDir, spec.RootDirName(values))
+	fmt.Fprintf(stdout, "Creating sls distribution for %v at %v\n", buildSpecWithDeps.Spec.ProductName, ArtifactPath(buildSpec, distCfg))
 
 	var slsDistInfo params.SLSDistInfo
 	if info, ok := distCfg.Info.(*params.SLSDistInfo); ok {
