@@ -70,6 +70,7 @@ const (
 
 type DistInfo interface {
 	Type() DistInfoType
+	// returns a list of products the dist depends on
 	Deps() []string
 }
 
@@ -156,11 +157,40 @@ func (i *RPMDistInfo) Deps() []string {
 	return nil
 }
 
+type DockerDistDep struct {
+	Product    string
+	DistType   DistInfoType
+	TargetFile string
+}
+type DockerDistDeps []DockerDistDep
+
+func (d DockerDistDeps) ToMap() map[string]map[DistInfoType]string {
+	m := make(map[string]map[DistInfoType]string)
+	for _, dep := range d {
+		if m[dep.Product] == nil {
+			m[dep.Product] = make(map[DistInfoType]string)
+		}
+		m[dep.Product][dep.DistType] = dep.TargetFile
+	}
+	return m
+}
+
 type DockerDistInfo struct {
+	// Repository and Tag are the part of the image coordinates.
+	// For example, in alpine:latest, alpine is the repository
+	// and the latest is the tag
 	Repository string
 	Tag        string
+	// ContextDir is the directory in which the docker build task is executed.
 	ContextDir string
-	DistDeps   map[string][]DistInfoType
+	// DistDeps is a slice of DockerDistDep.
+	// DockerDistDep contains a product, dist type and target file.
+	// For a particular product's dist type, we create a link from its output
+	// inside the ContextDir with the name specified in target file.
+	// This will be used to order the dist tasks such that all the dependent
+	// products' dist tasks will be executed first, after which the dist tasks for the
+	// current product are executed.
+	DistDeps DockerDistDeps
 }
 
 func (d *DockerDistInfo) Type() DistInfoType {
@@ -169,7 +199,7 @@ func (d *DockerDistInfo) Type() DistInfoType {
 
 func (d *DockerDistInfo) Deps() []string {
 	var deps []string
-	for product := range d.DistDeps {
+	for product := range d.DistDeps.ToMap() {
 		deps = append(deps, product)
 	}
 	sort.Strings(deps)

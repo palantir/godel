@@ -34,14 +34,15 @@ type ProductBuildSpec struct {
 }
 
 type ProductBuildSpecWithDeps struct {
-	Spec ProductBuildSpec
-	Deps map[string]ProductBuildSpec
+	Spec      ProductBuildSpec
+	BuildDeps map[string]ProductBuildSpec
+	DistDeps  map[string]ProductBuildSpec
 }
 
 func (p *ProductBuildSpecWithDeps) AllSpecs() []ProductBuildSpec {
-	allSpecs := make([]ProductBuildSpec, 0, len(p.Deps)+1)
+	allSpecs := make([]ProductBuildSpec, 0, len(p.BuildDeps)+1)
 	allSpecs = append(allSpecs, p.Spec)
-	for _, spec := range p.Deps {
+	for _, spec := range p.BuildDeps {
 		allSpecs = append(allSpecs, spec)
 	}
 	return allSpecs
@@ -53,25 +54,21 @@ const (
 )
 
 func NewProductBuildSpecWithDeps(spec ProductBuildSpec, allSpecs map[string]ProductBuildSpec) (ProductBuildSpecWithDeps, error) {
-	deps := make(map[string]ProductBuildSpec)
+	buildDeps := make(map[string]ProductBuildSpec)
+	distDeps := make(map[string]ProductBuildSpec)
 	for _, currDistCfg := range spec.Dist {
-		for _, currDepProduct := range currDistCfg.InputProducts {
-			currSpec, ok := allSpecs[currDepProduct]
-			if !ok {
-				allProducts := make([]string, 0, len(allSpecs))
-				for currName := range allSpecs {
-					allProducts = append(allProducts, currName)
-				}
-				sort.Strings(allProducts)
-				return ProductBuildSpecWithDeps{}, errors.Errorf("Spec %v declared %v as a dependent product, but could not find configuration for that product in %v", spec.ProductName, currDepProduct, allProducts)
-			}
-			deps[currDepProduct] = currSpec
+		if err := addDeps(buildDeps, currDistCfg.InputProducts, spec, allSpecs); err != nil {
+			return ProductBuildSpecWithDeps{}, err
+		}
+		if err := addDeps(distDeps, currDistCfg.Info.Deps(), spec, allSpecs); err != nil {
+			return ProductBuildSpecWithDeps{}, err
 		}
 	}
 
 	return ProductBuildSpecWithDeps{
-		Spec: spec,
-		Deps: deps,
+		Spec:      spec,
+		BuildDeps: buildDeps,
+		DistDeps:  distDeps,
 	}, nil
 }
 
@@ -145,4 +142,20 @@ func firstNonEmpty(first, second string) string {
 		return first
 	}
 	return second
+}
+
+func addDeps(deps map[string]ProductBuildSpec, depProducts []string, spec ProductBuildSpec, allSpecs map[string]ProductBuildSpec) error {
+	for _, product := range depProducts {
+		currSpec, ok := allSpecs[product]
+		if !ok {
+			allProducts := make([]string, 0, len(allSpecs))
+			for currName := range allSpecs {
+				allProducts = append(allProducts, currName)
+			}
+			sort.Strings(allProducts)
+			return errors.Errorf("Spec %v declared %v as a dependent product, but could not find configuration for that product in %v", spec.ProductName, product, allProducts)
+		}
+		deps[product] = currSpec
+	}
+	return nil
 }
