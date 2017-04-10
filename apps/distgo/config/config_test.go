@@ -231,6 +231,61 @@ echo "main.year=$YEAR"
 				}
 			},
 		},
+		{
+			yml: `
+			products:
+			  test:
+			    dist:
+			      -
+			        dist-type:
+			          type: docker
+			          info:
+			            repository: docker.hub/test
+			            tag: test
+			            context-dir: context/dir/path
+			            dependencies:
+			              -
+			                product: dep1
+			                dist-type: sls
+			                target-file: dep1-sls.tgz
+			              -
+			                product: dep2
+			                dist-type: rpm
+			                target-file: dep2-rpm.tgz
+			`,
+			want: func() config.Project {
+				return config.Project{
+					Products: map[string]config.Product{
+						"test": {
+							Dist: []config.Dist{
+								{
+									DistType: config.DistInfo{
+										Type: string(params.DockerDistType),
+										Info: config.DockerDist{
+											Repository: "docker.hub/test",
+											Tag:        "test",
+											ContextDir: "context/dir/path",
+											DistDeps: []config.DockerDistDep{
+												{
+													Product:    "dep1",
+													DistType:   "sls",
+													TargetFile: "dep1-sls.tgz",
+												},
+												{
+													Product:    "dep2",
+													DistType:   "rpm",
+													TargetFile: "dep2-rpm.tgz",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				}
+			},
+		},
 	} {
 		// load config
 		got, err := config.LoadRawConfig(unindent(currCase.yml), currCase.json)
