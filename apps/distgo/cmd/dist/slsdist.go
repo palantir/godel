@@ -25,10 +25,12 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 
+	"fmt"
 	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/binspec"
 	"github.com/palantir/godel/apps/distgo/pkg/slsspec"
 	"github.com/palantir/godel/apps/distgo/templating"
+	"io"
 )
 
 const slsDistInitSh = `#!/bin/bash
@@ -187,9 +189,10 @@ reload){{if .Dist.Reloadable}}
 esac
 `
 
-func slsDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues) (Packager, error) {
+func slsDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (Packager, error) {
 	buildSpec := buildSpecWithDeps.Spec
 	outputSLSDir := path.Join(buildSpec.ProjectDir, distCfg.OutputDir, spec.RootDirName(values))
+	fmt.Fprintf(stdout, "Creating sls distribution for %v at %v\n", buildSpecWithDeps.Spec.ProductName, ArtifactPath(buildSpec, distCfg))
 
 	var slsDistInfo params.SLSDistInfo
 	if info, ok := distCfg.Info.(*params.SLSDistInfo); ok {

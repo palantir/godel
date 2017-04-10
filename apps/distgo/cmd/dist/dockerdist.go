@@ -23,9 +23,11 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/palantir/godel/apps/distgo/params"
+	"io"
 )
 
-func dockerDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist) (Packager, error) {
+func dockerDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, stdout io.Writer) (Packager, error) {
+	fmt.Fprintf(stdout, "Creating docker distribution for %v\n", buildSpecWithDeps.Spec.ProductName)
 	if _, ok := distCfg.Info.(*params.DockerDistInfo); !ok {
 		return nil, errors.New("Dist info provided is not of type docker info")
 	}
@@ -47,35 +49,49 @@ func dockerDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg param
 				continue
 			}
 			depProductSpec := buildSpecWithDeps.DistDeps[depProduct]
+			matches := 0
 			for _, depDist := range depProductSpec.Dist {
 				if depDist.Info.Type() != distType {
 					continue
 				}
+				matches++
 				artifactLocation := ArtifactPath(depProductSpec, depDist)
 				targetFile := distTypes[distType]
 				if targetFile == "" {
 					targetFile = path.Base(artifactLocation)
 				}
-				if err := os.Link(artifactLocation, path.Join(contextDir, targetFile)); err != nil {
+				target := path.Join(contextDir, targetFile)
+				if _, err := os.Stat(target); err == nil {
+					// ensure the target does not exists before creating a new one
+					if err := os.Remove(target); err != nil {
+						return nil, err
+					}
+				}
+				if err := os.Link(artifactLocation, target); err != nil {
 					return nil, err
 				}
+			}
+			if matches == 0 {
+				return nil, errors.Errorf("Failed to build docker dist for %v. The dependent dist type %v does not exist on the product: %v\n",
+					buildSpecWithDeps.Spec.ProductName, distType, depProduct)
 			}
 		}
 	}
 
 	return packager(func() error {
-		if err := buildWithCmd(completeTag, contextDir); err != nil {
+		if err := buildWithCmd(completeTag, contextDir, stdout); err != nil {
 			return errors.WithStack(err)
 		}
 		return nil
 	}), nil
 }
 
-func buildWithCmd(tag, contextDir string) error {
+func buildWithCmd(tag, contextDir string, stdout io.Writer) error {
 	var args []string
 	args = append(args, "build")
 	args = append(args, "--tag", tag)
 	args = append(args, contextDir)
+	fmt.Fprintf(stdout, "Building docker image %v\n", tag)
 
 	dockerBuild := exec.Command("docker", args...)
 	if output, err := dockerBuild.CombinedOutput(); err != nil {
