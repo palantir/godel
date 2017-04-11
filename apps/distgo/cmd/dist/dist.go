@@ -79,7 +79,11 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 	for _, currDistCfg := range orderedDists {
 		outputDir := path.Join(buildSpec.ProjectDir, currDistCfg.OutputDir)
 
-		fmt.Fprintf(stdout, "Creating distribution for %v at %v\n", buildSpec.ProductName, ArtifactPath(buildSpec, currDistCfg))
+		msg := fmt.Sprintf("Creating distribution for %s", buildSpec.ProductName)
+		if artifactPath := ArtifactPath(buildSpec, currDistCfg); artifactPath != "" {
+			msg += fmt.Sprintf(" at %s", artifactPath)
+		}
+		fmt.Fprintln(stdout, msg)
 
 		spec := slsspec.New()
 		values := slsspec.TemplateValues(buildSpec.ProductName, buildSpec.ProductVersion)
@@ -143,7 +147,7 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 				return err
 			}
 		case params.DockerDistType:
-			if packager, err = dockerDist(buildSpecWithDeps, currDistCfg); err != nil {
+			if packager, err = dockerDist(buildSpecWithDeps, currDistCfg, stdout); err != nil {
 				return err
 			}
 		default:
@@ -158,7 +162,7 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 
 		// create artifact for distribution
 		if err := packager.Package(); err != nil {
-			return errors.Wrapf(err, "failed to create artifact for %v from path %v", buildSpec.ProductName, outputProductDir)
+			return errors.Wrapf(err, "failed to create artifact for %v", buildSpec.ProductName)
 		}
 
 		fmt.Fprintf(stdout, "Finished creating distribution for %v\n", buildSpec.ProductName)
@@ -222,6 +226,9 @@ func ArtifactPath(buildSpec params.ProductBuildSpec, distCfg params.Dist) string
 			release = rpmDistInfo.Release
 		}
 		fileName = fmt.Sprintf("%v-%v-%v.x86_64.rpm", buildSpec.ProductName, buildSpec.ProductVersion, release)
+	case params.DockerDistType:
+		// docker build does not produce a file as output
+		return ""
 	default:
 		fileName = fmt.Sprintf("%v-%v", buildSpec.ProductName, buildSpec.ProductVersion)
 	}
