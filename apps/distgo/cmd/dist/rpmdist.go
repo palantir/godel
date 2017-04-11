@@ -45,7 +45,6 @@ func checkRPMDependencies() error {
 }
 
 func rpmDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, stdout io.Writer) (p Packager, rErr error) {
-	fmt.Fprintf(stdout, "Creating rpm distribution for %v at %v\n", buildSpecWithDeps.Spec.ProductName, ArtifactPath(buildSpecWithDeps.Spec, distCfg))
 	buildSpec := buildSpecWithDeps.Spec
 	osArchs := buildSpec.Build.OSArchs
 	expected := osarch.OSArch{OS: "linux", Arch: "amd64"}

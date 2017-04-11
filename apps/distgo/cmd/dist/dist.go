@@ -79,6 +79,12 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 	for _, currDistCfg := range orderedDists {
 		outputDir := path.Join(buildSpec.ProjectDir, currDistCfg.OutputDir)
 
+		if ArtifactPath(buildSpec, currDistCfg) != "" {
+			fmt.Fprintf(stdout, "Creating distribution for %v at %v\n", buildSpec.ProductName, ArtifactPath(buildSpec, currDistCfg))
+		} else {
+			fmt.Fprintf(stdout, "Creating distribution for %v\n", buildSpec.ProductName)
+		}
+
 		spec := slsspec.New()
 		values := slsspec.TemplateValues(buildSpec.ProductName, buildSpec.ProductVersion)
 
@@ -129,11 +135,11 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 		var err error
 		switch currDistCfg.Info.Type() {
 		case params.SLSDistType:
-			if packager, err = slsDist(buildSpecWithDeps, currDistCfg, outputProductDir, spec, values, stdout); err != nil {
+			if packager, err = slsDist(buildSpecWithDeps, currDistCfg, outputProductDir, spec, values); err != nil {
 				return err
 			}
 		case params.BinDistType:
-			if packager, err = binDist(buildSpecWithDeps, currDistCfg, outputProductDir, stdout); err != nil {
+			if packager, err = binDist(buildSpecWithDeps, currDistCfg, outputProductDir); err != nil {
 				return err
 			}
 		case params.RPMDistType:
@@ -220,6 +226,8 @@ func ArtifactPath(buildSpec params.ProductBuildSpec, distCfg params.Dist) string
 			release = rpmDistInfo.Release
 		}
 		fileName = fmt.Sprintf("%v-%v-%v.x86_64.rpm", buildSpec.ProductName, buildSpec.ProductVersion, release)
+	case params.DockerDistType:
+		return ""
 	default:
 		fileName = fmt.Sprintf("%v-%v", buildSpec.ProductName, buildSpec.ProductVersion)
 	}
