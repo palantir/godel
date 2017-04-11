@@ -15,8 +15,6 @@
 package params
 
 import (
-	"sort"
-
 	"github.com/palantir/pkg/matcher"
 )
 
@@ -62,16 +60,13 @@ type Dist struct {
 type DistInfoType string
 
 const (
-	SLSDistType    DistInfoType = "sls"    // distribution that uses the Standard Layout Specification
-	BinDistType    DistInfoType = "bin"    // distribution that includes all of the binaries for a product
-	RPMDistType    DistInfoType = "rpm"    // RPM distribution
-	DockerDistType DistInfoType = "docker" // docker image
+	SLSDistType DistInfoType = "sls" // distribution that uses the Standard Layout Specification
+	BinDistType DistInfoType = "bin" // distribution that includes all of the binaries for a product
+	RPMDistType DistInfoType = "rpm" // RPM distribution
 )
 
 type DistInfo interface {
 	Type() DistInfoType
-	// returns a list of products the dist depends on
-	Deps() []string
 }
 
 type BinDistInfo struct {
@@ -86,11 +81,6 @@ type BinDistInfo struct {
 
 func (i *BinDistInfo) Type() DistInfoType {
 	return BinDistType
-}
-
-func (i *BinDistInfo) Deps() []string {
-	// no deps for bin type
-	return nil
 }
 
 type SLSDistInfo struct {
@@ -128,11 +118,6 @@ func (i *SLSDistInfo) Type() DistInfoType {
 	return SLSDistType
 }
 
-func (i *SLSDistInfo) Deps() []string {
-	// no deps for sls type
-	return nil
-}
-
 type RPMDistInfo struct {
 	// Release is the release identifier that forms part of the name/version/release/architecture quadruplet
 	// uniquely identifying the RPM package. Default is "1".
@@ -150,58 +135,4 @@ type RPMDistInfo struct {
 
 func (i *RPMDistInfo) Type() DistInfoType {
 	return RPMDistType
-}
-
-func (i *RPMDistInfo) Deps() []string {
-	// no deps for rpm type
-	return nil
-}
-
-type DockerDistDep struct {
-	Product    string
-	DistType   DistInfoType
-	TargetFile string
-}
-type DockerDistDeps []DockerDistDep
-
-func (d DockerDistDeps) ToMap() map[string]map[DistInfoType]string {
-	m := make(map[string]map[DistInfoType]string)
-	for _, dep := range d {
-		if m[dep.Product] == nil {
-			m[dep.Product] = make(map[DistInfoType]string)
-		}
-		m[dep.Product][dep.DistType] = dep.TargetFile
-	}
-	return m
-}
-
-type DockerDistInfo struct {
-	// Repository and Tag are the part of the image coordinates.
-	// For example, in alpine:latest, alpine is the repository
-	// and the latest is the tag
-	Repository string
-	Tag        string
-	// ContextDir is the directory in which the docker build task is executed.
-	ContextDir string
-	// DistDeps is a slice of DockerDistDep.
-	// DockerDistDep contains a product, dist type and target file.
-	// For a particular product's dist type, we create a link from its output
-	// inside the ContextDir with the name specified in target file.
-	// This will be used to order the dist tasks such that all the dependent
-	// products' dist tasks will be executed first, after which the dist tasks for the
-	// current product are executed.
-	DistDeps DockerDistDeps
-}
-
-func (d *DockerDistInfo) Type() DistInfoType {
-	return DockerDistType
-}
-
-func (d *DockerDistInfo) Deps() []string {
-	var deps []string
-	for product := range d.DistDeps.ToMap() {
-		deps = append(deps, product)
-	}
-	sort.Strings(deps)
-	return deps
 }

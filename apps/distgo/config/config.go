@@ -229,19 +229,6 @@ type RPMDist struct {
 	AfterRemoveScript string `yaml:"after-remove-script" json:"after-remove-script"`
 }
 
-type DockerDistDep struct {
-	Product    string              `yaml:"product" json:"product"`
-	DistType   params.DistInfoType `yaml:"dist-type" json:"dist-type"`
-	TargetFile string              `yaml:"target-file" json:"target-file"`
-}
-
-type DockerDist struct {
-	Repository string          `yaml:"repository" json:"repository"`
-	Tag        string          `yaml:"tag" json:"tag"`
-	ContextDir string          `yaml:"context-dir" json:"context-dir"`
-	DistDeps   []DockerDistDep `yaml:"dependencies" json:"dependencies"`
-}
-
 type Publish struct {
 	// GroupID is the product-specific configuration equivalent to the global GroupID configuration.
 	GroupID string `yaml:"group-id" json:"group-id"`
@@ -389,16 +376,6 @@ func (cfg *DistInfo) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			return err
 		}
 		rawDistInfoConfig.Info = rawRPM.Info
-	case params.DockerDistType:
-		type typedRawConfig struct {
-			Type string
-			Info DockerDist
-		}
-		var rawDocker typedRawConfig
-		if err := unmarshal(&rawDocker); err != nil {
-			return err
-		}
-		rawDistInfoConfig.Info = rawDocker.Info
 	}
 	*cfg = rawDistInfoConfig
 	return nil
@@ -439,24 +416,6 @@ func (cfg *DistInfo) ToParam() (params.DistInfo, error) {
 				AfterInstallScript:  val.AfterInstallScript,
 				AfterRemoveScript:   val.AfterRemoveScript,
 			}
-		case params.DockerDistType:
-			val := DockerDist{}
-			decodeErr = mapstructure.Decode(cfg.Info, &val)
-			var distDeps []params.DockerDistDep
-			for _, dep := range val.DistDeps {
-				distDeps = append(distDeps, params.DockerDistDep{
-					Product:    dep.Product,
-					DistType:   dep.DistType,
-					TargetFile: dep.TargetFile,
-				})
-			}
-			distInfo = &params.DockerDistInfo{
-				Repository: val.Repository,
-				Tag:        val.Tag,
-				ContextDir: val.ContextDir,
-				DistDeps:   distDeps,
-			}
-
 		default:
 			return nil, errors.Errorf("No unmarshaller found for type %s for %v", cfg.Type, *cfg)
 		}
