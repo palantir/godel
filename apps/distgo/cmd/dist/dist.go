@@ -79,11 +79,11 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 	for _, currDistCfg := range orderedDists {
 		outputDir := path.Join(buildSpec.ProjectDir, currDistCfg.OutputDir)
 
-		if ArtifactPath(buildSpec, currDistCfg) != "" {
-			fmt.Fprintf(stdout, "Creating distribution for %v at %v\n", buildSpec.ProductName, ArtifactPath(buildSpec, currDistCfg))
-		} else {
-			fmt.Fprintf(stdout, "Creating distribution for %v\n", buildSpec.ProductName)
+		msg := fmt.Sprintf("Creating distribution for %s", buildSpec.ProductName)
+		if artifactPath := ArtifactPath(buildSpec, currDistCfg); artifactPath != "" {
+			msg += fmt.Sprintf(" at %s", artifactPath)
 		}
+		fmt.Fprintln(stdout, msg)
 
 		spec := slsspec.New()
 		values := slsspec.TemplateValues(buildSpec.ProductName, buildSpec.ProductVersion)
@@ -227,6 +227,7 @@ func ArtifactPath(buildSpec params.ProductBuildSpec, distCfg params.Dist) string
 		}
 		fileName = fmt.Sprintf("%v-%v-%v.x86_64.rpm", buildSpec.ProductName, buildSpec.ProductVersion, release)
 	case params.DockerDistType:
+		// docker build does not produce a file as output
 		return ""
 	default:
 		fileName = fmt.Sprintf("%v-%v", buildSpec.ProductName, buildSpec.ProductVersion)
