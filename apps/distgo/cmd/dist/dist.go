@@ -79,7 +79,7 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 	for _, currDistCfg := range orderedDists {
 		outputDir := path.Join(buildSpec.ProjectDir, currDistCfg.OutputDir)
 
-		msg := fmt.Sprintf("Creating distribution for %s", buildSpec.ProductName)
+		msg := fmt.Sprintf("Creating %v distribution for %s", currDistCfg.Info.Type(), buildSpec.ProductName)
 		if artifactPath := ArtifactPath(buildSpec, currDistCfg); artifactPath != "" {
 			msg += fmt.Sprintf(" at %s", artifactPath)
 		}
@@ -147,7 +147,7 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 				return err
 			}
 		case params.DockerDistType:
-			if packager, err = dockerDist(buildSpecWithDeps, currDistCfg, stdout); err != nil {
+			if packager, err = dockerDist(buildSpecWithDeps, currDistCfg); err != nil {
 				return err
 			}
 		default:
@@ -213,24 +213,31 @@ func copyBuildArtifacts(buildSpec params.ProductBuildSpec, binSpecDir specdir.Sp
 }
 
 func ArtifactPath(buildSpec params.ProductBuildSpec, distCfg params.Dist) string {
-	var fileName string
+	var artifactPath string
 	switch distCfg.Info.Type() {
 	case params.SLSDistType:
 		values := slsspec.TemplateValues(buildSpec.ProductName, buildSpec.ProductVersion)
-		fileName = slsspec.New().RootDirName(values) + ".sls.tgz"
+		fileName := slsspec.New().RootDirName(values) + ".sls.tgz"
+		artifactPath = path.Join(buildSpec.ProjectDir, distCfg.OutputDir, fileName)
 	case params.BinDistType:
-		fileName = fmt.Sprintf("%v-%v.tgz", buildSpec.ProductName, buildSpec.ProductVersion)
+		fileName := fmt.Sprintf("%v-%v.tgz", buildSpec.ProductName, buildSpec.ProductVersion)
+		artifactPath = path.Join(buildSpec.ProjectDir, distCfg.OutputDir, fileName)
 	case params.RPMDistType:
 		release := defaultRPMRelease
 		if rpmDistInfo, ok := distCfg.Info.(*params.RPMDistInfo); ok && rpmDistInfo.Release != "" {
 			release = rpmDistInfo.Release
 		}
-		fileName = fmt.Sprintf("%v-%v-%v.x86_64.rpm", buildSpec.ProductName, buildSpec.ProductVersion, release)
+		fileName := fmt.Sprintf("%v-%v-%v.x86_64.rpm", buildSpec.ProductName, buildSpec.ProductVersion, release)
+		artifactPath = path.Join(buildSpec.ProjectDir, distCfg.OutputDir, fileName)
 	case params.DockerDistType:
-		// docker build does not produce a file as output
-		return ""
+		if dockerInfo, ok := distCfg.Info.(*params.DockerDistInfo); ok {
+			artifactPath = fmt.Sprintf("%v:%v", dockerInfo.Repository, dockerInfo.Tag)
+		} else {
+			artifactPath = ""
+		}
 	default:
-		fileName = fmt.Sprintf("%v-%v", buildSpec.ProductName, buildSpec.ProductVersion)
+		fileName := fmt.Sprintf("%v-%v", buildSpec.ProductName, buildSpec.ProductVersion)
+		artifactPath = path.Join(buildSpec.ProjectDir, distCfg.OutputDir, fileName)
 	}
-	return path.Join(buildSpec.ProjectDir, distCfg.OutputDir, fileName)
+	return artifactPath
 }
