@@ -16,6 +16,7 @@ package dist
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path"
@@ -25,7 +26,8 @@ import (
 	"github.com/palantir/godel/apps/distgo/params"
 )
 
-func dockerDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist) (Packager, error) {
+func dockerDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, stdout io.Writer) (Packager, error) {
+	fmt.Fprintf(stdout, "Creating docker distribution for %v\n", buildSpecWithDeps.Spec.ProductName)
 	if _, ok := distCfg.Info.(*params.DockerDistInfo); !ok {
 		return nil, errors.New("Dist info provided is not of type docker info")
 	}
@@ -77,18 +79,19 @@ func dockerDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg param
 	}
 
 	return packager(func() error {
-		if err := buildWithCmd(completeTag, contextDir); err != nil {
+		if err := buildWithCmd(completeTag, contextDir, stdout); err != nil {
 			return errors.WithStack(err)
 		}
 		return nil
 	}), nil
 }
 
-func buildWithCmd(tag, contextDir string) error {
+func buildWithCmd(tag, contextDir string, stdout io.Writer) error {
 	var args []string
 	args = append(args, "build")
 	args = append(args, "--tag", tag)
 	args = append(args, contextDir)
+	fmt.Fprintf(stdout, "Building docker image %v\n", tag)
 
 	dockerBuild := exec.Command("docker", args...)
 	if output, err := dockerBuild.CombinedOutput(); err != nil {
