@@ -231,6 +231,74 @@ echo "main.year=$YEAR"
 				}
 			},
 		},
+		{
+			yml: `
+			products:
+			  test:
+			    docker:
+			      -
+			        repository: docker.hub/test
+			        tag: test
+			        context-dir: context/dir/path
+			        dependencies:
+			          -
+			            product: dep1
+			            type: sls
+			            target-file: dep1-sls.tgz
+			          -
+			            product: dep2
+			            type: rpm
+			            target-file: dep2-rpm.tgz
+			      -
+			        repository: docker.hub/test-alpine
+			        tag: test
+			        context-dir: context/dir/path-alpine
+			        dependencies:
+			          -
+			            product: dep1
+			            type: sls
+			            target-file: dep1-sls.tgz
+			`,
+			want: func() config.Project {
+				return config.Project{
+					Products: map[string]config.Product{
+						"test": {
+							DockerImages: []config.DockerImage{
+								{
+									Repository: "docker.hub/test",
+									Tag:        "test",
+									ContextDir: "context/dir/path",
+									Deps: []config.DockerDep{
+										{
+											Product:    "dep1",
+											Type:       "sls",
+											TargetFile: "dep1-sls.tgz",
+										},
+										{
+											Product:    "dep2",
+											Type:       "rpm",
+											TargetFile: "dep2-rpm.tgz",
+										},
+									},
+								},
+								{
+									Repository: "docker.hub/test-alpine",
+									Tag:        "test",
+									ContextDir: "context/dir/path-alpine",
+									Deps: []config.DockerDep{
+										{
+											Product:    "dep1",
+											Type:       "sls",
+											TargetFile: "dep1-sls.tgz",
+										},
+									},
+								},
+							},
+						},
+					},
+				}
+			},
+		},
 	} {
 		// load config
 		got, err := config.LoadRawConfig(unindent(currCase.yml), currCase.json)
