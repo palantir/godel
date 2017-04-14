@@ -170,6 +170,13 @@ var (
 			pathToCfg:      []string{"dist.yml"},
 		},
 		{
+			name:           "docker",
+			app:            distgoCreator,
+			decorator:      distgoDecorator,
+			subcommandPath: []string{"docker"},
+			pathToCfg:      []string{"dist.yml"},
+		},
+		{
 			name:           "publish",
 			app:            distgoCreator,
 			decorator:      distgoDecorator,

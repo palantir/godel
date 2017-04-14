@@ -64,6 +64,9 @@ type Product struct {
 	// Dist specifies the dist configurations for the product.
 	Dist RawDistConfigs `yaml:"dist" json:"dist"`
 
+	// DockerImages specifies the docker build configurations for the product.
+	DockerImages []DockerImage `yaml:"docker" json:"docker"`
+
 	// DefaultPublish specifies the publish configuration that is applied to distributions that do not specify their
 	// own publish configurations.
 	DefaultPublish Publish `yaml:"publish" json:"publish"`
@@ -229,6 +232,19 @@ type RPMDist struct {
 	AfterRemoveScript string `yaml:"after-remove-script" json:"after-remove-script"`
 }
 
+type DockerDep struct {
+	Product    string `yaml:"product" json:"product"`
+	Type       string `yaml:"type" json:"type"`
+	TargetFile string `yaml:"target-file" json:"target-file"`
+}
+
+type DockerImage struct {
+	Repository string      `yaml:"repository" json:"repository"`
+	Tag        string      `yaml:"tag" json:"tag"`
+	ContextDir string      `yaml:"context-dir" json:"context-dir"`
+	Deps       []DockerDep `yaml:"dependencies" json:"dependencies"`
+}
+
 type Publish struct {
 	// GroupID is the product-specific configuration equivalent to the global GroupID configuration.
 	GroupID string `yaml:"group-id" json:"group-id"`
@@ -273,12 +289,21 @@ func (cfg *Product) ToParam() (params.Product, error) {
 		}
 		dists = append(dists, dist)
 	}
+	var images []params.DockerImage
+	for _, image := range cfg.DockerImages {
+		imageParam, err := image.ToParams()
+		if err != nil {
+			return params.Product{}, err
+		}
+		images = append(images, imageParam)
+	}
 
 	return params.Product{
 		Build:          cfg.Build.ToParam(),
 		Run:            cfg.Run.ToParam(),
 		Dist:           dists,
 		DefaultPublish: cfg.DefaultPublish.ToParams(),
+		DockerImages:   images,
 	}, nil
 }
 
@@ -468,6 +493,27 @@ func (cfg *RPMDist) ToParams() params.RPMDistInfo {
 		AfterInstallScript:  cfg.AfterInstallScript,
 		AfterRemoveScript:   cfg.AfterRemoveScript,
 	}
+}
+
+func (cfg *DockerImage) ToParams() (params.DockerImage, error) {
+	var deps params.DockerDeps
+	for _, dep := range cfg.Deps {
+		depType, err := params.ToDockerDepType(dep.Type)
+		if err != nil {
+			return params.DockerImage{}, nil
+		}
+		deps = append(deps, params.DockerDep{
+			Product:    dep.Product,
+			Type:       depType,
+			TargetFile: dep.TargetFile,
+		})
+	}
+	return params.DockerImage{
+		Repository: cfg.Repository,
+		Tag:        cfg.Tag,
+		ContextDir: cfg.ContextDir,
+		Deps:       deps,
+	}, nil
 }
 
 func (cfg *Publish) ToParams() params.Publish {
