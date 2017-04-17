@@ -29,34 +29,28 @@ import (
 	"github.com/palantir/godel/apps/distgo/cmd"
 	"github.com/palantir/godel/apps/distgo/cmd/build"
 	"github.com/palantir/godel/apps/distgo/params"
+	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 	"github.com/palantir/godel/apps/distgo/pkg/script"
 	"github.com/palantir/godel/apps/distgo/pkg/slsspec"
 )
 
 func Products(products []string, cfg params.Project, forceBuild bool, wd string, stdout io.Writer) error {
-	buildSpecsWithDeps, err := build.SpecsWithDepsForArgs(cfg, products, wd)
-	if err != nil {
-		return errors.Wrapf(err, "failed to construct the spec from config")
-	}
-	// build the required artifacts before running dist
-	var specsToBuild []params.ProductBuildSpec
-	for _, currSpecWithDeps := range buildSpecsWithDeps {
-		if forceBuild {
-			specsToBuild = append(specsToBuild, currSpecWithDeps.AllSpecs()...)
-		} else {
-			specsToBuild = append(specsToBuild, build.RequiresBuild(currSpecWithDeps, nil).Specs()...)
+	return build.RunBuildFunc(func(buildSpecWithDeps []params.ProductBuildSpecWithDeps, stdout io.Writer) error {
+		var specsToBuild []params.ProductBuildSpec
+		for _, currSpecWithDeps := range buildSpecWithDeps {
+			if forceBuild {
+				specsToBuild = append(specsToBuild, currSpecWithDeps.AllSpecs()...)
+			} else {
+				specsToBuild = append(specsToBuild, build.RequiresBuild(currSpecWithDeps, nil).Specs()...)
+			}
 		}
-	}
-	if len(specsToBuild) > 0 {
-		if err := build.Run(specsToBuild, nil, build.DefaultContext(), stdout); err != nil {
-			return errors.Wrapf(err, "Failed to build products required for dist")
+		if len(specsToBuild) > 0 {
+			if err := build.Run(specsToBuild, nil, build.DefaultContext(), stdout); err != nil {
+				return errors.Wrapf(err, "Failed to build products required for dist")
+			}
 		}
-	}
-	orderedBuildSpecs, err := OrderBuildSpecs(buildSpecsWithDeps)
-	if err != nil {
-		return err
-	}
-	return cmd.ProcessSerially(Run)(orderedBuildSpecs, stdout)
+		return cmd.ProcessSerially(Run)(buildSpecWithDeps, stdout)
+	}, cfg, products, wd, stdout)
 }
 
 // Run produces a directory and artifact (tgz or rpm) for the specified product using the specified build specification.
@@ -74,16 +68,21 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 	}
 
 	buildSpec := buildSpecWithDeps.Spec
+	for _, currDistCfg := range buildSpec.Dist {
+		if currDistCfg.Info.Type() == params.RPMDistType {
+			osArchs := buildSpec.Build.OSArchs
+			expected := osarch.OSArch{OS: "linux", Arch: "amd64"}
+			if len(osArchs) != 1 || osArchs[0] != expected {
+				return fmt.Errorf("RPM is only supported for %v", expected)
+			}
+			if err := checkRPMDependencies(); err != nil {
+				return err
+			}
+		}
 
-	orderedDists := OrderProductDists(buildSpec.Dist)
-	for _, currDistCfg := range orderedDists {
 		outputDir := path.Join(buildSpec.ProjectDir, currDistCfg.OutputDir)
 
-		msg := fmt.Sprintf("Creating distribution for %s", buildSpec.ProductName)
-		if artifactPath := ArtifactPath(buildSpec, currDistCfg); artifactPath != "" {
-			msg += fmt.Sprintf(" at %s", artifactPath)
-		}
-		fmt.Fprintln(stdout, msg)
+		fmt.Fprintf(stdout, "Creating distribution for %v at %v\n", buildSpec.ProductName, ArtifactPath(buildSpec, currDistCfg))
 
 		spec := slsspec.New()
 		values := slsspec.TemplateValues(buildSpec.ProductName, buildSpec.ProductVersion)
@@ -146,10 +145,6 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 			if packager, err = rpmDist(buildSpecWithDeps, currDistCfg, outputProductDir, stdout); err != nil {
 				return err
 			}
-		case params.DockerDistType:
-			if packager, err = dockerDist(buildSpecWithDeps, currDistCfg, stdout); err != nil {
-				return err
-			}
 		default:
 			return errors.Errorf("unknown dist type: %v", currDistCfg.Info.Type())
 		}
@@ -162,7 +157,7 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 
 		// create artifact for distribution
 		if err := packager.Package(); err != nil {
-			return errors.Wrapf(err, "failed to create artifact for %v", buildSpec.ProductName)
+			return errors.Wrapf(err, "failed to create artifact for %v from path %v", buildSpec.ProductName, outputProductDir)
 		}
 
 		fmt.Fprintf(stdout, "Finished creating distribution for %v\n", buildSpec.ProductName)
@@ -186,7 +181,7 @@ func copyBuildArtifactsToBinDir(buildSpecWithDeps params.ProductBuildSpecWithDep
 	}
 
 	// copy build artifacts for dependent products
-	for _, currDepSpec := range buildSpecWithDeps.BuildDeps {
+	for _, currDepSpec := range buildSpecWithDeps.Deps {
 		if err := copyBuildArtifacts(currDepSpec, binSpecDir); err != nil {
 			return errors.Wrapf(err, "failed to copy build artifacts for %v", currDepSpec.ProductName)
 		}
@@ -226,9 +221,6 @@ func ArtifactPath(buildSpec params.ProductBuildSpec, distCfg params.Dist) string
 			release = rpmDistInfo.Release
 		}
 		fileName = fmt.Sprintf("%v-%v-%v.x86_64.rpm", buildSpec.ProductName, buildSpec.ProductVersion, release)
-	case params.DockerDistType:
-		// docker build does not produce a file as output
-		return ""
 	default:
 		fileName = fmt.Sprintf("%v-%v", buildSpec.ProductName, buildSpec.ProductVersion)
 	}
