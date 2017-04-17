@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dockertests
+package docker_test
 
 import (
 	"context"
@@ -32,6 +32,7 @@ import (
 
 	"github.com/palantir/godel/apps/distgo/cmd/build"
 	"github.com/palantir/godel/apps/distgo/cmd/dist"
+	"github.com/palantir/godel/apps/distgo/cmd/docker"
 	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/git"
 	"github.com/palantir/godel/apps/distgo/pkg/git/gittest"
@@ -132,13 +133,11 @@ func TestDockerDist(t *testing.T) {
 								},
 							},
 						},
-						Dist: []params.Dist{
+						DockerImages: []params.DockerImage{
 							{
-								Info: &params.DockerDistInfo{
-									Repository: fullRepoName("bar", pad),
-									Tag:        "0.1.0",
-									ContextDir: "bar/docker",
-								},
+								Repository: fullRepoName("bar", pad),
+								Tag:        "0.1.0",
+								ContextDir: "bar/docker",
 							},
 						},
 					}, params.Project{
@@ -164,14 +163,16 @@ func TestDockerDist(t *testing.T) {
 								},
 							},
 						},
-						Dist: []params.Dist{
+						DockerImages: []params.DockerImage{
 							{
-								Info: &params.DockerDistInfo{
-									Repository: fullRepoName("foo", pad),
-									Tag:        "0.1.0",
-									ContextDir: "foo/docker",
-									DistDeps: params.DockerDistDeps{
-										{Product: "bar", DistType: params.DockerDistType, TargetFile: ""},
+								Repository: fullRepoName("foo", pad),
+								Tag:        "0.1.0",
+								ContextDir: "foo/docker",
+								Deps: []params.DockerDep{
+									{
+										Product:    "bar",
+										Type:       params.DockerDepDocker,
+										TargetFile: "",
 									},
 								},
 							},
@@ -294,19 +295,31 @@ func TestDockerDist(t *testing.T) {
 								},
 							},
 						},
-						Dist: []params.Dist{
+						DockerImages: []params.DockerImage{
 							{
-								Info: &params.DockerDistInfo{
-									Repository: fullRepoName("bar", pad),
-									Tag:        "0.1.0",
-									ContextDir: "bar/docker",
-									DistDeps: params.DockerDistDeps{
-										{Product: "bar", DistType: params.SLSDistType, TargetFile: "bar-sls.tgz"},
-										{Product: "foo", DistType: params.BinDistType, TargetFile: "foo-bin.tgz"},
-										{Product: "foo", DistType: params.SLSDistType, TargetFile: "foo-sls.tgz"},
+								Repository: fullRepoName("bar", pad),
+								Tag:        "0.1.0",
+								ContextDir: "bar/docker",
+								Deps: []params.DockerDep{
+									{
+										Product:    "bar",
+										Type:       params.DockerDepSLS,
+										TargetFile: "bar-sls.tgz",
+									},
+									{
+										Product:    "foo",
+										Type:       params.DockerDepBin,
+										TargetFile: "foo-bin.tgz",
+									},
+									{
+										Product:    "foo",
+										Type:       params.DockerDepSLS,
+										TargetFile: "foo-sls.tgz",
 									},
 								},
 							},
+						},
+						Dist: []params.Dist{
 							{
 								Info: &params.SLSDistInfo{},
 							},
@@ -358,14 +371,17 @@ func TestDockerDist(t *testing.T) {
 			defer currCase.cleanup(cli, currTmpDir, pad)
 		}
 
-		orderedSpecs, err := dist.OrderBuildSpecs(spec)
-		require.NoError(t, err, "Case %d: %s", i, currCase.name)
-		for _, currSpecWithDeps := range orderedSpecs {
+		for _, currSpecWithDeps := range spec {
 			err = build.Run(build.RequiresBuild(currSpecWithDeps, nil).Specs(), nil, build.Context{}, ioutil.Discard)
 			require.NoError(t, err, "Case %d: %s", i, currCase.name)
 			err = dist.Run(currSpecWithDeps, ioutil.Discard)
 			require.NoError(t, err, "Case %d: %s", i, currCase.name)
 		}
+
+		orderedSpecs, err := docker.OrderBuildSpecs(spec)
+		require.NoError(t, err, "Case %d: %s", i, currCase.name)
+		err = docker.RunBuild(orderedSpecs)
+		require.NoError(t, err, "Case %d: %s", i, currCase.name)
 
 		if currCase.validate != nil {
 			currCase.validate(i, currCase.name, pad, cli)

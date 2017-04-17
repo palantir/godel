@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dist
+package docker
 
 import (
 	"sort"
@@ -34,16 +34,16 @@ func OrderBuildSpecs(specsWithDeps []params.ProductBuildSpecWithDeps) ([]params.
 		if graph[product] == nil {
 			graph[product] = make(map[string]struct{})
 		}
-		for _, curDist := range curSpec.Spec.Dist {
-			for _, dep := range curDist.Info.Deps() {
-				if dep == product {
-					// allow self dependencies
+		for _, curImage := range curSpec.Spec.DockerImages {
+			for depProduct, depTypes := range curImage.Deps.ToMap() {
+				if !hasDockerDep(depTypes) {
+					// only add edge if its a docker image dependency
 					continue
 				}
-				if graph[dep] == nil {
-					graph[dep] = make(map[string]struct{})
+				if graph[depProduct] == nil {
+					graph[depProduct] = make(map[string]struct{})
 				}
-				graph[dep][product] = struct{}{}
+				graph[depProduct][product] = struct{}{}
 			}
 		}
 	}
@@ -108,4 +108,13 @@ func topologicalOrdering(graph map[string]map[string]struct{}) ([]string, error)
 		return nil, errors.New("Error generating an ordering. Provided DAG contains cyclic dependencies.")
 	}
 	return order, nil
+}
+
+func hasDockerDep(deps map[params.DockerDepType]string) bool {
+	for depType := range deps {
+		if depType == params.DockerDepDocker {
+			return true
+		}
+	}
+	return false
 }

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dist_test
+package docker_test
 
 import (
 	"testing"
@@ -20,19 +20,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/godel/apps/distgo/cmd/dist"
+	"github.com/palantir/godel/apps/distgo/cmd/docker"
 	"github.com/palantir/godel/apps/distgo/params"
 )
 
-func generateSpec(product string, deps params.DockerDistDeps) params.ProductBuildSpec {
+func generateSpec(product string, deps params.DockerDeps) params.ProductBuildSpec {
 	return params.ProductBuildSpec{
 		ProductName: product,
 		Product: params.Product{
-			Dist: []params.Dist{
+			DockerImages: []params.DockerImage{
 				{
-					Info: &params.DockerDistInfo{
-						DistDeps: deps,
-					},
+					Deps: deps,
 				},
 			},
 		},
@@ -40,31 +38,31 @@ func generateSpec(product string, deps params.DockerDistDeps) params.ProductBuil
 }
 
 func TestOrderBuildSpecs(t *testing.T) {
-	A := generateSpec("A", params.DockerDistDeps{
-		{Product: "B", DistType: params.SLSDistType, TargetFile: ""},
-		{Product: "C", DistType: params.BinDistType, TargetFile: ""},
+	A := generateSpec("A", params.DockerDeps{
+		{Product: "B", Type: params.DockerDepDocker, TargetFile: ""},
+		{Product: "C", Type: params.DockerDepDocker, TargetFile: ""},
 	})
-	B := generateSpec("B", params.DockerDistDeps{
-		{Product: "D", DistType: params.DockerDistType, TargetFile: ""},
+	B := generateSpec("B", params.DockerDeps{
+		{Product: "D", Type: params.DockerDepDocker, TargetFile: ""},
 	})
-	C := generateSpec("C", params.DockerDistDeps{
-		{Product: "D", DistType: params.SLSDistType, TargetFile: ""},
+	C := generateSpec("C", params.DockerDeps{
+		{Product: "D", Type: params.DockerDepDocker, TargetFile: ""},
 	})
-	D := generateSpec("D", params.DockerDistDeps{})
-	E := generateSpec("E", params.DockerDistDeps{
-		{Product: "DepE", DistType: params.SLSDistType, TargetFile: ""},
+	D := generateSpec("D", params.DockerDeps{})
+	E := generateSpec("E", params.DockerDeps{
+		{Product: "DepE", Type: params.DockerDepDocker, TargetFile: ""},
 	})
-	DepE := generateSpec("DepE", params.DockerDistDeps{
-		{Product: "E", DistType: params.SLSDistType, TargetFile: ""},
+	DepE := generateSpec("DepE", params.DockerDeps{
+		{Product: "E", Type: params.DockerDepDocker, TargetFile: ""},
 	})
 
-	X := generateSpec("X", params.DockerDistDeps{
-		{Product: "Y", DistType: params.DockerDistType, TargetFile: ""},
+	X := generateSpec("X", params.DockerDeps{
+		{Product: "Y", Type: params.DockerDepDocker, TargetFile: ""},
 	})
-	Y := generateSpec("Y", params.DockerDistDeps{
-		{Product: "Z", DistType: params.DockerDistType, TargetFile: ""},
+	Y := generateSpec("Y", params.DockerDeps{
+		{Product: "Z", Type: params.DockerDepDocker, TargetFile: ""},
 	})
-	Z := generateSpec("Z", params.DockerDistDeps{})
+	Z := generateSpec("Z", params.DockerDeps{})
 
 	for _, testcase := range []struct {
 		input     []params.ProductBuildSpecWithDeps
@@ -93,7 +91,7 @@ func TestOrderBuildSpecs(t *testing.T) {
 			expected: []params.ProductBuildSpecWithDeps{{Spec: Z}, {Spec: Y}, {Spec: X}},
 		},
 	} {
-		actual, err := dist.OrderBuildSpecs(testcase.input)
+		actual, err := docker.OrderBuildSpecs(testcase.input)
 		if testcase.expectErr != "" {
 			require.Contains(t, err.Error(), testcase.expectErr)
 			continue

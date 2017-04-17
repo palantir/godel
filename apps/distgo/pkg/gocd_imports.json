@@ -2,7 +2,7 @@
     "imports": [
         {
             "path": "github.com/palantir/godel/apps/distgo/params",
-            "numGoFiles": 6,
+            "numGoFiles": 7,
             "numImportedGoFiles": 9,
             "importedFrom": [
                 "github.com/palantir/godel/apps/distgo/pkg/script"

@@ -64,6 +64,9 @@ type Product struct {
 	// Dist specifies the dist configurations for the product.
 	Dist RawDistConfigs `yaml:"dist" json:"dist"`
 
+	// DockerImages specifies the docker build configurations for the product.
+	DockerImages []DockerImage `yaml:"docker" json:"docker"`
+
 	// DefaultPublish specifies the publish configuration that is applied to distributions that do not specify their
 	// own publish configurations.
 	DefaultPublish Publish `yaml:"publish" json:"publish"`
@@ -229,17 +232,17 @@ type RPMDist struct {
 	AfterRemoveScript string `yaml:"after-remove-script" json:"after-remove-script"`
 }
 
-type DockerDistDep struct {
-	Product    string              `yaml:"product" json:"product"`
-	DistType   params.DistInfoType `yaml:"dist-type" json:"dist-type"`
-	TargetFile string              `yaml:"target-file" json:"target-file"`
+type DockerDep struct {
+	Product    string `yaml:"product" json:"product"`
+	Type       string `yaml:"type" json:"type"`
+	TargetFile string `yaml:"target-file" json:"target-file"`
 }
 
-type DockerDist struct {
-	Repository string          `yaml:"repository" json:"repository"`
-	Tag        string          `yaml:"tag" json:"tag"`
-	ContextDir string          `yaml:"context-dir" json:"context-dir"`
-	DistDeps   []DockerDistDep `yaml:"dependencies" json:"dependencies"`
+type DockerImage struct {
+	Repository string      `yaml:"repository" json:"repository"`
+	Tag        string      `yaml:"tag" json:"tag"`
+	ContextDir string      `yaml:"context-dir" json:"context-dir"`
+	Deps       []DockerDep `yaml:"dependencies" json:"dependencies"`
 }
 
 type Publish struct {
@@ -286,12 +289,21 @@ func (cfg *Product) ToParam() (params.Product, error) {
 		}
 		dists = append(dists, dist)
 	}
+	var images []params.DockerImage
+	for _, image := range cfg.DockerImages {
+		imageParam, err := image.ToParams()
+		if err != nil {
+			return params.Product{}, err
+		}
+		images = append(images, imageParam)
+	}
 
 	return params.Product{
 		Build:          cfg.Build.ToParam(),
 		Run:            cfg.Run.ToParam(),
 		Dist:           dists,
 		DefaultPublish: cfg.DefaultPublish.ToParams(),
+		DockerImages:   images,
 	}, nil
 }
 
@@ -389,16 +401,6 @@ func (cfg *DistInfo) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			return err
 		}
 		rawDistInfoConfig.Info = rawRPM.Info
-	case params.DockerDistType:
-		type typedRawConfig struct {
-			Type string
-			Info DockerDist
-		}
-		var rawDocker typedRawConfig
-		if err := unmarshal(&rawDocker); err != nil {
-			return err
-		}
-		rawDistInfoConfig.Info = rawDocker.Info
 	}
 	*cfg = rawDistInfoConfig
 	return nil
@@ -439,24 +441,6 @@ func (cfg *DistInfo) ToParam() (params.DistInfo, error) {
 				AfterInstallScript:  val.AfterInstallScript,
 				AfterRemoveScript:   val.AfterRemoveScript,
 			}
-		case params.DockerDistType:
-			val := DockerDist{}
-			decodeErr = mapstructure.Decode(cfg.Info, &val)
-			var distDeps []params.DockerDistDep
-			for _, dep := range val.DistDeps {
-				distDeps = append(distDeps, params.DockerDistDep{
-					Product:    dep.Product,
-					DistType:   dep.DistType,
-					TargetFile: dep.TargetFile,
-				})
-			}
-			distInfo = &params.DockerDistInfo{
-				Repository: val.Repository,
-				Tag:        val.Tag,
-				ContextDir: val.ContextDir,
-				DistDeps:   distDeps,
-			}
-
 		default:
 			return nil, errors.Errorf("No unmarshaller found for type %s for %v", cfg.Type, *cfg)
 		}
@@ -509,6 +493,27 @@ func (cfg *RPMDist) ToParams() params.RPMDistInfo {
 		AfterInstallScript:  cfg.AfterInstallScript,
 		AfterRemoveScript:   cfg.AfterRemoveScript,
 	}
+}
+
+func (cfg *DockerImage) ToParams() (params.DockerImage, error) {
+	var deps params.DockerDeps
+	for _, dep := range cfg.Deps {
+		depType, err := params.ToDockerDepType(dep.Type)
+		if err != nil {
+			return params.DockerImage{}, nil
+		}
+		deps = append(deps, params.DockerDep{
+			Product:    dep.Product,
+			Type:       depType,
+			TargetFile: dep.TargetFile,
+		})
+	}
+	return params.DockerImage{
+		Repository: cfg.Repository,
+		Tag:        cfg.Tag,
+		ContextDir: cfg.ContextDir,
+		Deps:       deps,
+	}, nil
 }
 
 func (cfg *Publish) ToParams() params.Publish {

@@ -12,28 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dist
+package docker
 
 import (
-	"sort"
+	"github.com/nmiyake/pkg/dirs"
+	"github.com/palantir/pkg/cli"
+	"github.com/palantir/pkg/cli/cfgcli"
 
-	"github.com/palantir/godel/apps/distgo/params"
+	"github.com/palantir/godel/apps/distgo/config"
 )
 
-var distTypeWeight = map[params.DistInfoType]int{
-	params.BinDistType:    1,
-	params.SLSDistType:    2,
-	params.RPMDistType:    3,
-	params.DockerDistType: 4,
-}
-
-func OrderProductDists(dists []params.Dist) []params.Dist {
-	var orderedDists []params.Dist
-	for _, currDist := range dists {
-		orderedDists = append(orderedDists, currDist)
+func Command() cli.Command {
+	build := cli.Command{
+		Name: "build",
+		Action: func(ctx cli.Context) error {
+			cfg, err := config.Load(cfgcli.ConfigPath, cfgcli.ConfigJSON)
+			if err != nil {
+				return err
+			}
+			wd, err := dirs.GetwdEvalSymLinks()
+			if err != nil {
+				return err
+			}
+			return Build(cfg, wd, ctx.App.Stdout)
+		},
 	}
-	sort.Slice(orderedDists, func(i, j int) bool {
-		return distTypeWeight[orderedDists[i].Info.Type()] < distTypeWeight[orderedDists[j].Info.Type()]
-	})
-	return orderedDists
+
+	return cli.Command{
+		Name:  "docker",
+		Usage: "Runs docker tasks",
+		Subcommands: []cli.Command{
+			build,
+		},
+	}
 }
