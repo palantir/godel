@@ -20,6 +20,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"sort"
 
 	"github.com/pkg/errors"
 
@@ -29,7 +30,9 @@ import (
 )
 
 func Build(cfg params.Project, wd string, stdout io.Writer) error {
-	// build docker dist dependants
+	// the docker build tasks first runs dist task on the products
+	// on which the docker images have a dependency. after building the dists,
+	// the images are built in ordered way since the images can have dependencies among themselves.
 	var productsToDist map[string]struct{}
 	for productName, product := range cfg.Products {
 		for _, image := range product.DockerImages {
@@ -44,8 +47,9 @@ func Build(cfg params.Project, wd string, stdout io.Writer) error {
 	for product := range productsToDist {
 		products = append(products, product)
 	}
-	err := dist.Products(products, cfg, false, wd, stdout)
-	if err != nil {
+
+	// run the dist task
+	if err := dist.Products(products, cfg, false, wd, stdout); err != nil {
 		return err
 	}
 
@@ -63,8 +67,13 @@ func Build(cfg params.Project, wd string, stdout io.Writer) error {
 
 func RunBuild(buildSpecsWithDeps []params.ProductBuildSpecWithDeps) error {
 	specsMap := buildSpecsMap(buildSpecsWithDeps)
-	for productName, productSpecWithDeps := range specsMap {
-		for _, image := range productSpecWithDeps.Spec.DockerImages {
+	var products []string
+	for product := range specsMap {
+		products = append(products, product)
+	}
+	sort.Strings(products)
+	for _, productName := range products {
+		for _, image := range specsMap[productName].Spec.DockerImages {
 			if err := buildImage(image, specsMap[productName], specsMap); err != nil {
 				return err
 			}

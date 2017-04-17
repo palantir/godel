@@ -23,7 +23,6 @@ import (
 )
 
 func Command() cli.Command {
-
 	build := cli.Command{
 		Name: "build",
 		Action: func(ctx cli.Context) error {
@@ -39,13 +38,11 @@ func Command() cli.Command {
 		},
 	}
 
-	publishCmd := cli.Command{
+	return cli.Command{
 		Name:  "docker",
 		Usage: "Runs docker tasks",
 		Subcommands: []cli.Command{
 			build,
 		},
 	}
-
-	return publishCmd
 }

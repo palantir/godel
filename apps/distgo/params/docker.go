@@ -14,6 +14,10 @@
 
 package params
 
+import (
+	"github.com/pkg/errors"
+)
+
 type DockerDepType string
 
 const (
@@ -70,6 +74,6 @@ func ToDockerDepType(dep string) (DockerDepType, error) {
 	case "docker":
 		return DockerDepDocker, nil
 	default:
-		return "", nil
+		return "", errors.New("Invalid docker dependency type")
 	}
 }
