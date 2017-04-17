@@ -20,7 +20,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"sort"
 
 	"github.com/pkg/errors"
 
@@ -29,32 +28,32 @@ import (
 	"github.com/palantir/godel/apps/distgo/params"
 )
 
-func Build(cfg params.Project, wd string, stdout io.Writer) error {
+func Build(cfg params.Project, wd string, baseRepo string, stdout io.Writer) error {
 	// the docker build tasks first runs dist task on the products
 	// on which the docker images have a dependency. after building the dists,
 	// the images are built in ordered way since the images can have dependencies among themselves.
-	var productsToDist map[string]struct{}
-	for productName, product := range cfg.Products {
-		for _, image := range product.DockerImages {
+	productsToDist := make(map[string]struct{})
+	productsToBuildImage := make(map[string]struct{})
+	for productName, productSpec := range cfg.Products {
+		if len(productSpec.DockerImages) > 0 {
+			productsToBuildImage[productName] = struct{}{}
+		}
+		for _, image := range productSpec.DockerImages {
 			for _, dep := range image.Deps {
 				if isDist(dep.Type) {
-					productsToDist[productName] = struct{}{}
+					productsToDist[dep.Product] = struct{}{}
 				}
 			}
 		}
 	}
-	var products []string
-	for product := range productsToDist {
-		products = append(products, product)
-	}
 
 	// run the dist task
-	if err := dist.Products(products, cfg, false, wd, stdout); err != nil {
+	if err := dist.Products(setToSlice(productsToDist), cfg, false, wd, stdout); err != nil {
 		return err
 	}
 
 	// build docker images
-	buildSpecsWithDeps, err := build.SpecsWithDepsForArgs(cfg, products, wd)
+	buildSpecsWithDeps, err := build.SpecsWithDepsForArgs(cfg, setToSlice(productsToBuildImage), wd)
 	if err != nil {
 		return err
 	}
@@ -62,19 +61,23 @@ func Build(cfg params.Project, wd string, stdout io.Writer) error {
 	if err != nil {
 		return err
 	}
-	return RunBuild(orderedSpecs)
+	if baseRepo != "" {
+		// if base repo is specified, join it to each image's repo
+		for i := range orderedSpecs {
+			for j := range orderedSpecs[i].Spec.DockerImages {
+				orderedSpecs[i].Spec.DockerImages[j].Repository = path.Join(baseRepo,
+					orderedSpecs[i].Spec.DockerImages[j].Repository)
+			}
+		}
+	}
+	return RunBuild(orderedSpecs, stdout)
 }
 
-func RunBuild(buildSpecsWithDeps []params.ProductBuildSpecWithDeps) error {
+func RunBuild(buildSpecsWithDeps []params.ProductBuildSpecWithDeps, stdout io.Writer) error {
 	specsMap := buildSpecsMap(buildSpecsWithDeps)
-	var products []string
-	for product := range specsMap {
-		products = append(products, product)
-	}
-	sort.Strings(products)
-	for _, productName := range products {
-		for _, image := range specsMap[productName].Spec.DockerImages {
-			if err := buildImage(image, specsMap[productName], specsMap); err != nil {
+	for i := range buildSpecsWithDeps {
+		for _, image := range buildSpecsWithDeps[i].Spec.DockerImages {
+			if err := buildImage(image, buildSpecsWithDeps[i], specsMap, stdout); err != nil {
 				return err
 			}
 		}
@@ -82,13 +85,16 @@ func RunBuild(buildSpecsWithDeps []params.ProductBuildSpecWithDeps) error {
 	return nil
 }
 
-func buildImage(image params.DockerImage, buildSpecsWithDeps params.ProductBuildSpecWithDeps, specsMap map[string]params.ProductBuildSpecWithDeps) error {
+func buildImage(image params.DockerImage, buildSpecsWithDeps params.ProductBuildSpecWithDeps, specsMap map[string]params.ProductBuildSpecWithDeps, stdout io.Writer) error {
 	if image.Repository == "" {
 		image.Repository = buildSpecsWithDeps.Spec.ProductName
 	}
 	if image.Tag == "" {
 		image.Tag = buildSpecsWithDeps.Spec.ProductVersion
 	}
+
+	fmt.Fprintf(stdout, "Building docker image for %s and tagging it as %s:%s\n", buildSpecsWithDeps.Spec.ProductName, image.Repository, image.Tag)
+
 	completeTag := fmt.Sprintf("%s:%s", image.Repository, image.Tag)
 	contextDir := path.Join(buildSpecsWithDeps.Spec.ProjectDir, image.ContextDir)
 
@@ -113,7 +119,14 @@ func buildImage(image params.DockerImage, buildSpecsWithDeps params.ProductBuild
 			if targetFile == "" {
 				targetFile = path.Base(artifactLocation)
 			}
-			if err := os.Link(artifactLocation, path.Join(contextDir, targetFile)); err != nil {
+			target := path.Join(contextDir, targetFile)
+			if _, err := os.Stat(target); err == nil {
+				// ensure the target does not exists before creating a new one
+				if err := os.Remove(target); err != nil {
+					return err
+				}
+			}
+			if err := os.Link(artifactLocation, target); err != nil {
 				return err
 			}
 		}
@@ -154,4 +167,12 @@ func buildDistsMap(spec params.ProductBuildSpec) map[string]params.Dist {
 		distMap[string(dist.Info.Type())] = dist
 	}
 	return distMap
+}
+
+func setToSlice(s map[string]struct{}) []string {
+	var result []string
+	for item := range s {
+		result = append(result, item)
+	}
+	return result
 }
