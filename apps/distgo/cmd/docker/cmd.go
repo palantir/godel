@@ -18,13 +18,29 @@ import (
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/pkg/cli"
 	"github.com/palantir/pkg/cli/cfgcli"
+	"github.com/palantir/pkg/cli/flag"
 
 	"github.com/palantir/godel/apps/distgo/config"
+)
+
+const (
+	baseRepoFlagName = "base-repo"
+)
+
+var (
+	baseRepo = flag.StringFlag{
+		Name:  baseRepoFlagName,
+		Usage: "This is joined with per image repository path while building/publishing images",
+		Value: "",
+	}
 )
 
 func Command() cli.Command {
 	build := cli.Command{
 		Name: "build",
+		Flags: []flag.Flag{
+			baseRepo,
+		},
 		Action: func(ctx cli.Context) error {
 			cfg, err := config.Load(cfgcli.ConfigPath, cfgcli.ConfigJSON)
 			if err != nil {
@@ -34,7 +50,25 @@ func Command() cli.Command {
 			if err != nil {
 				return err
 			}
-			return Build(cfg, wd, ctx.App.Stdout)
+			return Build(cfg, wd, ctx.String(baseRepoFlagName), ctx.App.Stdout)
+		},
+	}
+
+	publish := cli.Command{
+		Name: "publish",
+		Flags: []flag.Flag{
+			baseRepo,
+		},
+		Action: func(ctx cli.Context) error {
+			cfg, err := config.Load(cfgcli.ConfigPath, cfgcli.ConfigJSON)
+			if err != nil {
+				return err
+			}
+			wd, err := dirs.GetwdEvalSymLinks()
+			if err != nil {
+				return err
+			}
+			return Publish(cfg, wd, ctx.String(baseRepoFlagName), ctx.App.Stdout)
 		},
 	}
 
@@ -43,6 +77,7 @@ func Command() cli.Command {
 		Usage: "Runs docker tasks",
 		Subcommands: []cli.Command{
 			build,
+			publish,
 		},
 	}
 }

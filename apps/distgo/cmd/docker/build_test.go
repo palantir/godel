@@ -380,7 +380,7 @@ func TestDockerDist(t *testing.T) {
 
 		orderedSpecs, err := docker.OrderBuildSpecs(spec)
 		require.NoError(t, err, "Case %d: %s", i, currCase.name)
-		err = docker.RunBuild(orderedSpecs)
+		err = docker.RunBuild(orderedSpecs, os.Stdout)
 		require.NoError(t, err, "Case %d: %s", i, currCase.name)
 
 		if currCase.validate != nil {
