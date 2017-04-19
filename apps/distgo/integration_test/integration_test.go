@@ -15,6 +15,7 @@
 package integration_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -171,6 +172,85 @@ products:
 		content := string(output)[strings.Index(string(output), "\n")+1:]
 		assert.Equal(t, currCase.wantStdout, content, "Case %d: %s", i, currCase.name)
 	}
+}
+
+func TestRunWithStdin(t *testing.T) {
+	cli, err := products.Bin("distgo")
+	require.NoError(t, err)
+
+	wd, err := os.Getwd()
+	require.NoError(t, err)
+
+	tmpDir, cleanup, err := dirs.TempDir(wd, "")
+	defer cleanup()
+	require.NoError(t, err)
+
+	currCaseTmpDir, err := ioutil.TempDir(tmpDir, "")
+	require.NoError(t, err)
+
+	filesToCreate := []gofiles.GoFileSpec{
+		{
+			RelPath: "main.go",
+			Src: `package main
+
+			import (
+				"bufio"
+				"fmt"
+				"os"
+			)
+
+			func main() {
+				reader := bufio.NewReader(os.Stdin)
+				text, _ := reader.ReadString('\n')
+				fmt.Printf("read: %q", text)
+			}
+			`,
+		},
+	}
+	config := `
+products:
+  hello:
+    build:
+      main-pkg: .
+`
+	runArgs := []string{
+		"--product",
+		"hello",
+	}
+
+	stdInContent := "output passed to stdin\n"
+
+	_, err = gofiles.Write(currCaseTmpDir, filesToCreate)
+	require.NoError(t, err)
+
+	configFile := path.Join(currCaseTmpDir, "config.yml")
+	err = ioutil.WriteFile(configFile, []byte(config), 0644)
+	require.NoError(t, err)
+
+	var output []byte
+	func() {
+		err := os.Chdir(currCaseTmpDir)
+		defer func() {
+			err := os.Chdir(wd)
+			require.NoError(t, err)
+		}()
+		require.NoError(t, err)
+
+		args := []string{"--config", configFile, "run"}
+		args = append(args, runArgs...)
+		cmd := exec.Command(cli, args...)
+
+		stdinPipe, err := cmd.StdinPipe()
+		require.NoError(t, err)
+		_, err = stdinPipe.Write([]byte(stdInContent))
+		require.NoError(t, err)
+
+		output, err = cmd.CombinedOutput()
+		require.NoError(t, err, "Output: %s", string(output))
+	}()
+
+	content := string(output)[strings.Index(string(output), "\n")+1:]
+	assert.Equal(t, fmt.Sprintf("read: %q", stdInContent), content)
 }
 
 func TestProjectVersion(t *testing.T) {
