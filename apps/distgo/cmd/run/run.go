@@ -43,7 +43,7 @@ func DoRun(buildSpec params.ProductBuildSpec, runArgs []string, stdout, stderr i
 		args = append(args, path.Join(buildSpec.ProjectDir, buildSpec.Build.MainPkg, name))
 	}
 	args = append(args, buildSpec.Run.Args...)
-	args = append(args, runArgs...)
+	args = append(args, transformRunFlagArgs(runArgs)...)
 	cmd.Args = args
 
 	cmd.Stdout = stdout
@@ -54,6 +54,19 @@ func DoRun(buildSpec params.ProductBuildSpec, runArgs []string, stdout, stderr i
 		return errors.Wrapf(err, "go run failed")
 	}
 	return nil
+}
+
+func transformRunFlagArgs(args []string) []string {
+	const flagPrefix = "flag:"
+	var newArgs []string
+	for _, currArg := range args {
+		// if current argument has flag prefix and has content after the prefix, trim the prefix
+		if strings.HasPrefix(currArg, flagPrefix) && len(currArg) > len(flagPrefix) {
+			currArg = strings.TrimPrefix(currArg, flagPrefix)
+		}
+		newArgs = append(newArgs, currArg)
+	}
+	return newArgs
 }
 
 // getMainPkgFiles returns the names of all of the files in the "main" pkg of the specified directory. Returns an error
