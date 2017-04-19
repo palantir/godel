@@ -21,6 +21,7 @@ import (
 	"go/token"
 	"io"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"path"
 	"strings"
@@ -48,6 +49,7 @@ func DoRun(buildSpec params.ProductBuildSpec, runArgs []string, stdout, stderr i
 
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
+	cmd.Stdin = os.Stdin
 
 	fmt.Fprintln(stdout, strings.Join(args, " "))
 	if err := cmd.Run(); err != nil {
