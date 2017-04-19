@@ -109,6 +109,38 @@ products:
 			},
 			wantStdout: "[arg1 arg2 arg3]\n",
 		},
+		{
+			name: "Run uses trailing arguments and supports flags",
+			filesToCreate: []gofiles.GoFileSpec{
+				{
+					RelPath: "main.go",
+					Src: `package main
+
+					import (
+						"fmt"
+						"os"
+					)
+
+					func main() {
+						fmt.Println(os.Args[1:])
+					}
+					`,
+				},
+			},
+			config: `
+products:
+  hello:
+    build:
+      main-pkg: .
+`,
+			args: []string{
+				`flag:--foo-arg`,
+				"flag:",
+				"flag:flag:",
+				"arg3",
+			},
+			wantStdout: "[--foo-arg flag: flag: arg3]\n",
+		},
 	} {
 		currCaseTmpDir, err := ioutil.TempDir(tmpDir, "")
 		require.NoError(t, err)
