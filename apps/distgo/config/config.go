@@ -182,6 +182,11 @@ type BinDist struct {
 	InitShTemplateFile string `yaml:"init-sh-template-file" json:"init-sh-template-file"`
 }
 
+type OSArchBinDist struct {
+	// OSArch specifies the OS/architecture combination for this distribution.
+	OSArch *osarch.OSArch `yaml:"os-arch" json:"os-arch"`
+}
+
 type SLSDist struct {
 	// InitShTemplateFile is the path to a template file that is used as the basis for the init.sh script of the
 	// distribution. The path is relative to the project root directory. The contents of the file is processed using
@@ -391,6 +396,19 @@ func (cfg *DistInfo) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			return err
 		}
 		rawDistInfoConfig.Info = rawBin.Info
+	case params.OSArchBinDistType:
+		type typedRawConfig struct {
+			Type string
+			Info OSArchBinDist
+		}
+		var rawOSArchBin typedRawConfig
+		if err := unmarshal(&rawOSArchBin); err != nil {
+			return err
+		}
+		if rawOSArchBin.Info.OSArch == nil {
+			return errors.New("os-arch must be specified in configuration")
+		}
+		rawDistInfoConfig.Info = rawOSArchBin.Info
 	case params.RPMDistType:
 		type typedRawConfig struct {
 			Type string
@@ -431,6 +449,12 @@ func (cfg *DistInfo) ToParam() (params.DistInfo, error) {
 				OmitInitSh:         val.OmitInitSh,
 				InitShTemplateFile: val.InitShTemplateFile,
 			}
+		case params.OSArchBinDistType:
+			val := OSArchBinDist{}
+			decodeErr = mapstructure.Decode(cfg.Info, &val)
+			distInfo = &params.OSArchBinDistInfo{
+				OSArch: *val.OSArch,
+			}
 		case params.RPMDistType:
 			val := RPMDist{}
 			decodeErr = mapstructure.Decode(cfg.Info, &val)
@@ -470,6 +494,12 @@ func (cfg *BinDist) ToParams() params.BinDistInfo {
 	return params.BinDistInfo{
 		OmitInitSh:         cfg.OmitInitSh,
 		InitShTemplateFile: cfg.InitShTemplateFile,
+	}
+}
+
+func (cfg *OSArchBinDist) ToParams() params.OSArchBinDistInfo {
+	return params.OSArchBinDistInfo{
+		OSArch: *cfg.OSArch,
 	}
 }
 

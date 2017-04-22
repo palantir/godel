@@ -16,6 +16,8 @@ package params
 
 import (
 	"github.com/palantir/pkg/matcher"
+
+	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 )
 
 type Dist struct {
@@ -60,13 +62,23 @@ type Dist struct {
 type DistInfoType string
 
 const (
-	SLSDistType DistInfoType = "sls" // distribution that uses the Standard Layout Specification
-	BinDistType DistInfoType = "bin" // distribution that includes all of the binaries for a product
-	RPMDistType DistInfoType = "rpm" // RPM distribution
+	SLSDistType       DistInfoType = "sls"         // distribution that uses the Standard Layout Specification
+	BinDistType       DistInfoType = "bin"         // distribution that includes all of the binaries for a product
+	RPMDistType       DistInfoType = "rpm"         // RPM distribution
+	OSArchBinDistType DistInfoType = "os-arch-bin" // distribution that consists of the binaries for a specific OS/Architecture
 )
 
 type DistInfo interface {
 	Type() DistInfoType
+}
+
+type OSArchBinDistInfo struct {
+	// OSArch specifies the OS/architecture combination for this distribution.
+	OSArch osarch.OSArch
+}
+
+func (i *OSArchBinDistInfo) Type() DistInfoType {
+	return OSArchBinDistType
 }
 
 type BinDistInfo struct {
