@@ -21,6 +21,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/palantir/pkg/specdir"
 	"github.com/pkg/errors"
 
 	"github.com/palantir/godel/apps/distgo/params"
@@ -29,21 +30,17 @@ import (
 
 const defaultRPMRelease = "1"
 
-func checkRPMDependencies() error {
-	var missing []string
-	if _, err := exec.LookPath("fpm"); err != nil {
-		missing = append(missing, "Missing `fpm` command required to build RPMs. Install with `gem install fpm`.")
+type rpmDistStruct struct{}
+
+func (r *rpmDistStruct) ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec, distCfg params.Dist) string {
+	release := defaultRPMRelease
+	if rpmDistInfo, ok := distCfg.Info.(*params.RPMDistInfo); ok && rpmDistInfo.Release != "" {
+		release = rpmDistInfo.Release
 	}
-	if _, err := exec.LookPath("rpmbuild"); err != nil {
-		missing = append(missing, "Missing `rpmbuild` command required to build RPMs. Install with `yum install rpm-build` or `apt-get install rpm` or `brew install rpm`.")
-	}
-	if len(missing) > 0 {
-		return errors.New(strings.Join(missing, "\n"))
-	}
-	return nil
+	return fmt.Sprintf("%v-%v-%v.x86_64.rpm", buildSpec.ProductName, buildSpec.ProductVersion, release)
 }
 
-func rpmDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, stdout io.Writer) (p Packager, rErr error) {
+func (r *rpmDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (p Packager, rErr error) {
 	buildSpec := buildSpecWithDeps.Spec
 	rpmDistInfo, ok := distCfg.Info.(*params.RPMDistInfo)
 	if !ok {
@@ -85,7 +82,7 @@ func rpmDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.D
 		"-n", buildSpec.ProductName,
 		"-v", buildSpec.ProductVersion,
 		"--iteration", release,
-		"-p", ArtifactPath(buildSpec, distCfg),
+		"-p", FullArtifactPath(distCfg.Info.Type(), buildSpec, distCfg),
 		"-s", "dir",
 		"-C", outputProductDir,
 		"--rpm-os", "linux",
@@ -127,4 +124,22 @@ func rpmDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.D
 		}
 		return err
 	}), nil
+}
+
+func (r *rpmDistStruct) DistPackageType() string {
+	return "rpm"
+}
+
+func checkRPMDependencies() error {
+	var missing []string
+	if _, err := exec.LookPath("fpm"); err != nil {
+		missing = append(missing, "Missing `fpm` command required to build RPMs. Install with `gem install fpm`.")
+	}
+	if _, err := exec.LookPath("rpmbuild"); err != nil {
+		missing = append(missing, "Missing `rpmbuild` command required to build RPMs. Install with `yum install rpm-build` or `apt-get install rpm` or `brew install rpm`.")
+	}
+	if len(missing) > 0 {
+		return errors.New(strings.Join(missing, "\n"))
+	}
+	return nil
 }

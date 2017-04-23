@@ -66,7 +66,7 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, publisher Publisher,
 	buildSpec := buildSpecWithDeps.Spec
 	for _, currDistCfg := range buildSpec.Dist {
 		// verify that distribution to publish exists
-		artifactPath := dist.ArtifactPath(buildSpec, currDistCfg)
+		artifactPath := dist.FullArtifactPath(currDistCfg.Info.Type(), buildSpec, currDistCfg)
 		if _, err := os.Stat(artifactPath); os.IsNotExist(err) {
 			return errors.Errorf("distribution for %v does not exist at %v", buildSpec.ProductName, artifactPath)
 		}
@@ -95,7 +95,7 @@ func DistsNotBuilt(buildSpecWithDeps []params.ProductBuildSpecWithDeps) []params
 	for _, currBuildSpecWithDeps := range buildSpecWithDeps {
 		currBuildSpec := currBuildSpecWithDeps.Spec
 		for _, currDistCfg := range currBuildSpec.Dist {
-			artifactPath := dist.ArtifactPath(currBuildSpec, currDistCfg)
+			artifactPath := dist.FullArtifactPath(currDistCfg.Info.Type(), currBuildSpec, currDistCfg)
 			if _, err := os.Stat(artifactPath); os.IsNotExist(err) {
 				distsNotBuilt = append(distsNotBuilt, currBuildSpecWithDeps)
 			}
@@ -137,7 +137,7 @@ func productPath(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg para
 	return ProductPaths{
 		productPath:  path.Join(path.Join(strings.Split(distCfg.Publish.GroupID, ".")...), buildSpec.ProductName, buildSpec.ProductVersion),
 		pomFilePath:  pomFilePath,
-		artifactPath: dist.ArtifactPath(buildSpec, distCfg),
+		artifactPath: dist.FullArtifactPath(distCfg.Info.Type(), buildSpec, distCfg),
 	}, nil
 }
 

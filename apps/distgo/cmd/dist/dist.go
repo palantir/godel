@@ -81,8 +81,8 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 		}
 
 		outputDir := path.Join(buildSpec.ProjectDir, currDistCfg.OutputDir)
-
-		fmt.Fprintf(stdout, "Creating distribution for %v at %v\n", buildSpec.ProductName, ArtifactPath(buildSpec, currDistCfg))
+		artifactPath := FullArtifactPath(currDistCfg.Info.Type(), buildSpec, currDistCfg)
+		fmt.Fprintf(stdout, "Creating distribution for %v at %v\n", buildSpec.ProductName, artifactPath)
 
 		spec := slsspec.New()
 		values := slsspec.TemplateValues(buildSpec.ProductName, buildSpec.ProductVersion)
@@ -130,27 +130,9 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 			}
 		}
 
-		var packager Packager
-		var err error
-		switch currDistCfg.Info.Type() {
-		case params.SLSDistType:
-			if packager, err = slsDist(buildSpecWithDeps, currDistCfg, outputProductDir, spec, values); err != nil {
-				return err
-			}
-		case params.BinDistType:
-			if packager, err = binDist(buildSpecWithDeps, currDistCfg, outputProductDir); err != nil {
-				return err
-			}
-		case params.OSArchBinDistType:
-			if packager, err = osArchBinDist(buildSpecWithDeps, currDistCfg, outputProductDir); err != nil {
-				return err
-			}
-		case params.RPMDistType:
-			if packager, err = rpmDist(buildSpecWithDeps, currDistCfg, outputProductDir, stdout); err != nil {
-				return err
-			}
-		default:
-			return errors.Errorf("unknown dist type: %v", currDistCfg.Info.Type())
+		packager, err := DisterForType(currDistCfg.Info.Type()).Dist(buildSpecWithDeps, currDistCfg, outputProductDir, spec, values, stdout)
+		if err != nil {
+			return err
 		}
 
 		// execute dist script
@@ -172,7 +154,7 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 
 func tgzPackager(buildSpec params.ProductBuildSpec, distCfg params.Dist, pathsToPackage ...string) packager {
 	return packager(func() error {
-		return archiver.TarGz(ArtifactPath(buildSpec, distCfg), pathsToPackage)
+		return archiver.TarGz(FullArtifactPath(distCfg.Info.Type(), buildSpec, distCfg), pathsToPackage)
 	})
 }
 
@@ -209,27 +191,4 @@ func copyBuildArtifacts(buildSpec params.ProductBuildSpec, binSpecDir specdir.Sp
 		}
 	}
 	return nil
-}
-
-func ArtifactPath(buildSpec params.ProductBuildSpec, distCfg params.Dist) string {
-	var fileName string
-	switch distCfg.Info.Type() {
-	case params.SLSDistType:
-		values := slsspec.TemplateValues(buildSpec.ProductName, buildSpec.ProductVersion)
-		fileName = slsspec.New().RootDirName(values) + ".sls.tgz"
-	case params.BinDistType:
-		fileName = fmt.Sprintf("%v-%v.tgz", buildSpec.ProductName, buildSpec.ProductVersion)
-	case params.OSArchBinDistType:
-		osArchDistInfo := distCfg.Info.(*params.OSArchBinDistInfo)
-		fileName = fmt.Sprintf("%s-%s-%s.tgz", buildSpec.ProductName, buildSpec.ProductVersion, osArchDistInfo.OSArch.String())
-	case params.RPMDistType:
-		release := defaultRPMRelease
-		if rpmDistInfo, ok := distCfg.Info.(*params.RPMDistInfo); ok && rpmDistInfo.Release != "" {
-			release = rpmDistInfo.Release
-		}
-		fileName = fmt.Sprintf("%v-%v-%v.x86_64.rpm", buildSpec.ProductName, buildSpec.ProductVersion, release)
-	default:
-		fileName = fmt.Sprintf("%v-%v", buildSpec.ProductName, buildSpec.ProductVersion)
-	}
-	return path.Join(buildSpec.ProjectDir, distCfg.OutputDir, fileName)
 }
