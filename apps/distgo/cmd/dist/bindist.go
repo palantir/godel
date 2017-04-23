@@ -16,6 +16,8 @@ package dist
 
 import (
 	"bytes"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"path"
 	"text/template"
@@ -61,7 +63,13 @@ fi
 $CMD "$@"
 `
 
-func binDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string) (Packager, error) {
+type binDistStruct struct{}
+
+func (b *binDistStruct) ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec, distCfg params.Dist) string {
+	return fmt.Sprintf("%v-%v.tgz", buildSpec.ProductName, buildSpec.ProductVersion)
+}
+
+func (b *binDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (Packager, error) {
 	buildSpec := buildSpecWithDeps.Spec
 	binDistInfo, ok := distCfg.Info.(*params.BinDistInfo)
 	if !ok {
@@ -102,4 +110,8 @@ func binDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.D
 	}
 
 	return tgzPackager(buildSpec, distCfg, outputProductDir), nil
+}
+
+func (b *binDistStruct) DistPackageType() string {
+	return "tgz"
 }

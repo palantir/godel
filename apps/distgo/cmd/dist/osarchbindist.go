@@ -15,9 +15,12 @@
 package dist
 
 import (
+	"fmt"
+	"io"
 	"path"
 	"sort"
 
+	"github.com/palantir/pkg/specdir"
 	"github.com/pkg/errors"
 	"github.com/termie/go-shutil"
 
@@ -26,7 +29,14 @@ import (
 	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 )
 
-func osArchBinDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string) (Packager, error) {
+type osArchBinDistStruct struct{}
+
+func (o *osArchBinDistStruct) ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec, distCfg params.Dist) string {
+	osArchDistInfo := distCfg.Info.(*params.OSArchBinDistInfo)
+	return fmt.Sprintf("%s-%s-%s.tgz", buildSpec.ProductName, buildSpec.ProductVersion, osArchDistInfo.OSArch.String())
+}
+
+func (o *osArchBinDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (Packager, error) {
 	buildSpec := buildSpecWithDeps.Spec
 	osArchBinDistInfo, ok := distCfg.Info.(*params.OSArchBinDistInfo)
 	if !ok {
@@ -57,6 +67,10 @@ func osArchBinDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg pa
 	}
 
 	return tgzPackager(buildSpec, distCfg, outputPaths...), nil
+}
+
+func (o *osArchBinDistStruct) DistPackageType() string {
+	return "tgz"
 }
 
 func verifyDistTargetSupported(osArch osarch.OSArch, buildSpecWithDeps params.ProductBuildSpecWithDeps) error {

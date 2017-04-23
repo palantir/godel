@@ -31,7 +31,7 @@ func DistArtifacts(buildSpecsWithDeps []params.ProductBuildSpecWithDeps, absPath
 		distTypeToPathMap := newOrderedStringMap()
 
 		for _, currDistCfg := range spec.Dist {
-			distTypeToPathMap.Put(string(currDistCfg.Info.Type()), dist.ArtifactPath(spec, currDistCfg))
+			distTypeToPathMap.Put(string(currDistCfg.Info.Type()), dist.FullArtifactPath(currDistCfg.Info.Type(), spec, currDistCfg))
 		}
 		return buildSpecWithPaths{spec: &spec, paths: distTypeToPathMap}
 	}, absPath)

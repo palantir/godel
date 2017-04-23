@@ -16,6 +16,7 @@ package dist
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"path"
 	"strings"
@@ -187,7 +188,14 @@ reload){{if .Dist.Reloadable}}
 esac
 `
 
-func slsDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues) (Packager, error) {
+type slsDistStruct struct{}
+
+func (s *slsDistStruct) ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec, distCfg params.Dist) string {
+	values := slsspec.TemplateValues(buildSpec.ProductName, buildSpec.ProductVersion)
+	return slsspec.New().RootDirName(values) + ".sls.tgz"
+}
+
+func (s *slsDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (Packager, error) {
 	buildSpec := buildSpecWithDeps.Spec
 	outputSLSDir := path.Join(buildSpec.ProjectDir, distCfg.OutputDir, spec.RootDirName(values))
 
@@ -233,6 +241,10 @@ func slsDist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.D
 		}
 		return nil
 	}), nil
+}
+
+func (s *slsDistStruct) DistPackageType() string {
+	return "sls.tgz"
 }
 
 func writeSLSManifest(buildSpec params.ProductBuildSpec, distCfg params.Dist, slsDistInfo params.SLSDistInfo, specDir specdir.SpecDir) error {
