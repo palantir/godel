@@ -28,7 +28,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"text/template"
 
 	"github.com/pkg/errors"
 	"gopkg.in/cheggaaa/pb.v1"
@@ -37,19 +36,6 @@ import (
 	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/slsspec"
 	"github.com/palantir/godel/apps/distgo/templating"
-)
-
-const (
-	pomTemplate = `<?xml version="1.0" encoding="UTF-8"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-<modelVersion>4.0.0</modelVersion>
-<groupId>{{.Publish.GroupID}}</groupId>
-<artifactId>{{.ProductName}}</artifactId>
-<version>{{.ProductVersion}}</version>
-<packaging>{{packagingType}}</packaging>
-</project>
-`
 )
 
 type Publisher interface {
@@ -114,23 +100,13 @@ type ProductPaths struct {
 func productPath(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist) (ProductPaths, error) {
 	buildSpec := buildSpecWithDeps.Spec
 
-	distType, err := packagingType(distCfg.Info.Type())
+	pomBytes, err := generatePOM(templating.ConvertSpec(buildSpec, distCfg), dist.DisterForType(distCfg.Info.Type()).DistPackageType())
 	if err != nil {
-		return ProductPaths{}, err
-	}
-
-	funcs := template.FuncMap{
-		"packagingType": func() string { return distType },
-	}
-	t := template.Must(template.New("pom").Funcs(funcs).Parse(pomTemplate))
-
-	pomFileBuf := bytes.Buffer{}
-	if err := t.Execute(&pomFileBuf, templating.ConvertSpec(buildSpec, distCfg)); err != nil {
-		return ProductPaths{}, errors.Wrapf(err, "failed to execute template")
+		return ProductPaths{}, errors.Wrapf(err, "failed to generate POM")
 	}
 
 	pomFilePath := pomFilePath(buildSpec, distCfg)
-	if err := ioutil.WriteFile(pomFilePath, pomFileBuf.Bytes(), 0644); err != nil {
+	if err := ioutil.WriteFile(pomFilePath, pomBytes, 0644); err != nil {
 		return ProductPaths{}, errors.Wrapf(err, "failed to write POM file to %v", pomFilePath)
 	}
 
@@ -139,19 +115,6 @@ func productPath(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg para
 		pomFilePath:  pomFilePath,
 		artifactPath: dist.FullArtifactPath(distCfg.Info.Type(), buildSpec, distCfg),
 	}, nil
-}
-
-func packagingType(distType params.DistInfoType) (string, error) {
-	switch distType {
-	case params.SLSDistType:
-		return "sls.tgz", nil
-	case params.BinDistType:
-		return "tgz", nil
-	case params.RPMDistType:
-		return "rpm", nil
-	default:
-		return "", fmt.Errorf("unknown dist type: %v", distType)
-	}
 }
 
 func (b BasicConnectionInfo) uploadArtifacts(baseURL string, paths ProductPaths, artifactExists artifactExistsFunc, stdout io.Writer) (string, error) {

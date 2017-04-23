@@ -58,7 +58,7 @@ type Product struct {
 	Dist []Dist
 	// DockerImages specifies the docker build configurations for the product.
 	DockerImages []DockerImage
-	// DefaultPublish specifies the publish configuration that is applied to distributions that do not specify their
-	// own publish configurations.
-	DefaultPublish Publish
+	// Publish specifies the publish configuration that is applied to distributions that do not specify their own
+	// publish configurations.
+	Publish Publish
 }

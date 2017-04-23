@@ -53,12 +53,14 @@ func TestPublishLocal(t *testing.T) {
 	require.NoError(t, err)
 
 	for i, currCase := range []struct {
+		name        string
 		buildSpec   func(projectDir string) params.ProductBuildSpecWithDeps
 		skip        func() bool
 		wantPaths   []string
 		wantContent map[string]string
 	}{
 		{
+			name: "local publish for SLS product",
 			buildSpec: func(projectDir string) params.ProductBuildSpecWithDeps {
 				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(projectDir, "publish-test-service", git.ProjectInfo{
 					Version:  "0.0.1",
@@ -68,7 +70,7 @@ func TestPublishLocal(t *testing.T) {
 					Build: params.Build{
 						MainPkg: "./.",
 					},
-					DefaultPublish: params.Publish{
+					Publish: params.Publish{
 						GroupID: "com.palantir.distgo-publish-test",
 					},
 				}, params.Project{}), nil)
@@ -80,10 +82,18 @@ func TestPublishLocal(t *testing.T) {
 				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1.sls.tgz",
 			},
 			wantContent: map[string]string{
-				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1.pom": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\" xmlns=\"http://maven.apache.org/POM/4.0.0\"\nxmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n<modelVersion>4.0.0</modelVersion>\n<groupId>com.palantir.distgo-publish-test</groupId>\n<artifactId>publish-test-service</artifactId>\n<version>0.0.1</version>\n<packaging>sls.tgz</packaging>\n</project>\n",
+				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1.pom": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+					"<project xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\" xmlns=\"http://maven.apache.org/POM/4.0.0\"\nxmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
+					"<modelVersion>4.0.0</modelVersion>\n" +
+					"<groupId>com.palantir.distgo-publish-test</groupId>\n" +
+					"<artifactId>publish-test-service</artifactId>\n" +
+					"<version>0.0.1</version>\n" +
+					"<packaging>sls.tgz</packaging>\n" +
+					"</project>\n",
 			},
 		},
 		{
+			name: "local publish for bin product",
 			buildSpec: func(projectDir string) params.ProductBuildSpecWithDeps {
 				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(projectDir, "publish-test-service", git.ProjectInfo{
 					Version:  "0.0.1",
@@ -96,7 +106,7 @@ func TestPublishLocal(t *testing.T) {
 					Dist: []params.Dist{{
 						Info: &params.BinDistInfo{},
 					}},
-					DefaultPublish: params.Publish{
+					Publish: params.Publish{
 						GroupID: "com.palantir.distgo-publish-test",
 					},
 				}, params.Project{}), nil)
@@ -108,10 +118,19 @@ func TestPublishLocal(t *testing.T) {
 				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1.tgz",
 			},
 			wantContent: map[string]string{
-				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1.pom": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\" xmlns=\"http://maven.apache.org/POM/4.0.0\"\nxmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n<modelVersion>4.0.0</modelVersion>\n<groupId>com.palantir.distgo-publish-test</groupId>\n<artifactId>publish-test-service</artifactId>\n<version>0.0.1</version>\n<packaging>tgz</packaging>\n</project>\n",
+				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1.pom": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+					"<project xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\" xmlns=\"http://maven.apache.org/POM/4.0.0\"\n" +
+					"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
+					"<modelVersion>4.0.0</modelVersion>\n" +
+					"<groupId>com.palantir.distgo-publish-test</groupId>\n" +
+					"<artifactId>publish-test-service</artifactId>\n" +
+					"<version>0.0.1</version>\n" +
+					"<packaging>tgz</packaging>\n" +
+					"</project>\n",
 			},
 		},
 		{
+			name: "local publish for product with no distribution specified creates SLS",
 			buildSpec: func(projectDir string) params.ProductBuildSpecWithDeps {
 				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(projectDir, "publish-test-service", git.ProjectInfo{
 					Version:  "0.0.1",
@@ -121,7 +140,7 @@ func TestPublishLocal(t *testing.T) {
 					Build: params.Build{
 						MainPkg: "./.",
 					},
-					DefaultPublish: params.Publish{
+					Publish: params.Publish{
 						GroupID: "com.palantir.distgo-publish-test",
 					},
 				}, params.Project{}), nil)
@@ -133,10 +152,19 @@ func TestPublishLocal(t *testing.T) {
 				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1.sls.tgz",
 			},
 			wantContent: map[string]string{
-				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1.pom": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\" xmlns=\"http://maven.apache.org/POM/4.0.0\"\nxmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n<modelVersion>4.0.0</modelVersion>\n<groupId>com.palantir.distgo-publish-test</groupId>\n<artifactId>publish-test-service</artifactId>\n<version>0.0.1</version>\n<packaging>sls.tgz</packaging>\n</project>\n",
+				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1.pom": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+					"<project xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\" xmlns=\"http://maven.apache.org/POM/4.0.0\"\n" +
+					"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
+					"<modelVersion>4.0.0</modelVersion>\n" +
+					"<groupId>com.palantir.distgo-publish-test</groupId>\n" +
+					"<artifactId>publish-test-service</artifactId>\n" +
+					"<version>0.0.1</version>\n" +
+					"<packaging>sls.tgz</packaging>\n" +
+					"</project>\n",
 			},
 		},
 		{
+			name: "local publish for product with bin and RPM distributions",
 			buildSpec: func(projectDir string) params.ProductBuildSpecWithDeps {
 				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(projectDir, "test", git.ProjectInfo{
 					Version:  "0.0.1",
@@ -158,7 +186,7 @@ func TestPublishLocal(t *testing.T) {
 							GroupID: "com.palantir.pcloud-rpm",
 						},
 					}},
-					DefaultPublish: params.Publish{
+					Publish: params.Publish{
 						GroupID: "com.palantir.pcloud-bin",
 					},
 				}, params.Project{}), nil)
