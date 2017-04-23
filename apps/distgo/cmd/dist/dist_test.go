@@ -15,7 +15,10 @@
 package dist_test
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -1031,6 +1034,83 @@ daemon: true
 			},
 		},
 		{
+			name: "osarch dist produces archive that contains executable",
+			spec: func(projectDir string) params.ProductBuildSpecWithDeps {
+				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(
+					projectDir,
+					"foo",
+					git.ProjectInfo{
+						Version: "0.1.0",
+					},
+					params.Product{
+						Build: params.Build{
+							MainPkg: "./.",
+						},
+						Dist: []params.Dist{{
+							Info: &params.OSArchBinDistInfo{
+								OSArch: osarch.Current(),
+							},
+						}},
+					},
+					params.Project{},
+				), nil)
+				require.NoError(t, err)
+				return specWithDeps
+			},
+			preDistAction: func(projectDir string, buildSpec params.ProductBuildSpec) {
+				gittest.CreateGitTag(t, projectDir, "0.1.0")
+			},
+			validate: func(caseNum int, name string, projectDir string) {
+				// executable should exist in dist directory
+				info, err := os.Stat(path.Join(projectDir, "dist", "foo-0.1.0", "foo"))
+				require.NoError(t, err)
+				assert.False(t, info.IsDir(), "Case %d: %s", caseNum, name)
+
+				// tgz should contain executable
+				tgzFiles, err := pathsInTGZ(path.Join(projectDir, "dist", fmt.Sprintf("foo-0.1.0-%v.tgz", osarch.Current())))
+				require.NoError(t, err)
+				assert.Equal(t, map[string]struct{}{"foo": {}}, tgzFiles)
+			},
+		},
+		{
+			name: "osarch dist fails if OS/Arch specified by dist is not supported by build",
+			spec: func(projectDir string) params.ProductBuildSpecWithDeps {
+				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(
+					projectDir,
+					"foo",
+					git.ProjectInfo{
+						Version: "0.1.0",
+					},
+					params.Product{
+						Build: params.Build{
+							MainPkg: "./.",
+							OSArchs: []osarch.OSArch{
+								{
+									OS:   "linux",
+									Arch: "amd64",
+								},
+							},
+						},
+						Dist: []params.Dist{{
+							Info: &params.OSArchBinDistInfo{
+								OSArch: osarch.OSArch{
+									OS:   "darwin",
+									Arch: "amd64",
+								},
+							},
+						}},
+					},
+					params.Project{},
+				), nil)
+				require.NoError(t, err)
+				return specWithDeps
+			},
+			preDistAction: func(projectDir string, buildSpec params.ProductBuildSpec) {
+				gittest.CreateGitTag(t, projectDir, "0.1.0")
+			},
+			wantErrorRegexp: regexp.QuoteMeta(`The OS/Arch specified for the distribution of a product must be specified as a build target for the product, but product foo does not specify darwin-amd64 as one of its build targets. Current build targets: [linux-amd64]`),
+		},
+		{
 			name: "builds rpm",
 			skip: func() bool {
 				// Run this case only if both fpm and rpmbuild are available
@@ -1178,4 +1258,39 @@ daemon: true
 			currCase.validate(i, currCase.name, currTmpDir)
 		}
 	}
+}
+
+func pathsInTGZ(tgzFile string) (rPaths map[string]struct{}, rErr error) {
+	file, err := os.Open(tgzFile)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := file.Close(); err != nil && rErr == nil {
+			rErr = err
+		}
+	}()
+
+	gzf, err := gzip.NewReader(file)
+	if err != nil {
+		return nil, err
+	}
+
+	tarReader := tar.NewReader(gzf)
+	dirs := make(map[string]struct{})
+	for {
+		header, err := tarReader.Next()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return nil, err
+		}
+
+		switch header.Typeflag {
+		case tar.TypeReg:
+			dirs[header.Name] = struct{}{}
+		default:
+		}
+	}
+	return dirs, nil
 }

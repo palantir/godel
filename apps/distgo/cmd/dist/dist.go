@@ -141,6 +141,10 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 			if packager, err = binDist(buildSpecWithDeps, currDistCfg, outputProductDir); err != nil {
 				return err
 			}
+		case params.OSArchBinDistType:
+			if packager, err = osArchBinDist(buildSpecWithDeps, currDistCfg, outputProductDir); err != nil {
+				return err
+			}
 		case params.RPMDistType:
 			if packager, err = rpmDist(buildSpecWithDeps, currDistCfg, outputProductDir, stdout); err != nil {
 				return err
@@ -166,9 +170,9 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 	return nil
 }
 
-func tgzPackager(buildSpec params.ProductBuildSpec, distCfg params.Dist, outputProductDir string) packager {
+func tgzPackager(buildSpec params.ProductBuildSpec, distCfg params.Dist, pathsToPackage ...string) packager {
 	return packager(func() error {
-		return archiver.TarGz(ArtifactPath(buildSpec, distCfg), []string{outputProductDir})
+		return archiver.TarGz(ArtifactPath(buildSpec, distCfg), pathsToPackage)
 	})
 }
 
@@ -215,6 +219,9 @@ func ArtifactPath(buildSpec params.ProductBuildSpec, distCfg params.Dist) string
 		fileName = slsspec.New().RootDirName(values) + ".sls.tgz"
 	case params.BinDistType:
 		fileName = fmt.Sprintf("%v-%v.tgz", buildSpec.ProductName, buildSpec.ProductVersion)
+	case params.OSArchBinDistType:
+		osArchDistInfo := distCfg.Info.(*params.OSArchBinDistInfo)
+		fileName = fmt.Sprintf("%s-%s-%s.tgz", buildSpec.ProductName, buildSpec.ProductVersion, osArchDistInfo.OSArch.String())
 	case params.RPMDistType:
 		release := defaultRPMRelease
 		if rpmDistInfo, ok := distCfg.Info.(*params.RPMDistInfo); ok && rpmDistInfo.Release != "" {
