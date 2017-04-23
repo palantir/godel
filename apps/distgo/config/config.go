@@ -304,11 +304,11 @@ func (cfg *Product) ToParam() (params.Product, error) {
 	}
 
 	return params.Product{
-		Build:          cfg.Build.ToParam(),
-		Run:            cfg.Run.ToParam(),
-		Dist:           dists,
-		DefaultPublish: cfg.DefaultPublish.ToParams(),
-		DockerImages:   images,
+		Build:        cfg.Build.ToParam(),
+		Run:          cfg.Run.ToParam(),
+		Dist:         dists,
+		Publish:      cfg.DefaultPublish.ToParams(),
+		DockerImages: images,
 	}, nil
 }
 

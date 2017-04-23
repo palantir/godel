@@ -349,7 +349,7 @@ If these files are known to be correct, exclude them from validation using the S
 						Dist: []params.Dist{{
 							InputDir: "sls",
 						}},
-						DefaultPublish: params.Publish{
+						Publish: params.Publish{
 							GroupID: "com.test.group",
 						},
 					},
@@ -430,7 +430,7 @@ If these files are known to be correct, exclude them from validation using the S
 								},
 							},
 						}},
-						DefaultPublish: params.Publish{
+						Publish: params.Publish{
 							GroupID: "com.test.group",
 						},
 					},

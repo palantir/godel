@@ -111,7 +111,7 @@ func NewProductBuildSpec(projectDir, productName string, gitProductInfo git.Proj
 		}
 
 		if currDistCfg.Publish.empty() {
-			currDistCfg.Publish = buildSpec.DefaultPublish
+			currDistCfg.Publish = buildSpec.Publish
 		}
 
 		if currDistCfg.Publish.GroupID == "" {
