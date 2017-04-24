@@ -30,27 +30,22 @@ import (
 
 const defaultRPMRelease = "1"
 
-type rpmDistStruct struct{}
+type rpmDister params.RPMDistInfo
 
-func (r *rpmDistStruct) ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec, distCfg params.Dist) string {
+func (r *rpmDister) ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec) string {
 	release := defaultRPMRelease
-	if rpmDistInfo, ok := distCfg.Info.(*params.RPMDistInfo); ok && rpmDistInfo.Release != "" {
-		release = rpmDistInfo.Release
+	if r.Release != "" {
+		release = r.Release
 	}
 	return fmt.Sprintf("%v-%v-%v.x86_64.rpm", buildSpec.ProductName, buildSpec.ProductVersion, release)
 }
 
-func (r *rpmDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (p Packager, rErr error) {
+func (r *rpmDister) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (p Packager, rErr error) {
 	buildSpec := buildSpecWithDeps.Spec
-	rpmDistInfo, ok := distCfg.Info.(*params.RPMDistInfo)
-	if !ok {
-		rpmDistInfo = &params.RPMDistInfo{}
-		distCfg.Info = rpmDistInfo
-	}
 
 	release := defaultRPMRelease
-	if rpmDistInfo.Release != "" {
-		release = rpmDistInfo.Release
+	if r.Release != "" {
+		release = r.Release
 	}
 
 	// These are run after the cmd is executed.
@@ -82,13 +77,13 @@ func (r *rpmDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, 
 		"-n", buildSpec.ProductName,
 		"-v", buildSpec.ProductVersion,
 		"--iteration", release,
-		"-p", FullArtifactPath(distCfg.Info.Type(), buildSpec, distCfg),
+		"-p", FullArtifactPath(ToDister(distCfg.Info), buildSpec, distCfg),
 		"-s", "dir",
 		"-C", outputProductDir,
 		"--rpm-os", "linux",
 	}
 
-	for _, configFile := range rpmDistInfo.ConfigFiles {
+	for _, configFile := range r.ConfigFiles {
 		cmd.Args = append(cmd.Args, "--config-files", configFile)
 	}
 
@@ -96,7 +91,7 @@ func (r *rpmDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, 
 		if content == "" {
 			return nil
 		}
-		f, cleanup, err := script.Write(buildSpec, rpmDistInfo.BeforeInstallScript)
+		f, cleanup, err := script.Write(buildSpec, r.BeforeInstallScript)
 		if err != nil {
 			return errors.Wrapf(err, "failed to write %v script for %v", name, buildSpec.ProductName)
 		}
@@ -104,13 +99,13 @@ func (r *rpmDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, 
 		cmd.Args = append(cmd.Args, "--"+name, f)
 		return nil
 	}
-	if err := scriptArg("before-install", rpmDistInfo.BeforeInstallScript); err != nil {
+	if err := scriptArg("before-install", r.BeforeInstallScript); err != nil {
 		return nil, err
 	}
-	if err := scriptArg("after-install", rpmDistInfo.AfterInstallScript); err != nil {
+	if err := scriptArg("after-install", r.AfterInstallScript); err != nil {
 		return nil, err
 	}
-	if err := scriptArg("after-remove", rpmDistInfo.AfterRemoveScript); err != nil {
+	if err := scriptArg("after-remove", r.AfterRemoveScript); err != nil {
 		return nil, err
 	}
 
@@ -126,7 +121,7 @@ func (r *rpmDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, 
 	}), nil
 }
 
-func (r *rpmDistStruct) DistPackageType() string {
+func (r *rpmDister) DistPackageType() string {
 	return "rpm"
 }
 

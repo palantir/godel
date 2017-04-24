@@ -148,7 +148,7 @@ func TestPublishLocal(t *testing.T) {
 						},
 					},
 					Dist: []params.Dist{{
-						Info: &params.OSArchBinDistInfo{
+						Info: &params.OSArchsBinDistInfo{
 							OSArch: osarch.OSArch{
 								OS:   "darwin",
 								Arch: "amd64",
@@ -200,14 +200,14 @@ func TestPublishLocal(t *testing.T) {
 						},
 					},
 					Dist: []params.Dist{{
-						Info: &params.OSArchBinDistInfo{
+						Info: &params.OSArchsBinDistInfo{
 							OSArch: osarch.OSArch{
 								OS:   "darwin",
 								Arch: "amd64",
 							},
 						},
 					}, {
-						Info: &params.OSArchBinDistInfo{
+						Info: &params.OSArchsBinDistInfo{
 							OSArch: osarch.OSArch{
 								OS:   "linux",
 								Arch: "amd64",

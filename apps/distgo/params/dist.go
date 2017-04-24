@@ -72,12 +72,12 @@ type DistInfo interface {
 	Type() DistInfoType
 }
 
-type OSArchBinDistInfo struct {
+type OSArchsBinDistInfo struct {
 	// OSArch specifies the OS/architecture combination for this distribution.
 	OSArch osarch.OSArch
 }
 
-func (i *OSArchBinDistInfo) Type() DistInfoType {
+func (i *OSArchsBinDistInfo) Type() DistInfoType {
 	return OSArchBinDistType
 }
 

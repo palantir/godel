@@ -188,24 +188,16 @@ reload){{if .Dist.Reloadable}}
 esac
 `
 
-type slsDistStruct struct{}
+type slsDister params.SLSDistInfo
 
-func (s *slsDistStruct) ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec, distCfg params.Dist) string {
+func (s *slsDister) ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec) string {
 	values := slsspec.TemplateValues(buildSpec.ProductName, buildSpec.ProductVersion)
 	return slsspec.New().RootDirName(values) + ".sls.tgz"
 }
 
-func (s *slsDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (Packager, error) {
+func (s *slsDister) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (Packager, error) {
 	buildSpec := buildSpecWithDeps.Spec
 	outputSLSDir := path.Join(buildSpec.ProjectDir, distCfg.OutputDir, spec.RootDirName(values))
-
-	var slsDistInfo params.SLSDistInfo
-	if info, ok := distCfg.Info.(*params.SLSDistInfo); ok {
-		slsDistInfo = *info
-	} else {
-		slsDistInfo = params.SLSDistInfo{}
-		distCfg.Info = &slsDistInfo
-	}
 
 	// create init.sh and manifest.yml
 	specDir, err := specdir.New(outputSLSDir, spec, values, specdir.Create)
@@ -213,11 +205,11 @@ func (s *slsDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, 
 		return nil, errors.Wrapf(err, "failed to create spec for %v", outputSLSDir)
 	}
 
-	if err := writeSLSManifest(buildSpec, distCfg, slsDistInfo, specDir); err != nil {
+	if err := s.writeSLSManifest(buildSpec, distCfg, specDir); err != nil {
 		return nil, err
 	}
 
-	if err := writeSLSInitSh(buildSpec, distCfg, slsDistInfo, specDir); err != nil {
+	if err := s.writeSLSInitSh(buildSpec, distCfg, specDir); err != nil {
 		return nil, errors.Wrapf(err, "failed to write init.sh")
 	}
 
@@ -233,7 +225,7 @@ func (s *slsDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, 
 	}
 
 	return packager(func() error {
-		if err := slsspec.Validate(outputProductDir, values, slsDistInfo.YMLValidationExclude); err != nil {
+		if err := slsspec.Validate(outputProductDir, values, s.YMLValidationExclude); err != nil {
 			return errors.Wrapf(err, "distribution directory failed SLS validation")
 		}
 		if err := tgzPackager(buildSpec, distCfg, outputProductDir).Package(); err != nil {
@@ -243,14 +235,14 @@ func (s *slsDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, 
 	}), nil
 }
 
-func (s *slsDistStruct) DistPackageType() string {
+func (s *slsDister) DistPackageType() string {
 	return "sls.tgz"
 }
 
-func writeSLSManifest(buildSpec params.ProductBuildSpec, distCfg params.Dist, slsDistInfo params.SLSDistInfo, specDir specdir.SpecDir) error {
+func (s *slsDister) writeSLSManifest(buildSpec params.ProductBuildSpec, distCfg params.Dist, specDir specdir.SpecDir) error {
 	var manifestTemplateString string
-	if slsDistInfo.ManifestTemplateFile != "" {
-		manifestTemplateFilePath := path.Join(buildSpec.ProjectDir, slsDistInfo.ManifestTemplateFile)
+	if s.ManifestTemplateFile != "" {
+		manifestTemplateFilePath := path.Join(buildSpec.ProjectDir, s.ManifestTemplateFile)
 		manifestBytes, err := ioutil.ReadFile(manifestTemplateFilePath)
 		if err != nil {
 			return errors.Wrapf(err, "failed to read manifest template file %s", manifestTemplateFilePath)
@@ -263,7 +255,7 @@ func writeSLSManifest(buildSpec params.ProductBuildSpec, distCfg params.Dist, sl
 		manifestTemplateString = manifestBuf.String()
 	} else {
 		var err error
-		manifestTemplateString, err = manifest(distCfg.Publish.GroupID, buildSpec.ProductName, buildSpec.ProductVersion, slsDistInfo.ProductType, slsDistInfo.ManifestExtensions)
+		manifestTemplateString, err = manifest(distCfg.Publish.GroupID, buildSpec.ProductName, buildSpec.ProductVersion, s.ProductType, s.ManifestExtensions)
 		if err != nil {
 			return errors.Wrapf(err, "failed to create manifest for SLS distribution")
 		}
@@ -315,10 +307,10 @@ func manifest(groupID, name, version, productType string, extensions map[string]
 	return string(manifestBytes), nil
 }
 
-func writeSLSInitSh(buildSpec params.ProductBuildSpec, distCfg params.Dist, slsDistInfo params.SLSDistInfo, specDir specdir.SpecDir) error {
+func (s *slsDister) writeSLSInitSh(buildSpec params.ProductBuildSpec, distCfg params.Dist, specDir specdir.SpecDir) error {
 	var initShTemplateBytes []byte
-	if slsDistInfo.InitShTemplateFile != "" {
-		initShTemplateFilePath := path.Join(buildSpec.ProjectDir, slsDistInfo.InitShTemplateFile)
+	if s.InitShTemplateFile != "" {
+		initShTemplateFilePath := path.Join(buildSpec.ProjectDir, s.InitShTemplateFile)
 		var err error
 		initShTemplateBytes, err = ioutil.ReadFile(initShTemplateFilePath)
 		if err != nil {

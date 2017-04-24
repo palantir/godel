@@ -52,7 +52,7 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, publisher Publisher,
 	buildSpec := buildSpecWithDeps.Spec
 	for _, currDistCfg := range buildSpec.Dist {
 		// verify that distribution to publish exists
-		artifactPath := dist.FullArtifactPath(currDistCfg.Info.Type(), buildSpec, currDistCfg)
+		artifactPath := dist.FullArtifactPath(dist.ToDister(currDistCfg.Info), buildSpec, currDistCfg)
 		if _, err := os.Stat(artifactPath); os.IsNotExist(err) {
 			return errors.Errorf("distribution for %v does not exist at %v", buildSpec.ProductName, artifactPath)
 		}
@@ -81,7 +81,7 @@ func DistsNotBuilt(buildSpecWithDeps []params.ProductBuildSpecWithDeps) []params
 	for _, currBuildSpecWithDeps := range buildSpecWithDeps {
 		currBuildSpec := currBuildSpecWithDeps.Spec
 		for _, currDistCfg := range currBuildSpec.Dist {
-			artifactPath := dist.FullArtifactPath(currDistCfg.Info.Type(), currBuildSpec, currDistCfg)
+			artifactPath := dist.FullArtifactPath(dist.ToDister(currDistCfg.Info), currBuildSpec, currDistCfg)
 			if _, err := os.Stat(artifactPath); os.IsNotExist(err) {
 				distsNotBuilt = append(distsNotBuilt, currBuildSpecWithDeps)
 			}
@@ -100,7 +100,7 @@ type ProductPaths struct {
 func productPath(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist) (ProductPaths, error) {
 	buildSpec := buildSpecWithDeps.Spec
 
-	pomBytes, err := generatePOM(templating.ConvertSpec(buildSpec, distCfg), dist.DisterForType(distCfg.Info.Type()).DistPackageType())
+	pomBytes, err := generatePOM(templating.ConvertSpec(buildSpec, distCfg), dist.ToDister(distCfg.Info).DistPackageType())
 	if err != nil {
 		return ProductPaths{}, errors.Wrapf(err, "failed to generate POM")
 	}
@@ -113,7 +113,7 @@ func productPath(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg para
 	return ProductPaths{
 		productPath:  path.Join(path.Join(strings.Split(distCfg.Publish.GroupID, ".")...), buildSpec.ProductName, buildSpec.ProductVersion),
 		pomFilePath:  pomFilePath,
-		artifactPath: dist.FullArtifactPath(distCfg.Info.Type(), buildSpec, distCfg),
+		artifactPath: dist.FullArtifactPath(dist.ToDister(distCfg.Info), buildSpec, distCfg),
 	}, nil
 }
 

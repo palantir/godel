@@ -25,27 +25,26 @@ import (
 )
 
 type Dister interface {
-	ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec, distCfg params.Dist) string
+	ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec) string
 	Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (Packager, error)
 	DistPackageType() string
 }
 
-func DisterForType(typ params.DistInfoType) Dister {
-	dister, ok := distInfoTypeDataMap[typ]
-	if !ok {
-		panic(fmt.Sprintf("unrecognized type: %v", typ))
+func ToDister(info params.DistInfo) Dister {
+	switch info.Type() {
+	default:
+		panic(fmt.Errorf("unrecognized type: %v", info.Type()))
+	case params.SLSDistType:
+		return (*slsDister)(info.(*params.SLSDistInfo))
+	case params.BinDistType:
+		return (*binDister)(info.(*params.BinDistInfo))
+	case params.OSArchBinDistType:
+		return (*osArchsBinDister)(info.(*params.OSArchsBinDistInfo))
+	case params.RPMDistType:
+		return (*rpmDister)(info.(*params.RPMDistInfo))
 	}
-	return dister
 }
 
-func FullArtifactPath(distType params.DistInfoType, buildSpec params.ProductBuildSpec, distCfg params.Dist) string {
-	dister := DisterForType(distType)
-	return path.Join(buildSpec.ProjectDir, distCfg.OutputDir, dister.ArtifactPathInOutputDir(buildSpec, distCfg))
-}
-
-var distInfoTypeDataMap = map[params.DistInfoType]Dister{
-	params.SLSDistType:       &slsDistStruct{},
-	params.BinDistType:       &binDistStruct{},
-	params.OSArchBinDistType: &osArchBinDistStruct{},
-	params.RPMDistType:       &rpmDistStruct{},
+func FullArtifactPath(dister Dister, buildSpec params.ProductBuildSpec, distCfg params.Dist) string {
+	return path.Join(buildSpec.ProjectDir, distCfg.OutputDir, dister.ArtifactPathInOutputDir(buildSpec))
 }

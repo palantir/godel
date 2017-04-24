@@ -63,20 +63,14 @@ fi
 $CMD "$@"
 `
 
-type binDistStruct struct{}
+type binDister params.BinDistInfo
 
-func (b *binDistStruct) ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec, distCfg params.Dist) string {
+func (b *binDister) ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec) string {
 	return fmt.Sprintf("%v-%v.tgz", buildSpec.ProductName, buildSpec.ProductVersion)
 }
 
-func (b *binDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (Packager, error) {
+func (b *binDister) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (Packager, error) {
 	buildSpec := buildSpecWithDeps.Spec
-	binDistInfo, ok := distCfg.Info.(*params.BinDistInfo)
-	if !ok {
-		binDistInfo = &params.BinDistInfo{}
-		distCfg.Info = binDistInfo
-	}
-
 	binSpec := binspec.New(buildSpec.Build.OSArchs, buildSpec.ProductName)
 	binDir := path.Join(outputProductDir, "bin")
 	binSpecDir, err := specdir.New(binDir, binSpec, nil, specdir.Create)
@@ -87,10 +81,10 @@ func (b *binDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, 
 		return nil, errors.Wrapf(err, "failed to copy artifacts to bin dir")
 	}
 
-	if !binDistInfo.OmitInitSh {
+	if !b.OmitInitSh {
 		var initShTemplateBytes []byte
-		if binDistInfo.InitShTemplateFile != "" {
-			initShTemplateFilePath := path.Join(buildSpec.ProjectDir, binDistInfo.InitShTemplateFile)
+		if b.InitShTemplateFile != "" {
+			initShTemplateFilePath := path.Join(buildSpec.ProjectDir, b.InitShTemplateFile)
 			var err error
 			initShTemplateBytes, err = ioutil.ReadFile(initShTemplateFilePath)
 			if err != nil {
@@ -112,6 +106,6 @@ func (b *binDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, 
 	return tgzPackager(buildSpec, distCfg, outputProductDir), nil
 }
 
-func (b *binDistStruct) DistPackageType() string {
+func (b *binDister) DistPackageType() string {
 	return "tgz"
 }

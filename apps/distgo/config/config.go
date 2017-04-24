@@ -452,7 +452,7 @@ func (cfg *DistInfo) ToParam() (params.DistInfo, error) {
 		case params.OSArchBinDistType:
 			val := OSArchBinDist{}
 			decodeErr = mapstructure.Decode(cfg.Info, &val)
-			distInfo = &params.OSArchBinDistInfo{
+			distInfo = &params.OSArchsBinDistInfo{
 				OSArch: *val.OSArch,
 			}
 		case params.RPMDistType:
@@ -497,8 +497,8 @@ func (cfg *BinDist) ToParams() params.BinDistInfo {
 	}
 }
 
-func (cfg *OSArchBinDist) ToParams() params.OSArchBinDistInfo {
-	return params.OSArchBinDistInfo{
+func (cfg *OSArchBinDist) ToParams() params.OSArchsBinDistInfo {
+	return params.OSArchsBinDistInfo{
 		OSArch: *cfg.OSArch,
 	}
 }

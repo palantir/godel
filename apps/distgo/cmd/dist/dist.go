@@ -81,7 +81,7 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 		}
 
 		outputDir := path.Join(buildSpec.ProjectDir, currDistCfg.OutputDir)
-		artifactPath := FullArtifactPath(currDistCfg.Info.Type(), buildSpec, currDistCfg)
+		artifactPath := FullArtifactPath(ToDister(currDistCfg.Info), buildSpec, currDistCfg)
 		fmt.Fprintf(stdout, "Creating distribution for %v at %v\n", buildSpec.ProductName, artifactPath)
 
 		spec := slsspec.New()
@@ -130,7 +130,7 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 			}
 		}
 
-		packager, err := DisterForType(currDistCfg.Info.Type()).Dist(buildSpecWithDeps, currDistCfg, outputProductDir, spec, values, stdout)
+		packager, err := ToDister(currDistCfg.Info).Dist(buildSpecWithDeps, currDistCfg, outputProductDir, spec, values, stdout)
 		if err != nil {
 			return err
 		}
@@ -154,7 +154,7 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 
 func tgzPackager(buildSpec params.ProductBuildSpec, distCfg params.Dist, pathsToPackage ...string) packager {
 	return packager(func() error {
-		return archiver.TarGz(FullArtifactPath(distCfg.Info.Type(), buildSpec, distCfg), pathsToPackage)
+		return archiver.TarGz(FullArtifactPath(ToDister(distCfg.Info), buildSpec, distCfg), pathsToPackage)
 	})
 }
 

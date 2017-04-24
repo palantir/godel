@@ -29,22 +29,15 @@ import (
 	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 )
 
-type osArchBinDistStruct struct{}
+type osArchsBinDister params.OSArchsBinDistInfo
 
-func (o *osArchBinDistStruct) ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec, distCfg params.Dist) string {
-	osArchDistInfo := distCfg.Info.(*params.OSArchBinDistInfo)
-	return fmt.Sprintf("%s-%s-%s.tgz", buildSpec.ProductName, buildSpec.ProductVersion, osArchDistInfo.OSArch.String())
+func (o *osArchsBinDister) ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec) string {
+	return fmt.Sprintf("%s-%s-%s.tgz", buildSpec.ProductName, buildSpec.ProductVersion, o.OSArch.String())
 }
 
-func (o *osArchBinDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (Packager, error) {
+func (o *osArchsBinDister) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (Packager, error) {
 	buildSpec := buildSpecWithDeps.Spec
-	osArchBinDistInfo, ok := distCfg.Info.(*params.OSArchBinDistInfo)
-	if !ok {
-		osArchBinDistInfo = &params.OSArchBinDistInfo{}
-		distCfg.Info = osArchBinDistInfo
-	}
-
-	osArch := osArchBinDistInfo.OSArch
+	osArch := o.OSArch
 	if err := verifyDistTargetSupported(osArch, buildSpecWithDeps); err != nil {
 		return nil, err
 	}
@@ -69,7 +62,7 @@ func (o *osArchBinDistStruct) Dist(buildSpecWithDeps params.ProductBuildSpecWith
 	return tgzPackager(buildSpec, distCfg, outputPaths...), nil
 }
 
-func (o *osArchBinDistStruct) DistPackageType() string {
+func (o *osArchsBinDister) DistPackageType() string {
 	return "tgz"
 }
 
