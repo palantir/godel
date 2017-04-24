@@ -17,6 +17,8 @@ package dist_test
 import (
 	"archive/tar"
 	"compress/gzip"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -1064,7 +1066,7 @@ daemon: true
 			},
 			validate: func(caseNum int, name string, projectDir string) {
 				// executable should exist in dist directory
-				info, err := os.Stat(path.Join(projectDir, "dist", "foo-0.1.0", "foo"))
+				info, err := os.Stat(path.Join(projectDir, "dist", "foo-0.1.0", osarch.Current().String(), "foo"))
 				require.NoError(t, err)
 				assert.False(t, info.IsDir(), "Case %d: %s", caseNum, name)
 
@@ -1072,6 +1074,66 @@ daemon: true
 				tgzFiles, err := pathsInTGZ(path.Join(projectDir, "dist", fmt.Sprintf("foo-0.1.0-%v.tgz", osarch.Current())))
 				require.NoError(t, err)
 				assert.Equal(t, map[string]struct{}{"foo": {}}, tgzFiles)
+			},
+		},
+		{
+			name: "osarch dist produces archives that are different",
+			spec: func(projectDir string) params.ProductBuildSpecWithDeps {
+				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(
+					projectDir,
+					"foo",
+					git.ProjectInfo{
+						Version: "0.1.0",
+					},
+					params.Product{
+						Build: params.Build{
+							MainPkg: "./.",
+							OSArchs: []osarch.OSArch{
+								{
+									OS:   "darwin",
+									Arch: "amd64",
+								},
+								{
+									OS:   "linux",
+									Arch: "amd64",
+								},
+							},
+						},
+						Dist: []params.Dist{{
+							Info: &params.OSArchsBinDistInfo{
+								OSArchs: []osarch.OSArch{
+									{
+										OS:   "darwin",
+										Arch: "amd64",
+									},
+									{
+										OS:   "linux",
+										Arch: "amd64",
+									},
+								},
+							},
+						}},
+					},
+					params.Project{},
+				), nil)
+				require.NoError(t, err)
+				return specWithDeps
+			},
+			preDistAction: func(projectDir string, buildSpec params.ProductBuildSpec) {
+				gittest.CreateGitTag(t, projectDir, "0.1.0")
+			},
+			validate: func(caseNum int, name string, projectDir string) {
+				getHexChecksum := func(tgzPath string) string {
+					bytes, err := ioutil.ReadFile(tgzPath)
+					require.NoError(t, err)
+					sha256Bytes := sha256.Sum256(bytes)
+					return hex.EncodeToString(sha256Bytes[:])
+				}
+
+				darwinChecksum := getHexChecksum(path.Join(projectDir, "dist", "foo-0.1.0-darwin-amd64.tgz"))
+				linuxChecksum := getHexChecksum(path.Join(projectDir, "dist", "foo-0.1.0-linux-amd64.tgz"))
+
+				assert.NotEqual(t, darwinChecksum, linuxChecksum, "checksums should differ")
 			},
 		},
 		{

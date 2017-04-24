@@ -17,6 +17,7 @@ package dist
 import (
 	"fmt"
 	"io"
+	"os"
 	"path"
 	"sort"
 
@@ -124,7 +125,11 @@ func copyArtifactForOSArch(outputProductDir string, buildSpec params.ProductBuil
 	if !ok {
 		return "", errors.Errorf("no build artifacts exist for %s", osArch)
 	}
-	dst := path.Join(outputProductDir, build.ExecutableName(buildSpec.ProductName, osArch.OS))
+	dst := path.Join(outputProductDir, osArch.String(), build.ExecutableName(buildSpec.ProductName, osArch.OS))
+
+	if err := os.MkdirAll(path.Dir(dst), 0755); err != nil {
+		return "", errors.Wrapf(err, "failed to create output directory for artifact")
+	}
 	if _, err := shutil.Copy(artifactPath, dst, false); err != nil {
 		return "", errors.Wrapf(err, "failed to copy build artifact from %s to %s", artifactPath, dst)
 	}
