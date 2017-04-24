@@ -267,6 +267,12 @@
 			"revisionTime": "2017-03-26T22:58:37Z"
 		},
 		{
+			"checksumSHA1": "lnktSpRbwGSJKg+bRH2DJdP3iX0=",
+			"path": "github.com/jtacoma/uritemplates",
+			"revision": "307ae868f90f4ee1b73ebe4596e0394237dacce8",
+			"revisionTime": "2016-07-02T15:35:54Z"
+		},
+		{
 			"checksumSHA1": "Vzu6UjNWvY6L28mwcsW9b6Rb3Uc=",
 			"origin": "github.com/palantir/amalgomate/vendor/github.com/kardianos/osext",
 			"path": "github.com/kardianos/osext",
