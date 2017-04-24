@@ -34,15 +34,16 @@ import (
 )
 
 const (
-	pkgsFlagName       = "pkgs"
-	projectPkgFlagName = "project-package"
-	fullPathFlagName   = "full"
+	pkgsFlagName         = "pkgs"
+	projectPkgFlagName   = "project-package"
+	fullPathFlagName     = "full"
+	printPkgInfoFlagName = "print-pkg-info"
 )
 
 var (
 	pkgsFlag = flag.StringSlice{
 		Name:  pkgsFlagName,
-		Usage: "paths to the pacakges to check",
+		Usage: "paths to the packages to check",
 	}
 	projectPkgFlag = flag.BoolFlag{
 		Name:  projectPkgFlagName,
@@ -54,21 +55,27 @@ var (
 		Alias: "f",
 		Usage: "include full path of unused packages (default omits path to vendor directory)",
 	}
+	printPkgInfoFlag = flag.BoolFlag{
+		Name:  printPkgInfoFlagName,
+		Usage: "print all project packages and vendored packages that are found before execution",
+	}
 )
 
 func main() {
 	app := cli.NewApp(cli.DebugHandler(errorstringer.SingleStack))
-	app.Flags = append(app.Flags,
+	app.Flags = append(
+		app.Flags,
 		projectPkgFlag,
 		fullPathFlag,
 		pkgsFlag,
+		printPkgInfoFlag,
 	)
 	app.Action = func(ctx cli.Context) error {
 		wd, err := dirs.GetwdEvalSymLinks()
 		if err != nil {
 			return errors.Wrapf(err, "Failed to get working directory")
 		}
-		return doNovendor(wd, ctx.Slice(pkgsFlagName), ctx.Bool(projectPkgFlagName), ctx.Bool(fullPathFlagName), ctx.App.Stdout)
+		return doNovendor(wd, ctx.Slice(pkgsFlagName), ctx.Bool(projectPkgFlagName), ctx.Bool(fullPathFlagName), ctx.Bool(printPkgInfoFlagName), ctx.App.Stdout)
 	}
 	os.Exit(app.Run(os.Args))
 }
@@ -78,7 +85,7 @@ type pkgWithSrc struct {
 	src string
 }
 
-func doNovendor(projectDir string, pkgPaths []string, groupPkgsByProject, fullPath bool, w io.Writer) error {
+func doNovendor(projectDir string, pkgPaths []string, groupPkgsByProject, fullPath, printPkgInfo bool, w io.Writer) error {
 	if !path.IsAbs(projectDir) {
 		return errors.Errorf("projectDir %s must be an absolute path", projectDir)
 	}
@@ -114,7 +121,27 @@ func doNovendor(projectDir string, pkgPaths []string, groupPkgsByProject, fullPa
 		}
 	}
 
-	unusedPkgs, err := getUnusedVendoredPkgs(projectDir, pkgsToProcess, groupPkgsByProject, fullPath)
+	allProjetPkgs, allVendoredPkgs, err := getPackageInfo(projectDir, pkgsToProcess)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to get package information")
+	}
+	if printPkgInfo {
+		projectPkgOutput := []string{fmt.Sprintf("All project packages (%d):", len(allProjetPkgs))}
+		for pkg := range allProjetPkgs {
+			projectPkgOutput = append(projectPkgOutput, pkg)
+		}
+		sort.Strings(projectPkgOutput)
+		fmt.Fprintln(w, strings.Join(projectPkgOutput, "\n\t"))
+
+		vendoredPkgOutput := []string{fmt.Sprintf("All vendored packages (%d):", len(allVendoredPkgs))}
+		for pkg := range allVendoredPkgs {
+			vendoredPkgOutput = append(vendoredPkgOutput, pkg)
+		}
+		sort.Strings(vendoredPkgOutput)
+		fmt.Fprintln(w, strings.Join(vendoredPkgOutput, "\n\t"))
+	}
+
+	unusedPkgs, err := getUnusedVendoredPkgs(allProjetPkgs, allVendoredPkgs, groupPkgsByProject, fullPath)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to determine unused packages")
 	}
@@ -126,24 +153,28 @@ func doNovendor(projectDir string, pkgPaths []string, groupPkgsByProject, fullPa
 	return nil
 }
 
-func getUnusedVendoredPkgs(projectDir string, pkgsToProcess []pkgWithSrc, groupPkgsByProject, fullPath bool) ([]string, error) {
-	allVendoredPkgs, err := getAllVendoredPkgs(projectDir)
-	if err != nil {
-		return nil, err
-	}
-
-	allProjectPkgs := make(map[string]bool)
+func getPackageInfo(projectDir string, pkgsToProcess []pkgWithSrc) (allProjectPkgs map[string]bool, allVendoredPkgs map[string]bool, err error) {
+	allProjectPkgs = make(map[string]bool)
 	for _, currPkg := range pkgsToProcess {
 		examinedImports := make(map[string]bool)
 		imps, err := getAllImports(currPkg.pkg, currPkg.src, projectDir, examinedImports, true)
 		if err != nil {
-			return nil, errors.Wrapf(err, "getAllFailed")
+			return nil, nil, errors.Wrapf(err, "getAllFailed")
 		}
 		for k, v := range imps {
 			allProjectPkgs[k] = v
 		}
 	}
 
+	allVendoredPkgs, err = getAllVendoredPkgs(projectDir)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return allProjectPkgs, allVendoredPkgs, err
+}
+
+func getUnusedVendoredPkgs(allProjectPkgs, allVendoredPkgs map[string]bool, groupPkgsByProject, fullPath bool) ([]string, error) {
 	var unusedVendorPkgs []string
 	if groupPkgsByProject {
 		// do package-level grouping
@@ -185,27 +216,37 @@ func getUnusedVendoredPkgs(projectDir string, pkgsToProcess []pkgWithSrc, groupP
 func getAllVendoredPkgs(projectRoot string) (map[string]bool, error) {
 	vendoredPkgs := make(map[string]bool)
 	err := filepath.Walk(projectRoot, func(currPath string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			rel, err := filepath.Rel(projectRoot, currPath)
-			if err != nil {
-				return err
+		if !info.IsDir() {
+			return nil
+		}
+
+		rel, err := filepath.Rel(projectRoot, currPath)
+		if err != nil {
+			return err
+		}
+		inVendorDir := false
+		skipDirectory := false
+		for _, currPart := range strings.Split(rel, "/") {
+			if currPart == "vendor" {
+				inVendorDir = true
+				break
 			}
-			inVendorDir := false
-			for _, currPart := range strings.Split(rel, "/") {
-				if currPart == "vendor" {
-					inVendorDir = true
-					break
-				}
+			if strings.HasPrefix(currPart, ".") {
+				skipDirectory = true
+				break
 			}
-			if inVendorDir {
-				// if this is a directory in a vendor directory, attempt to parse as a package
-				pkg, err := doImport(".", currPath, build.ImportComment)
-				// record import path if package could be parsed and import path is not "." (which can
-				// happen for some directories like testdata which cannot be imported)
-				if err == nil && pkg.ImportPath != "." {
-					vendoredPkgs[pkg.ImportPath] = true
-				}
-			}
+		}
+
+		if skipDirectory || !inVendorDir {
+			return nil
+		}
+
+		// directory is in a vendor directory: attempt to parse as a package
+		pkg, err := doImport(".", currPath, build.ImportComment)
+		// record import path if package could be parsed and import path is not "." (which can
+		// happen for some directories like testdata which cannot be imported)
+		if err == nil && pkg.ImportPath != "." {
+			vendoredPkgs[pkg.ImportPath] = true
 		}
 		return nil
 	})
