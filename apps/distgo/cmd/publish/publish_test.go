@@ -405,7 +405,7 @@ func TestPublishLocal(t *testing.T) {
 		require.NoError(t, err, "Case %d", i)
 
 		repo := path.Join(currTmp, "repository")
-		err = publish.Run(currSpecWithDeps, publish.LocalPublishInfo{
+		err = publish.Run(currSpecWithDeps, &publish.LocalPublishInfo{
 			Path: repo,
 		}, nil, ioutil.Discard)
 		require.NoError(t, err, "Case %d", i)
