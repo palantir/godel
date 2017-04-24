@@ -39,7 +39,7 @@ import (
 )
 
 type Publisher interface {
-	Publish(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) (string, error)
+	Publish(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) ([]string, error)
 }
 
 type BasicConnectionInfo struct {
@@ -52,9 +52,10 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, publisher Publisher,
 	buildSpec := buildSpecWithDeps.Spec
 	for _, currDistCfg := range buildSpec.Dist {
 		// verify that distribution to publish exists
-		artifactPath := dist.FullArtifactPath(dist.ToDister(currDistCfg.Info), buildSpec, currDistCfg)
-		if _, err := os.Stat(artifactPath); os.IsNotExist(err) {
-			return errors.Errorf("distribution for %v does not exist at %v", buildSpec.ProductName, artifactPath)
+		for _, artifactPath := range dist.FullArtifactsPaths(dist.ToDister(currDistCfg.Info), buildSpec, currDistCfg) {
+			if _, err := os.Stat(artifactPath); os.IsNotExist(err) {
+				return errors.Errorf("distribution for %v does not exist at %v", buildSpec.ProductName, artifactPath)
+			}
 		}
 
 		paths, err := productPath(buildSpecWithDeps, currDistCfg)
@@ -62,14 +63,16 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, publisher Publisher,
 			return errors.Wrapf(err, "failed to determine product paths")
 		}
 
-		artifactURL, err := publisher.Publish(buildSpec, paths, stdout)
+		artifactURLs, err := publisher.Publish(buildSpec, paths, stdout)
 		if err != nil {
 			return fmt.Errorf("Publish failed for %v: %v", buildSpec.ProductName, err)
 		}
 
-		if almanacInfo != nil && artifactURL != "" {
-			if err := almanacPublish(artifactURL, *almanacInfo, buildSpec, currDistCfg, stdout); err != nil {
-				return fmt.Errorf("Almanac publish failed for %v: %v", buildSpec.ProductName, err)
+		if almanacInfo != nil {
+			for _, currArtifactURL := range artifactURLs {
+				if err := almanacPublish(currArtifactURL, *almanacInfo, buildSpec, currDistCfg, stdout); err != nil {
+					return fmt.Errorf("Almanac publish failed for %v: %v", buildSpec.ProductName, err)
+				}
 			}
 		}
 	}
@@ -81,9 +84,10 @@ func DistsNotBuilt(buildSpecWithDeps []params.ProductBuildSpecWithDeps) []params
 	for _, currBuildSpecWithDeps := range buildSpecWithDeps {
 		currBuildSpec := currBuildSpecWithDeps.Spec
 		for _, currDistCfg := range currBuildSpec.Dist {
-			artifactPath := dist.FullArtifactPath(dist.ToDister(currDistCfg.Info), currBuildSpec, currDistCfg)
-			if _, err := os.Stat(artifactPath); os.IsNotExist(err) {
-				distsNotBuilt = append(distsNotBuilt, currBuildSpecWithDeps)
+			for _, artifactPath := range dist.FullArtifactsPaths(dist.ToDister(currDistCfg.Info), currBuildSpec, currDistCfg) {
+				if _, err := os.Stat(artifactPath); os.IsNotExist(err) {
+					distsNotBuilt = append(distsNotBuilt, currBuildSpecWithDeps)
+				}
 			}
 		}
 	}
@@ -92,9 +96,9 @@ func DistsNotBuilt(buildSpecWithDeps []params.ProductBuildSpecWithDeps) []params
 
 type ProductPaths struct {
 	// path of the form "{{GroupID}}/{{ProductName}}/{{ProductVersion}}". For example, "com/group/foo-service/1.0.1".
-	productPath  string
-	pomFilePath  string
-	artifactPath string
+	productPath   string
+	pomFilePath   string
+	artifactPaths []string
 }
 
 func productPath(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist) (ProductPaths, error) {
@@ -111,21 +115,25 @@ func productPath(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg para
 	}
 
 	return ProductPaths{
-		productPath:  path.Join(path.Join(strings.Split(distCfg.Publish.GroupID, ".")...), buildSpec.ProductName, buildSpec.ProductVersion),
-		pomFilePath:  pomFilePath,
-		artifactPath: dist.FullArtifactPath(dist.ToDister(distCfg.Info), buildSpec, distCfg),
+		productPath:   path.Join(path.Join(strings.Split(distCfg.Publish.GroupID, ".")...), buildSpec.ProductName, buildSpec.ProductVersion),
+		pomFilePath:   pomFilePath,
+		artifactPaths: dist.FullArtifactsPaths(dist.ToDister(distCfg.Info), buildSpec, distCfg),
 	}, nil
 }
 
-func (b BasicConnectionInfo) uploadArtifacts(baseURL string, paths ProductPaths, artifactExists artifactExistsFunc, stdout io.Writer) (string, error) {
-	artifactURL, err := b.uploadFile(paths.artifactPath, baseURL, paths.artifactPath, artifactExists, stdout)
-	if err != nil {
-		return artifactURL, err
+func (b BasicConnectionInfo) uploadArtifacts(baseURL string, paths ProductPaths, artifactExists artifactExistsFunc, stdout io.Writer) ([]string, error) {
+	var artifactURLs []string
+	for _, currArtifactPath := range paths.artifactPaths {
+		artifactURL, err := b.uploadFile(currArtifactPath, baseURL, currArtifactPath, artifactExists, stdout)
+		if err != nil {
+			return artifactURLs, err
+		}
+		artifactURLs = append(artifactURLs, artifactURL)
 	}
 	if _, err := b.uploadFile(paths.pomFilePath, baseURL, paths.pomFilePath, artifactExists, stdout); err != nil {
-		return artifactURL, err
+		return artifactURLs, err
 	}
-	return artifactURL, nil
+	return artifactURLs, nil
 }
 
 type fileInfo struct {

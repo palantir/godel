@@ -73,8 +73,8 @@ type DistInfo interface {
 }
 
 type OSArchsBinDistInfo struct {
-	// OSArch specifies the OS/architecture combination for this distribution.
-	OSArch osarch.OSArch
+	// OSArchs specifies the OS/architecture combinations for this distribution.
+	OSArchs []osarch.OSArch
 }
 
 func (i *OSArchsBinDistInfo) Type() DistInfoType {

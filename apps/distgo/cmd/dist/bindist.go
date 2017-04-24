@@ -65,8 +65,12 @@ $CMD "$@"
 
 type binDister params.BinDistInfo
 
-func (b *binDister) ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec) string {
-	return fmt.Sprintf("%v-%v.tgz", buildSpec.ProductName, buildSpec.ProductVersion)
+func (b *binDister) NumArtifacts() int {
+	return 1
+}
+
+func (b *binDister) ArtifactPathsInOutputDir(buildSpec params.ProductBuildSpec) []string {
+	return []string{fmt.Sprintf("%v-%v.tgz", buildSpec.ProductName, buildSpec.ProductVersion)}
 }
 
 func (b *binDister) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (Packager, error) {
@@ -103,7 +107,9 @@ func (b *binDister) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, dist
 		}
 	}
 
-	return tgzPackager(buildSpec, distCfg, outputProductDir), nil
+	// known to only have 1 output path
+	dstPath := FullArtifactsPaths(b, buildSpec, distCfg)[0]
+	return singlePathTGZPackager(dstPath, outputProductDir), nil
 }
 
 func (b *binDister) DistPackageType() string {

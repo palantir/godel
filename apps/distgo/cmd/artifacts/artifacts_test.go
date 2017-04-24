@@ -286,6 +286,70 @@ func TestDistArtifacts(t *testing.T) {
 				"bar": {"bar-unspecified.sls.tgz"},
 			},
 		},
+		{
+			specs: func(projectDir string) []params.ProductBuildSpecWithDeps {
+				return []params.ProductBuildSpecWithDeps{
+					createSpecWithDists(projectDir, "foo", "0.1.0", nil, params.Dist{Info: &params.SLSDistInfo{}}, params.Dist{Info: &params.BinDistInfo{}}),
+				}
+			},
+			want: map[string][]string{
+				"foo": {
+					"foo-0.1.0.sls.tgz",
+					"foo-0.1.0.tgz",
+				},
+			},
+		},
+		{
+			specs: func(projectDir string) []params.ProductBuildSpecWithDeps {
+				return []params.ProductBuildSpecWithDeps{
+					createSpecWithDists(projectDir, "foo", "0.1.0", nil, params.Dist{Info: &params.OSArchsBinDistInfo{
+						OSArchs: []osarch.OSArch{
+							{
+								OS:   "darwin",
+								Arch: "amd64",
+							},
+						},
+					}}, params.Dist{Info: &params.OSArchsBinDistInfo{
+						OSArchs: []osarch.OSArch{
+							{
+								OS:   "linux",
+								Arch: "amd64",
+							},
+						},
+					}}),
+				}
+			},
+			want: map[string][]string{
+				"foo": {
+					"foo-0.1.0-darwin-amd64.tgz",
+					"foo-0.1.0-linux-amd64.tgz",
+				},
+			},
+		},
+		{
+			specs: func(projectDir string) []params.ProductBuildSpecWithDeps {
+				return []params.ProductBuildSpecWithDeps{
+					createSpec(projectDir, "foo", "0.1.0", nil, &params.OSArchsBinDistInfo{
+						OSArchs: []osarch.OSArch{
+							{
+								OS:   "darwin",
+								Arch: "amd64",
+							},
+							{
+								OS:   "linux",
+								Arch: "amd64",
+							},
+						},
+					}),
+				}
+			},
+			want: map[string][]string{
+				"foo": {
+					"foo-0.1.0-darwin-amd64.tgz",
+					"foo-0.1.0-linux-amd64.tgz",
+				},
+			},
+		},
 	} {
 		currProjectDir, err := ioutil.TempDir(tmpDir, "")
 		require.NoError(t, err)
@@ -314,6 +378,10 @@ func toAbs(input map[string][]string, baseDir string) map[string][]string {
 }
 
 func createSpec(projectDir, productName, productVersion string, osArchs []osarch.OSArch, distInfo params.DistInfo) params.ProductBuildSpecWithDeps {
+	return createSpecWithDists(projectDir, productName, productVersion, osArchs, params.Dist{Info: distInfo})
+}
+
+func createSpecWithDists(projectDir, productName, productVersion string, osArchs []osarch.OSArch, dists ...params.Dist) params.ProductBuildSpecWithDeps {
 	return params.ProductBuildSpecWithDeps{
 		Spec: params.ProductBuildSpec{
 			Product: params.Product{
@@ -321,9 +389,7 @@ func createSpec(projectDir, productName, productVersion string, osArchs []osarch
 					OutputDir: "build",
 					OSArchs:   osArchs,
 				},
-				Dist: []params.Dist{{
-					Info: distInfo,
-				}},
+				Dist: dists,
 			},
 			ProjectDir:     projectDir,
 			ProductName:    productName,
@@ -332,13 +398,13 @@ func createSpec(projectDir, productName, productVersion string, osArchs []osarch
 	}
 }
 
-func toMap(input map[string]artifacts.OrderedStringMap) map[string][]string {
+func toMap(input map[string]artifacts.OrderedStringSliceMap) map[string][]string {
 	output := make(map[string][]string, len(input))
 	for product, m := range input {
 		keys := m.Keys()
-		values := make([]string, len(keys))
-		for i, k := range keys {
-			values[i] = m.Get(k)
+		var values []string
+		for _, k := range keys {
+			values = append(values, m.Get(k)...)
 		}
 		output[product] = values
 	}

@@ -32,12 +32,16 @@ const defaultRPMRelease = "1"
 
 type rpmDister params.RPMDistInfo
 
-func (r *rpmDister) ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec) string {
+func (r *rpmDister) NumArtifacts() int {
+	return 1
+}
+
+func (r *rpmDister) ArtifactPathsInOutputDir(buildSpec params.ProductBuildSpec) []string {
 	release := defaultRPMRelease
 	if r.Release != "" {
 		release = r.Release
 	}
-	return fmt.Sprintf("%v-%v-%v.x86_64.rpm", buildSpec.ProductName, buildSpec.ProductVersion, release)
+	return []string{fmt.Sprintf("%v-%v-%v.x86_64.rpm", buildSpec.ProductName, buildSpec.ProductVersion, release)}
 }
 
 func (r *rpmDister) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (p Packager, rErr error) {
@@ -77,7 +81,7 @@ func (r *rpmDister) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, dist
 		"-n", buildSpec.ProductName,
 		"-v", buildSpec.ProductVersion,
 		"--iteration", release,
-		"-p", FullArtifactPath(ToDister(distCfg.Info), buildSpec, distCfg),
+		"-p", FullArtifactsPaths(r, buildSpec, distCfg)[0],
 		"-s", "dir",
 		"-C", outputProductDir,
 		"--rpm-os", "linux",

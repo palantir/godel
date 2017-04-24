@@ -1048,7 +1048,9 @@ daemon: true
 						},
 						Dist: []params.Dist{{
 							Info: &params.OSArchsBinDistInfo{
-								OSArch: osarch.Current(),
+								OSArchs: []osarch.OSArch{
+									osarch.Current(),
+								},
 							},
 						}},
 					},
@@ -1093,9 +1095,11 @@ daemon: true
 						},
 						Dist: []params.Dist{{
 							Info: &params.OSArchsBinDistInfo{
-								OSArch: osarch.OSArch{
-									OS:   "darwin",
-									Arch: "amd64",
+								OSArchs: []osarch.OSArch{
+									{
+										OS:   "darwin",
+										Arch: "amd64",
+									},
 								},
 							},
 						}},

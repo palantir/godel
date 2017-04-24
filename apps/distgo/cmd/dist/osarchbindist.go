@@ -31,35 +31,55 @@ import (
 
 type osArchsBinDister params.OSArchsBinDistInfo
 
-func (o *osArchsBinDister) ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec) string {
-	return fmt.Sprintf("%s-%s-%s.tgz", buildSpec.ProductName, buildSpec.ProductVersion, o.OSArch.String())
+func (o *osArchsBinDister) NumArtifacts() int {
+	return 1
+}
+
+func (o *osArchsBinDister) ArtifactPathsInOutputDir(buildSpec params.ProductBuildSpec) []string {
+	var outPaths []string
+	for _, osArch := range o.OSArchs {
+		outPaths = append(outPaths, fmt.Sprintf("%s-%s-%s.tgz", buildSpec.ProductName, buildSpec.ProductVersion, osArch.String()))
+	}
+	return outPaths
 }
 
 func (o *osArchsBinDister) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (Packager, error) {
 	buildSpec := buildSpecWithDeps.Spec
-	osArch := o.OSArch
-	if err := verifyDistTargetSupported(osArch, buildSpecWithDeps); err != nil {
-		return nil, err
+	for _, osArch := range o.OSArchs {
+		if err := verifyDistTargetSupported(osArch, buildSpecWithDeps); err != nil {
+			return nil, err
+		}
 	}
 
-	var outputPaths []string
-	// copy executable for current product
-	dst, err := copyArtifactForOSArch(outputProductDir, buildSpec, osArch)
-	if err != nil {
-		return nil, err
-	}
-	outputPaths = append(outputPaths, dst)
+	// each index holds all of the files required for the OS/Arch at the corresponding index
+	outputPathsForOSArchs := make([][]string, len(o.OSArchs))
 
-	// copy executables for dependent products
-	for _, currDepSpec := range buildSpecWithDeps.Deps {
-		dst, err := copyArtifactForOSArch(outputProductDir, currDepSpec, osArch)
+	for i, osArch := range o.OSArchs {
+		// copy executable for current product
+		dst, err := copyArtifactForOSArch(outputProductDir, buildSpec, osArch)
 		if err != nil {
 			return nil, err
 		}
-		outputPaths = append(outputPaths, dst)
+		outputPathsForOSArchs[i] = append(outputPathsForOSArchs[i], dst)
 	}
 
-	return tgzPackager(buildSpec, distCfg, outputPaths...), nil
+	for i, osArch := range o.OSArchs {
+		// copy executables for dependent products
+		for _, currDepSpec := range buildSpecWithDeps.Deps {
+			dst, err := copyArtifactForOSArch(outputProductDir, currDepSpec, osArch)
+			if err != nil {
+				return nil, err
+			}
+			outputPathsForOSArchs[i] = append(outputPathsForOSArchs[i], dst)
+		}
+	}
+
+	outputArtifactPaths := FullArtifactsPaths(o, buildSpec, distCfg)
+	artifactToInputPaths := make(map[string][]string)
+	for i, currPaths := range outputPathsForOSArchs {
+		artifactToInputPaths[outputArtifactPaths[i]] = currPaths
+	}
+	return tgzPackager(outputArtifactPaths, artifactToInputPaths), nil
 }
 
 func (o *osArchsBinDister) DistPackageType() string {

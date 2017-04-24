@@ -183,8 +183,8 @@ type BinDist struct {
 }
 
 type OSArchBinDist struct {
-	// OSArch specifies the OS/architecture combination for this distribution.
-	OSArch *osarch.OSArch `yaml:"os-arch" json:"os-arch"`
+	// OSArchs specifies the OS/architecture combinations for this distribution.
+	OSArchs []osarch.OSArch `yaml:"os-archs" json:"os-archs"`
 }
 
 type SLSDist struct {
@@ -405,7 +405,7 @@ func (cfg *DistInfo) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		if err := unmarshal(&rawOSArchBin); err != nil {
 			return err
 		}
-		if rawOSArchBin.Info.OSArch == nil {
+		if rawOSArchBin.Info.OSArchs == nil {
 			return errors.New("os-arch must be specified in configuration")
 		}
 		rawDistInfoConfig.Info = rawOSArchBin.Info
@@ -453,7 +453,7 @@ func (cfg *DistInfo) ToParam() (params.DistInfo, error) {
 			val := OSArchBinDist{}
 			decodeErr = mapstructure.Decode(cfg.Info, &val)
 			distInfo = &params.OSArchsBinDistInfo{
-				OSArch: *val.OSArch,
+				OSArchs: val.OSArchs,
 			}
 		case params.RPMDistType:
 			val := RPMDist{}
@@ -499,7 +499,7 @@ func (cfg *BinDist) ToParams() params.BinDistInfo {
 
 func (cfg *OSArchBinDist) ToParams() params.OSArchsBinDistInfo {
 	return params.OSArchsBinDistInfo{
-		OSArch: *cfg.OSArch,
+		OSArchs: cfg.OSArchs,
 	}
 }
 

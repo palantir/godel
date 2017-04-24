@@ -30,25 +30,29 @@ type LocalPublishInfo struct {
 	Path string
 }
 
-func (l LocalPublishInfo) Publish(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) (string, error) {
+func (l LocalPublishInfo) Publish(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) ([]string, error) {
 	productPath := path.Join(l.Path, paths.productPath)
 	if err := os.MkdirAll(productPath, 0755); err != nil {
-		return "", errors.Wrapf(err, "Failed to create path to %v", productPath)
+		return nil, errors.Wrapf(err, "Failed to create path to %v", productPath)
 	}
 
-	if err := copyArtifact(paths.pomFilePath, productPath, stdout); err != nil {
-		return "", errors.Wrapf(err, "Failed to copy POM file")
+	if _, err := copyArtifact(paths.pomFilePath, productPath, stdout); err != nil {
+		return nil, errors.Wrapf(err, "Failed to copy POM file")
 	}
 
-	if err := copyArtifact(paths.artifactPath, productPath, stdout); err != nil {
-		return "", errors.Wrapf(err, "Failed to copy artifact file")
+	var outputPaths []string
+	for _, currArtifactPath := range paths.artifactPaths {
+		outputPath, err := copyArtifact(currArtifactPath, productPath, stdout)
+		if err != nil {
+			return outputPaths, errors.Wrapf(err, "Failed to copy artifact file")
+		}
+		outputPaths = append(outputPaths, outputPath)
 	}
-
-	return "", nil
+	return outputPaths, nil
 }
 
-func copyArtifact(src, dstDir string, stdout io.Writer) error {
+func copyArtifact(src, dstDir string, stdout io.Writer) (string, error) {
 	dst := path.Join(dstDir, path.Base(src))
 	fmt.Fprintf(stdout, "Copying %v to %v\n", src, dst)
-	return shutil.CopyFile(src, dst, false)
+	return dst, shutil.CopyFile(src, dst, false)
 }

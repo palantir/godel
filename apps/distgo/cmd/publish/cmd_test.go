@@ -376,7 +376,7 @@ group-id: com.palantir.distgo-cmd-test`,
 		productToArtifact := make(map[string]string)
 		for k, v := range artifacts {
 			require.Equal(t, 1, len(v.Keys()))
-			productToArtifact[k] = v.Get(v.Keys()[0])
+			productToArtifact[k] = v.Get(v.Keys()[0])[0]
 		}
 
 		handlerFunc = currCase.handler(productToArtifact)

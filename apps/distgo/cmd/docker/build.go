@@ -115,19 +115,21 @@ func buildImage(image params.DockerImage, buildSpecsWithDeps params.ProductBuild
 					depType, depProduct, buildSpecsWithDeps.Spec.ProductName)
 			}
 			distCfg := distsMap[string(depType)]
-			artifactLocation := dist.FullArtifactPath(dist.ToDister(distCfg.Info), depSpec, distCfg)
-			if targetFile == "" {
-				targetFile = path.Base(artifactLocation)
-			}
-			target := path.Join(contextDir, targetFile)
-			if _, err := os.Stat(target); err == nil {
-				// ensure the target does not exists before creating a new one
-				if err := os.Remove(target); err != nil {
+
+			for _, artifactLocation := range dist.FullArtifactsPaths(dist.ToDister(distCfg.Info), depSpec, distCfg) {
+				if targetFile == "" {
+					targetFile = path.Base(artifactLocation)
+				}
+				target := path.Join(contextDir, targetFile)
+				if _, err := os.Stat(target); err == nil {
+					// ensure the target does not exists before creating a new one
+					if err := os.Remove(target); err != nil {
+						return err
+					}
+				}
+				if err := os.Link(artifactLocation, target); err != nil {
 					return err
 				}
-			}
-			if err := os.Link(artifactLocation, target); err != nil {
-				return err
 			}
 		}
 	}
