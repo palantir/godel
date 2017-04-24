@@ -34,7 +34,7 @@ type ArtifactoryConnectionInfo struct {
 	Repository string
 }
 
-func (a ArtifactoryConnectionInfo) Publish(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) (rURL string, rErr error) {
+func (a ArtifactoryConnectionInfo) Publish(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) (rURLs []string, rErr error) {
 	artifactoryURL := strings.Join([]string{a.URL, "artifactory"}, "/")
 	baseURL := strings.Join([]string{artifactoryURL, a.Repository, paths.productPath}, "/")
 
@@ -76,9 +76,9 @@ func (a ArtifactoryConnectionInfo) Publish(buildSpec params.ProductBuildSpec, pa
 		return false
 	}
 
-	artifactURL, err := a.uploadArtifacts(baseURL, paths, artifactExists, stdout)
+	artifactURLs, err := a.uploadArtifacts(baseURL, paths, artifactExists, stdout)
 	if err != nil {
-		return artifactURL, err
+		return artifactURLs, err
 	}
 
 	// compute SHA-256 checksums for artifacts
@@ -86,13 +86,15 @@ func (a ArtifactoryConnectionInfo) Publish(buildSpec params.ProductBuildSpec, pa
 		// if triggering checksum computation fails, print message but don't throw error
 		fmt.Fprintln(stdout, "Uploading artifacts succeeded, but failed to trigger computation of SHA-256 checksums:", err)
 	}
-	return artifactURL, err
+	return artifactURLs, err
 }
 
 func computeArtifactChecksums(artifactoryURL, repoKey, username, password string, paths ProductPaths, stdout io.Writer) error {
-	artifactURL := strings.Join([]string{paths.productPath, path.Base(paths.artifactPath)}, "/")
-	if err := artifactorySetSHA256Checksum(artifactoryURL, repoKey, artifactURL, username, password, stdout); err != nil {
-		return errors.Wrapf(err, "")
+	for _, currArtifactPath := range paths.artifactPaths {
+		currArtifactURL := strings.Join([]string{paths.productPath, path.Base(currArtifactPath)}, "/")
+		if err := artifactorySetSHA256Checksum(artifactoryURL, repoKey, currArtifactURL, username, password, stdout); err != nil {
+			return errors.Wrapf(err, "")
+		}
 	}
 	pomPath := strings.Join([]string{paths.productPath, path.Base(paths.pomFilePath)}, "/")
 	if err := artifactorySetSHA256Checksum(artifactoryURL, repoKey, pomPath, username, password, stdout); err != nil {

@@ -190,9 +190,13 @@ esac
 
 type slsDister params.SLSDistInfo
 
-func (s *slsDister) ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec) string {
+func (s *slsDister) NumArtifacts() int {
+	return 1
+}
+
+func (s *slsDister) ArtifactPathsInOutputDir(buildSpec params.ProductBuildSpec) []string {
 	values := slsspec.TemplateValues(buildSpec.ProductName, buildSpec.ProductVersion)
-	return slsspec.New().RootDirName(values) + ".sls.tgz"
+	return []string{slsspec.New().RootDirName(values) + ".sls.tgz"}
 }
 
 func (s *slsDister) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (Packager, error) {
@@ -228,7 +232,9 @@ func (s *slsDister) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, dist
 		if err := slsspec.Validate(outputProductDir, values, s.YMLValidationExclude); err != nil {
 			return errors.Wrapf(err, "distribution directory failed SLS validation")
 		}
-		if err := tgzPackager(buildSpec, distCfg, outputProductDir).Package(); err != nil {
+
+		dstArtifactPath := FullArtifactsPaths(s, buildSpec, distCfg)[0]
+		if err := singlePathTGZPackager(dstArtifactPath, outputProductDir).Package(); err != nil {
 			return err
 		}
 		return nil

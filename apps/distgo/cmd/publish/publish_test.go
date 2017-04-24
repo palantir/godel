@@ -131,7 +131,7 @@ func TestPublishLocal(t *testing.T) {
 			},
 		},
 		{
-			name: "local publish for OSArch-bin product includes classifier in POM",
+			name: "local publish for OSArch-bin product",
 			buildSpec: func(projectDir string) params.ProductBuildSpecWithDeps {
 				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(projectDir, "publish-test-service", git.ProjectInfo{
 					Version:  "0.0.1",
@@ -149,9 +149,11 @@ func TestPublishLocal(t *testing.T) {
 					},
 					Dist: []params.Dist{{
 						Info: &params.OSArchsBinDistInfo{
-							OSArch: osarch.OSArch{
-								OS:   "darwin",
-								Arch: "amd64",
+							OSArchs: []osarch.OSArch{
+								{
+									OS:   "darwin",
+									Arch: "amd64",
+								},
 							},
 						},
 					}},
@@ -201,16 +203,79 @@ func TestPublishLocal(t *testing.T) {
 					},
 					Dist: []params.Dist{{
 						Info: &params.OSArchsBinDistInfo{
-							OSArch: osarch.OSArch{
-								OS:   "darwin",
-								Arch: "amd64",
+							OSArchs: []osarch.OSArch{
+								{
+									OS:   "darwin",
+									Arch: "amd64",
+								},
 							},
 						},
 					}, {
 						Info: &params.OSArchsBinDistInfo{
-							OSArch: osarch.OSArch{
+							OSArchs: []osarch.OSArch{
+								{
+									OS:   "linux",
+									Arch: "amd64",
+								},
+							},
+						},
+					}},
+					Publish: params.Publish{
+						GroupID: "com.palantir.distgo-publish-test",
+					},
+				}, params.Project{}), nil)
+				require.NoError(t, err)
+				return specWithDeps
+			},
+			wantPaths: []string{
+				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1.pom",
+				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1-darwin-amd64.tgz",
+				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1-linux-amd64.tgz",
+			},
+			wantContent: map[string]string{
+				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1.pom": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+					"<project xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\" xmlns=\"http://maven.apache.org/POM/4.0.0\"\n" +
+					"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
+					"<modelVersion>4.0.0</modelVersion>\n" +
+					"<groupId>com.palantir.distgo-publish-test</groupId>\n" +
+					"<artifactId>publish-test-service</artifactId>\n" +
+					"<version>0.0.1</version>\n" +
+					"<packaging>tgz</packaging>\n" +
+					"</project>\n",
+			},
+		},
+		{
+			name: "local publish for OSArch-bin product with dist with multiple OS/Archs creates multiple artifacts but single POM",
+			buildSpec: func(projectDir string) params.ProductBuildSpecWithDeps {
+				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(projectDir, "publish-test-service", git.ProjectInfo{
+					Version:  "0.0.1",
+					Branch:   "0.0.1",
+					Revision: "0",
+				}, params.Product{
+					Build: params.Build{
+						MainPkg: "./.",
+						OSArchs: []osarch.OSArch{
+							{
+								OS:   "darwin",
+								Arch: "amd64",
+							},
+							{
 								OS:   "linux",
 								Arch: "amd64",
+							},
+						},
+					},
+					Dist: []params.Dist{{
+						Info: &params.OSArchsBinDistInfo{
+							OSArchs: []osarch.OSArch{
+								{
+									OS:   "darwin",
+									Arch: "amd64",
+								},
+								{
+									OS:   "linux",
+									Arch: "amd64",
+								},
 							},
 						},
 					}},

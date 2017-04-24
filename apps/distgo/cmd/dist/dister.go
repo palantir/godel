@@ -25,7 +25,8 @@ import (
 )
 
 type Dister interface {
-	ArtifactPathInOutputDir(buildSpec params.ProductBuildSpec) string
+	NumArtifacts() int
+	ArtifactPathsInOutputDir(buildSpec params.ProductBuildSpec) []string
 	Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (Packager, error)
 	DistPackageType() string
 }
@@ -45,6 +46,10 @@ func ToDister(info params.DistInfo) Dister {
 	}
 }
 
-func FullArtifactPath(dister Dister, buildSpec params.ProductBuildSpec, distCfg params.Dist) string {
-	return path.Join(buildSpec.ProjectDir, distCfg.OutputDir, dister.ArtifactPathInOutputDir(buildSpec))
+func FullArtifactsPaths(dister Dister, buildSpec params.ProductBuildSpec, distCfg params.Dist) []string {
+	var outPaths []string
+	for _, currPath := range dister.ArtifactPathsInOutputDir(buildSpec) {
+		outPaths = append(outPaths, path.Join(buildSpec.ProjectDir, distCfg.OutputDir, currPath))
+	}
+	return outPaths
 }

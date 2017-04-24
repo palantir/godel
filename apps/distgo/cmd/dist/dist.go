@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/nmiyake/archiver"
 	"github.com/palantir/pkg/specdir"
@@ -53,9 +54,9 @@ func Products(products []string, cfg params.Project, forceBuild bool, wd string,
 	}, cfg, products, wd, stdout)
 }
 
-// Run produces a directory and artifact (tgz or rpm) for the specified product using the specified build specification.
-// The binaries for the distribution must already exist in the expected locations. The distribution directory and
-// artifact are written to the directory specified by "buildSpecWithDeps.Spec.DistCfgs.*.OutputDir".
+// Run produces a directory and artifacts (such as a .tgz or .rpm) for the specified product using the specified build
+// specification. The binaries for the distribution must already exist in the expected locations. The distribution
+// directory and artifact are written to the directory specified by "buildSpecWithDeps.Spec.DistCfgs.*.OutputDir".
 func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) error {
 	// verify that required build outputs exist
 	missingBinaries := build.RequiresBuild(buildSpecWithDeps, nil).Specs()
@@ -81,8 +82,8 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 		}
 
 		outputDir := path.Join(buildSpec.ProjectDir, currDistCfg.OutputDir)
-		artifactPath := FullArtifactPath(ToDister(currDistCfg.Info), buildSpec, currDistCfg)
-		fmt.Fprintf(stdout, "Creating distribution for %v at %v\n", buildSpec.ProductName, artifactPath)
+		artifactPaths := FullArtifactsPaths(ToDister(currDistCfg.Info), buildSpec, currDistCfg)
+		fmt.Fprintf(stdout, "Creating distribution for %s at %v\n", buildSpec.ProductName, strings.Join(artifactPaths, ", "))
 
 		spec := slsspec.New()
 		values := slsspec.TemplateValues(buildSpec.ProductName, buildSpec.ProductVersion)
@@ -152,9 +153,20 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, stdout io.Writer) er
 	return nil
 }
 
-func tgzPackager(buildSpec params.ProductBuildSpec, distCfg params.Dist, pathsToPackage ...string) packager {
+func singlePathTGZPackager(dstArtifactPath, pathToPackage string) packager {
+	return tgzPackager([]string{dstArtifactPath}, map[string][]string{
+		dstArtifactPath: {pathToPackage},
+	})
+}
+
+func tgzPackager(dstArtifactPaths []string, dstToContentPaths map[string][]string) packager {
 	return packager(func() error {
-		return archiver.TarGz(FullArtifactPath(ToDister(distCfg.Info), buildSpec, distCfg), pathsToPackage)
+		for _, currDstPath := range dstArtifactPaths {
+			if err := archiver.TarGz(currDstPath, dstToContentPaths[currDstPath]); err != nil {
+				return err
+			}
+		}
+		return nil
 	})
 }
 

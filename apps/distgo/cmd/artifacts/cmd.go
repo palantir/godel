@@ -84,11 +84,12 @@ func artifactsCommand(name, usage string, action artifactsAction) cli.Command {
 			for _, spec := range specs {
 				if v, ok := artifacts[spec.Spec.ProductName]; ok {
 					for _, k := range v.Keys() {
-						ctx.Println(v.Get(k))
+						for _, currPath := range v.Get(k) {
+							ctx.Println(currPath)
+						}
 					}
 				}
 			}
-
 			return nil
 		},
 	}
@@ -102,9 +103,9 @@ func buildArtifactsCommand(name, usage string) cli.Command {
 	return buildCmd
 }
 
-type artifactsAction func(ctx cli.Context, specs []params.ProductBuildSpecWithDeps, absPath bool) (map[string]OrderedStringMap, error)
+type artifactsAction func(ctx cli.Context, specs []params.ProductBuildSpecWithDeps, absPath bool) (map[string]OrderedStringSliceMap, error)
 
-func buildArtifactsAction(ctx cli.Context, specs []params.ProductBuildSpecWithDeps, absPath bool) (map[string]OrderedStringMap, error) {
+func buildArtifactsAction(ctx cli.Context, specs []params.ProductBuildSpecWithDeps, absPath bool) (map[string]OrderedStringSliceMap, error) {
 	osArchsFilter, err := cmd.NewOSArchFilter(ctx.String(cmd.OSArchFlagName))
 	if err != nil {
 		return nil, err
@@ -116,6 +117,6 @@ func buildArtifactsAction(ctx cli.Context, specs []params.ProductBuildSpecWithDe
 	})
 }
 
-func distArtifactsAction(ctx cli.Context, specs []params.ProductBuildSpecWithDeps, absPath bool) (map[string]OrderedStringMap, error) {
+func distArtifactsAction(ctx cli.Context, specs []params.ProductBuildSpecWithDeps, absPath bool) (map[string]OrderedStringSliceMap, error) {
 	return DistArtifacts(specs, absPath)
 }
