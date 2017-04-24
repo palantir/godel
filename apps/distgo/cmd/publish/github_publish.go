@@ -23,11 +23,9 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"reflect"
-	"strings"
 
 	"github.com/google/go-github/github"
-	"github.com/google/go-querystring/query"
+	"github.com/jtacoma/uritemplates"
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 	"gopkg.in/cheggaaa/pb.v1"
@@ -36,10 +34,9 @@ import (
 )
 
 type GitHubConnectionInfo struct {
-	APIURL    string
-	UploadURL string
-	User      string
-	Token     string
+	APIURL string
+	User   string
+	Token  string
 
 	Owner      string
 	Repository string
@@ -56,18 +53,6 @@ func (g *GitHubConnectionInfo) Publish(buildSpec params.ProductBuildSpec, paths 
 		return nil, errors.Wrapf(err, "failed to parse %s as URL for API calls", g.APIURL)
 	}
 	client.BaseURL = apiURL
-
-	if g.UploadURL == "" {
-		// if upload URL is not specified, derive from API URL
-		g.UploadURL = strings.Replace(g.APIURL, "api.", "uploads.", 1)
-	}
-
-	// set upload URL (should be of the form "https://uploads.github.com/")
-	uploadURL, err := url.Parse(g.UploadURL)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse %s as URL for upload calls", g.APIURL)
-	}
-	client.UploadURL = uploadURL
 
 	if g.Owner == "" {
 		g.Owner = g.User
@@ -102,28 +87,42 @@ func (g *GitHubConnectionInfo) Publish(buildSpec params.ProductBuildSpec, paths 
 }
 
 func (g *GitHubConnectionInfo) uploadFileAtPath(client *github.Client, release *github.RepositoryRelease, filePath string, stdout io.Writer) (string, error) {
+	uploadURI, err := uploadURIForProduct(release.GetUploadURL(), path.Base(filePath))
+	if err != nil {
+		return "", err
+	}
+
 	f, err := os.Open(filePath)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to open artifact %s for upload", filePath)
 	}
-	uploadRes, _, err := githubUploadReleaseAssetWithProgress(context.Background(), client, g.Owner, g.Repository, release.GetID(), &github.UploadOptions{
-		Name: path.Base(filePath),
-	}, f, stdout)
+	uploadRes, _, err := githubUploadReleaseAssetWithProgress(context.Background(), client, uploadURI, f, stdout)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to upload artifact %s", filePath)
 	}
 	return uploadRes.GetBrowserDownloadURL(), nil
 }
 
-// the following comes from github.Repositories.UploadReleaseAsset. Implementation is copied so that support for upload
-// progress can be added.
-func githubUploadReleaseAssetWithProgress(ctx context.Context, client *github.Client, owner, repo string, id int, opt *github.UploadOptions, file *os.File, stdout io.Writer) (*github.ReleaseAsset, *github.Response, error) {
-	u := fmt.Sprintf("repos/%s/%s/releases/%d/assets", owner, repo, id)
-	u, err := githubAddOptions(u, opt)
-	if err != nil {
-		return nil, nil, err
-	}
+// uploadURIForProduct returns an asset upload URI using the provided upload template from the release creation
+// response. See https://developer.github.com/v3/repos/releases/#response for the specifics of the API.
+func uploadURIForProduct(githubUploadURLTemplate, name string) (string, error) {
+	const nameTemplate = "name"
 
+	t, err := uritemplates.Parse(githubUploadURLTemplate)
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to parse upload URI template %q", githubUploadURLTemplate)
+	}
+	uploadURI, err := t.Expand(map[string]interface{}{
+		nameTemplate: name,
+	})
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to expand URI template %q with %q = %q", githubUploadURLTemplate, nameTemplate, name)
+	}
+	return uploadURI, nil
+}
+
+// Based on github.Repositories.UploadReleaseAsset. Adds support for progress reporting.
+func githubUploadReleaseAssetWithProgress(ctx context.Context, client *github.Client, uploadURI string, file *os.File, stdout io.Writer) (*github.ReleaseAsset, *github.Response, error) {
 	stat, err := file.Stat()
 	if err != nil {
 		return nil, nil, err
@@ -132,18 +131,16 @@ func githubUploadReleaseAssetWithProgress(ctx context.Context, client *github.Cl
 		return nil, nil, errors.New("the asset to upload can't be a directory")
 	}
 
-	// new code for progress
-	fmt.Fprintf(stdout, "Uploading %s to %s\n", file.Name(), client.UploadURL.String()+u)
+	fmt.Fprintf(stdout, "Uploading %s to %s\n", file.Name(), uploadURI)
 	bar := pb.New(int(stat.Size())).SetUnits(pb.U_BYTES)
 	bar.Output = stdout
 	bar.SetMaxWidth(120)
 	bar.Start()
 	defer bar.Finish()
 	reader := bar.NewProxyReader(file)
-	// done
 
 	mediaType := mime.TypeByExtension(filepath.Ext(file.Name()))
-	req, err := client.NewUploadRequest(u, reader, stat.Size(), mediaType)
+	req, err := client.NewUploadRequest(uploadURI, reader, stat.Size(), mediaType)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -154,27 +151,4 @@ func githubUploadReleaseAssetWithProgress(ctx context.Context, client *github.Cl
 		return nil, resp, err
 	}
 	return asset, resp, nil
-}
-
-// Taken from the github package.
-// addOptions adds the parameters in opt as URL query parameters to s. opt
-// must be a struct whose fields may contain "url" tags.
-func githubAddOptions(s string, opt interface{}) (string, error) {
-	v := reflect.ValueOf(opt)
-	if v.Kind() == reflect.Ptr && v.IsNil() {
-		return s, nil
-	}
-
-	u, err := url.Parse(s)
-	if err != nil {
-		return s, err
-	}
-
-	qs, err := query.Values(opt)
-	if err != nil {
-		return s, err
-	}
-
-	u.RawQuery = qs.Encode()
-	return u.String(), nil
 }

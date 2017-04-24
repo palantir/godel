@@ -35,21 +35,20 @@ import (
 )
 
 const (
-	urlFlagName             = "url"
-	userFlagName            = "user"
-	passwordFlagName        = "password"
-	almanacURLFlagName      = "almanac-url"
-	almanacIDFlagName       = "almanac-id"
-	almanacSecretFlagName   = "almanac-secret"
-	almanacReleaseFlagName  = "almanac-release"
-	repositoryFlagName      = "repository"
-	subjectFlagName         = "subject"
-	publishFlagName         = "publish"
-	downloadsListFlagName   = "downloads-list"
-	pathFlagName            = "path"
-	failFastFlagName        = "fail-fast"
-	gitHubOwnerFlagName     = "owner"
-	gitHubUploadURLFlagName = "github-upload-url"
+	urlFlagName            = "url"
+	userFlagName           = "user"
+	passwordFlagName       = "password"
+	almanacURLFlagName     = "almanac-url"
+	almanacIDFlagName      = "almanac-id"
+	almanacSecretFlagName  = "almanac-secret"
+	almanacReleaseFlagName = "almanac-release"
+	repositoryFlagName     = "repository"
+	subjectFlagName        = "subject"
+	publishFlagName        = "publish"
+	downloadsListFlagName  = "downloads-list"
+	pathFlagName           = "path"
+	failFastFlagName       = "fail-fast"
+	gitHubOwnerFlagName    = "owner"
 )
 
 var (
@@ -213,17 +212,12 @@ var (
 				Name:  gitHubOwnerFlagName,
 				Usage: "GitHub owner of the destination repository for the publish (if unspecified, user will be used)",
 			},
-			flag.StringFlag{
-				Name:  gitHubUploadURLFlagName,
-				Usage: "Upload URL for GitHub of the form 'https://uploads.github.com/' (if unspecified, will be ineferred from URL argument)",
-			},
 		),
 		publisher: func(ctx cli.Context) Publisher {
 			return &GitHubConnectionInfo{
 				APIURL:     basicRemoteInfo(ctx).URL,
 				User:       basicRemoteInfo(ctx).Username,
 				Token:      basicRemoteInfo(ctx).Password,
-				UploadURL:  ctx.String(gitHubUploadURLFlagName),
 				Owner:      ctx.String(gitHubOwnerFlagName),
 				Repository: ctx.String(repositoryFlagName),
 			}
