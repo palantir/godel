@@ -154,7 +154,7 @@ group-id: com.palantir.distgo-cmd-test`,
 		err = os.Chdir(currTmp)
 		require.NoError(t, err)
 
-		p := ArtifactoryConnectionInfo{
+		p := &ArtifactoryConnectionInfo{
 			BasicConnectionInfo: BasicConnectionInfo{
 				URL:      ts.URL,
 				Username: "username",
@@ -381,7 +381,7 @@ group-id: com.palantir.distgo-cmd-test`,
 
 		handlerFunc = currCase.handler(productToArtifact)
 
-		p := ArtifactoryConnectionInfo{
+		p := &ArtifactoryConnectionInfo{
 			BasicConnectionInfo: BasicConnectionInfo{
 				URL:      ts.URL,
 				Username: "username",
@@ -548,7 +548,7 @@ group-id: com.palantir.distgo-cmd-test`,
 
 		handlerFunc = currCase.handler
 
-		p := ArtifactoryConnectionInfo{
+		p := &ArtifactoryConnectionInfo{
 			BasicConnectionInfo: BasicConnectionInfo{
 				URL:      ts.URL,
 				Username: "username",

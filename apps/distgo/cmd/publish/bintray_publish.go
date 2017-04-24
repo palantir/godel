@@ -36,7 +36,7 @@ type BintrayConnectionInfo struct {
 	DownloadsList bool
 }
 
-func (b BintrayConnectionInfo) Publish(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) ([]string, error) {
+func (b *BintrayConnectionInfo) Publish(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) ([]string, error) {
 	baseURL := strings.Join([]string{b.URL, "content", b.Subject, b.Repository, buildSpec.ProductName, buildSpec.ProductVersion, paths.productPath}, "/")
 	artifactURLs, err := b.uploadArtifacts(baseURL, paths, nil, stdout)
 	if err != nil {
@@ -55,12 +55,12 @@ func (b BintrayConnectionInfo) Publish(buildSpec params.ProductBuildSpec, paths 
 	return artifactURLs, err
 }
 
-func (b BintrayConnectionInfo) release(buildSpec params.ProductBuildSpec, stdout io.Writer) error {
+func (b *BintrayConnectionInfo) release(buildSpec params.ProductBuildSpec, stdout io.Writer) error {
 	publishURLString := strings.Join([]string{b.URL, "content", b.Subject, b.Repository, buildSpec.ProductName, buildSpec.ProductVersion, "publish"}, "/")
 	return b.runBintrayCommand(publishURLString, http.MethodPost, `{"publish_wait_for_secs":-1}`, "running Bintray publish for uploaded artifacts", stdout)
 }
 
-func (b BintrayConnectionInfo) addToDownloadsList(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) error {
+func (b *BintrayConnectionInfo) addToDownloadsList(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) error {
 	for _, currArtifactPath := range paths.artifactPaths {
 		downloadsListURLString := strings.Join([]string{b.URL, "file_metadata", b.Subject, b.Repository, paths.productPath, path.Base(currArtifactPath)}, "/")
 		if err := b.runBintrayCommand(downloadsListURLString, http.MethodPut, `{"list_in_downloads":true}`, "adding artifact to Bintray downloads list for package", stdout); err != nil {
@@ -70,7 +70,7 @@ func (b BintrayConnectionInfo) addToDownloadsList(buildSpec params.ProductBuildS
 	return nil
 }
 
-func (b BintrayConnectionInfo) runBintrayCommand(urlString, httpMethod, jsonContent, cmdMsg string, stdout io.Writer) (rErr error) {
+func (b *BintrayConnectionInfo) runBintrayCommand(urlString, httpMethod, jsonContent, cmdMsg string, stdout io.Writer) (rErr error) {
 	url, err := url.Parse(urlString)
 	if err != nil {
 		return errors.Wrapf(err, "failed to parse %v as URL", urlString)

@@ -30,7 +30,7 @@ type LocalPublishInfo struct {
 	Path string
 }
 
-func (l LocalPublishInfo) Publish(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) ([]string, error) {
+func (l *LocalPublishInfo) Publish(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) ([]string, error) {
 	productPath := path.Join(l.Path, paths.productPath)
 	if err := os.MkdirAll(productPath, 0755); err != nil {
 		return nil, errors.Wrapf(err, "Failed to create path to %v", productPath)

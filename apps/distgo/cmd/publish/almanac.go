@@ -46,36 +46,36 @@ type AlmanacInfo struct {
 	Release  bool
 }
 
-func (a AlmanacInfo) CheckConnectivity(client *http.Client) error {
+func (a *AlmanacInfo) CheckConnectivity(client *http.Client) error {
 	_, err := a.get(client, "/v1/units")
 	return err
 }
 
-func (a AlmanacInfo) CheckProduct(client *http.Client, product string) error {
+func (a *AlmanacInfo) CheckProduct(client *http.Client, product string) error {
 	_, err := a.get(client, strings.Join([]string{"/v1/units", product}, "/"))
 	return err
 }
 
-func (a AlmanacInfo) CreateProduct(client *http.Client, product string) error {
+func (a *AlmanacInfo) CreateProduct(client *http.Client, product string) error {
 	_, err := a.do(client, http.MethodPost, "/v1/units/products", fmt.Sprintf(`{"name":"%v"}`, product))
 	return err
 }
 
-func (a AlmanacInfo) CheckProductBranch(client *http.Client, product, branch string) error {
+func (a *AlmanacInfo) CheckProductBranch(client *http.Client, product, branch string) error {
 	_, err := a.get(client, strings.Join([]string{"/v1/units", product, branch}, "/"))
 	return err
 }
 
-func (a AlmanacInfo) CreateProductBranch(client *http.Client, product, branch string) error {
+func (a *AlmanacInfo) CreateProductBranch(client *http.Client, product, branch string) error {
 	_, err := a.do(client, http.MethodPost, strings.Join([]string{"/v1/units", product}, "/"), fmt.Sprintf(`{"name":"%v"}`, branch))
 	return err
 }
 
-func (a AlmanacInfo) GetUnit(client *http.Client, product, branch, revision string) ([]byte, error) {
+func (a *AlmanacInfo) GetUnit(client *http.Client, product, branch, revision string) ([]byte, error) {
 	return a.get(client, strings.Join([]string{"/v1/units", product, branch, revision}, "/"))
 }
 
-func (a AlmanacInfo) CreateUnit(client *http.Client, unit AlmanacUnit, version string) error {
+func (a *AlmanacInfo) CreateUnit(client *http.Client, unit AlmanacUnit, version string) error {
 	endpoint := "/v1/units"
 
 	// set version field of metadata to be version
@@ -93,7 +93,7 @@ func (a AlmanacInfo) CreateUnit(client *http.Client, unit AlmanacUnit, version s
 	return err
 }
 
-func (a AlmanacInfo) ReleaseProduct(client *http.Client, product, branch, revision string) error {
+func (a *AlmanacInfo) ReleaseProduct(client *http.Client, product, branch, revision string) error {
 	gaBody := map[string]string{
 		"name": "GA",
 	}
@@ -106,11 +106,11 @@ func (a AlmanacInfo) ReleaseProduct(client *http.Client, product, branch, revisi
 	return err
 }
 
-func (a AlmanacInfo) get(client *http.Client, endpoint string) ([]byte, error) {
+func (a *AlmanacInfo) get(client *http.Client, endpoint string) ([]byte, error) {
 	return a.do(client, http.MethodGet, endpoint, "")
 }
 
-func (a AlmanacInfo) do(client *http.Client, method, endpoint, body string) (rBody []byte, rErr error) {
+func (a *AlmanacInfo) do(client *http.Client, method, endpoint, body string) (rBody []byte, rErr error) {
 	destURL, err := url.Parse(a.URL + endpoint)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Failed")

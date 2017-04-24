@@ -144,7 +144,7 @@ var (
 			failFastFlag,
 		},
 		publisher: func(ctx cli.Context) Publisher {
-			return LocalPublishInfo{
+			return &LocalPublishInfo{
 				Path: ctx.String(pathFlagName),
 			}
 		},
@@ -158,7 +158,7 @@ var (
 			Required: true,
 		}),
 		publisher: func(ctx cli.Context) Publisher {
-			return ArtifactoryConnectionInfo{
+			return &ArtifactoryConnectionInfo{
 				BasicConnectionInfo: basicRemoteInfo(ctx),
 				Repository:          ctx.String(repositoryFlagName),
 			}
@@ -188,7 +188,7 @@ var (
 			},
 		),
 		publisher: func(ctx cli.Context) Publisher {
-			return BintrayConnectionInfo{
+			return &BintrayConnectionInfo{
 				BasicConnectionInfo: basicRemoteInfo(ctx),
 				Subject:             ctx.String(subjectFlagName),
 				Repository:          ctx.String(repositoryFlagName),
