@@ -35,19 +35,21 @@ import (
 )
 
 const (
-	urlFlagName            = "url"
-	userFlagName           = "user"
-	passwordFlagName       = "password"
-	almanacURLFlagName     = "almanac-url"
-	almanacIDFlagName      = "almanac-id"
-	almanacSecretFlagName  = "almanac-secret"
-	almanacReleaseFlagName = "almanac-release"
-	repositoryFlagName     = "repository"
-	subjectFlagName        = "subject"
-	publishFlagName        = "publish"
-	downloadsListFlagName  = "downloads-list"
-	pathFlagName           = "path"
-	failFastFlagName       = "fail-fast"
+	urlFlagName             = "url"
+	userFlagName            = "user"
+	passwordFlagName        = "password"
+	almanacURLFlagName      = "almanac-url"
+	almanacIDFlagName       = "almanac-id"
+	almanacSecretFlagName   = "almanac-secret"
+	almanacReleaseFlagName  = "almanac-release"
+	repositoryFlagName      = "repository"
+	subjectFlagName         = "subject"
+	publishFlagName         = "publish"
+	downloadsListFlagName   = "downloads-list"
+	pathFlagName            = "path"
+	failFastFlagName        = "fail-fast"
+	gitHubOwnerFlagName     = "owner"
+	gitHubUploadURLFlagName = "github-upload-url"
 )
 
 var (
@@ -58,7 +60,7 @@ var (
 	}
 	userFlag = flag.StringFlag{
 		Name:     userFlagName,
-		Usage:    "Username for repository",
+		Usage:    "Username for authentication for repository",
 		Required: true,
 	}
 	passwordFlag = flag.StringFlag{
@@ -96,9 +98,10 @@ func Command() cli.Command {
 		Name:  "publish",
 		Usage: "Publish product distributions",
 		Subcommands: []cli.Command{
-			local.createCommand(),
-			artifactory.createCommand(),
-			bintray.createCommand(),
+			localType.createCommand(),
+			artifactoryType.createCommand(),
+			bintrayType.createCommand(),
+			githubType.createCommand(),
 		},
 	}
 
@@ -132,7 +135,7 @@ func (p *publisherType) createCommand() cli.Command {
 }
 
 var (
-	local = publisherType{
+	localType = publisherType{
 		name:  "local",
 		usage: "Publish products to a local directory",
 		flags: []flag.Flag{
@@ -149,7 +152,7 @@ var (
 			}
 		},
 	}
-	artifactory = publisherType{
+	artifactoryType = publisherType{
 		name:  "artifactory",
 		usage: "Publish products to an Artifactory repository",
 		flags: remotePublishFlags(flag.StringFlag{
@@ -164,7 +167,7 @@ var (
 			}
 		},
 	}
-	bintray = publisherType{
+	bintrayType = publisherType{
 		name:  "bintray",
 		usage: "Publish products to a Bintray repository",
 		flags: remotePublishFlags(
@@ -194,6 +197,35 @@ var (
 				Repository:          ctx.String(repositoryFlagName),
 				Release:             ctx.Bool(publishFlagName),
 				DownloadsList:       ctx.Bool(downloadsListFlagName),
+			}
+		},
+	}
+	githubType = publisherType{
+		name:  "github",
+		usage: "Publish products to a GitHub repository",
+		flags: remotePublishFlags(
+			flag.StringFlag{
+				Name:     repositoryFlagName,
+				Usage:    "Repository that is the destination for the publish",
+				Required: true,
+			},
+			flag.StringFlag{
+				Name:  gitHubOwnerFlagName,
+				Usage: "GitHub owner of the destination repository for the publish (if unspecified, user will be used)",
+			},
+			flag.StringFlag{
+				Name:  gitHubUploadURLFlagName,
+				Usage: "Upload URL for GitHub of the form 'https://uploads.github.com/' (if unspecified, will be ineferred from URL argument)",
+			},
+		),
+		publisher: func(ctx cli.Context) Publisher {
+			return &GitHubConnectionInfo{
+				APIURL:     basicRemoteInfo(ctx).URL,
+				User:       basicRemoteInfo(ctx).Username,
+				Token:      basicRemoteInfo(ctx).Password,
+				UploadURL:  ctx.String(gitHubUploadURLFlagName),
+				Owner:      ctx.String(gitHubOwnerFlagName),
+				Repository: ctx.String(repositoryFlagName),
 			}
 		},
 	}
