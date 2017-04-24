@@ -64,6 +64,9 @@ stages:
         name: "Clear test results"
         command: rm -rf /tmp/test-results
       - type: shell
+        name: "Force clean git"
+        command: git clean -xfdf
+      - type: shell
         name: "Pull brew-go Docker image"
         command: docker pull "$BREW_GO_IMAGE"
       - type: shell
