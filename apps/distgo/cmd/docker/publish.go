@@ -45,7 +45,7 @@ func Publish(cfg params.Project, wd string, baseRepo string, stdout io.Writer) e
 			if baseRepo != "" {
 				repo = path.Join(baseRepo, repo)
 			}
-			buildTag := fmt.Sprintf("%s:%s", repo, image.Tag)
+			buildTag := fmt.Sprintf("%s:%s", image.Repository, image.Tag)
 			publishTag := fmt.Sprintf("%s:%s", repo, versionTag)
 			if err := tagImage(buildTag, publishTag); err != nil {
 				return err
