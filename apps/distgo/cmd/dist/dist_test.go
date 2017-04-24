@@ -1047,7 +1047,7 @@ daemon: true
 							MainPkg: "./.",
 						},
 						Dist: []params.Dist{{
-							Info: &params.OSArchBinDistInfo{
+							Info: &params.OSArchsBinDistInfo{
 								OSArch: osarch.Current(),
 							},
 						}},
@@ -1092,7 +1092,7 @@ daemon: true
 							},
 						},
 						Dist: []params.Dist{{
-							Info: &params.OSArchBinDistInfo{
+							Info: &params.OSArchsBinDistInfo{
 								OSArch: osarch.OSArch{
 									OS:   "darwin",
 									Arch: "amd64",

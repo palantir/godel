@@ -115,7 +115,7 @@ func buildImage(image params.DockerImage, buildSpecsWithDeps params.ProductBuild
 					depType, depProduct, buildSpecsWithDeps.Spec.ProductName)
 			}
 			distCfg := distsMap[string(depType)]
-			artifactLocation := dist.FullArtifactPath(distCfg.Info.Type(), depSpec, distCfg)
+			artifactLocation := dist.FullArtifactPath(dist.ToDister(distCfg.Info), depSpec, distCfg)
 			if targetFile == "" {
 				targetFile = path.Base(artifactLocation)
 			}
