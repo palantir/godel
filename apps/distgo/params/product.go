@@ -132,6 +132,12 @@ func NewProductBuildSpec(projectDir, productName string, gitProductInfo git.Proj
 			}
 		}
 
+		if osArchBinDistInfo, ok := currDistCfg.Info.(*OSArchsBinDistInfo); ok {
+			if len(osArchBinDistInfo.OSArchs) == 0 {
+				osArchBinDistInfo.OSArchs = []osarch.OSArch{osarch.Current()}
+			}
+		}
+
 		if projectCfg.DistScriptInclude != "" && currDistCfg.Script != "" {
 			currDistCfg.Script = strings.Join([]string{projectCfg.DistScriptInclude, currDistCfg.Script}, "\n")
 		}

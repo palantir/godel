@@ -73,7 +73,8 @@ type DistInfo interface {
 }
 
 type OSArchsBinDistInfo struct {
-	// OSArchs specifies the OS/architecture combinations for this distribution.
+	// OSArchs specifies the GOOS and GOARCH pairs for which TGZ distributions are created. If blank, defaults to
+	// the GOOS and GOARCH of the host system at runtime.
 	OSArchs []osarch.OSArch
 }
 
