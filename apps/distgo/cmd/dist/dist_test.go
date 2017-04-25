@@ -1036,6 +1036,43 @@ daemon: true
 			},
 		},
 		{
+			name: "osarch dist produces archive that contains executable for current OS/Arch by default",
+			spec: func(projectDir string) params.ProductBuildSpecWithDeps {
+				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(
+					projectDir,
+					"foo",
+					git.ProjectInfo{
+						Version: "0.1.0",
+					},
+					params.Product{
+						Build: params.Build{
+							MainPkg: "./.",
+						},
+						Dist: []params.Dist{{
+							Info: &params.OSArchsBinDistInfo{},
+						}},
+					},
+					params.Project{},
+				), nil)
+				require.NoError(t, err)
+				return specWithDeps
+			},
+			preDistAction: func(projectDir string, buildSpec params.ProductBuildSpec) {
+				gittest.CreateGitTag(t, projectDir, "0.1.0")
+			},
+			validate: func(caseNum int, name string, projectDir string) {
+				// executable should exist in dist directory
+				info, err := os.Stat(path.Join(projectDir, "dist", "foo-0.1.0", osarch.Current().String(), "foo"))
+				require.NoError(t, err)
+				assert.False(t, info.IsDir(), "Case %d: %s", caseNum, name)
+
+				// tgz should contain executable
+				tgzFiles, err := pathsInTGZ(path.Join(projectDir, "dist", fmt.Sprintf("foo-0.1.0-%v.tgz", osarch.Current())))
+				require.NoError(t, err)
+				assert.Equal(t, map[string]struct{}{"foo": {}}, tgzFiles)
+			},
+		},
+		{
 			name: "osarch dist produces archive that contains executable",
 			spec: func(projectDir string) params.ProductBuildSpecWithDeps {
 				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(

@@ -183,7 +183,8 @@ type BinDist struct {
 }
 
 type OSArchBinDist struct {
-	// OSArchs specifies the OS/architecture combinations for this distribution.
+	// OSArchs specifies the GOOS and GOARCH pairs for which TGZ distributions are created. If blank, defaults to
+	// the GOOS and GOARCH of the host system at runtime.
 	OSArchs []osarch.OSArch `yaml:"os-archs" json:"os-archs"`
 }
 
@@ -404,9 +405,6 @@ func (cfg *DistInfo) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		var rawOSArchBin typedRawConfig
 		if err := unmarshal(&rawOSArchBin); err != nil {
 			return err
-		}
-		if rawOSArchBin.Info.OSArchs == nil {
-			return errors.New("os-arch must be specified in configuration")
 		}
 		rawDistInfoConfig.Info = rawOSArchBin.Info
 	case params.RPMDistType:
