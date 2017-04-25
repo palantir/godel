@@ -38,7 +38,7 @@ type Checker struct {
 	// Skip specifies whether or not the check should be skipped entirely.
 	Skip bool
 
-	// Args specifies the commnand-line arguments provided to the check.
+	// Args specifies the command-line arguments provided to the check.
 	Args []string
 
 	// LineFilters specifies the filter definitions. Raw output lines that match the filter are excluded from
