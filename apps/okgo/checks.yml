@@ -16,6 +16,8 @@ packages:
     main: github.com/palantir/checks/importalias
   ineffassign:
     main: github.com/gordonklaus/ineffassign
+  nobadfuncs:
+    main: github.com/palantir/checks/nobadfuncs
   novendor:
     main: github.com/palantir/checks/novendor
   outparamcheck:

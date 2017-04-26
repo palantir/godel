@@ -87,6 +87,10 @@ func checkers() []Checker {
 			globalCheck: true,
 		},
 		&checkerDefinition{
+			cmd:        cmdlib.Instance().MustNewCmd("nobadfuncs"),
+			lineParser: checkoutput.DefaultParser(pkgpath.Absolute),
+		},
+		&checkerDefinition{
 			cmd:        cmdlib.Instance().MustNewCmd("novendor"),
 			lineParser: checkoutput.RawParser(),
 		},

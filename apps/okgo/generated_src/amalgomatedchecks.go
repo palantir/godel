@@ -14,6 +14,7 @@ import (
 	compiles "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/palantir/checks/compiles"
 	extimport "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/palantir/checks/extimport"
 	importalias "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/palantir/checks/importalias"
+	nobadfuncs "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/palantir/checks/nobadfuncs"
 	novendor "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/palantir/checks/novendor"
 	outparamcheck "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/palantir/checks/outparamcheck"
 	deadcode "github.com/palantir/godel/apps/okgo/generated_src/internal/github.com/remyoudompheng/go-misc/deadcode"
@@ -35,6 +36,8 @@ var programs = map[string]func(){"compiles": func() {
 	importalias.AmalgomatedMain()
 }, "ineffassign": func() {
 	ineffassign.AmalgomatedMain()
+}, "nobadfuncs": func() {
+	nobadfuncs.AmalgomatedMain()
 }, "novendor": func() {
 	novendor.AmalgomatedMain()
 }, "outparamcheck": func() {
