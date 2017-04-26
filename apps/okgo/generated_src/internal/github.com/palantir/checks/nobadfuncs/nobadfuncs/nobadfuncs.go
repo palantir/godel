@@ -70,35 +70,31 @@ func printFuncRefUsages(pkgs []string, sigs map[string]string, stdout io.Writer)
 			panic(fmt.Sprintf("failed to find %s in %v; imported %v", currPkg, prog.AllPackages, prog.Imported))
 		}
 
-		for _, currFile := range info.Files {
-			currOutput, err := findFuncRefUsage(info.Info, currFile, prog.Fset, sigs)
-			if err != nil {
-				return false, err
-			}
-
-			if len(sigs) == 0 {
-				// "all" mode -- print all references
-				visitInOrder(currOutput, func(pos token.Position, ref FuncRef) {
-					fmt.Fprintf(stdout, "%s: %s\n", pos.String(), ref)
-				})
-				continue
-			}
-
-			// filter out any matches that have a whitelist comment
-			filterFuncRefs(currOutput, okCommentRegxp.MatchString)
-
-			visitInOrder(currOutput, func(pos token.Position, ref FuncRef) {
-				reason, ok := sigs[string(ref)]
-				if !ok {
-					return
-				}
-				noBadRefs = false
-				if reason == "" {
-					reason = fmt.Sprintf("references to %q are not allowed. Remove this reference or whitelist it by adding a comment of the form '// OK: [reason]' to the line before it.", ref)
-				}
-				fmt.Fprintf(stdout, "%s: %s\n", pos.String(), reason)
+		funcRefMap := filePosFuncRefMap(info.Uses, prog.Fset, sigs)
+		if len(sigs) == 0 {
+			// "all" mode: print all references
+			visitInOrder(funcRefMap, func(pos token.Position, ref FuncRef) {
+				fmt.Fprintf(stdout, "%s: %s\n", pos.String(), ref)
 			})
+			continue
 		}
+
+		commentMap := fileLineCommentMap(prog.Fset, info.Files)
+
+		// filter out any matches that have a whitelist comment
+		filterFuncRefs(funcRefMap, commentMap, okCommentRegxp.MatchString)
+
+		visitInOrder(funcRefMap, func(pos token.Position, ref FuncRef) {
+			reason, ok := sigs[string(ref)]
+			if !ok {
+				return
+			}
+			noBadRefs = false
+			if reason == "" {
+				reason = fmt.Sprintf("references to %q are not allowed. Remove this reference or whitelist it by adding a comment of the form '// OK: [reason]' to the line before it.", ref)
+			}
+			fmt.Fprintf(stdout, "%s: %s\n", pos.String(), reason)
+		})
 	}
 	return noBadRefs, nil
 }
@@ -106,30 +102,49 @@ func printFuncRefUsages(pkgs []string, sigs map[string]string, stdout io.Writer)
 // matches a single-line comment beginning with "// OK: " followed by at least one non-whitespace character.
 var okCommentRegxp = regexp.MustCompile(regexp.QuoteMeta(`// OK: `) + `\S.*`)
 
-func filterFuncRefs(funcRefs map[FuncRef]map[token.Position]string, filter func(string) bool) {
-	for _, refPosToRefComment := range funcRefs {
-		for pos, comment := range refPosToRefComment {
-			if filter(comment) {
-				delete(refPosToRefComment, pos)
+func filterFuncRefs(funcRefs map[string]map[token.Position]FuncRef, comments map[string]map[int]string, filter func(string) bool) {
+	for file, posToFuncRef := range funcRefs {
+		lineToComment, ok := comments[file]
+		if !ok {
+			// no comments in the file; continue
+			continue
+		}
+
+		for pos := range posToFuncRef {
+			// get comment on the line before the function reference
+			commentForLine, ok := lineToComment[pos.Line-1]
+			if !ok {
+				// if no comment exists, continue
+				continue
+			}
+
+			// if filter matches, remove entry from map
+			if filter(commentForLine) {
+				delete(posToFuncRef, pos)
 			}
 		}
 	}
 }
 
-func visitInOrder(funcRefs map[FuncRef]map[token.Position]string, visitor func(token.Position, FuncRef)) {
-	var allPos []token.Position
-	posToFuncRef := make(map[token.Position]FuncRef)
-
-	for funcRef, posToComment := range funcRefs {
-		for pos := range posToComment {
-			allPos = append(allPos, pos)
-			posToFuncRef[pos] = funcRef
-		}
+func visitInOrder(funcRefs map[string]map[token.Position]FuncRef, visitor func(token.Position, FuncRef)) {
+	var sortedKeys []string
+	for k := range funcRefs {
+		sortedKeys = append(sortedKeys, k)
 	}
-	sort.Sort(posSlice(allPos))
+	sort.Strings(sortedKeys)
 
-	for _, currPos := range allPos {
-		visitor(currPos, posToFuncRef[currPos])
+	for _, currFile := range sortedKeys {
+		posToFuncRef := funcRefs[currFile]
+
+		var allPos []token.Position
+		for pos := range posToFuncRef {
+			allPos = append(allPos, pos)
+		}
+		sort.Sort(posSlice(allPos))
+
+		for _, currPos := range allPos {
+			visitor(currPos, posToFuncRef[currPos])
+		}
 	}
 }
 
@@ -144,27 +159,41 @@ func (a posSlice) Less(i, j int) bool {
 	return a[i].Column < a[j].Column
 }
 
-// findFuncRefUsage returns all of the function references in the specified package. If "sigs" is non-empty, then only
-// function signature that match a key in the "sigs" map are included; otherwise, all function references are returned.
-func findFuncRefUsage(info types.Info, f *ast.File, fset *token.FileSet, sigs map[string]string) (map[FuncRef]map[token.Position]string, error) {
-	rv := make(map[FuncRef]map[token.Position]string)
+// fileLineCommentMap returns a map from filename to line number to comment for all of the comments in the provided set
+// of files. Safe to use line number rather than token.Position because comments are per-line.
+func fileLineCommentMap(fset *token.FileSet, files []*ast.File) map[string]map[int]string {
+	fileToLineToComment := make(map[string]map[int]string)
+	for _, f := range files {
+		for _, commentGroup := range f.Comments {
+			for _, comment := range commentGroup.List {
+				currPos := fset.Position(comment.Pos())
 
-	// map from line to comments in file
-	lineToComment := make(map[int]string)
-	for _, commentGroup := range f.Comments {
-		for _, comment := range commentGroup.List {
-			lineToComment[fset.Position(comment.Pos()).Line] = comment.Text
+				lineToComment := fileToLineToComment[currPos.Filename]
+				if lineToComment == nil {
+					lineToComment = make(map[int]string)
+					fileToLineToComment[currPos.Filename] = lineToComment
+				}
+				lineToComment[currPos.Line] = comment.Text
+			}
 		}
 	}
+	return fileToLineToComment
+}
+
+// filePosFuncRefMap returns a map from filename to position to FuncRef for all of the function references in the
+// specified package. If "sigs" is non-empty, then only function signature that match a key in the "sigs" map are
+// included; otherwise, all function references are returned.
+func filePosFuncRefMap(uses map[*ast.Ident]types.Object, fset *token.FileSet, sigs map[string]string) map[string]map[token.Position]FuncRef {
+	fileToPosToFuncRef := make(map[string]map[token.Position]FuncRef)
 
 	var keys []*ast.Ident
-	for k := range info.Uses {
+	for k := range uses {
 		keys = append(keys, k)
 	}
 	sort.Sort(identSlice(keys))
 
 	for _, id := range keys {
-		obj := info.Uses[id]
+		obj := uses[id]
 		funcPtr, ok := obj.(*types.Func)
 		if !ok {
 			continue
@@ -182,16 +211,15 @@ func findFuncRefUsage(info types.Info, f *ast.File, fset *token.FileSet, sigs ma
 			}
 		}
 
-		lineMap := rv[currSig]
-		if lineMap == nil {
-			rv[currSig] = make(map[token.Position]string)
-			lineMap = rv[currSig]
+		currPos := fset.Position(id.Pos())
+		posToRef := fileToPosToFuncRef[currPos.Filename]
+		if posToRef == nil {
+			posToRef = make(map[token.Position]FuncRef)
+			fileToPosToFuncRef[currPos.Filename] = posToRef
 		}
-
-		currSigPos := fset.Position(id.Pos())
-		lineMap[currSigPos] = lineToComment[currSigPos.Line-1]
+		posToRef[currPos] = currSig
 	}
-	return rv, nil
+	return fileToPosToFuncRef
 }
 
 type identSlice []*ast.Ident
