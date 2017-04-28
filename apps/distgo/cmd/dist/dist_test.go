@@ -1214,6 +1214,50 @@ daemon: true
 			wantErrorRegexp: regexp.QuoteMeta(`The OS/Arch specified for the distribution of a product must be specified as a build target for the product, but product foo does not specify darwin-amd64 as one of its build targets. Current build targets: [linux-amd64]`),
 		},
 		{
+			name: "manual dist produces output based on script",
+			spec: func(projectDir string) params.ProductBuildSpecWithDeps {
+				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(
+					projectDir,
+					"foo",
+					git.ProjectInfo{
+						Version: "0.1.0",
+					},
+					params.Product{
+						Build: params.Build{
+							Skip: true,
+						},
+						Dist: []params.Dist{{
+							Script: `
+echo "test-dist-contents" > "$DIST_DIR/$PRODUCT-$VERSION.tgz"
+`,
+							Info: &params.ManualDistInfo{
+								DistOutputExtension: "tgz",
+							},
+						}},
+					},
+					params.Project{},
+				), nil)
+				require.NoError(t, err)
+				return specWithDeps
+			},
+			preDistAction: func(projectDir string, buildSpec params.ProductBuildSpec) {
+				gittest.CreateGitTag(t, projectDir, "0.1.0")
+			},
+			validate: func(caseNum int, name string, projectDir string) {
+				// output tgz should exist and contain test contents
+				tgzFile := path.Join(projectDir, "dist", "foo-0.1.0", "foo-0.1.0.tgz")
+				contents, err := ioutil.ReadFile(tgzFile)
+				require.NoError(t, err)
+				assert.Equal(t, "test-dist-contents\n", string(contents))
+
+				// dist output tgz should exist and contain test contents
+				tgzFile = path.Join(projectDir, "dist", "foo-0.1.0.tgz")
+				contents, err = ioutil.ReadFile(tgzFile)
+				require.NoError(t, err)
+				assert.Equal(t, "test-dist-contents\n", string(contents))
+			},
+		},
+		{
 			name: "builds rpm",
 			skip: func() bool {
 				// Run this case only if both fpm and rpmbuild are available

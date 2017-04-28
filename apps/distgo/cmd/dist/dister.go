@@ -39,6 +39,8 @@ func ToDister(info params.DistInfo) Dister {
 		return (*slsDister)(info.(*params.SLSDistInfo))
 	case params.BinDistType:
 		return (*binDister)(info.(*params.BinDistInfo))
+	case params.ManualDistType:
+		return (*manualDister)(info.(*params.ManualDistInfo))
 	case params.OSArchBinDistType:
 		return (*osArchsBinDister)(info.(*params.OSArchsBinDistInfo))
 	case params.RPMDistType:

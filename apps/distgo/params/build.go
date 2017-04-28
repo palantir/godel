@@ -19,6 +19,10 @@ import (
 )
 
 type Build struct {
+	// Skip specifies whether the build step should be skipped entirely. Its primary use is for products that handle
+	// their own build logic in the "dist" step ("dist-only" products).
+	Skip bool
+
 	// Script is the content of a script that is written to file a file and run before this product is built. The
 	// contents of this value are written to a file with a header `#!/bin/bash` and executed. The script process
 	// inherits the environment variables of the Go process and also has the following environment variables

@@ -176,6 +176,11 @@ func worker(stdout io.Writer, in <-chan buildUnit, ctx Context) <-chan error {
 func executeBuild(stdout io.Writer, buildSpec params.ProductBuildSpec, ctx Context, osArch osarch.OSArch) error {
 	name := buildSpec.ProductName
 
+	if buildSpec.Build.Skip {
+		fmt.Fprintf(stdout, "Skipping build for %s because skip configuration for product is true\n", name)
+		return nil
+	}
+
 	start := time.Now()
 	outputArtifactPath, ok := ArtifactPaths(buildSpec)[osArch]
 	if !ok {

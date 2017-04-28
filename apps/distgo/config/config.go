@@ -73,13 +73,17 @@ type Product struct {
 }
 
 type Build struct {
+	// Skip specifies whether the build step should be skipped entirely. Its primary use is for products that handle
+	// their own build logic in the "dist" step ("dist-only" products).
+	Skip bool `yaml:"skip" json:"skip"`
+
 	// Script is the content of a script that is written to file a file and run before this product is built. The
 	// contents of this value are written to a file with a header `#!/bin/bash` and executed. The script process
 	// inherits the environment variables of the Go process and also has the following environment variables
 	// defined:
 	//
 	//   PROJECT_DIR: the root directory of project
-	//   PRODUCT: product name,
+	//   PRODUCT: product name
 	//   VERSION: product version
 	//   IS_SNAPSHOT: 1 if the version contains a git hash as part of the string, 0 otherwise
 	Script string `yaml:"script" json:"script"`
@@ -315,6 +319,7 @@ func (cfg *Product) ToParam() (params.Product, error) {
 
 func (cfg *Build) ToParam() params.Build {
 	return params.Build{
+		Skip:            cfg.Skip,
 		Script:          cfg.Script,
 		MainPkg:         cfg.MainPkg,
 		OutputDir:       cfg.OutputDir,
