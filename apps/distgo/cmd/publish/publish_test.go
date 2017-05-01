@@ -304,6 +304,48 @@ func TestPublishLocal(t *testing.T) {
 			},
 		},
 		{
+			name: "local publish for manual dist product",
+			buildSpec: func(projectDir string) params.ProductBuildSpecWithDeps {
+				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(projectDir, "publish-test-service", git.ProjectInfo{
+					Version:  "0.0.1",
+					Branch:   "0.0.1",
+					Revision: "0",
+				}, params.Product{
+					Build: params.Build{
+						Skip: true,
+					},
+					Dist: []params.Dist{{
+						Script: `
+echo "test-dist-contents" > "$DIST_DIR/$PRODUCT-$VERSION.tgz"
+`,
+						Info: &params.ManualDistInfo{
+							DistOutputExtension: "tgz",
+						},
+					}},
+					Publish: params.Publish{
+						GroupID: "com.palantir.distgo-publish-test",
+					},
+				}, params.Project{}), nil)
+				require.NoError(t, err)
+				return specWithDeps
+			},
+			wantPaths: []string{
+				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1.pom",
+				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1.tgz",
+			},
+			wantContent: map[string]string{
+				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1.pom": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+					"<project xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\" xmlns=\"http://maven.apache.org/POM/4.0.0\"\n" +
+					"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
+					"<modelVersion>4.0.0</modelVersion>\n" +
+					"<groupId>com.palantir.distgo-publish-test</groupId>\n" +
+					"<artifactId>publish-test-service</artifactId>\n" +
+					"<version>0.0.1</version>\n" +
+					"<packaging>tgz</packaging>\n" +
+					"</project>\n",
+			},
+		},
+		{
 			name: "local publish for product with no distribution specified creates SLS",
 			buildSpec: func(projectDir string) params.ProductBuildSpecWithDeps {
 				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(projectDir, "publish-test-service", git.ProjectInfo{

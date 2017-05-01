@@ -39,6 +39,9 @@ import (
 func RequiresBuild(specWithDeps params.ProductBuildSpecWithDeps, osArchs cmd.OSArchFilter) RequiresBuildInfo {
 	info := newRequiresBuildInfo(specWithDeps, osArchs)
 	for _, currSpec := range specWithDeps.AllSpecs() {
+		if currSpec.Build.Skip {
+			continue
+		}
 		paths := ArtifactPaths(currSpec)
 		for _, currOSArch := range currSpec.Build.OSArchs {
 			if osArchs.Matches(currOSArch) {
