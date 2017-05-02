@@ -557,10 +557,10 @@
 			"revisionTime": "2017-04-06T01:49:46Z"
 		},
 		{
-			"checksumSHA1": "wFdDjAqsTus/qC39RSSB7liU124=",
+			"checksumSHA1": "3YbkHPlXjP7vJKhsTR6RqwUQH3I=",
 			"path": "github.com/palantir/pkg/pkgpath",
-			"revision": "c60ea2d471b77fae0cd4219bd329bd7e0e01d5b8",
-			"revisionTime": "2016-12-02T17:17:08Z"
+			"revision": "b5064fe62802edcac01f3cf1ad48ed7ee4aa8c3c",
+			"revisionTime": "2017-05-02T05:44:56Z"
 		},
 		{
 			"checksumSHA1": "cYHVn6ZfN+UH2SW5PWHSn1ym0wo=",
