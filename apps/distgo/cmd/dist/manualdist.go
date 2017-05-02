@@ -33,8 +33,8 @@ func (m *manualDister) NumArtifacts() int {
 
 func (m *manualDister) ArtifactPathsInOutputDir(buildSpec params.ProductBuildSpec) []string {
 	extension := ""
-	if m.DistOutputExtension != "" {
-		extension = fmt.Sprintf(".%s", m.DistOutputExtension)
+	if m.Extension != "" {
+		extension = fmt.Sprintf(".%s", m.Extension)
 	}
 	return []string{fmt.Sprintf("%s-%s%s", buildSpec.ProductName, buildSpec.ProductVersion, extension)}
 }
@@ -50,5 +50,5 @@ func (m *manualDister) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, d
 }
 
 func (m *manualDister) DistPackageType() string {
-	return m.DistOutputExtension
+	return m.Extension
 }
