@@ -9,9 +9,7 @@ products:
     dist:
       output-dir: ./apps/distgo/dist
       dist-type:
-        type: bin
-        info:
-          omit-init-sh: true
+        type: os-arch-bin
   gonform:
     build:
       output-dir: ./apps/gonform/build
@@ -22,9 +20,7 @@ products:
     dist:
       output-dir: ./apps/gonform/dist
       dist-type:
-        type: bin
-        info:
-          omit-init-sh: true
+        type: os-arch-bin
   gunit:
     build:
       output-dir: ./apps/gunit/build
@@ -35,9 +31,7 @@ products:
     dist:
       output-dir: ./apps/gunit/dist
       dist-type:
-        type: bin
-        info:
-          omit-init-sh: true
+        type: os-arch-bin
   okgo:
     build:
       output-dir: ./apps/okgo/build
@@ -48,9 +42,7 @@ products:
     dist:
       output-dir: ./apps/okgo/dist
       dist-type:
-        type: bin
-        info:
-          omit-init-sh: true
+        type: os-arch-bin
   godel:
     build:
       main-pkg: ./main/godel
