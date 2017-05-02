@@ -1,4 +1,4 @@
-// Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+// Copyright 2016 Palantir Technologies. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -235,6 +235,13 @@ func PackagesInDir(rootDir string, exclude matcher.Matcher) (Packages, error) {
 
 	allPkgs := make(map[string]string)
 	if err := filepath.Walk(dirAbsolutePath, func(currPath string, currInfo os.FileInfo, err error) error {
+		currRelPath, currRelPathErr := filepath.Rel(dirAbsolutePath, currPath)
+
+		// skip current path if it matches an exclude
+		if currRelPathErr == nil && exclude != nil && exclude.Match(currRelPath) {
+			return nil
+		}
+
 		if err != nil {
 			return err
 		}
@@ -243,14 +250,8 @@ func PackagesInDir(rootDir string, exclude matcher.Matcher) (Packages, error) {
 			return nil
 		}
 
-		currRelPath, err := filepath.Rel(dirAbsolutePath, currPath)
-		if err != nil {
-			return err
-		}
-
-		// if current path matches an include and does not match the exclude, include
-		if exclude != nil && exclude.Match(currRelPath) {
-			return nil
+		if currRelPathErr != nil {
+			return currRelPathErr
 		}
 
 		// create a filter for processing package files that only passes if it does not match an exclude
