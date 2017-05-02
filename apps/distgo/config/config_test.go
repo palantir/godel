@@ -133,6 +133,39 @@ echo "main.year=$YEAR"
 		{
 			yml: `
 			products:
+			    test:
+			        build:
+			            skip: true
+			        dist:
+			            dist-type:
+			                type: manual
+			                info:
+			                    extension: tgz
+			`,
+			want: func() config.Project {
+				return config.Project{
+					Products: map[string]config.Product{
+						"test": {
+							Build: config.Build{
+								Skip: true,
+							},
+							Dist: []config.Dist{{
+								DistType: config.DistInfo{
+									Type: string(params.ManualDistType),
+									Info: config.ManualDist{
+										Extension: "tgz",
+									},
+								},
+							}},
+						},
+					},
+					Exclude: matcher.NamesPathsCfg{},
+				}
+			},
+		},
+		{
+			yml: `
+			products:
 			  test:
 			    dist:
 			      dist-type:

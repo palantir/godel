@@ -319,7 +319,7 @@ func TestPublishLocal(t *testing.T) {
 echo "test-dist-contents" > "$DIST_DIR/$PRODUCT-$VERSION.tgz"
 `,
 						Info: &params.ManualDistInfo{
-							DistOutputExtension: "tgz",
+							Extension: "tgz",
 						},
 					}},
 					Publish: params.Publish{

@@ -83,6 +83,28 @@ group-id: com.palantir.godel`
 	// Output: "{Products:map[godel:{Build:{Skip:false Script: MainPkg:./cmd/godel OutputDir: BuildArgsScript: VersionVar:main.Version Environment:map[CGO_ENABLED:0] OSArchs:[darwin-amd64 linux-amd64]} Run:{Args:[]} Dist:[{OutputDir: InputDir: InputProducts:[] Script:function setup_wrapper {\n  # logic for function (omitted for brevity)\n}\n\n# copy contents of resources directory\nmkdir -p \"$DIST_DIR/wrapper\"\nsetup_wrapper \"$DIST_DIR/wrapper\"\n DistType:{Type:bin Info:{OmitInitSh:true InitShTemplateFile:}} Publish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] DockerImages:[] DefaultPublish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] BuildOutputDir: DistOutputDir: DistScriptInclude: GroupID:com.palantir.godel Exclude:{Names:[] Paths:[]}}"
 }
 
+func Example_manual() {
+	yml := `
+products:
+  godel:
+    build:
+      skip: true
+    dist:
+      dist-type:
+        type: manual
+        info:
+          extension: tgz
+      script: |
+              # filler/dummy example. Real operation should perform dist or packaging
+              # operation. Important thing is that output must be at "$DIST_DIR/$PRODUCT-$VERSION.[extension]".
+              echo "test-dist-contents" > "$DIST_DIR/$PRODUCT-$VERSION.tgz"
+group-id: com.palantir.godel`
+
+	cfg := configFromYML(yml)
+	fmt.Printf("%q", fmt.Sprintf("%+v", cfg))
+	// Output: "{Products:map[godel:{Build:{Skip:true Script: MainPkg: OutputDir: BuildArgsScript: VersionVar: Environment:map[] OSArchs:[]} Run:{Args:[]} Dist:[{OutputDir: InputDir: InputProducts:[] Script:# filler/dummy example. Real operation should perform dist or packaging\n# operation. Important thing is that output must be at \"$DIST_DIR/$PRODUCT-$VERSION.[extension]\".\necho \"test-dist-contents\" > \"$DIST_DIR/$PRODUCT-$VERSION.tgz\"\n DistType:{Type:manual Info:{Extension:tgz}} Publish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] DockerImages:[] DefaultPublish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] BuildOutputDir: DistOutputDir: DistScriptInclude: GroupID:com.palantir.godel Exclude:{Names:[] Paths:[]}}"
+}
+
 func Example_rpm() {
 	yml := `
 products:
