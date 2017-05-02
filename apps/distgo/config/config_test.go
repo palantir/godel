@@ -135,6 +135,52 @@ echo "main.year=$YEAR"
 			products:
 			  test:
 			    build:
+			      main-pkg: ./cmd/test
+			    dist:
+			      dist-type:
+			        type: os-arch-bin
+			        info:
+			          os-archs:
+			            - os: "darwin"
+			              arch: "amd64"
+			            - os: "linux"
+			              arch: "amd64"
+			`,
+			want: func() config.Project {
+				return config.Project{
+					Products: map[string]config.Product{
+						"test": {
+							Build: config.Build{
+								MainPkg: "./cmd/test",
+							},
+							Dist: []config.Dist{{
+								DistType: config.DistInfo{
+									Type: string(params.OSArchBinDistType),
+									Info: config.OSArchBinDist{
+										OSArchs: []osarch.OSArch{
+											{
+												OS:   "darwin",
+												Arch: "amd64",
+											},
+											{
+												OS:   "linux",
+												Arch: "amd64",
+											},
+										},
+									},
+								},
+							}},
+						},
+					},
+					Exclude: matcher.NamesPathsCfg{},
+				}
+			},
+		},
+		{
+			yml: `
+			products:
+			  test:
+			    build:
 			      skip: true
 			    dist:
 			      dist-type:
