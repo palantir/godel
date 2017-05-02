@@ -36,39 +36,39 @@ func TestReadConfig(t *testing.T) {
 		{
 			yml: `
 			products:
-			    test:
-			        build:
-			            main-pkg: ./cmd/test
-			            output-dir: build
-			            build-args-script: |
-			                               YEAR=$(date +%Y)
-			                               echo "-ldflags"
-			                               echo "-X"
-			                               echo "main.year=$YEAR"
-			            version-var: main.version
-			            environment:
-			                foo: bar
-			                baz: 1
-			                bool: TRUE
-			            os-archs:
-			                - os: "darwin"
-			                  arch: "amd64"
-			                - os: "linux"
-			                  arch: "amd64"
-			        dist:
-			            output-dir: dist
-			            input-dir: resources/input
-			            dist-type:
-			                type: sls
-			                info:
-			                    manifest-template-file: resources/input/manifest.yml
-			                    product-type: service.v1
-			                    reloadable: true
-			                    yml-validation-exclude:
-			                      names:
-			                        - foo
-			                      paths:
-			                        - bar
+			  test:
+			    build:
+			      main-pkg: ./cmd/test
+			      output-dir: build
+			      build-args-script: |
+			                         YEAR=$(date +%Y)
+			                         echo "-ldflags"
+			                         echo "-X"
+			                         echo "main.year=$YEAR"
+			      version-var: main.version
+			      environment:
+			        foo: bar
+			        baz: 1
+			        bool: TRUE
+			      os-archs:
+			        - os: "darwin"
+			          arch: "amd64"
+			        - os: "linux"
+			          arch: "amd64"
+			    dist:
+			      output-dir: dist
+			      input-dir: resources/input
+			      dist-type:
+			        type: sls
+			        info:
+			          manifest-template-file: resources/input/manifest.yml
+			          product-type: service.v1
+			          reloadable: true
+			          yml-validation-exclude:
+			            names:
+			              - foo
+			            paths:
+			              - bar
 			exclude:
 			  names:
 			    - ".*test"
@@ -133,14 +133,14 @@ echo "main.year=$YEAR"
 		{
 			yml: `
 			products:
-			    test:
-			        build:
-			            skip: true
-			        dist:
-			            dist-type:
-			                type: manual
-			                info:
-			                    extension: tgz
+			  test:
+			    build:
+			      skip: true
+			    dist:
+			      dist-type:
+			        type: manual
+			        info:
+			          extension: tgz
 			`,
 			want: func() config.Project {
 				return config.Project{
