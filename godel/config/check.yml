@@ -5,7 +5,7 @@ checks:
       - value: "or a comment on this block"
   novendor:
     filters:
-      # Dependent vendored library -- not detected due to https://github.com/palantir/checks/issues/16
+      # Dependent vendored library that is not detected due to https://github.com/palantir/checks/issues/34
       - value: "github.com/google/go-querystring"
       # packages used for amalgomating gonform
       - value: "cmd/gofmt"
