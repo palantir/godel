@@ -8,14 +8,14 @@ stages:
       reusable: true
     environment:
       PROJECT: godel
-      GODIST: "go1.8.1.linux-amd64.tar.gz"
+      GODIST: "go1.8.3.linux-amd64.tar.gz"
       IMPORT_PATH: "github.com/palantir/godel"
       GO_PROJECT_SRC_PATH: "/home/circleci/go/src/github.com/palantir/godel"
       GOPATH: "/home/circleci/go"
-      BREW_GO_IMAGE: "nmiyake/go:brew-go-t35"
-      ALPINE_1_8_IMAGE: "nmiyake/go:alpine-go-1.8.1-t35"
-      ALPINE_1_7_IMAGE: "nmiyake/go:alpine-go-1.7.5-t35"
-      GO_1_8_RPM_FPM_IMAGE: "nmiyake/go:go-1.8.1-rpm-fpm-t35"
+      BREW_GO_IMAGE: "nmiyake/go:brew-go-t41"
+      ALPINE_1_8_IMAGE: "nmiyake/go:alpine-go-1.8.3-t41"
+      ALPINE_1_7_IMAGE: "nmiyake/go:alpine-go-1.7.6-t41"
+      GO_1_8_RPM_FPM_IMAGE: "nmiyake/go:go-1.8.3-rpm-fpm-t41"
     steps:
       - type: shell
         name: "Write GODIST to file"
