@@ -257,10 +257,22 @@ type DockerDep struct {
 }
 
 type DockerImage struct {
-	Repository string      `yaml:"repository" json:"repository"`
-	Tag        string      `yaml:"tag" json:"tag"`
-	ContextDir string      `yaml:"context-dir" json:"context-dir"`
-	Deps       []DockerDep `yaml:"dependencies" json:"dependencies"`
+	Repository string          `yaml:"repository" json:"repository"`
+	Tag        string          `yaml:"tag" json:"tag"`
+	ContextDir string          `yaml:"context-dir" json:"context-dir"`
+	Deps       []DockerDep     `yaml:"dependencies" json:"dependencies"`
+	Info       DockerImageInfo `yaml:"info" json:"info"`
+}
+
+type DockerImageInfo struct {
+	Type string      `yaml:"type" json:"type"`
+	Data interface{} `yaml:"data" json:"data"`
+}
+
+type SLSDockerImageInfo struct {
+	GroupID      string                 `yaml:"group-id" json:"group-id"`
+	ProuductType string                 `yaml:"product-type" json:"product-type"`
+	Extensions   map[string]interface{} `yaml:"manifest-extensions" json:"manifest-extensions"`
 }
 
 type Publish struct {
@@ -552,12 +564,37 @@ func (cfg *RPMDist) ToParams() params.RPMDistInfo {
 	}
 }
 
+func (cfg *DockerImageInfo) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// unmarshal type alias (uses default unmarshal strategy)
+	type rawImageInfoConfigAlias DockerImageInfo
+	var rawAliasConfig rawImageInfoConfigAlias
+	if err := unmarshal(&rawAliasConfig); err != nil {
+		return err
+	}
+
+	rawImageInfoConfig := DockerImageInfo(rawAliasConfig)
+	switch rawImageInfoConfig.Type {
+	case "sls":
+		type typedRawConfig struct {
+			Type string
+			Data SLSDockerImageInfo
+		}
+		var rawSLS typedRawConfig
+		if err := unmarshal(&rawSLS); err != nil {
+			return err
+		}
+		rawImageInfoConfig.Data = rawSLS.Data
+	}
+	*cfg = rawImageInfoConfig
+	return nil
+}
+
 func (cfg *DockerImage) ToParams() (params.DockerImage, error) {
-	var deps params.DockerDeps
+	var deps []params.DockerDep
 	for _, dep := range cfg.Deps {
 		depType, err := params.ToDockerDepType(dep.Type)
 		if err != nil {
-			return params.DockerImage{}, nil
+			return nil, nil
 		}
 		deps = append(deps, params.DockerDep{
 			Product:    dep.Product,
@@ -565,12 +602,30 @@ func (cfg *DockerImage) ToParams() (params.DockerImage, error) {
 			TargetFile: dep.TargetFile,
 		})
 	}
-	return params.DockerImage{
+	dockerImage := params.DefaultDockerImage{
 		Repository: cfg.Repository,
 		Tag:        cfg.Tag,
 		ContextDir: cfg.ContextDir,
 		Deps:       deps,
-	}, nil
+	}
+	switch cfg.Info.Type {
+	case "sls":
+		slsInfo := SLSDockerImageInfo{}
+		if err := mapstructure.Decode(cfg.Info.Data, &slsInfo); err != nil {
+			return nil, errors.Wrap(err, "Failed to unmarshal the sls image info")
+		}
+		return &params.SLSDockerImage{
+			DefaultDockerImage: dockerImage,
+			ProuductType:       slsInfo.ProuductType,
+			GroupID:            slsInfo.GroupID,
+			Extensions:         slsInfo.Extensions,
+		}, nil
+	case "":
+		return &dockerImage, nil
+	default:
+		return nil, errors.New("Unknown Info type specified")
+
+	}
 }
 
 func (cfg *Publish) ToParams() params.Publish {
