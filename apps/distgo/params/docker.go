@@ -15,6 +15,7 @@
 package params
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -25,16 +26,16 @@ import (
 )
 
 type DockerDepType string
-type DockerImageType string
 
 const (
-	DockerDepSLS          DockerDepType = "sls"
-	DockerDepBin          DockerDepType = "bin"
-	DockerDepRPM          DockerDepType = "rpm"
-	DockerDepDocker       DockerDepType = "docker"
-	ManifestLabel         string        = "com.palantir.sls.manifest"
-	ConfigurationLabel    string        = "com.palantir.sls.configuration"
-	ConfigurationFileName string        = "configuration.yml"
+	DockerDepSLS    DockerDepType = "sls"
+	DockerDepBin    DockerDepType = "bin"
+	DockerDepRPM    DockerDepType = "rpm"
+	DockerDepDocker DockerDepType = "docker"
+
+	ManifestLabel         = "com.palantir.sls.manifest"
+	ConfigurationLabel    = "com.palantir.sls.configuration"
+	ConfigurationFileName = "configuration.yml"
 )
 
 type DockerDep struct {
@@ -45,7 +46,7 @@ type DockerDep struct {
 
 type DockerImage interface {
 	SetRepository(repo string)
-	SetDefaults(repo string, tag string)
+	SetDefaults(repo, tag string)
 	Coordinates() (string, string)
 	ContextDirectory() string
 	Dependencies() []DockerDep
@@ -60,7 +61,7 @@ type DefaultDockerImage struct {
 	Tag        string
 	// ContextDir is the directory in which the docker build task is executed.
 	ContextDir string
-	// DistDeps is a slice of DockerDistDep.
+	// DistDeps is slice of DockerDistDep.
 	// DockerDistDep contains a product, dist type and target file.
 	// For a particular product's dist type, we create a link from its output
 	// inside the ContextDir with the name specified in target file.
@@ -87,13 +88,13 @@ func (sdi *SLSDockerImage) Build(buildSpec ProductBuildSpecWithDeps) error {
 	if err != nil {
 		return errors.Wrap(err, "Failed to get manifest for the image")
 	}
-	args = append(args, "--label", fmt.Sprintf("%s=%s", ManifestLabel, manifest))
+	args = append(args, "--label", fmt.Sprintf("%s=%s", ManifestLabel, base64.StdEncoding.EncodeToString([]byte(manifest))))
 	if _, err := os.Stat(configFile); err == nil {
 		content, err := ioutil.ReadFile(configFile)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to read the file %s", configFile)
 		}
-		args = append(args, "--label", fmt.Sprintf("%s=%s", ConfigurationLabel, string(content)))
+		args = append(args, "--label", fmt.Sprintf("%s=%s", ConfigurationLabel, base64.StdEncoding.EncodeToString(content)))
 	}
 	args = append(args, contextDir)
 

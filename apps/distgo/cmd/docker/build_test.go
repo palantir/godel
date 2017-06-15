@@ -16,6 +16,7 @@ package docker_test
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -52,7 +53,7 @@ func main() {
 `
 	dockerfile = `FROM alpine:3.5
 `
-	configFile = `test_key: test_value
+	configFile = `test_key: 'test_value'
 test_key_2: test_value_2
 `
 	slsDepDockerFile = `FROM alpine:3.5
@@ -311,19 +312,22 @@ func TestDockerDist(t *testing.T) {
 				image := images[0]
 				inspect, _, err := cli.ImageInspectWithRaw(context.Background(), image.ID)
 				require.NoError(t, err, "Case %d: %s", caseNum, name)
-				actualManifest, ok := inspect.Config.Labels[params.ManifestLabel]
+				actualManifestEncoded, ok := inspect.Config.Labels[params.ManifestLabel]
 				require.True(t, ok, "Case %d: %s", caseNum, name)
+				actualManifest, err := base64.StdEncoding.DecodeString(actualManifestEncoded)
+				require.NoError(t, err, "Case %d: %s", caseNum, name)
 				expectedManifest := "manifest-version: \"1.0\"\n" +
 					"product-group: com.palantir.godel\n" +
 					"product-name: foo\n" +
 					"product-version: 0.1.0\n" +
 					"product-type: test_type\n" +
 					"extensions:\n  test_key: test_value\n"
-				require.Equal(t, expectedManifest, actualManifest, "Case %d: %s", caseNum, name)
-				actualConfig, ok := inspect.Config.Labels[params.ConfigurationLabel]
+				require.Equal(t, expectedManifest, string(actualManifest), "Case %d: %s", caseNum, name)
+				actualConfigEncoded, ok := inspect.Config.Labels[params.ConfigurationLabel]
 				require.True(t, ok, "Case %d: %s", caseNum, name)
-				require.Equal(t, configFile, actualConfig, "Case %d: %s", caseNum, name)
-				fmt.Printf(actualConfig)
+				actualConfig, err := base64.StdEncoding.DecodeString(actualConfigEncoded)
+				require.NoError(t, err, "Case %d: %s", caseNum, name)
+				require.Equal(t, configFile, string(actualConfig), "Case %d: %s", caseNum, name)
 			},
 		},
 		{
