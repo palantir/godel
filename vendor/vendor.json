@@ -280,16 +280,16 @@
 			"revisionTime": "2016-11-15T22:06:34Z"
 		},
 		{
-			"checksumSHA1": "eFFuFUZGU+CFlgpCn/k5raGSlbo=",
+			"checksumSHA1": "eva6MIhWu7k6BWB8G7OOYTJnpeA=",
 			"path": "github.com/kisielk/errcheck",
-			"revision": "9c1292e1c962175f76516859f4a88aabd86dc495",
-			"revisionTime": "2016-09-17T21:32:20Z"
+			"revision": "23699b7e2cbfdb89481023524954ba2aeff6be90",
+			"revisionTime": "2017-03-17T17:34:29Z"
 		},
 		{
-			"checksumSHA1": "9bqc0nHozWI3MQaCYY5KKtqOXOw=",
+			"checksumSHA1": "GP25rgIPshJh0tpiBg3Z8Dexqj4=",
 			"path": "github.com/kisielk/errcheck/internal/errcheck",
-			"revision": "9c1292e1c962175f76516859f4a88aabd86dc495",
-			"revisionTime": "2016-09-17T21:32:20Z"
+			"revision": "23699b7e2cbfdb89481023524954ba2aeff6be90",
+			"revisionTime": "2017-03-17T17:34:29Z"
 		},
 		{
 			"checksumSHA1": "hDuX7ev2IPZqz+3dbmvNNE6rQd4=",

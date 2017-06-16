@@ -34,8 +34,9 @@ var (
 
 // UncheckedError indicates the position of an unchecked error return.
 type UncheckedError struct {
-	Pos  token.Position
-	Line string
+	Pos      token.Position
+	Line     string
+	FuncName string
 }
 
 // UncheckedErrors is returned from the CheckPackage function if the package contains
@@ -106,6 +107,30 @@ type Checker struct {
 
 	// If true, checking of of _test.go files is disabled
 	WithoutTests bool
+
+	exclude map[string]bool
+}
+
+func NewChecker() *Checker {
+	c := Checker{}
+	c.SetExclude(map[string]bool{})
+	return &c
+}
+
+func (c *Checker) SetExclude(l map[string]bool) {
+	// Default exclude for stdlib functions
+	c.exclude = map[string]bool{
+		"math/rand.Read":         true,
+		"(*math/rand.Rand).Read": true,
+
+		"(*bytes.Buffer).Write":       true,
+		"(*bytes.Buffer).WriteByte":   true,
+		"(*bytes.Buffer).WriteRune":   true,
+		"(*bytes.Buffer).WriteString": true,
+	}
+	for k := range l {
+		c.exclude[k] = true
+	}
 }
 
 func (c *Checker) logf(msg string, args ...interface{}) {
@@ -130,11 +155,7 @@ func (c *Checker) load(paths ...string) (*loader.Program, error) {
 		return nil, fmt.Errorf("unhandled extra arguments: %v", rest)
 	}
 
-	prog, err := loadcfg.Load()
-	if err != nil {
-		fmt.Println("loadcfg.Load failed:", err)
-	}
-	return prog, err
+	return loadcfg.Load()
 }
 
 // CheckPackages checks packages for errors.
@@ -164,6 +185,7 @@ func (c *Checker) CheckPackages(paths ...string) error {
 				blank:   c.Blank,
 				asserts: c.Asserts,
 				lines:   make(map[string][]string),
+				exclude: c.exclude,
 				errors:  []UncheckedError{},
 			}
 
@@ -190,11 +212,44 @@ type visitor struct {
 	blank   bool
 	asserts bool
 	lines   map[string][]string
+	exclude map[string]bool
 
 	errors []UncheckedError
 }
 
+func (v *visitor) fullName(call *ast.CallExpr) (string, bool) {
+	sel, ok := call.Fun.(*ast.SelectorExpr)
+	if !ok {
+		return "", false
+	}
+	fn, ok := v.pkg.ObjectOf(sel.Sel).(*types.Func)
+	if !ok {
+		// Shouldn't happen, but be paranoid
+		return "", false
+	}
+	// The name is fully qualified by the import path, possible type,
+	// function/method name and pointer receiver.
+	//
+	// TODO(dh): vendored packages will have /vendor/ in their name,
+	// thus not matching vendored standard library packages. If we
+	// want to support vendored stdlib packages, we need to implement
+	// FullName with our own logic.
+	return fn.FullName(), true
+}
+
+func (v *visitor) excludeCall(call *ast.CallExpr) bool {
+	if name, ok := v.fullName(call); ok {
+		return v.exclude[name]
+	}
+
+	return false
+}
+
 func (v *visitor) ignoreCall(call *ast.CallExpr) bool {
+	if v.excludeCall(call) {
+		return true
+	}
+
 	// Try to get an identifier.
 	// Currently only supports simple expressions:
 	//     1. f()
@@ -301,7 +356,7 @@ func (v *visitor) isRecover(call *ast.CallExpr) bool {
 	return false
 }
 
-func (v *visitor) addErrorAtPosition(position token.Pos) {
+func (v *visitor) addErrorAtPosition(position token.Pos, call *ast.CallExpr) {
 	pos := v.prog.Fset.Position(position)
 	lines, ok := v.lines[pos.Filename]
 	if !ok {
@@ -313,7 +368,13 @@ func (v *visitor) addErrorAtPosition(position token.Pos) {
 	if pos.Line-1 < len(lines) {
 		line = strings.TrimSpace(lines[pos.Line-1])
 	}
-	v.errors = append(v.errors, UncheckedError{pos, line})
+
+	var name string
+	if call != nil {
+		name, _ = v.fullName(call)
+	}
+
+	v.errors = append(v.errors, UncheckedError{pos, line, name})
 }
 
 func readfile(filename string) []string {
@@ -335,16 +396,16 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 	case *ast.ExprStmt:
 		if call, ok := stmt.X.(*ast.CallExpr); ok {
 			if !v.ignoreCall(call) && v.callReturnsError(call) {
-				v.addErrorAtPosition(call.Lparen)
+				v.addErrorAtPosition(call.Lparen, call)
 			}
 		}
 	case *ast.GoStmt:
 		if !v.ignoreCall(stmt.Call) && v.callReturnsError(stmt.Call) {
-			v.addErrorAtPosition(stmt.Call.Lparen)
+			v.addErrorAtPosition(stmt.Call.Lparen, stmt.Call)
 		}
 	case *ast.DeferStmt:
 		if !v.ignoreCall(stmt.Call) && v.callReturnsError(stmt.Call) {
-			v.addErrorAtPosition(stmt.Call.Lparen)
+			v.addErrorAtPosition(stmt.Call.Lparen, stmt.Call)
 		}
 	case *ast.AssignStmt:
 		if len(stmt.Rhs) == 1 {
@@ -362,7 +423,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 						// We shortcut calls to recover() because errorsByArg can't
 						// check its return types for errors since it returns interface{}.
 						if id.Name == "_" && (v.isRecover(call) || isError[i]) {
-							v.addErrorAtPosition(id.NamePos)
+							v.addErrorAtPosition(id.NamePos, call)
 						}
 					}
 				}
@@ -376,10 +437,10 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 				}
 				if len(stmt.Lhs) < 2 {
 					// assertion result not read
-					v.addErrorAtPosition(stmt.Rhs[0].Pos())
+					v.addErrorAtPosition(stmt.Rhs[0].Pos(), nil)
 				} else if id, ok := stmt.Lhs[1].(*ast.Ident); ok && v.blank && id.Name == "_" {
 					// assertion result ignored
-					v.addErrorAtPosition(id.NamePos)
+					v.addErrorAtPosition(id.NamePos, nil)
 				}
 			}
 		} else {
@@ -395,7 +456,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 							continue
 						}
 						if id.Name == "_" && v.callReturnsError(call) {
-							v.addErrorAtPosition(id.NamePos)
+							v.addErrorAtPosition(id.NamePos, call)
 						}
 					} else if assert, ok := stmt.Rhs[i].(*ast.TypeAssertExpr); ok {
 						if !v.asserts {
@@ -405,7 +466,7 @@ func (v *visitor) Visit(node ast.Node) ast.Visitor {
 							// Shouldn't happen anyway, no multi assignment in type switches
 							continue
 						}
-						v.addErrorAtPosition(id.NamePos)
+						v.addErrorAtPosition(id.NamePos, nil)
 					}
 				}
 			}
