@@ -143,6 +143,10 @@ func NewProductBuildSpec(projectDir, productName string, gitProductInfo git.Proj
 		}
 	}
 
+	for i := range buildSpec.DockerImages {
+		buildSpec.DockerImages[i].SetDefaults(productName, gitProductInfo.Version)
+	}
+
 	return buildSpec
 }
 

@@ -35,7 +35,7 @@ func OrderBuildSpecs(specsWithDeps []params.ProductBuildSpecWithDeps) ([]params.
 			graph[product] = make(map[string]struct{})
 		}
 		for _, curImage := range curSpec.Spec.DockerImages {
-			for depProduct, depTypes := range curImage.Deps.ToMap() {
+			for depProduct, depTypes := range dockerDepsToMap(curImage.Dependencies()) {
 				if !hasDockerDep(depTypes) {
 					// only add edge if its a docker image dependency
 					continue

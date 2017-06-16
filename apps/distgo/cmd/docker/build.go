@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path"
 
 	"github.com/pkg/errors"
@@ -39,7 +38,7 @@ func Build(cfg params.Project, wd string, baseRepo string, stdout io.Writer) err
 			productsToBuildImage[productName] = struct{}{}
 		}
 		for _, image := range productSpec.DockerImages {
-			for _, dep := range image.Deps {
+			for _, dep := range image.Dependencies() {
 				if isDist(dep.Type) {
 					productsToDist[dep.Product] = struct{}{}
 				}
@@ -65,8 +64,8 @@ func Build(cfg params.Project, wd string, baseRepo string, stdout io.Writer) err
 		// if base repo is specified, join it to each image's repo
 		for i := range orderedSpecs {
 			for j := range orderedSpecs[i].Spec.DockerImages {
-				orderedSpecs[i].Spec.DockerImages[j].Repository = path.Join(baseRepo,
-					orderedSpecs[i].Spec.DockerImages[j].Repository)
+				repo, _ := orderedSpecs[i].Spec.DockerImages[j].Coordinates()
+				orderedSpecs[i].Spec.DockerImages[j].SetRepository(path.Join(baseRepo, repo))
 			}
 		}
 	}
@@ -86,20 +85,13 @@ func RunBuild(buildSpecsWithDeps []params.ProductBuildSpecWithDeps, stdout io.Wr
 }
 
 func buildImage(image params.DockerImage, buildSpecsWithDeps params.ProductBuildSpecWithDeps, specsMap map[string]params.ProductBuildSpecWithDeps, stdout io.Writer) error {
-	if image.Repository == "" {
-		image.Repository = buildSpecsWithDeps.Spec.ProductName
-	}
-	if image.Tag == "" {
-		image.Tag = buildSpecsWithDeps.Spec.ProductVersion
-	}
+	repo, tag := image.Coordinates()
+	fmt.Fprintf(stdout, "Building docker image for %s and tagging it as %s:%s\n", buildSpecsWithDeps.Spec.ProductName, repo, tag)
 
-	fmt.Fprintf(stdout, "Building docker image for %s and tagging it as %s:%s\n", buildSpecsWithDeps.Spec.ProductName, image.Repository, image.Tag)
-
-	completeTag := fmt.Sprintf("%s:%s", image.Repository, image.Tag)
-	contextDir := path.Join(buildSpecsWithDeps.Spec.ProjectDir, image.ContextDir)
+	contextDir := path.Join(buildSpecsWithDeps.Spec.ProjectDir, image.ContextDirectory())
 
 	// link dependent dist artifacts into the context directory
-	for depProduct, depTypes := range image.Deps.ToMap() {
+	for depProduct, depTypes := range dockerDepsToMap(image.Dependencies()) {
 		for depType, targetFile := range depTypes {
 			if !isDist(depType) {
 				continue
@@ -134,16 +126,18 @@ func buildImage(image params.DockerImage, buildSpecsWithDeps params.ProductBuild
 		}
 	}
 
-	var args []string
-	args = append(args, "build")
-	args = append(args, "--tag", completeTag)
-	args = append(args, contextDir)
+	return image.Build(buildSpecsWithDeps)
+}
 
-	buildCmd := exec.Command("docker", args...)
-	if output, err := buildCmd.CombinedOutput(); err != nil {
-		return errors.Wrap(err, fmt.Sprintf("docker build failed with error:\n%s\n", string(output)))
+func dockerDepsToMap(deps []params.DockerDep) map[string]map[params.DockerDepType]string {
+	m := make(map[string]map[params.DockerDepType]string)
+	for _, dep := range deps {
+		if m[dep.Product] == nil {
+			m[dep.Product] = make(map[params.DockerDepType]string)
+		}
+		m[dep.Product][dep.Type] = dep.TargetFile
 	}
-	return nil
+	return m
 }
 
 func isDist(dep params.DockerDepType) bool {

@@ -19,12 +19,10 @@ import (
 	"io"
 	"io/ioutil"
 	"path"
-	"strings"
 	"text/template"
 
 	"github.com/palantir/pkg/specdir"
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
 
 	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/binspec"
@@ -261,7 +259,7 @@ func (s *slsDister) writeSLSManifest(buildSpec params.ProductBuildSpec, distCfg 
 		manifestTemplateString = manifestBuf.String()
 	} else {
 		var err error
-		manifestTemplateString, err = manifest(distCfg.Publish.GroupID, buildSpec.ProductName, buildSpec.ProductVersion, s.ProductType, s.ManifestExtensions)
+		manifestTemplateString, err = params.GetManifest(distCfg.Publish.GroupID, buildSpec.ProductName, buildSpec.ProductVersion, s.ProductType, s.ManifestExtensions)
 		if err != nil {
 			return errors.Wrapf(err, "failed to create manifest for SLS distribution")
 		}
@@ -270,47 +268,6 @@ func (s *slsDister) writeSLSManifest(buildSpec params.ProductBuildSpec, distCfg 
 		return errors.Wrapf(err, "failed to write manifest")
 	}
 	return nil
-}
-
-type slsManifest struct {
-	ManifestVersion string                 `yaml:"manifest-version"`
-	ProductGroup    string                 `yaml:"product-group"`
-	ProductName     string                 `yaml:"product-name"`
-	ProductVersion  string                 `yaml:"product-version"`
-	ProductType     string                 `yaml:"product-type,omitempty"`
-	Extensions      map[string]interface{} `yaml:"extensions,omitempty"`
-}
-
-func manifest(groupID, name, version, productType string, extensions map[string]interface{}) (string, error) {
-	var missingRequired []string
-	if groupID == "" {
-		missingRequired = append(missingRequired, "group-id")
-	}
-	if name == "" {
-		missingRequired = append(missingRequired, "product-name")
-	}
-	if version == "" {
-		missingRequired = append(missingRequired, "product-version")
-	}
-	if len(missingRequired) > 0 {
-		return "", errors.Errorf("required properties were missing: " + strings.Join(missingRequired, ", "))
-	}
-
-	m := slsManifest{
-		ManifestVersion: "1.0",
-		ProductGroup:    groupID,
-		ProductName:     name,
-		ProductVersion:  version,
-		Extensions:      extensions,
-	}
-	if productType != "" {
-		m.ProductType = productType
-	}
-	manifestBytes, err := yaml.Marshal(m)
-	if err != nil {
-		return "", errors.Wrapf(err, "failed to marshal %v as YAML", m)
-	}
-	return string(manifestBytes), nil
 }
 
 func (s *slsDister) writeSLSInitSh(buildSpec params.ProductBuildSpec, distCfg params.Dist, specDir specdir.SpecDir) error {

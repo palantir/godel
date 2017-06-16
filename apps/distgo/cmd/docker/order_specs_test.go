@@ -24,12 +24,12 @@ import (
 	"github.com/palantir/godel/apps/distgo/params"
 )
 
-func generateSpec(product string, deps params.DockerDeps) params.ProductBuildSpec {
+func generateSpec(product string, deps []params.DockerDep) params.ProductBuildSpec {
 	return params.ProductBuildSpec{
 		ProductName: product,
 		Product: params.Product{
 			DockerImages: []params.DockerImage{
-				{
+				&params.DefaultDockerImage{
 					Deps: deps,
 				},
 			},
@@ -38,31 +38,31 @@ func generateSpec(product string, deps params.DockerDeps) params.ProductBuildSpe
 }
 
 func TestOrderBuildSpecs(t *testing.T) {
-	A := generateSpec("A", params.DockerDeps{
+	A := generateSpec("A", []params.DockerDep{
 		{Product: "B", Type: params.DockerDepDocker, TargetFile: ""},
 		{Product: "C", Type: params.DockerDepDocker, TargetFile: ""},
 	})
-	B := generateSpec("B", params.DockerDeps{
+	B := generateSpec("B", []params.DockerDep{
 		{Product: "D", Type: params.DockerDepDocker, TargetFile: ""},
 	})
-	C := generateSpec("C", params.DockerDeps{
+	C := generateSpec("C", []params.DockerDep{
 		{Product: "D", Type: params.DockerDepDocker, TargetFile: ""},
 	})
-	D := generateSpec("D", params.DockerDeps{})
-	E := generateSpec("E", params.DockerDeps{
+	D := generateSpec("D", []params.DockerDep{})
+	E := generateSpec("E", []params.DockerDep{
 		{Product: "DepE", Type: params.DockerDepDocker, TargetFile: ""},
 	})
-	DepE := generateSpec("DepE", params.DockerDeps{
+	DepE := generateSpec("DepE", []params.DockerDep{
 		{Product: "E", Type: params.DockerDepDocker, TargetFile: ""},
 	})
 
-	X := generateSpec("X", params.DockerDeps{
+	X := generateSpec("X", []params.DockerDep{
 		{Product: "Y", Type: params.DockerDepDocker, TargetFile: ""},
 	})
-	Y := generateSpec("Y", params.DockerDeps{
+	Y := generateSpec("Y", []params.DockerDep{
 		{Product: "Z", Type: params.DockerDepDocker, TargetFile: ""},
 	})
-	Z := generateSpec("Z", params.DockerDeps{})
+	Z := generateSpec("Z", []params.DockerDep{})
 
 	for _, testcase := range []struct {
 		input     []params.ProductBuildSpecWithDeps

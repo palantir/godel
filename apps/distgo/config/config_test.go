@@ -378,6 +378,70 @@ echo "main.year=$YEAR"
 				}
 			},
 		},
+		{
+			yml: `
+			products:
+			  test:
+			    docker:
+			      -
+			        repository: docker.hub/test
+			        tag: test
+			        context-dir: context/dir/path
+			        dependencies:
+			          -
+			            product: dep1
+			            type: sls
+			            target-file: dep1-sls.tgz
+			          -
+			            product: dep2
+			            type: rpm
+			            target-file: dep2-rpm.tgz
+			        info:
+			          type: sls
+			          data:
+			            group-id: com.palantir.test
+			            product-type: test-type
+			            manifest-extensions:
+			              test_key: test_value
+			`,
+			want: func() config.Project {
+				return config.Project{
+					Products: map[string]config.Product{
+						"test": {
+							DockerImages: []config.DockerImage{
+								{
+									Repository: "docker.hub/test",
+									Tag:        "test",
+									ContextDir: "context/dir/path",
+									Deps: []config.DockerDep{
+										{
+											Product:    "dep1",
+											Type:       "sls",
+											TargetFile: "dep1-sls.tgz",
+										},
+										{
+											Product:    "dep2",
+											Type:       "rpm",
+											TargetFile: "dep2-rpm.tgz",
+										},
+									},
+									Info: config.DockerImageInfo{
+										Type: "sls",
+										Data: config.SLSDockerImageInfo{
+											GroupID:      "com.palantir.test",
+											ProuductType: "test-type",
+											Extensions: map[string]interface{}{
+												"test_key": "test_value",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				}
+			},
+		},
 	} {
 		// load config
 		got, err := config.LoadRawConfig(unindent(currCase.yml), currCase.json)
