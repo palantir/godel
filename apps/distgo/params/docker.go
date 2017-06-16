@@ -61,7 +61,7 @@ type DefaultDockerImage struct {
 	Tag        string
 	// ContextDir is the directory in which the docker build task is executed.
 	ContextDir string
-	// DistDeps is slice of DockerDistDep.
+	// DistDeps is a slice of DockerDistDep.
 	// DockerDistDep contains a product, dist type and target file.
 	// For a particular product's dist type, we create a link from its output
 	// inside the ContextDir with the name specified in target file.
