@@ -451,6 +451,60 @@ func TestCheckerUsesReleaseTagConfig(t *testing.T) {
 				"",
 			},
 		},
+		{
+			name: "ignoring a returned error is flagged",
+			files: []gofiles.GoFileSpec{
+				{
+					RelPath: "foo.go",
+					Src: `package foo
+					import "os"
+					func Foo() {
+						os.Open("/")
+						os.Pipe()
+					}
+					`,
+				},
+			},
+			config: ``,
+			want: []string{
+				"Running errcheck...",
+				"foo.go:4:14: os.Open(\"/\")",
+				"foo.go:5:14: os.Pipe()",
+				"",
+			},
+		},
+		{
+			name: "ignoring a returned error is not flagged if referenced from an exclude list",
+			files: []gofiles.GoFileSpec{
+				{
+					RelPath: "foo.go",
+					Src: `package foo
+					import "os"
+					func Foo() {
+						os.Open("/")
+						os.Pipe()
+					}
+					`,
+				},
+				{
+					RelPath: "exclude.txt",
+					Src: `os.Open
+					`,
+				},
+			},
+			config: `
+			checks:
+			  errcheck:
+			    args:
+			      - "-exclude"
+			      - "exclude.txt"
+			`,
+			want: []string{
+				"Running errcheck...",
+				"foo.go:5:14: os.Pipe()",
+				"",
+			},
+		},
 	} {
 		currCaseDir, err := ioutil.TempDir(tmpDir, "")
 		require.NoError(t, err, "Case %d: %s", i, currCase.name)
