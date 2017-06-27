@@ -34,20 +34,18 @@ const (
 	ConfigurationFileName = "configuration.yml"
 )
 
-type SLSDockerImage struct {
-	DefaultDockerImage
-	GroupID      string
-	ProuductType string
-	Extensions   map[string]interface{}
+type slsImageBuilder struct {
+	image *params.DockerImage
+	info  *params.SLSDockerImageInfo
 }
 
-func (sdi *SLSDockerImage) Build(buildSpec params.ProductBuildSpecWithDeps) error {
-	contextDir := path.Join(buildSpec.Spec.ProjectDir, sdi.ContextDir)
+func (sib *slsImageBuilder) build(buildSpec params.ProductBuildSpecWithDeps) error {
+	contextDir := path.Join(buildSpec.Spec.ProjectDir, sib.image.ContextDir)
 	configFile := path.Join(contextDir, ConfigurationFileName)
 	var args []string
 	args = append(args, "build")
-	args = append(args, "--tag", fmt.Sprintf("%s:%s", sdi.Repository, sdi.Tag))
-	manifest, err := params.GetManifest(sdi.GroupID, buildSpec.Spec.ProductName, buildSpec.Spec.ProductVersion, sdi.ProuductType, sdi.Extensions)
+	args = append(args, "--tag", fmt.Sprintf("%s:%s", sib.image.Repository, sib.image.Tag))
+	manifest, err := params.GetManifest(sib.info.GroupID, buildSpec.Spec.ProductName, buildSpec.Spec.ProductVersion, sib.info.ProuductType, sib.info.Extensions)
 	if err != nil {
 		return errors.Wrap(err, "Failed to get manifest for the image")
 	}
@@ -59,7 +57,7 @@ func (sdi *SLSDockerImage) Build(buildSpec params.ProductBuildSpecWithDeps) erro
 		}
 		args = append(args, "--label", fmt.Sprintf("%s=%s", ConfigurationLabel, base64.StdEncoding.EncodeToString(content)))
 	}
-	buildArgs, err := script.GetBuildArgs(buildSpec.Spec, sdi.BuildArgsScript)
+	buildArgs, err := script.GetBuildArgs(buildSpec.Spec, sib.image.BuildArgsScript)
 	if err != nil {
 		return err
 	}

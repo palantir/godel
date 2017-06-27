@@ -19,12 +19,15 @@ import (
 )
 
 type DockerDepType string
+type DockerImageType string
 
 const (
-	DockerDepSLS    DockerDepType = "sls"
-	DockerDepBin    DockerDepType = "bin"
-	DockerDepRPM    DockerDepType = "rpm"
-	DockerDepDocker DockerDepType = "docker"
+	DockerDepSLS           DockerDepType   = "sls"
+	DockerDepBin           DockerDepType   = "bin"
+	DockerDepRPM           DockerDepType   = "rpm"
+	DockerDepDocker        DockerDepType   = "docker"
+	DefaultDockerImageType DockerImageType = "default"
+	SLSDockerImageType     DockerImageType = "sls"
 )
 
 type DockerDep struct {
@@ -33,13 +36,44 @@ type DockerDep struct {
 	TargetFile string
 }
 
-type DockerImage interface {
-	SetRepository(repo string)
-	SetDefaults(repo, tag string)
-	Coordinates() (string, string)
-	ContextDirectory() string
-	Dependencies() []DockerDep
-	Build(buildSpec ProductBuildSpecWithDeps) error
+type DockerImage struct {
+	// Repository and Tag are the part of the image coordinates.
+	// For example, in alpine:latest, alpine is the repository
+	// and the latest is the tag
+	Repository string
+	Tag        string
+	// ContextDir is the directory in which the docker build task is executed.
+	ContextDir      string
+	BuildArgsScript string
+	// DistDeps is a slice of DockerDistDep.
+	// DockerDistDep contains a product, dist type and target file.
+	// For a particular product's dist type, we create a link from its output
+	// inside the ContextDir with the name specified in target file.
+	// This will be used to order the dist tasks such that all the dependent
+	// products' dist tasks will be executed first, after which the dist tasks for the
+	// current product are executed.
+	Deps []DockerDep
+	Info DockerImageInfo
+}
+
+type DockerImageInfo interface {
+	Type() DockerImageType
+}
+
+type DefaultDockerImageInfo struct{}
+
+func (info *DefaultDockerImageInfo) Type() DockerImageType {
+	return DefaultDockerImageType
+}
+
+type SLSDockerImageInfo struct {
+	GroupID      string
+	ProuductType string
+	Extensions   map[string]interface{}
+}
+
+func (info *SLSDockerImageInfo) Type() DockerImageType {
+	return SLSDockerImageType
 }
 
 func ToDockerDepType(dep string) (DockerDepType, error) {

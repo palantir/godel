@@ -38,7 +38,7 @@ func Build(cfg params.Project, wd string, baseRepo string, stdout io.Writer) err
 			productsToBuildImage[productName] = struct{}{}
 		}
 		for _, image := range productSpec.DockerImages {
-			for _, dep := range image.Dependencies() {
+			for _, dep := range image.Deps {
 				if isDist(dep.Type) {
 					productsToDist[dep.Product] = struct{}{}
 				}
@@ -64,8 +64,8 @@ func Build(cfg params.Project, wd string, baseRepo string, stdout io.Writer) err
 		// if base repo is specified, join it to each image's repo
 		for i := range orderedSpecs {
 			for j := range orderedSpecs[i].Spec.DockerImages {
-				repo, _ := orderedSpecs[i].Spec.DockerImages[j].Coordinates()
-				orderedSpecs[i].Spec.DockerImages[j].SetRepository(path.Join(baseRepo, repo))
+				orderedSpecs[i].Spec.DockerImages[j].Repository = path.Join(baseRepo,
+					orderedSpecs[i].Spec.DockerImages[j].Repository)
 			}
 		}
 	}
@@ -85,13 +85,12 @@ func RunBuild(buildSpecsWithDeps []params.ProductBuildSpecWithDeps, stdout io.Wr
 }
 
 func buildImage(image params.DockerImage, buildSpecsWithDeps params.ProductBuildSpecWithDeps, specsMap map[string]params.ProductBuildSpecWithDeps, stdout io.Writer) error {
-	repo, tag := image.Coordinates()
-	fmt.Fprintf(stdout, "Building docker image for %s and tagging it as %s:%s\n", buildSpecsWithDeps.Spec.ProductName, repo, tag)
+	fmt.Fprintf(stdout, "Building docker image for %s and tagging it as %s:%s\n", buildSpecsWithDeps.Spec.ProductName, image.Repository, image.Tag)
 
-	contextDir := path.Join(buildSpecsWithDeps.Spec.ProjectDir, image.ContextDirectory())
+	contextDir := path.Join(buildSpecsWithDeps.Spec.ProjectDir, image.ContextDir)
 
 	// link dependent dist artifacts into the context directory
-	for depProduct, depTypes := range dockerDepsToMap(image.Dependencies()) {
+	for depProduct, depTypes := range dockerDepsToMap(image.Deps) {
 		for depType, targetFile := range depTypes {
 			if !isDist(depType) {
 				continue
@@ -125,8 +124,8 @@ func buildImage(image params.DockerImage, buildSpecsWithDeps params.ProductBuild
 			}
 		}
 	}
-
-	return image.Build(buildSpecsWithDeps)
+	builder := GetBuilder(image)
+	return builder.build(buildSpecsWithDeps)
 }
 
 func dockerDepsToMap(deps []params.DockerDep) map[string]map[params.DockerDepType]string {

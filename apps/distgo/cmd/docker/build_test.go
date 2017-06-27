@@ -35,7 +35,6 @@ import (
 	"github.com/palantir/godel/apps/distgo/cmd/dist"
 	"github.com/palantir/godel/apps/distgo/cmd/docker"
 	"github.com/palantir/godel/apps/distgo/params"
-	dockerparams "github.com/palantir/godel/apps/distgo/params/docker"
 	"github.com/palantir/godel/apps/distgo/pkg/git"
 	"github.com/palantir/godel/apps/distgo/pkg/git/gittest"
 	"github.com/palantir/godel/apps/distgo/pkg/osarch"
@@ -139,10 +138,11 @@ func TestDockerDist(t *testing.T) {
 							},
 						},
 						DockerImages: []params.DockerImage{
-							&dockerparams.DefaultDockerImage{
+							{
 								Repository: fullRepoName("bar", pad),
 								Tag:        "0.1.0",
 								ContextDir: "bar/docker",
+								Info:       &params.DefaultDockerImageInfo{},
 							},
 						},
 					}, params.Project{
@@ -169,7 +169,7 @@ func TestDockerDist(t *testing.T) {
 							},
 						},
 						DockerImages: []params.DockerImage{
-							&dockerparams.DefaultDockerImage{
+							{
 								Repository: fullRepoName("foo", pad),
 								Tag:        "0.1.0",
 								ContextDir: "foo/docker",
@@ -180,6 +180,7 @@ func TestDockerDist(t *testing.T) {
 										TargetFile: "",
 									},
 								},
+								Info: &params.DefaultDockerImageInfo{},
 							},
 						},
 					},
@@ -260,12 +261,13 @@ func TestDockerDist(t *testing.T) {
 							},
 						},
 						DockerImages: []params.DockerImage{
-							&dockerparams.DefaultDockerImage{
+							{
 								Repository: fullRepoName("foo", pad),
 								Tag:        "0.1.0",
 								ContextDir: "foo/docker",
 								BuildArgsScript: `echo "--label"
 echo "test_label=test_value"`,
+								Info: &params.DefaultDockerImageInfo{},
 							},
 						},
 					},
@@ -322,7 +324,7 @@ echo "test_label=test_value"`,
 				if err = ioutil.WriteFile(path.Join(fooDockerDir, "Dockerfile"), []byte(dockerfile), 0777); err != nil {
 					return err
 				}
-				if err = ioutil.WriteFile(path.Join(fooDockerDir, dockerparams.ConfigurationFileName), []byte(configFile), 0777); err != nil {
+				if err = ioutil.WriteFile(path.Join(fooDockerDir, docker.ConfigurationFileName), []byte(configFile), 0777); err != nil {
 					return err
 				}
 
@@ -349,23 +351,23 @@ echo "test_label=test_value"`,
 							},
 						},
 						DockerImages: []params.DockerImage{
-							&dockerparams.SLSDockerImage{
-								DefaultDockerImage: dockerparams.DefaultDockerImage{
-									Repository: fullRepoName("foo", pad),
-									Tag:        "0.1.0",
-									ContextDir: "foo/docker",
-									Deps: []params.DockerDep{
-										{
-											Product:    "bar",
-											Type:       params.DockerDepDocker,
-											TargetFile: "",
-										},
+							{
+								Repository: fullRepoName("foo", pad),
+								Tag:        "0.1.0",
+								ContextDir: "foo/docker",
+								Deps: []params.DockerDep{
+									{
+										Product:    "bar",
+										Type:       params.DockerDepDocker,
+										TargetFile: "",
 									},
 								},
-								ProuductType: "test_type",
-								GroupID:      "com.palantir.godel",
-								Extensions: map[string]interface{}{
-									"test_key": "test_value",
+								Info: &params.SLSDockerImageInfo{
+									ProuductType: "test_type",
+									GroupID:      "com.palantir.godel",
+									Extensions: map[string]interface{}{
+										"test_key": "test_value",
+									},
 								},
 							},
 						},
@@ -399,7 +401,7 @@ echo "test_label=test_value"`,
 				image := images[0]
 				inspect, _, err := cli.ImageInspectWithRaw(context.Background(), image.ID)
 				require.NoError(t, err, "Case %d: %s", caseNum, name)
-				actualManifestEncoded, ok := inspect.Config.Labels[dockerparams.ManifestLabel]
+				actualManifestEncoded, ok := inspect.Config.Labels[docker.ManifestLabel]
 				require.True(t, ok, "Case %d: %s", caseNum, name)
 				actualManifest, err := base64.StdEncoding.DecodeString(actualManifestEncoded)
 				require.NoError(t, err, "Case %d: %s", caseNum, name)
@@ -410,7 +412,7 @@ echo "test_label=test_value"`,
 					"product-type: test_type\n" +
 					"extensions:\n  test_key: test_value\n"
 				require.Equal(t, expectedManifest, string(actualManifest), "Case %d: %s", caseNum, name)
-				actualConfigEncoded, ok := inspect.Config.Labels[dockerparams.ConfigurationLabel]
+				actualConfigEncoded, ok := inspect.Config.Labels[docker.ConfigurationLabel]
 				require.True(t, ok, "Case %d: %s", caseNum, name)
 				actualConfig, err := base64.StdEncoding.DecodeString(actualConfigEncoded)
 				require.NoError(t, err, "Case %d: %s", caseNum, name)
@@ -501,10 +503,11 @@ echo "test_label=test_value"`,
 							},
 						},
 						DockerImages: []params.DockerImage{
-							&dockerparams.DefaultDockerImage{
+							{
 								Repository: fullRepoName("bar", pad),
 								Tag:        "0.1.0",
 								ContextDir: "bar/docker",
+								Info:       &params.DefaultDockerImageInfo{},
 								Deps: []params.DockerDep{
 									{
 										Product:    "bar",
