@@ -22,6 +22,7 @@ import (
 
 	"github.com/palantir/godel/apps/distgo/cmd/docker"
 	"github.com/palantir/godel/apps/distgo/params"
+	dockerparams "github.com/palantir/godel/apps/distgo/params/docker"
 )
 
 func generateSpec(product string, deps []params.DockerDep) params.ProductBuildSpec {
@@ -29,7 +30,7 @@ func generateSpec(product string, deps []params.DockerDep) params.ProductBuildSp
 		ProductName: product,
 		Product: params.Product{
 			DockerImages: []params.DockerImage{
-				&params.DefaultDockerImage{
+				&dockerparams.DefaultDockerImage{
 					Deps: deps,
 				},
 			},

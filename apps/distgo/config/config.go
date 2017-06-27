@@ -25,6 +25,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/palantir/godel/apps/distgo/params"
+	"github.com/palantir/godel/apps/distgo/params/docker"
 	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 )
 
@@ -257,11 +258,12 @@ type DockerDep struct {
 }
 
 type DockerImage struct {
-	Repository string          `yaml:"repository" json:"repository"`
-	Tag        string          `yaml:"tag" json:"tag"`
-	ContextDir string          `yaml:"context-dir" json:"context-dir"`
-	Deps       []DockerDep     `yaml:"dependencies" json:"dependencies"`
-	Info       DockerImageInfo `yaml:"info" json:"info"`
+	Repository      string          `yaml:"repository" json:"repository"`
+	Tag             string          `yaml:"tag" json:"tag"`
+	ContextDir      string          `yaml:"context-dir" json:"context-dir"`
+	Deps            []DockerDep     `yaml:"dependencies" json:"dependencies"`
+	Info            DockerImageInfo `yaml:"info" json:"info"`
+	BuildArgsScript string          `yaml:"build-args-script" json:"build-args-script"`
 }
 
 type DockerImageInfo struct {
@@ -602,11 +604,12 @@ func (cfg *DockerImage) ToParams() (params.DockerImage, error) {
 			TargetFile: dep.TargetFile,
 		})
 	}
-	dockerImage := params.DefaultDockerImage{
-		Repository: cfg.Repository,
-		Tag:        cfg.Tag,
-		ContextDir: cfg.ContextDir,
-		Deps:       deps,
+	dockerImage := docker.DefaultDockerImage{
+		Repository:      cfg.Repository,
+		Tag:             cfg.Tag,
+		ContextDir:      cfg.ContextDir,
+		Deps:            deps,
+		BuildArgsScript: cfg.BuildArgsScript,
 	}
 	switch cfg.Info.Type {
 	case "sls":
@@ -614,7 +617,7 @@ func (cfg *DockerImage) ToParams() (params.DockerImage, error) {
 		if err := mapstructure.Decode(cfg.Info.Data, &slsInfo); err != nil {
 			return nil, errors.Wrap(err, "Failed to unmarshal the sls image info")
 		}
-		return &params.SLSDockerImage{
+		return &docker.SLSDockerImage{
 			DefaultDockerImage: dockerImage,
 			ProuductType:       slsInfo.ProuductType,
 			GroupID:            slsInfo.GroupID,

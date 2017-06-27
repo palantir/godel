@@ -35,6 +35,7 @@ import (
 	"github.com/palantir/godel/apps/distgo/cmd/dist"
 	"github.com/palantir/godel/apps/distgo/cmd/docker"
 	"github.com/palantir/godel/apps/distgo/params"
+	dockerparams "github.com/palantir/godel/apps/distgo/params/docker"
 	"github.com/palantir/godel/apps/distgo/pkg/git"
 	"github.com/palantir/godel/apps/distgo/pkg/git/gittest"
 	"github.com/palantir/godel/apps/distgo/pkg/osarch"
@@ -138,7 +139,7 @@ func TestDockerDist(t *testing.T) {
 							},
 						},
 						DockerImages: []params.DockerImage{
-							&params.DefaultDockerImage{
+							&dockerparams.DefaultDockerImage{
 								Repository: fullRepoName("bar", pad),
 								Tag:        "0.1.0",
 								ContextDir: "bar/docker",
@@ -168,7 +169,7 @@ func TestDockerDist(t *testing.T) {
 							},
 						},
 						DockerImages: []params.DockerImage{
-							&params.DefaultDockerImage{
+							&dockerparams.DefaultDockerImage{
 								Repository: fullRepoName("foo", pad),
 								Tag:        "0.1.0",
 								ContextDir: "foo/docker",
@@ -217,7 +218,7 @@ func TestDockerDist(t *testing.T) {
 			},
 		},
 		{
-			name: "sls docker dist",
+			name: "docker dist with build script args",
 			setupProject: func(projectDir, pad string) error {
 				gittest.InitGitDir(t, projectDir)
 				// initialize foo
@@ -233,9 +234,6 @@ func TestDockerDist(t *testing.T) {
 					return err
 				}
 				if err = ioutil.WriteFile(path.Join(fooDockerDir, "Dockerfile"), []byte(dockerfile), 0777); err != nil {
-					return err
-				}
-				if err = ioutil.WriteFile(path.Join(fooDockerDir, params.ConfigurationFileName), []byte(configFile), 0777); err != nil {
 					return err
 				}
 
@@ -262,8 +260,97 @@ func TestDockerDist(t *testing.T) {
 							},
 						},
 						DockerImages: []params.DockerImage{
-							&params.SLSDockerImage{
-								DefaultDockerImage: params.DefaultDockerImage{
+							&dockerparams.DefaultDockerImage{
+								Repository: fullRepoName("foo", pad),
+								Tag:        "0.1.0",
+								ContextDir: "foo/docker",
+								BuildArgsScript: `echo "--label"
+echo "test_label=test_value"`,
+							},
+						},
+					},
+					params.Project{
+						GroupID: "com.test.group",
+					},
+				)
+				allSpec["foo"] = fooSpec
+				fooSpecWithDeps, err := params.NewProductBuildSpecWithDeps(fooSpec, allSpec)
+				require.NoError(t, err)
+
+				return []params.ProductBuildSpecWithDeps{fooSpecWithDeps}
+			},
+			cleanup: func(cli *dockercli.Client, projectDir, pad string) {
+				images := []string{fmt.Sprintf("%v:0.1.0", fullRepoName("foo", pad))}
+				err := removeImages(cli, images)
+				if err != nil {
+					t.Logf("Failed to remove images: %v", err)
+				}
+			},
+			preDistAction: func(projectDir string, buildSpec []params.ProductBuildSpecWithDeps) {
+				gittest.CreateGitTag(t, projectDir, "0.1.0")
+			},
+			validate: func(caseNum int, name string, pad string, cli *dockercli.Client) {
+				filter := filters.NewArgs()
+				filter.Add("reference", fmt.Sprintf("%v:0.1.0", fullRepoName("foo", pad)))
+				images, err := cli.ImageList(context.Background(), types.ImageListOptions{Filters: filter})
+				require.NoError(t, err, "Case %d: %s", caseNum, name)
+				require.True(t, len(images) > 0, "Case %d: %s", caseNum, name)
+				image := images[0]
+				inspect, _, err := cli.ImageInspectWithRaw(context.Background(), image.ID)
+				require.NoError(t, err, "Case %d: %s", caseNum, name)
+				actualValue, ok := inspect.Config.Labels["test_label"]
+				require.True(t, ok, "Case %d: %s", caseNum, name)
+				require.Equal(t, "test_value", actualValue, "Case%d: %s", caseNum, name)
+			},
+		},
+		{
+			name: "sls docker dist",
+			setupProject: func(projectDir, pad string) error {
+				gittest.InitGitDir(t, projectDir)
+				// initialize foo
+				fooDir := path.Join(projectDir, "foo")
+				if err := os.Mkdir(fooDir, 0777); err != nil {
+					return err
+				}
+				if err := ioutil.WriteFile(path.Join(fooDir, "main.go"), []byte(testMain), 0644); err != nil {
+					return err
+				}
+				fooDockerDir := path.Join(fooDir, "docker")
+				if err = os.Mkdir(fooDockerDir, 0777); err != nil {
+					return err
+				}
+				if err = ioutil.WriteFile(path.Join(fooDockerDir, "Dockerfile"), []byte(dockerfile), 0777); err != nil {
+					return err
+				}
+				if err = ioutil.WriteFile(path.Join(fooDockerDir, dockerparams.ConfigurationFileName), []byte(configFile), 0777); err != nil {
+					return err
+				}
+
+				// commit
+				gittest.CommitAllFiles(t, projectDir, "Commit")
+				return nil
+			},
+			spec: func(projectDir string, pad string) []params.ProductBuildSpecWithDeps {
+				allSpec := make(map[string]params.ProductBuildSpec)
+				fooSpec := params.NewProductBuildSpec(
+					projectDir,
+					"foo",
+					git.ProjectInfo{
+						Version: "0.1.0",
+					},
+					params.Product{
+						Build: params.Build{
+							MainPkg: "./foo",
+							OSArchs: []osarch.OSArch{
+								{
+									OS:   "linux",
+									Arch: "amd64",
+								},
+							},
+						},
+						DockerImages: []params.DockerImage{
+							&dockerparams.SLSDockerImage{
+								DefaultDockerImage: dockerparams.DefaultDockerImage{
 									Repository: fullRepoName("foo", pad),
 									Tag:        "0.1.0",
 									ContextDir: "foo/docker",
@@ -312,7 +399,7 @@ func TestDockerDist(t *testing.T) {
 				image := images[0]
 				inspect, _, err := cli.ImageInspectWithRaw(context.Background(), image.ID)
 				require.NoError(t, err, "Case %d: %s", caseNum, name)
-				actualManifestEncoded, ok := inspect.Config.Labels[params.ManifestLabel]
+				actualManifestEncoded, ok := inspect.Config.Labels[dockerparams.ManifestLabel]
 				require.True(t, ok, "Case %d: %s", caseNum, name)
 				actualManifest, err := base64.StdEncoding.DecodeString(actualManifestEncoded)
 				require.NoError(t, err, "Case %d: %s", caseNum, name)
@@ -323,7 +410,7 @@ func TestDockerDist(t *testing.T) {
 					"product-type: test_type\n" +
 					"extensions:\n  test_key: test_value\n"
 				require.Equal(t, expectedManifest, string(actualManifest), "Case %d: %s", caseNum, name)
-				actualConfigEncoded, ok := inspect.Config.Labels[params.ConfigurationLabel]
+				actualConfigEncoded, ok := inspect.Config.Labels[dockerparams.ConfigurationLabel]
 				require.True(t, ok, "Case %d: %s", caseNum, name)
 				actualConfig, err := base64.StdEncoding.DecodeString(actualConfigEncoded)
 				require.NoError(t, err, "Case %d: %s", caseNum, name)
@@ -414,7 +501,7 @@ func TestDockerDist(t *testing.T) {
 							},
 						},
 						DockerImages: []params.DockerImage{
-							&params.DefaultDockerImage{
+							&dockerparams.DefaultDockerImage{
 								Repository: fullRepoName("bar", pad),
 								Tag:        "0.1.0",
 								ContextDir: "bar/docker",

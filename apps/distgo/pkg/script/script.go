@@ -15,11 +15,13 @@
 package script
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -91,4 +93,21 @@ func WriteAndExecute(buildSpec params.ProductBuildSpec, script string, stdOut, s
 		}
 	}
 	return nil
+}
+
+func GetBuildArgs(buildSpec params.ProductBuildSpec, script string) ([]string, error) {
+	stdoutBuf := bytes.Buffer{}
+	stderrBuf := bytes.Buffer{}
+	combinedBuf := bytes.Buffer{}
+	stdoutMW := io.MultiWriter(&stdoutBuf, &combinedBuf)
+	stderrMW := io.MultiWriter(&stderrBuf, &combinedBuf)
+	if err := WriteAndExecute(buildSpec, script, stdoutMW, stderrMW, nil); err != nil || stderrBuf.String() != "" {
+		return nil, errors.Wrapf(err, "failed to execute build args script for %v: %v", buildSpec.ProductName, combinedBuf.String())
+	}
+
+	buildArgsString := strings.TrimSpace(stdoutBuf.String())
+	if buildArgsString != "" {
+		return strings.Split(buildArgsString, "\n"), nil
+	}
+	return []string{}, nil
 }
