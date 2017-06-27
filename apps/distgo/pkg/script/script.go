@@ -106,8 +106,8 @@ func GetBuildArgs(buildSpec params.ProductBuildSpec, script string) ([]string, e
 	}
 
 	buildArgsString := strings.TrimSpace(stdoutBuf.String())
-	if buildArgsString != "" {
-		return strings.Split(buildArgsString, "\n"), nil
+	if buildArgsString == "" {
+		return nil, nil
 	}
-	return []string{}, nil
+	return strings.Split(buildArgsString, "\n"), nil
 }

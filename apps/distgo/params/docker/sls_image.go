@@ -61,7 +61,7 @@ func (sdi *SLSDockerImage) Build(buildSpec params.ProductBuildSpecWithDeps) erro
 	}
 	buildArgs, err := script.GetBuildArgs(buildSpec.Spec, sdi.BuildArgsScript)
 	if err != nil {
-		return errors.Wrap(err, "")
+		return err
 	}
 	args = append(args, buildArgs...)
 	args = append(args, contextDir)

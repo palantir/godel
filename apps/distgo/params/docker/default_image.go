@@ -59,11 +59,9 @@ func (di *DefaultDockerImage) Build(buildSpec params.ProductBuildSpecWithDeps) e
 	args = append(args, "--tag", fmt.Sprintf("%s:%s", di.Repository, di.Tag))
 	buildArgs, err := script.GetBuildArgs(buildSpec.Spec, di.BuildArgsScript)
 	if err != nil {
-		return errors.Wrap(err, "")
+		return err
 	}
-	if len(buildArgs) > 0 {
-		args = append(args, buildArgs...)
-	}
+	args = append(args, buildArgs...)
 	args = append(args, contextDir)
 
 	buildCmd := exec.Command("docker", args...)

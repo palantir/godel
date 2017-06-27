@@ -247,7 +247,7 @@ func doBuildAction(action buildAction, buildSpec params.ProductBuildSpec, output
 	// get build args
 	buildArgs, err := script.GetBuildArgs(buildSpec, buildSpec.Build.BuildArgsScript)
 	if err != nil {
-		return errors.Wrapf(err, "")
+		return err
 	}
 	args = append(args, buildArgs...)
 
