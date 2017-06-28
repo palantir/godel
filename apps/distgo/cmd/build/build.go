@@ -15,7 +15,6 @@
 package build
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -245,21 +244,12 @@ func doBuildAction(action buildAction, buildSpec params.ProductBuildSpec, output
 		return errors.Errorf("unrecognized action: %v", action)
 	}
 
-	// execute build args script
-	stdoutBuf := bytes.Buffer{}
-	stderrBuf := bytes.Buffer{}
-	combinedBuf := bytes.Buffer{}
-	stdoutMW := io.MultiWriter(&stdoutBuf, &combinedBuf)
-	stderrMW := io.MultiWriter(&stderrBuf, &combinedBuf)
-	if err := script.WriteAndExecute(buildSpec, buildSpec.Build.BuildArgsScript, stdoutMW, stderrMW, nil); err != nil || stderrBuf.String() != "" {
-		return errors.Wrapf(err, "failed to execute build args script for %v: %v", buildSpec.ProductName, combinedBuf.String())
+	// get build args
+	buildArgs, err := script.GetBuildArgs(buildSpec, buildSpec.Build.BuildArgsScript)
+	if err != nil {
+		return err
 	}
-
-	buildArgsString := strings.TrimSpace(stdoutBuf.String())
-	if buildArgsString != "" {
-		buildArgs := strings.Split(buildArgsString, "\n")
-		args = append(args, buildArgs...)
-	}
+	args = append(args, buildArgs...)
 
 	if buildSpec.Build.VersionVar != "" {
 		args = append(args, "-ldflags", fmt.Sprintf("-X %v=%v", buildSpec.Build.VersionVar, buildSpec.ProductVersion))

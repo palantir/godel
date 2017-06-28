@@ -144,7 +144,12 @@ func NewProductBuildSpec(projectDir, productName string, gitProductInfo git.Proj
 	}
 
 	for i := range buildSpec.DockerImages {
-		buildSpec.DockerImages[i].SetDefaults(productName, gitProductInfo.Version)
+		if buildSpec.DockerImages[i].Repository == "" {
+			buildSpec.DockerImages[i].Repository = productName
+		}
+		if buildSpec.DockerImages[i].Tag == "" {
+			buildSpec.DockerImages[i].Tag = gitProductInfo.Version
+		}
 	}
 
 	return buildSpec

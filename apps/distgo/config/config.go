@@ -257,11 +257,12 @@ type DockerDep struct {
 }
 
 type DockerImage struct {
-	Repository string          `yaml:"repository" json:"repository"`
-	Tag        string          `yaml:"tag" json:"tag"`
-	ContextDir string          `yaml:"context-dir" json:"context-dir"`
-	Deps       []DockerDep     `yaml:"dependencies" json:"dependencies"`
-	Info       DockerImageInfo `yaml:"info" json:"info"`
+	Repository      string          `yaml:"repository" json:"repository"`
+	Tag             string          `yaml:"tag" json:"tag"`
+	ContextDir      string          `yaml:"context-dir" json:"context-dir"`
+	Deps            []DockerDep     `yaml:"dependencies" json:"dependencies"`
+	Info            DockerImageInfo `yaml:"info" json:"info"`
+	BuildArgsScript string          `yaml:"build-args-script" json:"build-args-script"`
 }
 
 type DockerImageInfo struct {
@@ -594,7 +595,7 @@ func (cfg *DockerImage) ToParams() (params.DockerImage, error) {
 	for _, dep := range cfg.Deps {
 		depType, err := params.ToDockerDepType(dep.Type)
 		if err != nil {
-			return nil, nil
+			return params.DockerImage{}, nil
 		}
 		deps = append(deps, params.DockerDep{
 			Product:    dep.Product,
@@ -602,30 +603,30 @@ func (cfg *DockerImage) ToParams() (params.DockerImage, error) {
 			TargetFile: dep.TargetFile,
 		})
 	}
-	dockerImage := params.DefaultDockerImage{
-		Repository: cfg.Repository,
-		Tag:        cfg.Tag,
-		ContextDir: cfg.ContextDir,
-		Deps:       deps,
+	dockerImage := params.DockerImage{
+		Repository:      cfg.Repository,
+		Tag:             cfg.Tag,
+		ContextDir:      cfg.ContextDir,
+		Deps:            deps,
+		BuildArgsScript: cfg.BuildArgsScript,
 	}
 	switch cfg.Info.Type {
 	case "sls":
 		slsInfo := SLSDockerImageInfo{}
 		if err := mapstructure.Decode(cfg.Info.Data, &slsInfo); err != nil {
-			return nil, errors.Wrap(err, "Failed to unmarshal the sls image info")
+			return params.DockerImage{}, errors.Wrap(err, "Failed to unmarshal the sls image info")
 		}
-		return &params.SLSDockerImage{
-			DefaultDockerImage: dockerImage,
-			ProuductType:       slsInfo.ProuductType,
-			GroupID:            slsInfo.GroupID,
-			Extensions:         slsInfo.Extensions,
-		}, nil
+		dockerImage.Info = &params.SLSDockerImageInfo{
+			GroupID:      slsInfo.GroupID,
+			ProuductType: slsInfo.ProuductType,
+			Extensions:   slsInfo.Extensions,
+		}
 	case "":
-		return &dockerImage, nil
+		dockerImage.Info = &params.DefaultDockerImageInfo{}
 	default:
-		return nil, errors.New("Unknown Info type specified")
-
+		return params.DockerImage{}, errors.New("Unknown Info type specified")
 	}
+	return dockerImage, nil
 }
 
 func (cfg *Publish) ToParams() params.Publish {

@@ -15,27 +15,19 @@
 package params
 
 import (
-	"encoding/base64"
-	"fmt"
-	"io/ioutil"
-	"os"
-	"os/exec"
-	"path"
-
 	"github.com/pkg/errors"
 )
 
 type DockerDepType string
+type DockerImageType string
 
 const (
-	DockerDepSLS    DockerDepType = "sls"
-	DockerDepBin    DockerDepType = "bin"
-	DockerDepRPM    DockerDepType = "rpm"
-	DockerDepDocker DockerDepType = "docker"
-
-	ManifestLabel         = "com.palantir.sls.manifest"
-	ConfigurationLabel    = "com.palantir.sls.configuration"
-	ConfigurationFileName = "configuration.yml"
+	DockerDepSLS           DockerDepType   = "sls"
+	DockerDepBin           DockerDepType   = "bin"
+	DockerDepRPM           DockerDepType   = "rpm"
+	DockerDepDocker        DockerDepType   = "docker"
+	DefaultDockerImageType DockerImageType = "default"
+	SLSDockerImageType     DockerImageType = "sls"
 )
 
 type DockerDep struct {
@@ -44,23 +36,15 @@ type DockerDep struct {
 	TargetFile string
 }
 
-type DockerImage interface {
-	SetRepository(repo string)
-	SetDefaults(repo, tag string)
-	Coordinates() (string, string)
-	ContextDirectory() string
-	Dependencies() []DockerDep
-	Build(buildSpec ProductBuildSpecWithDeps) error
-}
-
-type DefaultDockerImage struct {
+type DockerImage struct {
 	// Repository and Tag are the part of the image coordinates.
 	// For example, in alpine:latest, alpine is the repository
 	// and the latest is the tag
 	Repository string
 	Tag        string
 	// ContextDir is the directory in which the docker build task is executed.
-	ContextDir string
+	ContextDir      string
+	BuildArgsScript string
 	// DistDeps is a slice of DockerDistDep.
 	// DockerDistDep contains a product, dist type and target file.
 	// For a particular product's dist type, we create a link from its output
@@ -69,79 +53,27 @@ type DefaultDockerImage struct {
 	// products' dist tasks will be executed first, after which the dist tasks for the
 	// current product are executed.
 	Deps []DockerDep
+	Info DockerImageInfo
 }
 
-type SLSDockerImage struct {
-	DefaultDockerImage
+type DockerImageInfo interface {
+	Type() DockerImageType
+}
+
+type DefaultDockerImageInfo struct{}
+
+func (info *DefaultDockerImageInfo) Type() DockerImageType {
+	return DefaultDockerImageType
+}
+
+type SLSDockerImageInfo struct {
 	GroupID      string
 	ProuductType string
 	Extensions   map[string]interface{}
 }
 
-func (sdi *SLSDockerImage) Build(buildSpec ProductBuildSpecWithDeps) error {
-	contextDir := path.Join(buildSpec.Spec.ProjectDir, sdi.ContextDir)
-	configFile := path.Join(contextDir, ConfigurationFileName)
-	var args []string
-	args = append(args, "build")
-	args = append(args, "--tag", fmt.Sprintf("%s:%s", sdi.Repository, sdi.Tag))
-	manifest, err := GetManifest(sdi.GroupID, buildSpec.Spec.ProductName, buildSpec.Spec.ProductVersion, sdi.ProuductType, sdi.Extensions)
-	if err != nil {
-		return errors.Wrap(err, "Failed to get manifest for the image")
-	}
-	args = append(args, "--label", fmt.Sprintf("%s=%s", ManifestLabel, base64.StdEncoding.EncodeToString([]byte(manifest))))
-	if _, err := os.Stat(configFile); err == nil {
-		content, err := ioutil.ReadFile(configFile)
-		if err != nil {
-			return errors.Wrapf(err, "Failed to read the file %s", configFile)
-		}
-		args = append(args, "--label", fmt.Sprintf("%s=%s", ConfigurationLabel, base64.StdEncoding.EncodeToString(content)))
-	}
-	args = append(args, contextDir)
-
-	buildCmd := exec.Command("docker", args...)
-	if output, err := buildCmd.CombinedOutput(); err != nil {
-		return errors.Wrap(err, fmt.Sprintf("docker build failed with error:\n%s\n", string(output)))
-	}
-	return nil
-}
-
-func (di *DefaultDockerImage) ContextDirectory() string {
-	return di.ContextDir
-}
-
-func (di *DefaultDockerImage) Dependencies() []DockerDep {
-	return di.Deps
-}
-
-func (di *DefaultDockerImage) Build(buildSpec ProductBuildSpecWithDeps) error {
-	contextDir := path.Join(buildSpec.Spec.ProjectDir, di.ContextDir)
-	var args []string
-	args = append(args, "build")
-	args = append(args, "--tag", fmt.Sprintf("%s:%s", di.Repository, di.Tag))
-	args = append(args, contextDir)
-
-	buildCmd := exec.Command("docker", args...)
-	if output, err := buildCmd.CombinedOutput(); err != nil {
-		return errors.Wrap(err, fmt.Sprintf("docker build failed with error:\n%s\n", string(output)))
-	}
-	return nil
-}
-
-func (di *DefaultDockerImage) Coordinates() (string, string) {
-	return di.Repository, di.Tag
-}
-
-func (di *DefaultDockerImage) SetDefaults(repo, tag string) {
-	if di.Repository == "" {
-		di.Repository = repo
-	}
-	if di.Tag == "" {
-		di.Tag = tag
-	}
-}
-
-func (di *DefaultDockerImage) SetRepository(repo string) {
-	di.Repository = repo
+func (info *SLSDockerImageInfo) Type() DockerImageType {
+	return SLSDockerImageType
 }
 
 func ToDockerDepType(dep string) (DockerDepType, error) {

@@ -29,7 +29,7 @@ func generateSpec(product string, deps []params.DockerDep) params.ProductBuildSp
 		ProductName: product,
 		Product: params.Product{
 			DockerImages: []params.DockerImage{
-				&params.DefaultDockerImage{
+				{
 					Deps: deps,
 				},
 			},

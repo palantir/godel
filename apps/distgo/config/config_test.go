@@ -396,6 +396,9 @@ echo "main.year=$YEAR"
 			            product: dep2
 			            type: rpm
 			            target-file: dep2-rpm.tgz
+			        build-args-script: |
+			                           echo "--label"
+			                           echo "test_label=test_value"
 			        info:
 			          type: sls
 			          data:
@@ -425,6 +428,9 @@ echo "main.year=$YEAR"
 											TargetFile: "dep2-rpm.tgz",
 										},
 									},
+									BuildArgsScript: `echo "--label"
+echo "test_label=test_value"
+`,
 									Info: config.DockerImageInfo{
 										Type: "sls",
 										Data: config.SLSDockerImageInfo{

@@ -41,11 +41,11 @@ func Publish(cfg params.Project, wd string, baseRepo string, stdout io.Writer) e
 	for _, specWithDeps := range buildSpecsWithDeps {
 		versionTag := specWithDeps.Spec.ProductVersion
 		for _, image := range specWithDeps.Spec.DockerImages {
-			repo, tag := image.Coordinates()
+			repo := image.Repository
 			if baseRepo != "" {
 				repo = path.Join(baseRepo, repo)
 			}
-			buildTag := fmt.Sprintf("%s:%s", repo, tag)
+			buildTag := fmt.Sprintf("%s:%s", repo, image.Tag)
 			publishTag := fmt.Sprintf("%s:%s", repo, versionTag)
 			if err := tagImage(buildTag, publishTag); err != nil {
 				return err
