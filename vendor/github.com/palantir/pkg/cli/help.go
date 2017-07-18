@@ -1,4 +1,4 @@
-// Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+// Copyright 2016 Palantir Technologies. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -20,7 +20,7 @@ const appHelpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   {{.Name}}{{if .Flags}} [global flags]{{end}}{{if .Subcommands}} command [command flags]{{end}}{{if .Description}}
+   {{.Name}}{{if .Flags}} [global flags]{{end}}{{if anyCommands .Subcommands}} command [command flags]{{end}}{{if .Description}}
 
 DESCRIPTION:
    {{.Description}}{{end}}{{if anyCommands .Subcommands}}

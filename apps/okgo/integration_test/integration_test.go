@@ -181,6 +181,7 @@ func Foo() {
 				return []string{
 					`foo.go:2:8: could not import bar \(cannot find package "bar" in any of:
 .+ \(vendor tree\)
+.+
 .+ \(from \$GOROOT\)
 .+ \(from \$GOPATH\)\)`,
 					`foo.go:4:2: undeclared name: bar`,
