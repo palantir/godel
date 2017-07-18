@@ -4,25 +4,33 @@ checks:
       - value: "should have comment or be unexported"
       - value: "or a comment on this block"
   novendor:
-    filters:
-      # Dependent vendored library that is not detected due to https://github.com/palantir/checks/issues/34
-      - value: "github.com/google/go-querystring"
-      # packages used for amalgomating gonform
-      - value: "cmd/gofmt"
-      # packages used for amalgomating gunit
-      - value: "github.com/jstemmer/go-junit-report"
-      - value: "github.com/nmiyake/gotest"
-      - value: "rsc.io/gt"
-      # packages used for amalgomating okgo
-      - value: "github.com/golang/lint"
-      - value: "github.com/gordonklaus/ineffassign"
-      - value: "github.com/kisielk/errcheck"
-      - value: "github.com/mdempsky/unconvert"
-      - value: "github.com/nmiyake/govet"
-      - value: "github.com/opennota/check"
-      - value: "github.com/palantir/checks"
-      - value: "github.com/palantir/checks/compiles"
-      - value: "github.com/palantir/checks/extimport"
-      - value: "github.com/palantir/checks/novendor"
-      - value: "github.com/palantir/checks/outparamcheck"
-      - value: "github.com/remyoudompheng/go-misc"
+    args:
+      # ignore gonform packages added for amalgomation
+      - "--ignore"
+      - "./apps/gonform/vendor/cmd/gofmt"
+      - "--ignore"
+      - "./apps/gonform/vendor/github.com/palantir/checks/ptimports"
+      # ignore gunit packages added for amalgomation
+      - "--ignore"
+      - "./apps/gunit/vendor/github.com/jstemmer/go-junit-report"
+      - "--ignore"
+      - "./apps/gunit/vendor/github.com/nmiyake/gotest"
+      - "--ignore"
+      - "./apps/gunit/vendor/rsc.io/gt"
+      # ignore okgo packages added for amalgomation
+      - "--ignore"
+      - "./apps/okgo/vendor/github.com/golang/lint"
+      - "--ignore"
+      - "./apps/okgo/vendor/github.com/gordonklaus/ineffassign"
+      - "--ignore"
+      - "./apps/okgo/vendor/github.com/kisielk/errcheck"
+      - "--ignore"
+      - "./apps/okgo/vendor/github.com/nmiyake/govet"
+      - "--ignore"
+      - "./apps/okgo/vendor/github.com/mdempsky/unconvert"
+      - "--ignore"
+      - "./apps/okgo/vendor/github.com/opennota/check"
+      - "--ignore"
+      - "./apps/okgo/vendor/github.com/palantir/checks"
+      - "--ignore"
+      - "./apps/okgo/vendor/github.com/remyoudompheng/go-misc"
