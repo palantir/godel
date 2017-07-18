@@ -51,10 +51,10 @@ func testHelper(m *testing.M) int {
 	}
 
 	libraries := map[string]string{
-		"gocover":       "../../vendor/github.com/nmiyake/gotest",
-		"gojunitreport": "../../vendor/github.com/jstemmer/go-junit-report",
-		"gotest":        "../../vendor/github.com/nmiyake/gotest",
-		"gt":            "../../vendor/rsc.io/gt",
+		"gocover":       "./vendor/github.com/nmiyake/gotest",
+		"gojunitreport": "./vendor/github.com/jstemmer/go-junit-report",
+		"gotest":        "./vendor/github.com/nmiyake/gotest",
+		"gt":            "./vendor/rsc.io/gt",
 	}
 
 	supplier = temporaryBuildRunnerSupplier(tmpDir, libraries)

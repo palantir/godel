@@ -1,0 +1,28 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "WI3kKqPhmmiCAqTLtWf4hWkBVi8=",
+			"origin": "github.com/palantir/godel/vendor/cmd/gofmt",
+			"path": "cmd/gofmt",
+			"revision": "cc039774b3e3fa8c777b28f90c2834ac098b6aa0",
+			"revisionTime": "2017-06-28T17:32:28Z"
+		},
+		{
+			"checksumSHA1": "UjFNpP0aUh9lsIt78T86UH8RXt8=",
+			"origin": "github.com/palantir/godel/vendor/github.com/palantir/checks/ptimports",
+			"path": "github.com/palantir/checks/ptimports",
+			"revision": "cc039774b3e3fa8c777b28f90c2834ac098b6aa0",
+			"revisionTime": "2017-06-28T17:32:28Z"
+		},
+		{
+			"checksumSHA1": "ceNbjVr1hzaH2t/XUzp2LPFOsOo=",
+			"origin": "github.com/palantir/godel/vendor/github.com/palantir/checks/ptimports/ptimports",
+			"path": "github.com/palantir/checks/ptimports/ptimports",
+			"revision": "cc039774b3e3fa8c777b28f90c2834ac098b6aa0",
+			"revisionTime": "2017-06-28T17:32:28Z"
+		}
+	],
+	"rootPath": "github.com/palantir/godel/apps/gonform"
+}

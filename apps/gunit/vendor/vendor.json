@@ -1,0 +1,35 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "QXRj+OCBkKaDCXYvYRQG7ie5gf4=",
+			"origin": "github.com/palantir/godel/vendor/github.com/jstemmer/go-junit-report",
+			"path": "github.com/jstemmer/go-junit-report",
+			"revision": "cc039774b3e3fa8c777b28f90c2834ac098b6aa0",
+			"revisionTime": "2017-06-28T17:32:28Z"
+		},
+		{
+			"checksumSHA1": "r6Rt/to+HhaKTHhqLm4o7osC/ag=",
+			"origin": "github.com/palantir/godel/vendor/github.com/jstemmer/go-junit-report/parser",
+			"path": "github.com/jstemmer/go-junit-report/parser",
+			"revision": "cc039774b3e3fa8c777b28f90c2834ac098b6aa0",
+			"revisionTime": "2017-06-28T17:32:28Z"
+		},
+		{
+			"checksumSHA1": "avQGcCIZLiB9oAz4JQZqNbUjaAE=",
+			"origin": "github.com/palantir/godel/vendor/github.com/nmiyake/gotest",
+			"path": "github.com/nmiyake/gotest",
+			"revision": "cc039774b3e3fa8c777b28f90c2834ac098b6aa0",
+			"revisionTime": "2017-06-28T17:32:28Z"
+		},
+		{
+			"checksumSHA1": "C5YCO1hBwhWCx7jwLzv+YtpTkqc=",
+			"origin": "github.com/palantir/godel/vendor/rsc.io/gt",
+			"path": "rsc.io/gt",
+			"revision": "cc039774b3e3fa8c777b28f90c2834ac098b6aa0",
+			"revisionTime": "2017-06-28T17:32:28Z"
+		}
+	],
+	"rootPath": "github.com/palantir/godel/apps/gunit"
+}

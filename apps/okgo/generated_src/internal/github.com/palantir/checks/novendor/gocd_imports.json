@@ -1,0 +1,88 @@
+{
+    "imports": [],
+    "mainOnlyImports": [
+        {
+            "path": "github.com/palantir/checks/vendor/github.com/nmiyake/pkg/dirs",
+            "numGoFiles": 2,
+            "numImportedGoFiles": 0,
+            "importedFrom": [
+                "github.com/palantir/checks/novendor",
+                "github.com/palantir/checks/novendor_test"
+            ]
+        },
+        {
+            "path": "github.com/palantir/checks/vendor/github.com/nmiyake/pkg/errorstringer",
+            "numGoFiles": 2,
+            "numImportedGoFiles": 7,
+            "importedFrom": [
+                "github.com/palantir/checks/novendor"
+            ]
+        },
+        {
+            "path": "github.com/palantir/checks/vendor/github.com/palantir/pkg/cli",
+            "numGoFiles": 27,
+            "numImportedGoFiles": 198,
+            "importedFrom": [
+                "github.com/palantir/checks/novendor"
+            ]
+        },
+        {
+            "path": "github.com/palantir/checks/vendor/github.com/palantir/pkg/cli/flag",
+            "numGoFiles": 8,
+            "numImportedGoFiles": 4,
+            "importedFrom": [
+                "github.com/palantir/checks/novendor"
+            ]
+        },
+        {
+            "path": "github.com/palantir/checks/vendor/github.com/palantir/pkg/matcher",
+            "numGoFiles": 6,
+            "numImportedGoFiles": 0,
+            "importedFrom": [
+                "github.com/palantir/checks/novendor"
+            ]
+        },
+        {
+            "path": "github.com/palantir/checks/vendor/github.com/palantir/pkg/pkgpath",
+            "numGoFiles": 2,
+            "numImportedGoFiles": 6,
+            "importedFrom": [
+                "github.com/palantir/checks/novendor"
+            ]
+        },
+        {
+            "path": "github.com/palantir/checks/vendor/github.com/pkg/errors",
+            "numGoFiles": 7,
+            "numImportedGoFiles": 0,
+            "importedFrom": [
+                "github.com/palantir/checks/novendor"
+            ]
+        }
+    ],
+    "testOnlyImports": [
+        {
+            "path": "github.com/palantir/checks/vendor/github.com/nmiyake/pkg/gofiles",
+            "numGoFiles": 2,
+            "numImportedGoFiles": 0,
+            "importedFrom": [
+                "github.com/palantir/checks/novendor_test"
+            ]
+        },
+        {
+            "path": "github.com/palantir/checks/vendor/github.com/stretchr/testify/assert",
+            "numGoFiles": 9,
+            "numImportedGoFiles": 19,
+            "importedFrom": [
+                "github.com/palantir/checks/novendor_test"
+            ]
+        },
+        {
+            "path": "github.com/palantir/checks/vendor/github.com/stretchr/testify/require",
+            "numGoFiles": 7,
+            "numImportedGoFiles": 28,
+            "importedFrom": [
+                "github.com/palantir/checks/novendor_test"
+            ]
+        }
+    ]
+}

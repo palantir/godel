@@ -1,4 +1,4 @@
-// Copyright 2016 Palantir Technologies, Inc. All rights reserved.
+// Copyright 2016 Palantir Technologies. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -146,5 +146,8 @@ func runAction(ctx Context) error {
 		once.Do(onExit)
 	}()
 
+	for _, cfg := range ctx.App.ContextOptions {
+		cfg(&ctx)
+	}
 	return ctx.Command.Action(ctx)
 }
