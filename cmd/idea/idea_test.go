@@ -33,7 +33,7 @@ func TestCreateIdeaFiles(t *testing.T) {
 	defer cleanup()
 	require.NoError(t, err)
 
-	err = idea.CreateIdeaFiles(tmpDir)
+	err = idea.CreateIdeaFiles(tmpDir, "iml", "ipr")
 	assert.NoError(t, err)
 
 	verifyXMLHelper(t, ideaFilePath(tmpDir, "iml"))
