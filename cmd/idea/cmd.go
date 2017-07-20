@@ -20,28 +20,47 @@ import (
 )
 
 func Command() cli.Command {
+	run := func(f func(wd string) error) error {
+		wd, err := dirs.GetwdEvalSymLinks()
+		if err != nil {
+			return err
+		}
+		return f(wd)
+	}
+
+	const createIntelliJUsage = "Create IntelliJ project files for this project"
+	createIntelliJFiles := func(ctx cli.Context) error {
+		return run(func(wd string) error {
+			return CreateIdeaFiles(wd, imlIntelliJTemplateContent, iprIntelliJTemplateContent)
+		})
+	}
+
 	return cli.Command{
 		Name:  "idea",
-		Usage: "Create IntelliJ IDEA project files for this project",
+		Usage: createIntelliJUsage,
 		Subcommands: []cli.Command{
+			{
+				Name:  "gogland",
+				Usage: "Create Gogland project files for this project",
+				Action: func(ctx cli.Context) error {
+					return run(func(wd string) error {
+						return CreateIdeaFiles(wd, imlGoglandTemplateContent, iprGoglandTemplateContent)
+					})
+				},
+			},
+			{
+				Name:   "intellij",
+				Usage:  createIntelliJUsage,
+				Action: createIntelliJFiles,
+			},
 			{
 				Name:  "clean",
 				Usage: "Remove the IntelliJ IDEA project files for this project",
 				Action: func(ctx cli.Context) error {
-					wd, err := dirs.GetwdEvalSymLinks()
-					if err != nil {
-						return err
-					}
-					return CleanIdeaFiles(wd)
+					return run(CleanIdeaFiles)
 				},
 			},
 		},
-		Action: func(ctx cli.Context) error {
-			wd, err := dirs.GetwdEvalSymLinks()
-			if err != nil {
-				return err
-			}
-			return CreateIdeaFiles(wd)
-		},
+		Action: createIntelliJFiles,
 	}
 }
