@@ -168,7 +168,7 @@ func doNovendor(projectDir string, pkgPaths []string, groupPkgsByProject, fullPa
 func getPackageInfo(projectDir string, pkgsToProcess []pkgWithSrc) (allProjectPkgs map[string]bool, allVendoredPkgs map[string]bool, err error) {
 	allProjectPkgs = make(map[string]bool)
 	for _, currPkg := range pkgsToProcess {
-		imps, err := getAllImports(currPkg.pkg, currPkg.src, projectDir, make(map[string]bool), true, nil)
+		imps, err := getAllImports(currPkg.pkg, currPkg.src, projectDir, make(map[string]bool), true)
 		if err != nil {
 			return nil, nil, errors.Wrapf(err, "failed to get all imports for %s", currPkg.pkg)
 		}
@@ -269,38 +269,87 @@ func getAllVendoredPkgs(projectRoot string) (map[string]bool, error) {
 
 // getAllImports takes an import and returns all of the packages that it imports (excluding standard library packages).
 // Includes all transitive imports and the package of the import itself. Assumes that the import occurs in a package in
-// "srcDir". If the "test" parameter is "true", considers all imports in the test files for the package as well. Any
-// files that match the names provided in "ctxIgnoreFiles" in the import directory will be ignored.
-func getAllImports(importPkgPath, srcDir, projectRoot string, examinedImports map[string]bool, includeTests bool, ctxIgnoreFiles map[string]struct{}) (map[string]bool, error) {
+// "srcDir". If the "test" parameter is "true", considers all imports in the test files for the package as well.
+func getAllImports(importPkgPath, srcDir, projectRoot string, examinedImports map[string]bool, includeTests bool) (map[string]bool, error) {
 	importedPkgs := make(map[string]bool)
+
+	pkgs, err := getPkgsInDir(importPkgPath, srcDir, examinedImports)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get packages in package %s", importPkgPath)
+	}
+
+	for _, pkg := range pkgs {
+		importedPkgs[pkg.ImportPath] = true
+		examinedImports[pkg.ImportPath] = true
+
+		currPkgImports := pkg.Imports
+		if rel, err := filepath.Rel(projectRoot, pkg.Dir); err == nil && !strings.HasPrefix(rel, "../") {
+			// if import is internal, update "srcDir" to be pkg.Dir to ensure that resolution is done against the
+			// last internal package that was encountered
+			srcDir = pkg.Dir
+			if includeTests {
+				// if import is internal and includeTests is true, consider imports from test files
+				currPkgImports = append(currPkgImports, pkg.TestImports...)
+				currPkgImports = append(currPkgImports, pkg.XTestImports...)
+			}
+		}
+
+		// add packages from imports (don't examine transitive test dependencies)
+		for _, currImport := range currPkgImports {
+			if examinedImports[currImport] {
+				continue
+			}
+
+			currImportedPkgs, err := getAllImports(currImport, srcDir, projectRoot, examinedImports, false)
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to get all imports for %s", currImport)
+			}
+			examinedImports[currImport] = true
+
+			for k, v := range currImportedPkgs {
+				importedPkgs[k] = v
+			}
+		}
+	}
+	return importedPkgs, nil
+}
+
+func getPkgsInDir(importPkgPath, srcDir string, examinedImports map[string]bool) ([]*build.Package, error) {
 	if !strings.Contains(importPkgPath, ".") {
 		// if package is a standard package, return empty
 		return nil, nil
 	}
 
-	// ignore error because doImport returns partial object even on error. As long as an ImportPath is present,
-	// proceed with determining imports. Perform the import using the provided ctxIgnoreFiles.
-	pkg, pkgErr := doImport(importPkgPath, srcDir, build.ImportComment, ctxIgnoreFiles)
-	if pkg.ImportPath == "" {
-		return nil, nil
-	}
+	var pkgs []*build.Package
+	ctxIgnoreFiles := make(map[string]struct{})
+	for {
+		// ignore error because doImport returns partial object even on error. As long as an ImportPath is present,
+		// proceed with determining imports. Perform the import using the provided ctxIgnoreFiles.
+		pkg, pkgErr := doImport(importPkgPath, srcDir, build.ImportComment, ctxIgnoreFiles)
+		if pkg.ImportPath == "" {
+			break
+		}
 
-	// skip import if package has already been examined
-	if examinedImports[pkg.ImportPath] {
-		return importedPkgs, nil
-	}
+		// skip if package has already been examined
+		if examinedImports[pkg.ImportPath] {
+			break
+		}
 
-	if _, ok := pkgErr.(*build.MultiplePackageError); ok {
-		// Multiple packages were detected -- this is likely due to including all build constraints.
-		// Attempt to resolve this by parsing each set of files that form a single package together in isolation.
+		if _, ok := pkgErr.(*build.MultiplePackageError); !ok {
+			// only one package in directory: add it and finish
+			pkgs = append(pkgs, pkg)
+			break
+		}
 
-		// create map of invalid Go files
+		// current package path has multiple packages
+
+		// create set of invalid files
 		invalidFilesMap := make(map[string]struct{})
 		for _, currInvalid := range pkg.InvalidGoFiles {
 			invalidFilesMap[currInvalid] = struct{}{}
 		}
 
-		// create map of Go files that were not considered invalid
+		// create set of valid Go files (Go files that were not considered invalid)
 		validGoFiles := make(map[string]struct{})
 		for _, currFile := range append(append(pkg.GoFiles, pkg.TestGoFiles...), pkg.XTestGoFiles...) {
 			if _, ok := invalidFilesMap[currFile]; ok {
@@ -309,71 +358,31 @@ func getAllImports(importPkgPath, srcDir, projectRoot string, examinedImports ma
 			validGoFiles[currFile] = struct{}{}
 		}
 
-		createIgnoreMap := func(entriesToAdd map[string]struct{}) map[string]struct{} {
-			allIgnore := make(map[string]struct{})
-			for k := range ctxIgnoreFiles {
-				allIgnore[k] = struct{}{}
-			}
-			for k := range entriesToAdd {
-				allIgnore[k] = struct{}{}
-			}
-			return allIgnore
+		if len(validGoFiles) == 0 {
+			// remaining files are not considered valid, so don't bother continuing. This can happen if a single
+			// directory has multiple packages but none of the individual packages are valid.
+			break
 		}
 
-		// context that ignores all "invalid" files (in addition to any files that should already be ignored)
-		res, err := getAllImports(importPkgPath, srcDir, projectRoot, examinedImports, includeTests, createIgnoreMap(invalidFilesMap))
-		if err != nil {
-			return res, err
-		}
-		// this is a special case in which the same import path must be examined multiple times (the next call
-		// will be processing the same import path), so manually remove current import from examined imports.
-		delete(examinedImports, pkg.ImportPath)
-
-		// context that ignores all "valid" files (in addition to any files that should already be ignored)
-		res2, err := getAllImports(importPkgPath, srcDir, projectRoot, examinedImports, includeTests, createIgnoreMap(validGoFiles))
-		if err != nil {
-			return res2, err
+		if pkg, _ := doImport(importPkgPath, srcDir, build.ImportComment, combineMaps(ctxIgnoreFiles, invalidFilesMap)); pkg.ImportPath != "" {
+			pkgs = append(pkgs, pkg)
 		}
 
-		// combine results
-		for k, v := range res2 {
-			res[k] = v
-		}
-		return res, nil
+		// ignore files that were processed in this iteration in next iteration
+		ctxIgnoreFiles = combineMaps(ctxIgnoreFiles, validGoFiles)
 	}
+	return pkgs, nil
+}
 
-	importedPkgs[pkg.ImportPath] = true
-	examinedImports[pkg.ImportPath] = true
-
-	currPkgImports := pkg.Imports
-	if rel, err := filepath.Rel(projectRoot, pkg.Dir); err == nil && !strings.HasPrefix(rel, "../") {
-		// if import is internal, update "srcDir" to be pkg.Dir to ensure that resolution is done against the
-		// last internal package that was encountered
-		srcDir = pkg.Dir
-		if includeTests {
-			// if import is internal and includeTests is true, consider imports from test files
-			currPkgImports = append(currPkgImports, pkg.TestImports...)
-			currPkgImports = append(currPkgImports, pkg.XTestImports...)
-		}
+func combineMaps(m1, m2 map[string]struct{}) map[string]struct{} {
+	out := make(map[string]struct{})
+	for k, v := range m1 {
+		out[k] = v
 	}
-
-	// add packages from imports (don't examine transitive test dependencies)
-	for _, currImport := range currPkgImports {
-		if examinedImports[currImport] {
-			continue
-		}
-
-		currImportedPkgs, err := getAllImports(currImport, srcDir, projectRoot, examinedImports, false, nil)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to get all imports for %s", currImport)
-		}
-		examinedImports[currImport] = true
-
-		for k, v := range currImportedPkgs {
-			importedPkgs[k] = v
-		}
+	for k, v := range m2 {
+		out[k] = v
 	}
-	return importedPkgs, nil
+	return out
 }
 
 // takes the provided input, splits it on the path separator and returns the path up to the last "vendor" directory as
