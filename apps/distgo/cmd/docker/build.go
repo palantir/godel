@@ -46,9 +46,15 @@ func Build(cfg params.Project, wd string, baseRepo string, stdout io.Writer) err
 		}
 	}
 
-	// run the dist task
-	if err := dist.Products(setToSlice(productsToDist), cfg, false, wd, stdout); err != nil {
+	productsToDistRequired, err := dist.RequiresDist(setToSlice(productsToDist), cfg, wd)
+	if err != nil {
 		return err
+	}
+	if len(productsToDistRequired) != 0 {
+		// run the dist task
+		if err := dist.Products(productsToDistRequired, cfg, false, wd, stdout); err != nil {
+			return err
+		}
 	}
 
 	// build docker images

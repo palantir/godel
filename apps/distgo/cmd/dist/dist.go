@@ -35,6 +35,33 @@ import (
 	"github.com/palantir/godel/apps/distgo/pkg/slsspec"
 )
 
+func RequiresDist(products []string, cfg params.Project, wd string) ([]string, error) {
+	buildSpecsWithDeps, err := build.SpecsWithDepsForArgs(cfg, products, wd)
+	if err != nil {
+		return nil, err
+	}
+	var productsSlice []string
+	productsMap := make(map[string]struct{})
+	for _, curSpecWithDeps := range buildSpecsWithDeps {
+		for _, curDistCfg := range curSpecWithDeps.Spec.Dist {
+			artifactPaths := FullArtifactsPaths(ToDister(curDistCfg.Info), curSpecWithDeps.Spec, curDistCfg)
+			for _, artifactPath := range artifactPaths {
+				if _, err := os.Stat(artifactPath); err == nil {
+					buildInfo := build.RequiresBuild(curSpecWithDeps, nil)
+					if len(buildInfo.Specs()) == 0 {
+						continue
+					}
+				}
+				productsMap[curSpecWithDeps.Spec.ProductName] = struct{}{}
+			}
+		}
+	}
+	for product := range productsMap {
+		productsSlice = append(productsSlice, product)
+	}
+	return productsSlice, nil
+}
+
 func Products(products []string, cfg params.Project, forceBuild bool, wd string, stdout io.Writer) error {
 	return build.RunBuildFunc(func(buildSpecWithDeps []params.ProductBuildSpecWithDeps, stdout io.Writer) error {
 		var specsToBuild []params.ProductBuildSpec
