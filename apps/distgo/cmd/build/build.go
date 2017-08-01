@@ -284,7 +284,7 @@ func goInstallErrorMsg(osArch osarch.OSArch, err error) string {
 	}
 	return strings.Join([]string{
 		`failed to install a Go standard library package due to insufficient permissions to create directory.`,
-		`This typically means that the standard library for the OS/architectecture combination have not been installed locally and the current user does not have write permissions to GOROOT/pkg.`,
+		`This typically means that the standard library for the OS/architecture combination have not been installed locally and the current user does not have write permissions to GOROOT/pkg.`,
 		fmt.Sprintf(`Run "sudo env GOOS=%s GOARCH=%s %s install std" to install the standard packages for this combination as root and then try again.`, osArch.OS, osArch.Arch, goBinary),
 		fmt.Sprintf(`Full error: %s`, err.Error()),
 	}, "\n")
