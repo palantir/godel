@@ -116,7 +116,15 @@ func TagsMatcher(tags []string, cfg params.GUnit) (matcher.Matcher, error) {
 	}
 
 	if len(missingTags) > 0 {
-		return nil, fmt.Errorf("invalid tags: %v", strings.Join(missingTags, ", "))
+		var allTags []string
+		for tag := range cfg.Tags {
+			allTags = append(allTags, fmt.Sprintf("%q", tag))
+		}
+		validTagsOutput := fmt.Sprintf("Valid tags: %v", strings.Join(allTags, ", "))
+		if len(allTags) == 0 {
+			validTagsOutput = "No tags are defined."
+		}
+		return nil, fmt.Errorf("Tags %v not defined in configuration. %s", strings.Join(missingTags, ", "), validTagsOutput)
 	}
 
 	if len(tagMatchers) == 0 {

@@ -548,9 +548,9 @@ func TestRun(t *testing.T) {
 				"--tags", "invalid,n!otvalid",
 			},
 			wantMatch: func(currCaseTmpDir string) string {
-				return `invalid tags: "invalid", "n!otvalid"`
+				return `Tags "invalid", "n!otvalid" not defined in configuration. No tags are defined.`
 			},
-			wantError: `invalid tags: "invalid", "n!otvalid"`,
+			wantError: `Tags "invalid", "n!otvalid" not defined in configuration. No tags are defined.`,
 		},
 		{
 			name: "fails if 'all' is supplied as a non-exclusive tag",

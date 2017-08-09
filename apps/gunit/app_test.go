@@ -322,9 +322,37 @@ func TestRun(t *testing.T) {
 				"--tags", "invalid,n!otvalid",
 			},
 			wantMatch: func(currCaseTmpDir string) string {
-				return `invalid tags: "invalid", "n!otvalid"`
+				return `Tags "invalid", "n!otvalid" not defined in configuration. No tags are defined.`
 			},
-			wantError: `invalid tags: "invalid", "n!otvalid"`,
+			wantError: `Tags "invalid", "n!otvalid" not defined in configuration. No tags are defined.`,
+		},
+		{
+			name: "fails if invalid tag is supplied and tag exists",
+			filesToCreate: []gofiles.GoFileSpec{
+				{
+					RelPath: "foo_test.go",
+					Src: `package foo
+					import "testing"
+					func TestFoo(t *testing.T) {
+						t.Errorf("fooFail")
+					}`,
+				},
+			},
+			config: unindent(`tags:
+					  bar:
+					    paths:
+					      - "bar"
+					  exclude:
+					    paths:
+					      - "vendor"
+					`),
+			args: []string{
+				"--tags", "invalid,n!otvalid",
+			},
+			wantMatch: func(currCaseTmpDir string) string {
+				return `Tags "invalid", "n!otvalid" not defined in configuration. Valid tags: "bar", "exclude"`
+			},
+			wantError: `Tags "invalid", "n!otvalid" not defined in configuration. Valid tags: "bar", "exclude"`,
 		},
 	} {
 		currCaseTmpDir, err := ioutil.TempDir(tmpDir, "")
