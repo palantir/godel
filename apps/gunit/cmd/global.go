@@ -131,10 +131,13 @@ func TagsMatcher(tags []string, cfg params.GUnit) (matcher.Matcher, error) {
 func AllTagsMatcher(cfg params.GUnit) matcher.Matcher {
 	tags := make([]string, 0, len(cfg.Tags))
 	for tag := range cfg.Tags {
-		tags = append(tags, tag)
+		tags = append(tags, strings.ToLower(tag))
 	}
 	// error cannot occur because tags are known to exist
-	m, _ := TagsMatcher(tags, cfg)
+	m, err := TagsMatcher(tags, cfg)
+	if err != nil {
+		panic(err)
+	}
 	if m == nil {
 		return nil
 	}

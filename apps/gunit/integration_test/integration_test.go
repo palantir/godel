@@ -445,6 +445,40 @@ func TestRun(t *testing.T) {
 			wantError: "(?s).+1 package had failing tests:.+",
 		},
 		{
+			name: "tags specified with uppercase letters works",
+			filesToCreate: []gofiles.GoFileSpec{
+				{
+					RelPath: "foo_test.go",
+					Src: `package foo
+					import "testing"
+					func TestFoo(t *testing.T) {
+						t.Errorf("fooFail")
+					}`,
+				},
+				{
+					RelPath: "bar/bar_test.go",
+					Src: `package bar
+					import "testing"
+					func TestBar(t *testing.T) {
+						t.Errorf("barFail")
+					}`,
+				},
+			},
+			config: unindent(`tags:
+					  Bar:
+					    paths:
+					      - "bar"
+					exclude:
+					  paths:
+					    - "vendor"
+					`),
+			wantMatch: func(currCaseTmpDir string) string {
+				return `(?s)` +
+					`--- FAIL: TestFoo (.+)\n.+foo_test.go:[0-9]+: fooFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `\t[0-9.]+s.+`
+			},
+			wantError: "(?s).+1 package had failing tests:.+",
+		},
+		{
 			name: "all tests (tagged and non-tagged) are run if 'all' is specified as the tag",
 			filesToCreate: []gofiles.GoFileSpec{
 				{
