@@ -6,7 +6,7 @@ using the wrapper script `./godelw`, it is recommended that completion be set up
 
 1. Run `./godelw _completion --prog=godelw --alias ./godelw --bash` in a project that has `godel`.
 2. This command will output text to the terminal:
-```bash
+```
 _completion_######() {
 ...
 }
@@ -15,7 +15,7 @@ compdef _completion_###### "godelw"
 ```
 3. Copy all of the text except for the comment (starting at `_completion_######() {` and ending at `compdef _completion_###### "godelw"`).
 4. Add the command to the shell's startup environment (`~/.bash_profile` or equivalent):
-```bash
+```
 _completion_######() {
 ...
 }
@@ -36,7 +36,7 @@ compdef _completion_###### "godelw"
 ```
 3. Copy all of the text except for the comment (starting at `_completion_######() {` and ending at `compdef _completion_###### "godelw"`).
 4. Add the command to the shell's startup environment (`~/.zshrc` or equivalent):
-```bash
+```
 _completion_######() {
 ...
 }
