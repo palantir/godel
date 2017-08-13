@@ -134,7 +134,7 @@ func NewProductBuildSpec(projectDir, productName string, gitProductInfo git.Proj
 
 		if osArchBinDistInfo, ok := currDistCfg.Info.(*OSArchsBinDistInfo); ok {
 			if len(osArchBinDistInfo.OSArchs) == 0 {
-				osArchBinDistInfo.OSArchs = []osarch.OSArch{osarch.Current()}
+				osArchBinDistInfo.OSArchs = buildSpec.Build.OSArchs
 			}
 		}
 
