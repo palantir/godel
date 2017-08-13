@@ -162,7 +162,7 @@ type Dist struct {
 	Script string `yaml:"script" json:"script"`
 
 	// DistType specifies the type of the distribution to be built and configuration for it. If unspecified,
-	// defaults to a DistInfo of type SLSDistType.
+	// defaults to a DistInfo of type OSArchBinDistType.
 	DistType DistInfo `yaml:"dist-type" json:"dist-type"`
 
 	// Publish is the configuration for the "publish" task.

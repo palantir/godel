@@ -85,6 +85,36 @@ func TestDist(t *testing.T) {
 		validate        func(caseNum int, name string, projectDir string)
 	}{
 		{
+			name: "default dist is os-arch-bin",
+			spec: func(projectDir string) params.ProductBuildSpecWithDeps {
+				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(
+					projectDir,
+					"foo",
+					git.ProjectInfo{
+						Version: "0.1.0",
+					},
+					params.Product{
+						Build: params.Build{
+							MainPkg: "./.",
+						},
+					},
+					params.Project{
+						GroupID: "com.test.group",
+					},
+				), nil)
+				require.NoError(t, err)
+				return specWithDeps
+			},
+			preDistAction: func(projectDir string, buildSpec params.ProductBuildSpec) {
+				gittest.CreateGitTag(t, projectDir, "0.1.0")
+			},
+			validate: func(caseNum int, name string, projectDir string) {
+				info, err := os.Stat(path.Join(projectDir, "dist", fmt.Sprintf("foo-0.1.0-%s.tgz", osarch.Current().String())))
+				require.NoError(t, err)
+				assert.False(t, info.IsDir(), "Case %d: %s", caseNum, name)
+			},
+		},
+		{
 			name: "builds product and creates distribution directory and tgz",
 			spec: func(projectDir string) params.ProductBuildSpecWithDeps {
 				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(
@@ -96,6 +126,11 @@ func TestDist(t *testing.T) {
 					params.Product{
 						Build: params.Build{
 							MainPkg: "./.",
+						},
+						Dist: []params.Dist{
+							{
+								Info: &params.SLSDistInfo{},
+							},
 						},
 					},
 					params.Project{
@@ -143,6 +178,11 @@ func TestDist(t *testing.T) {
 						Build: params.Build{
 							MainPkg: "./.",
 						},
+						Dist: []params.Dist{
+							{
+								Info: &params.SLSDistInfo{},
+							},
+						},
 					},
 					params.Project{},
 				), nil)
@@ -168,6 +208,7 @@ func TestDist(t *testing.T) {
 							MainPkg: "./.",
 						},
 						Dist: []params.Dist{{
+							Info:   &params.SLSDistInfo{},
 							Script: "rm $DIST_DIR/deployment/manifest.yml",
 						}},
 					},
@@ -197,6 +238,7 @@ func TestDist(t *testing.T) {
 							MainPkg: "./.",
 						},
 						Dist: []params.Dist{{
+							Info:   &params.SLSDistInfo{},
 							Script: `echo "{788=fads\n\tthis is invalid YML" > $DIST_DIR/deployment/configuration.yml`,
 						}},
 					},
@@ -349,6 +391,7 @@ If these files are known to be correct, exclude them from validation using the S
 							MainPkg: "./.",
 						},
 						Dist: []params.Dist{{
+							Info:     &params.SLSDistInfo{},
 							InputDir: "sls",
 						}},
 						Publish: params.Publish{
@@ -470,6 +513,9 @@ If these files are known to be correct, exclude them from validation using the S
 								},
 							},
 						},
+						Dist: []params.Dist{{
+							Info: &params.SLSDistInfo{},
+						}},
 					},
 					params.Project{
 						GroupID: "com.test.group",
@@ -534,6 +580,7 @@ If these files are known to be correct, exclude them from validation using the S
 							MainPkg: "./.",
 						},
 						Dist: []params.Dist{{
+							Info: &params.SLSDistInfo{},
 							Script: `
 							mkdir -p $DIST_DIR/0/1/2/3/4/5/6/7/8/9/10/11/12/13/14/15/16/17/18/19/20/21/22/23/24/25/26/27/28/29/30/31/32/33/
 							touch $DIST_DIR/0/1/2/3/4/5/6/7/8/9/10/11/12/13/14/15/16/17/18/19/20/21/22/23/24/25/26/27/28/29/30/31/32/33/file.txt`,
@@ -745,6 +792,7 @@ If these files are known to be correct, exclude them from validation using the S
 							MainPkg: "./.",
 						},
 						Dist: []params.Dist{{
+							Info: &params.SLSDistInfo{},
 							InputProducts: []string{
 								"bar",
 							},
