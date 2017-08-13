@@ -442,6 +442,9 @@ products:
   foo:
     build:
       main-pkg: ./foo
+    dist:
+      dist-type:
+        type: sls
 group-id: com.palantir.distgo-cmd-test`,
 			mainFiles:       []string{"foo/main.go"},
 			publishProducts: []string{"foo"},
@@ -467,6 +470,9 @@ products:
   foo:
     build:
       main-pkg: ./foo
+    dist:
+      dist-type:
+        type: sls
 group-id: com.palantir.distgo-cmd-test`,
 			mainFiles:       []string{"foo/main.go"},
 			publishProducts: []string{"foo"},
@@ -487,6 +493,9 @@ products:
   foo:
     build:
       main-pkg: ./foo
+    dist:
+      dist-type:
+        type: sls
 group-id: com.palantir.distgo-cmd-test`,
 			mainFiles:       []string{"foo/main.go"},
 			publishProducts: []string{"foo"},
@@ -503,6 +512,9 @@ products:
   foo:
     build:
       main-pkg: ./foo
+    dist:
+      dist-type:
+        type: sls
 group-id: com.palantir.distgo-cmd-test`,
 			mainFiles:       []string{"foo/main.go"},
 			publishProducts: []string{"foo"},

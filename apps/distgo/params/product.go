@@ -107,7 +107,7 @@ func NewProductBuildSpec(projectDir, productName string, gitProductInfo git.Proj
 		}
 
 		if currDistCfg.Info == nil || currDistCfg.Info.Type() == "" {
-			currDistCfg.Info = &SLSDistInfo{}
+			currDistCfg.Info = &OSArchsBinDistInfo{}
 		}
 
 		if currDistCfg.Publish.empty() {

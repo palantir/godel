@@ -600,9 +600,15 @@ products:
   foo:
     build:
       main-pkg: ./foo
+    dist:
+      dist-type:
+        type: sls
   bar:
     build:
       main-pkg: ./bar
+    dist:
+      dist-type:
+        type: sls
 `
 	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "dist.yml"), []byte(distYml), 0644)
 	require.NoError(t, err)
