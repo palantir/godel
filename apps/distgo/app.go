@@ -21,6 +21,7 @@ import (
 
 	"github.com/palantir/godel/apps/distgo/cmd/artifacts"
 	"github.com/palantir/godel/apps/distgo/cmd/build"
+	"github.com/palantir/godel/apps/distgo/cmd/clean"
 	"github.com/palantir/godel/apps/distgo/cmd/dist"
 	"github.com/palantir/godel/apps/distgo/cmd/docker"
 	"github.com/palantir/godel/apps/distgo/cmd/products"
@@ -38,6 +39,7 @@ func App() *cli.App {
 		products.Command(),
 		artifacts.Command(),
 		build.Command(),
+		clean.Command(),
 		run.Command(),
 		dist.Command(),
 		docker.Command(),
