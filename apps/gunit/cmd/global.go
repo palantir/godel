@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/palantir/amalgomate/amalgomated"
@@ -120,6 +121,7 @@ func TagsMatcher(tags []string, cfg params.GUnit) (matcher.Matcher, error) {
 		for tag := range cfg.Tags {
 			allTags = append(allTags, fmt.Sprintf("%q", tag))
 		}
+		sort.Strings(allTags)
 		validTagsOutput := fmt.Sprintf("Valid tags: %v", strings.Join(allTags, ", "))
 		if len(allTags) == 0 {
 			validTagsOutput = "No tags are defined."

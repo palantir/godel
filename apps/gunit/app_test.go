@@ -345,14 +345,17 @@ func TestRun(t *testing.T) {
 					  exclude:
 					    paths:
 					      - "vendor"
+					  other:
+					    paths:
+					      - "other"
 					`),
 			args: []string{
 				"--tags", "invalid,n!otvalid",
 			},
 			wantMatch: func(currCaseTmpDir string) string {
-				return `Tags "invalid", "n!otvalid" not defined in configuration. Valid tags: "bar", "exclude"`
+				return `Tags "invalid", "n!otvalid" not defined in configuration. Valid tags: "bar", "exclude", "other"`
 			},
-			wantError: `Tags "invalid", "n!otvalid" not defined in configuration. Valid tags: "bar", "exclude"`,
+			wantError: `Tags "invalid", "n!otvalid" not defined in configuration. Valid tags: "bar", "exclude", "other"`,
 		},
 	} {
 		currCaseTmpDir, err := ioutil.TempDir(tmpDir, "")
