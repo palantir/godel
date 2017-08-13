@@ -1084,6 +1084,83 @@ daemon: true
 			},
 		},
 		{
+			name: "bin dist includes init script when OmitInitSh is false",
+			spec: func(projectDir string) params.ProductBuildSpecWithDeps {
+				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(
+					projectDir,
+					"foo",
+					git.ProjectInfo{
+						Version: "0.1.0",
+					},
+					params.Product{
+						Build: params.Build{
+							MainPkg: "./.",
+						},
+						Dist: []params.Dist{{
+							Info: &params.BinDistInfo{
+								OmitInitSh: false,
+							},
+						}},
+					},
+					params.Project{},
+				), nil)
+				require.NoError(t, err)
+				return specWithDeps
+			},
+			preDistAction: func(projectDir string, buildSpec params.ProductBuildSpec) {
+				gittest.CreateGitTag(t, projectDir, "0.1.0")
+			},
+			validate: func(caseNum int, name string, projectDir string) {
+				// bin directory exists in top-level directory
+				fileInfo, err := os.Stat(path.Join(projectDir, "dist", "foo-0.1.0", "bin"))
+				require.NoError(t, err)
+				assert.True(t, fileInfo.IsDir(), "Case %d: %s", caseNum, name)
+
+				// init script for product should exist
+				fileInfo, err = os.Stat(path.Join(projectDir, "dist", "foo-0.1.0", "bin", "foo.sh"))
+				require.NoError(t, err)
+				assert.True(t, !fileInfo.IsDir(), "Case %d: %s", caseNum, name)
+			},
+		},
+		{
+			name: "bin dist omits init script when OmitInitSh is true",
+			spec: func(projectDir string) params.ProductBuildSpecWithDeps {
+				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(
+					projectDir,
+					"foo",
+					git.ProjectInfo{
+						Version: "0.1.0",
+					},
+					params.Product{
+						Build: params.Build{
+							MainPkg: "./.",
+						},
+						Dist: []params.Dist{{
+							Info: &params.BinDistInfo{
+								OmitInitSh: true,
+							},
+						}},
+					},
+					params.Project{},
+				), nil)
+				require.NoError(t, err)
+				return specWithDeps
+			},
+			preDistAction: func(projectDir string, buildSpec params.ProductBuildSpec) {
+				gittest.CreateGitTag(t, projectDir, "0.1.0")
+			},
+			validate: func(caseNum int, name string, projectDir string) {
+				// bin directory exists in top-level directory
+				fileInfo, err := os.Stat(path.Join(projectDir, "dist", "foo-0.1.0", "bin"))
+				require.NoError(t, err)
+				assert.True(t, fileInfo.IsDir(), "Case %d: %s", caseNum, name)
+
+				// init script for product should exist
+				_, err = os.Stat(path.Join(projectDir, "dist", "foo-0.1.0", "bin", "foo.sh"))
+				assert.True(t, os.IsNotExist(err))
+			},
+		},
+		{
 			name: "osarch dist produces archive that contains executable for current OS/Arch by default",
 			spec: func(projectDir string) params.ProductBuildSpecWithDeps {
 				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(

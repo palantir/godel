@@ -178,9 +178,10 @@ type DistInfo struct {
 }
 
 type BinDist struct {
-	// OmitInitSh specifies whether or not the distribution should omit the auto-generated "init.sh" invocation
-	// script. If true, the "init.sh" script will not be generated and included in the output distribution.
-	OmitInitSh bool `yaml:"omit-init-sh" json:"omit-init-sh"`
+	// OmitInitSh specifies whether or not the distribution should omit the auto-generated initialization script for the
+	// product (a script in the "bin" directory that chooses the binary to invoke based on the host platform). If the
+	// value is present and false, then the initialization script will be generated; otherwise, it will not.
+	OmitInitSh *bool `yaml:"omit-init-sh" json:"omit-init-sh"`
 	// InitShTemplateFile is the relative path to the template that should be used to generate the "init.sh" script.
 	// If the value is absent, the default template will be used.
 	InitShTemplateFile string `yaml:"init-sh-template-file" json:"init-sh-template-file"`
@@ -480,7 +481,7 @@ func (cfg *DistInfo) ToParam() (params.DistInfo, error) {
 			val := BinDist{}
 			decodeErr = mapstructure.Decode(cfg.Info, &val)
 			distInfo = &params.BinDistInfo{
-				OmitInitSh:         val.OmitInitSh,
+				OmitInitSh:         val.OmitInitSh == nil || *val.OmitInitSh,
 				InitShTemplateFile: val.InitShTemplateFile,
 			}
 		case params.ManualDistType:
@@ -532,7 +533,7 @@ func convertMapKeysToCamelCase(input interface{}) {
 
 func (cfg *BinDist) ToParams() params.BinDistInfo {
 	return params.BinDistInfo{
-		OmitInitSh:         cfg.OmitInitSh,
+		OmitInitSh:         cfg.OmitInitSh == nil || *cfg.OmitInitSh,
 		InitShTemplateFile: cfg.InitShTemplateFile,
 	}
 }
