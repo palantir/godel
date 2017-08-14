@@ -1,6 +1,6 @@
 gunit
 =====
-gunit is a library and CLI for running Go tests, generating coverate reports and generating JUnit-style XML output. It
+gunit is a library and CLI for running Go tests, generating coverage reports and generating JUnit-style XML output. It
 uses [go-junit-report](https://github.com/jstemmer/go-junit-report) as the library for formatting test reports and
 [gt](https://godoc.org/rsc.io/gt) for running cached tests.
 
