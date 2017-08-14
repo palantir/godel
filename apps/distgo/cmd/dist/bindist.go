@@ -70,7 +70,7 @@ func (b *binDister) NumArtifacts() int {
 }
 
 func (b *binDister) ArtifactPathsInOutputDir(buildSpec params.ProductBuildSpec) []string {
-	return []string{fmt.Sprintf("%v-%v.tgz", buildSpec.ProductName, buildSpec.ProductVersion)}
+	return []string{fmt.Sprintf("%s-%s.tgz", buildSpec.ProductName, buildSpec.ProductVersion)}
 }
 
 func (b *binDister) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg params.Dist, outputProductDir string, spec specdir.LayoutSpec, values specdir.TemplateValues, stdout io.Writer) (Packager, error) {
@@ -79,7 +79,7 @@ func (b *binDister) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, dist
 	binDir := path.Join(outputProductDir, "bin")
 	binSpecDir, err := specdir.New(binDir, binSpec, nil, specdir.Create)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create directory structure for %v", binDir)
+		return nil, errors.Wrapf(err, "failed to create directory structure for %s", binDir)
 	}
 	if err := copyBuildArtifactsToBinDir(buildSpecWithDeps, binSpecDir); err != nil {
 		return nil, errors.Wrapf(err, "failed to copy artifacts to bin dir")
@@ -92,7 +92,7 @@ func (b *binDister) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, dist
 			var err error
 			initShTemplateBytes, err = ioutil.ReadFile(initShTemplateFilePath)
 			if err != nil {
-				return nil, errors.Wrapf(err, "failed to read init.sh template file %v", initShTemplateFilePath)
+				return nil, errors.Wrapf(err, "failed to read init.sh template file %s", initShTemplateFilePath)
 			}
 		} else {
 			initShTemplateBytes = []byte(binDistInitSh)
@@ -100,7 +100,7 @@ func (b *binDister) Dist(buildSpecWithDeps params.ProductBuildSpecWithDeps, dist
 		initShBuf := bytes.Buffer{}
 		t := template.Must(template.New("init.sh").Parse(string(initShTemplateBytes)))
 		if err := t.Execute(&initShBuf, templating.ConvertSpec(buildSpec, distCfg)); err != nil {
-			return nil, errors.Wrapf(err, "failed to execute template %v on template %v", t, buildSpec)
+			return nil, errors.Wrapf(err, "failed to execute template %v on build spec %+v", t, buildSpec)
 		}
 		if err := ioutil.WriteFile(path.Join(binDir, buildSpec.ProductName+".sh"), initShBuf.Bytes(), 0755); err != nil {
 			return nil, errors.Wrapf(err, "failed to write init.sh")
