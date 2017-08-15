@@ -156,7 +156,7 @@ type Dist struct {
 	//
 	//   DIST_DIR: the absolute path to the root directory of the distribution created for the current product
 	//   PROJECT_DIR: the root directory of project
-	//   PRODUCT: product name,
+	//   PRODUCT: product name
 	//   VERSION: product version
 	//   IS_SNAPSHOT: 1 if the version contains a git hash as part of the string, 0 otherwise
 	Script string `yaml:"script" json:"script"`
