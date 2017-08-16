@@ -22,7 +22,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-const unspecified = "unspecified"
+const Unspecified = "Unspecified"
 
 type ProjectInfo struct {
 	Version  string
@@ -68,9 +68,9 @@ func ProjectVersion(gitDir string) (string, error) {
 		return "", err
 	}
 
-	// if no tags exist, return unspecified as the version
+	// if no tags exist, return Unspecified as the version
 	if tags == "" {
-		return unspecified, nil
+		return Unspecified, nil
 	}
 
 	result, err := trimmedCombinedGitCmdOutput(gitDir, "describe", "--tags", "--first-parent")
@@ -100,9 +100,9 @@ func ProjectBranch(gitDir string) (string, error) {
 		return "", err
 	}
 
-	// if no tags exist, return unspecified as the branch
+	// if no tags exist, return Unspecified as the branch
 	if tags == "" {
-		return unspecified, nil
+		return Unspecified, nil
 	}
 
 	branch, err := branch(gitDir)
