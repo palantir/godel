@@ -32,6 +32,7 @@ import (
 	"gopkg.in/cheggaaa/pb.v1"
 
 	"github.com/palantir/godel/apps/distgo/params"
+	"github.com/palantir/godel/apps/distgo/pkg/git"
 )
 
 type GitHubConnectionInfo struct {
@@ -44,6 +45,10 @@ type GitHubConnectionInfo struct {
 }
 
 func (g *GitHubConnectionInfo) Publish(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) ([]string, error) {
+	if version := buildSpec.VersionInfo.Version; version == git.Unspecified || git.IsSnapshotVersion(version) || strings.HasSuffix(version, ".dirty") {
+		return nil, errors.Errorf("cannot perform publish on repository with version %s: GitHub publish task requires repository to be on a clean tagged commit", version)
+	}
+
 	client := github.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: g.Token},
 	)))
