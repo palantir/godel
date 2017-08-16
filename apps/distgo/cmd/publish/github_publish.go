@@ -23,6 +23,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/google/go-github/github"
 	"github.com/jtacoma/uritemplates"
@@ -47,6 +48,10 @@ func (g *GitHubConnectionInfo) Publish(buildSpec params.ProductBuildSpec, paths 
 		&oauth2.Token{AccessToken: g.Token},
 	)))
 
+	// if base URL does not end in "/", append it (trailing slash is required)
+	if !strings.HasSuffix(g.APIURL, "/") {
+		g.APIURL += "/"
+	}
 	// set base URL (should be of the form "https://api.github.com/")
 	apiURL, err := url.Parse(g.APIURL)
 	if err != nil {
