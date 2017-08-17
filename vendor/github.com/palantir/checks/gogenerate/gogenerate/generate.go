@@ -73,6 +73,13 @@ func runGenerate(rootDir string, cfg config.GoGenerate, stdout io.Writer) (map[s
 		cmd.Dir = genDir
 		cmd.Stdout = stdout
 		cmd.Stderr = stdout
+
+		var envVars []string
+		for k, v := range cfg.Generators[k].Environment {
+			envVars = append(envVars, fmt.Sprintf("%s=%v", k, v))
+		}
+		cmd.Env = append(envVars, os.Environ()...)
+
 		if err := cmd.Run(); err != nil {
 			return nil, errors.Wrapf(err, "failed to run go generate in %q", genDir)
 		}
