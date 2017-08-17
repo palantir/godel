@@ -344,74 +344,74 @@
 		{
 			"checksumSHA1": "1r3QmWFyIFamo75wMIWAdMjQ7L0=",
 			"path": "github.com/palantir/checks/gocd/cmd",
-			"revision": "6bb4a84be9efb541e34eec60bc8d2323f5a43682",
-			"revisionTime": "2017-07-18T05:55:15Z"
+			"revision": "5bc3d8bbff153d434a971bf1d11545f59ae63540",
+			"revisionTime": "2017-08-17T21:24:26Z"
 		},
 		{
 			"checksumSHA1": "4RPr1kGPVZvuE492gPw7CRXnJKQ=",
 			"path": "github.com/palantir/checks/gocd/cmd/gocd",
-			"revision": "6bb4a84be9efb541e34eec60bc8d2323f5a43682",
-			"revisionTime": "2017-07-18T05:55:15Z"
+			"revision": "5bc3d8bbff153d434a971bf1d11545f59ae63540",
+			"revisionTime": "2017-08-17T21:24:26Z"
 		},
 		{
 			"checksumSHA1": "kyaKgoYMv9BAyQSVVuOlHc5nHBI=",
 			"path": "github.com/palantir/checks/gocd/config",
-			"revision": "6bb4a84be9efb541e34eec60bc8d2323f5a43682",
-			"revisionTime": "2017-07-18T05:55:15Z"
+			"revision": "5bc3d8bbff153d434a971bf1d11545f59ae63540",
+			"revisionTime": "2017-08-17T21:24:26Z"
 		},
 		{
 			"checksumSHA1": "XRLjye5JRGKZ/bQOdqW27H4HdPE=",
 			"path": "github.com/palantir/checks/gocd/gocd",
-			"revision": "6bb4a84be9efb541e34eec60bc8d2323f5a43682",
-			"revisionTime": "2017-07-18T05:55:15Z"
+			"revision": "5bc3d8bbff153d434a971bf1d11545f59ae63540",
+			"revisionTime": "2017-08-17T21:24:26Z"
 		},
 		{
 			"checksumSHA1": "NavWih6yZOWQp78EBko2Czg7eI4=",
 			"path": "github.com/palantir/checks/gogenerate/cmd",
-			"revision": "6bb4a84be9efb541e34eec60bc8d2323f5a43682",
-			"revisionTime": "2017-07-18T05:55:15Z"
+			"revision": "5bc3d8bbff153d434a971bf1d11545f59ae63540",
+			"revisionTime": "2017-08-17T21:24:26Z"
 		},
 		{
 			"checksumSHA1": "ISfYXG6ANgdaM73zLeeZuoCzrwE=",
 			"path": "github.com/palantir/checks/gogenerate/cmd/gogenerate",
-			"revision": "6bb4a84be9efb541e34eec60bc8d2323f5a43682",
-			"revisionTime": "2017-07-18T05:55:15Z"
+			"revision": "5bc3d8bbff153d434a971bf1d11545f59ae63540",
+			"revisionTime": "2017-08-17T21:24:26Z"
 		},
 		{
-			"checksumSHA1": "gPJ1U9WgXhcz4B5snIbWZnqGE34=",
+			"checksumSHA1": "KqITFq/e7LORw3f/FgfpvOtHi68=",
 			"path": "github.com/palantir/checks/gogenerate/config",
-			"revision": "6bb4a84be9efb541e34eec60bc8d2323f5a43682",
-			"revisionTime": "2017-07-18T05:55:15Z"
+			"revision": "5bc3d8bbff153d434a971bf1d11545f59ae63540",
+			"revisionTime": "2017-08-17T21:24:26Z"
 		},
 		{
-			"checksumSHA1": "WBw/s2XxsItpo7n1r1qFIj6TT4A=",
+			"checksumSHA1": "s65yy23E135BYr0Pp0pPw5qrHOM=",
 			"path": "github.com/palantir/checks/gogenerate/gogenerate",
-			"revision": "6bb4a84be9efb541e34eec60bc8d2323f5a43682",
-			"revisionTime": "2017-07-18T05:55:15Z"
+			"revision": "5bc3d8bbff153d434a971bf1d11545f59ae63540",
+			"revisionTime": "2017-08-17T21:24:26Z"
 		},
 		{
 			"checksumSHA1": "CkZ462LKZ0w0bC41A2y9E0CObuI=",
 			"path": "github.com/palantir/checks/golicense/cmd",
-			"revision": "6bb4a84be9efb541e34eec60bc8d2323f5a43682",
-			"revisionTime": "2017-07-18T05:55:15Z"
+			"revision": "5bc3d8bbff153d434a971bf1d11545f59ae63540",
+			"revisionTime": "2017-08-17T21:24:26Z"
 		},
 		{
 			"checksumSHA1": "6ahBfVKtEOJCMdVsazwEZqfm2f8=",
 			"path": "github.com/palantir/checks/golicense/cmd/golicense",
-			"revision": "6bb4a84be9efb541e34eec60bc8d2323f5a43682",
-			"revisionTime": "2017-07-18T05:55:15Z"
+			"revision": "5bc3d8bbff153d434a971bf1d11545f59ae63540",
+			"revisionTime": "2017-08-17T21:24:26Z"
 		},
 		{
 			"checksumSHA1": "wOHJVm9MVhp8LhmW21gGNw9hTjg=",
 			"path": "github.com/palantir/checks/golicense/config",
-			"revision": "6bb4a84be9efb541e34eec60bc8d2323f5a43682",
-			"revisionTime": "2017-07-18T05:55:15Z"
+			"revision": "5bc3d8bbff153d434a971bf1d11545f59ae63540",
+			"revisionTime": "2017-08-17T21:24:26Z"
 		},
 		{
 			"checksumSHA1": "0zZSJ5hzQeXFJNhc0SzhpFzSk6o=",
 			"path": "github.com/palantir/checks/golicense/golicense",
-			"revision": "6bb4a84be9efb541e34eec60bc8d2323f5a43682",
-			"revisionTime": "2017-07-18T05:55:15Z"
+			"revision": "5bc3d8bbff153d434a971bf1d11545f59ae63540",
+			"revisionTime": "2017-08-17T21:24:26Z"
 		},
 		{
 			"checksumSHA1": "E1Tg4QpAvzZHfXY9htAVhNm9lno=",
