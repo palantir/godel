@@ -57,7 +57,7 @@ func (a *AlmanacInfo) CheckProduct(client *http.Client, product string) error {
 }
 
 func (a *AlmanacInfo) CreateProduct(client *http.Client, product string) error {
-	_, err := a.do(client, http.MethodPost, "/v1/units/products", fmt.Sprintf(`{"name":"%v"}`, product))
+	_, err := a.do(client, http.MethodPost, "/v1/units/products", fmt.Sprintf(`{"name":"%s"}`, product))
 	return err
 }
 
@@ -67,7 +67,7 @@ func (a *AlmanacInfo) CheckProductBranch(client *http.Client, product, branch st
 }
 
 func (a *AlmanacInfo) CreateProductBranch(client *http.Client, product, branch string) error {
-	_, err := a.do(client, http.MethodPost, strings.Join([]string{"/v1/units", product}, "/"), fmt.Sprintf(`{"name":"%v"}`, branch))
+	_, err := a.do(client, http.MethodPost, strings.Join([]string{"/v1/units", product}, "/"), fmt.Sprintf(`{"name":"%s"}`, branch))
 	return err
 }
 
@@ -147,11 +147,11 @@ func (a *AlmanacInfo) do(client *http.Client, method, endpoint, body string) (rB
 	}()
 	responseBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to read response body for %v", destURL.String())
+		return nil, errors.Wrapf(err, "Failed to read response body for %s", destURL.String())
 	}
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		return responseBytes, errors.Errorf("Received non-success status code: %v. Response: %s", resp.Status, string(responseBytes))
+		return responseBytes, errors.Errorf("Received non-success status code: %s. Response: %s", resp.Status, string(responseBytes))
 	}
 
 	return responseBytes, nil
@@ -168,11 +168,11 @@ func addAlmanacAuthForRequest(accessID, secret, body string, req *http.Request) 
 	timestamp := time.Now().Unix()
 	req.Header.Add("X-timestamp", fmt.Sprintf("%d", timestamp))
 
-	hmac, err := hmacSHA1(fmt.Sprintf("%v%d%v", req.URL.String(), timestamp, body), secret)
+	hmac, err := hmacSHA1(fmt.Sprint(req.URL.String(), timestamp, body), secret)
 	if err != nil {
 		return err
 	}
-	req.Header.Add("X-authorization", fmt.Sprintf("%v:%v", accessID, hmac))
+	req.Header.Add("X-authorization", fmt.Sprintf("%s:%s", accessID, hmac))
 	return nil
 }
 
