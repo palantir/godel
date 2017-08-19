@@ -231,7 +231,6 @@ func removeDirIfEmpty(dirPath string, removedPaths map[string]struct{}, dryRun b
 
 func cleanBinOutput(outputDir string, products map[string][]osarch.OSArch) (map[string]struct{}, error) {
 	removedPaths := make(map[string]struct{})
-
 	osArchToProducts := make(map[string]map[string]struct{})
 	for currProduct, prodOSArchs := range products {
 		for _, currOSArch := range prodOSArchs {
@@ -246,7 +245,8 @@ func cleanBinOutput(outputDir string, products map[string][]osarch.OSArch) (map[
 
 	outputDirFiles, err := ioutil.ReadDir(outputDir)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to read directory %s", outputDir)
+		// nothing to do if output directory does not exist or cannot be read
+		return nil, nil
 	}
 	for _, outputDirFile := range outputDirFiles {
 		if !outputDirFile.IsDir() {

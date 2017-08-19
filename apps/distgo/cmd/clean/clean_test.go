@@ -53,11 +53,11 @@ func TestDist(t *testing.T) {
 	require.NoError(t, err)
 
 	for i, currCase := range []struct {
-		name          string
-		spec          func(projectDir string) params.ProductBuildSpecWithDeps
-		preDistAction func(projectDir string, buildSpec params.ProductBuildSpec)
-		preValidate   func(caseNum int, name string, projectDir string)
-		postValidate  func(caseNum int, name string, projectDir string)
+		name           string
+		spec           func(projectDir string) params.ProductBuildSpecWithDeps
+		preDistAction  func(projectDir string, buildSpec params.ProductBuildSpec)
+		preCleanAction func(caseNum int, name string, projectDir string)
+		postValidate   func(caseNum int, name string, projectDir string)
 	}{
 		{
 			name: "cleans default distribution",
@@ -83,7 +83,7 @@ func TestDist(t *testing.T) {
 			preDistAction: func(projectDir string, buildSpec params.ProductBuildSpec) {
 				gittest.CreateGitTag(t, projectDir, "0.1.0")
 			},
-			preValidate: func(caseNum int, name string, projectDir string) {
+			preCleanAction: func(caseNum int, name string, projectDir string) {
 				info, err := os.Stat(path.Join(projectDir, "build", "0.1.0", osarch.Current().String(), "foo"))
 				require.NoError(t, err)
 				assert.False(t, info.IsDir(), "Case %d: %s", caseNum, name)
@@ -91,6 +91,49 @@ func TestDist(t *testing.T) {
 				info, err = os.Stat(path.Join(projectDir, "dist", fmt.Sprintf("foo-0.1.0-%s.tgz", osarch.Current().String())))
 				require.NoError(t, err)
 				assert.False(t, info.IsDir(), "Case %d: %s", caseNum, name)
+			},
+			postValidate: func(caseNum int, name string, projectDir string) {
+				_, err := os.Stat(path.Join(projectDir, "build", "0.1.0", osarch.Current().String(), "foo"))
+				assert.True(t, os.IsNotExist(err), "Case %d: %s", caseNum, name)
+				_, err = os.Stat(path.Join(projectDir, "build"))
+				assert.True(t, os.IsNotExist(err), "Case %d: %s", caseNum, name)
+
+				_, err = os.Stat(path.Join(projectDir, "dist", fmt.Sprintf("foo-0.1.0-%s.tgz", osarch.Current().String())))
+				assert.True(t, os.IsNotExist(err), "Case %d: %s", caseNum, name)
+				_, err = os.Stat(path.Join(projectDir, "dist"))
+				assert.True(t, os.IsNotExist(err), "Case %d: %s", caseNum, name)
+			},
+		},
+		{
+			name: "cleans works if output does not exist",
+			spec: func(projectDir string) params.ProductBuildSpecWithDeps {
+				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(
+					projectDir,
+					"foo",
+					git.ProjectInfo{
+						Version: "0.1.0",
+					},
+					params.Product{
+						Build: params.Build{
+							MainPkg: "./.",
+						},
+					},
+					params.Project{
+						GroupID: "com.test.group",
+					},
+				), nil)
+				require.NoError(t, err)
+				return specWithDeps
+			},
+			preDistAction: func(projectDir string, buildSpec params.ProductBuildSpec) {
+				gittest.CreateGitTag(t, projectDir, "0.1.0")
+			},
+			preCleanAction: func(caseNum int, name string, projectDir string) {
+				err := os.RemoveAll(path.Join(projectDir, "build"))
+				require.NoError(t, err)
+
+				err = os.RemoveAll(path.Join(projectDir, "dist"))
+				require.NoError(t, err)
 			},
 			postValidate: func(caseNum int, name string, projectDir string) {
 				_, err := os.Stat(path.Join(projectDir, "build", "0.1.0", osarch.Current().String(), "foo"))
@@ -123,8 +166,8 @@ func TestDist(t *testing.T) {
 
 		err = dist.Run(currSpecWithDeps, ioutil.Discard)
 		require.NoError(t, err, "Case %d: %s", i, currCase.name)
-		if currCase.preValidate != nil {
-			currCase.preValidate(i, currCase.name, currTmpDir)
+		if currCase.preCleanAction != nil {
+			currCase.preCleanAction(i, currCase.name, currTmpDir)
 		}
 
 		err = clean.Run(currSpecWithDeps, false, ioutil.Discard)
