@@ -53,7 +53,7 @@ func almanacPublish(artifactURL string, almanacInfo AlmanacInfo, buildSpec param
 		Metadata: distCfg.Publish.Almanac.Metadata,
 		Tags:     distCfg.Publish.Almanac.Tags,
 		URL:      artifactURL,
-	}, buildSpec.ProductVersion); err != nil {
+	}, buildSpec.ProductVersion, stdout); err != nil {
 		return fmt.Errorf("failed to publish unit: %v", err)
 	}
 

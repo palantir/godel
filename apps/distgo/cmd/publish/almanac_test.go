@@ -96,7 +96,7 @@ func TestAlmanacConnectionInfo(t *testing.T) {
 				return a.CreateUnit(http.DefaultClient, publish.AlmanacUnit{
 					Product: "testProduct",
 					Tags:    []string{"tag-1", "tag2"},
-				}, "0.0.1")
+				}, "0.0.1", ioutil.Discard)
 			},
 			handler: func(w http.ResponseWriter, r *http.Request) {
 				assert.Equal(t, "/v1/units", r.URL.String())
