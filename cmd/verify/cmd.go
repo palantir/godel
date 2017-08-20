@@ -37,6 +37,7 @@ const (
 	skipCheck       = "skip-check"
 	skipTest        = "skip-test"
 	junitOutputPath = "junit-output"
+	tags            = "tags"
 )
 
 func Command(gödelPath string) cli.Command {
@@ -52,6 +53,7 @@ func Command(gödelPath string) cli.Command {
 			flag.BoolFlag{Name: skipCheck, Usage: "Skip 'check' task"},
 			flag.BoolFlag{Name: skipTest, Usage: "Skip 'test' task"},
 			flag.StringFlag{Name: junitOutputPath, Usage: "Path to JUnit XML output (only used if 'test' task is run)"},
+			flag.StringFlag{Name: tags, Usage: "Specify tags that should be used for tests (only used if 'test' task is run)"},
 		},
 		Action: func(ctx cli.Context) error {
 			wd, err := dirs.GetwdEvalSymLinks()
@@ -118,6 +120,9 @@ func Command(gödelPath string) cli.Command {
 
 			if !ctx.Bool(skipTest) {
 				args := []string{"test"}
+				if ctx.Has(tags) {
+					args = append(args, fmt.Sprintf("--tags=%s", ctx.String(tags)))
+				}
 				if ctx.Has(junitOutputPath) {
 					args = append(args, "--"+junitOutputPath, ctx.String(junitOutputPath))
 				}

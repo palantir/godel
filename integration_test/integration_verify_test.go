@@ -338,3 +338,74 @@ func TestVerifyWithJUnitOutput(t *testing.T) {
 
 	assert.False(t, fi.IsDir())
 }
+
+func TestVerifyTestTags(t *testing.T) {
+	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	specs := []gofiles.GoFileSpec{
+		{
+			RelPath: "main.go",
+			Src: `package main
+
+func main() {}
+`,
+		},
+		{
+			RelPath: "main_test.go",
+			Src: `package main_test
+
+import (
+	"testing"
+)
+
+func TestFoo(t *testing.T) {}
+`,
+		},
+		{
+			RelPath: "integration_tests/integration_test.go",
+			Src: `package main_test
+
+import (
+	"testing"
+)
+
+func TestFooIntegration(t *testing.T) {}
+`,
+		},
+	}
+	files, err := gofiles.Write(testProjectDir, specs)
+	require.NoError(t, err)
+
+	err = ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "test.yml"), []byte(`tags:
+  integration:
+    names:
+      - "integration_tests"
+`), 0644)
+	require.NoError(t, err)
+
+	// run verify with "none" tags. Should include output for main package but not for integration_test package.
+	cmd := exec.Command("./godelw", "verify", "--apply=false", "--tags=none")
+	cmd.Dir = testProjectDir
+	output, err := cmd.CombinedOutput()
+	outputStr := string(output)
+	require.NoError(t, err, "Command %v failed with error %v. Output: %q", cmd.Args, err, outputStr)
+	assert.Regexp(t, fmt.Sprintf(`(?s).+%s\s+[0-9.]+s.+`, files["main.go"].ImportPath), outputStr)
+	assert.NotRegexp(t, fmt.Sprintf(`(?s).+%s\s+[0-9.]+s.+`, files["integration_tests/integration_test.go"].ImportPath), outputStr)
+
+	// run verify with "all" tags. Should include output for integration_test package but not for main package.
+	cmd = exec.Command("./godelw", "verify", "--apply=false", "--tags=all")
+	cmd.Dir = testProjectDir
+	output, err = cmd.CombinedOutput()
+	outputStr = string(output)
+	require.NoError(t, err, "Command %v failed with error %v. Output: %q", cmd.Args, err, outputStr)
+	assert.Regexp(t, fmt.Sprintf(`(?s).+%s\s+[0-9.]+s.+`, files["integration_tests/integration_test.go"].ImportPath), outputStr)
+	assert.NotRegexp(t, fmt.Sprintf(`(?s).+%s\s+[0-9.]+s.+`, files["main.go"].ImportPath), outputStr)
+
+	// run verify in regular mode. Should include output for all tests.
+	cmd = exec.Command("./godelw", "verify", "--apply=false")
+	cmd.Dir = testProjectDir
+	output, err = cmd.CombinedOutput()
+	outputStr = string(output)
+	require.NoError(t, err, "Command %v failed with error %v. Output: %q", cmd.Args, err, outputStr)
+	assert.Regexp(t, fmt.Sprintf(`(?s).+%s\s+[0-9.]+s.+`, files["main.go"].ImportPath), outputStr)
+	assert.Regexp(t, fmt.Sprintf(`(?s).+%s\s+[0-9.]+s.+`, files["integration_tests/integration_test.go"].ImportPath), outputStr)
+}
