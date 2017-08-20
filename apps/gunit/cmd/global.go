@@ -81,28 +81,37 @@ func JUnitOutputPath(ctx cli.Context) string {
 	return ctx.String(junitOutputPathFlagName)
 }
 
-type trueMatcher struct{}
-
-func (t *trueMatcher) Match(relPath string) bool {
-	return true
-}
-
-// TagsMatcher returns a Matcher that matches the provided tags. Returns nil if the provided slice of tags is empty or
-// if the provided tags do not match any of the tags specified in the configuration. Returns an error if any of the
-// provided tags are not specified in the configuration.
+// TagsMatcher returns a Matcher that matches all packages that are matched by the provided tags. If no tags are
+// provided, returns nil. If the tags consist of a single tag named "all", the returned matcher matches the union of all
+// known tags. If the tags consist of a single tag named "none", the returned matcher matches everything except the
+// union of all known tags (untagged tests).
 func TagsMatcher(tags []string, cfg params.GUnit) (matcher.Matcher, error) {
-	if err := cfg.Validate(); err != nil {
-		return nil, err
+	if len(tags) == 0 {
+		// if no tags were provided, does not match anything
+		return nil, nil
 	}
 
+	if len(tags) == 1 {
+		var allMatchers []matcher.Matcher
+		for _, matcher := range cfg.Tags {
+			allMatchers = append(allMatchers, matcher)
+		}
+		anyTagMatcher := matcher.Any(allMatchers...)
+		switch tags[0] {
+		case params.AllTagName:
+			// if tags contains only a single tag that is the "all" tag, return matcher that matches union of all tags
+			return anyTagMatcher, nil
+		case params.NoneTagName:
+			// if tags contains only a single tag that is the "none" tag, return matcher that matches not of union of all tags
+			return matcher.Not(anyTagMatcher), nil
+		}
+	}
+
+	// due to previous check, if "all" or "none" tag exists at this point it means that it was one of multiple tags
 	for _, tag := range tags {
-		if tag == params.AllTagName {
-			// contains "all" tag
-			if len(tags) == 1 {
-				// if "all" is the only tag specified, return a matcher that matches all paths
-				return &trueMatcher{}, nil
-			}
-			return nil, errors.Errorf(`if "all" tag is specified, it must be the only tag specified`)
+		switch tag {
+		case params.AllTagName, params.NoneTagName:
+			return nil, errors.Errorf("if %q tag is specified, it must be the only tag specified", tag)
 		}
 	}
 
@@ -129,29 +138,14 @@ func TagsMatcher(tags []string, cfg params.GUnit) (matcher.Matcher, error) {
 		return nil, fmt.Errorf("Tags %v not defined in configuration. %s", strings.Join(missingTags, ", "), validTagsOutput)
 	}
 
+	// not possible: if initial tags were empty then should have already returned, if specified tags did not match then
+	// missing block should have executed and returned, so at this point matchers must exist
 	if len(tagMatchers) == 0 {
-		return nil, nil
+		panic("no matching tags found")
 	}
 
+	// OR of tags
 	return matcher.Any(tagMatchers...), nil
-}
-
-// AllTagsMatcher returns a matcher that matches paths that are part of any of the tags defined in the provided
-// configuration.
-func AllTagsMatcher(cfg params.GUnit) matcher.Matcher {
-	tags := make([]string, 0, len(cfg.Tags))
-	for tag := range cfg.Tags {
-		tags = append(tags, strings.ToLower(tag))
-	}
-	// error cannot occur because tags are known to exist
-	m, err := TagsMatcher(tags, cfg)
-	if err != nil {
-		panic(err)
-	}
-	if m == nil {
-		return nil
-	}
-	return m
 }
 
 // PkgPaths returns a slice that contains the relative package paths for the packages "pkgPaths" relative to the

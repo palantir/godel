@@ -259,7 +259,54 @@ func TestRun(t *testing.T) {
 			wantError: "(?s).+2 packages had failing tests:.+",
 		},
 		{
-			name: "only non-tagged tests are run if multiple tags are specified and tests are run without arguments",
+			name: "only non-tagged tests are run if multiple tags are specified and tests are run with none argument",
+			filesToCreate: []gofiles.GoFileSpec{
+				{
+					RelPath: "foo_test.go",
+					Src: `package foo
+					import "testing"
+					func TestFoo(t *testing.T) {
+						t.Errorf("fooFail")
+					}`,
+				},
+				{
+					RelPath: "bar/bar_test.go",
+					Src: `package bar
+					import "testing"
+					func TestBar(t *testing.T) {
+						t.Errorf("barFail")
+					}`,
+				},
+				{
+					RelPath: "baz/baz_test.go",
+					Src: `package baz
+					import "testing"
+					func TestBaz(t *testing.T) {
+						t.Errorf("bazFail")
+					}`,
+				},
+			},
+			config: unindent(`tags:
+					  bar:
+					    paths:
+					      - "bar"
+					  baz:
+					    paths:
+					      - "baz"
+					exclude:
+					  paths:
+					    - "vendor"
+					`),
+			args: []string{
+				"--tags", "none",
+			},
+			wantMatch: func(currCaseTmpDir string) string {
+				return `(?s)--- FAIL: TestFoo (.+)\n.+foo_test.go:[0-9]+: fooFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `\t[0-9.]+s.+`
+			},
+			wantError: "(?s).+1 package had failing tests:.+",
+		},
+		{
+			name: "all tests are run if multiple tags are specified and tests are run without arguments",
 			filesToCreate: []gofiles.GoFileSpec{
 				{
 					RelPath: "foo_test.go",
@@ -298,9 +345,12 @@ func TestRun(t *testing.T) {
 					    - "vendor"
 					`),
 			wantMatch: func(currCaseTmpDir string) string {
-				return `(?s)--- FAIL: TestFoo (.+)\n.+foo_test.go:[0-9]+: fooFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `\t[0-9.]+s.+`
+				return `(?s)` +
+					`--- FAIL: TestFoo (.+)\n.+foo_test.go:[0-9]+: fooFail.+FAIL\s+` + pkgName(t, currCaseTmpDir) + `\s+[0-9.]+s.+` +
+					`--- FAIL: TestBar (.+)\n.+bar_test.go:[0-9]+: barFail.+FAIL\s+` + pkgName(t, currCaseTmpDir) + `/bar\s+[0-9.]+s.+` +
+					`--- FAIL: TestBaz (.+)\n.+baz_test.go:[0-9]+: bazFail.+FAIL\s+` + pkgName(t, currCaseTmpDir) + `/baz\s+[0-9.]+s.+`
 			},
-			wantError: "(?s).+1 package had failing tests:.+",
+			wantError: "(?s).+3 packages had failing tests:.+",
 		},
 		{
 			name: "fails if invalid tag is supplied",

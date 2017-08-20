@@ -23,7 +23,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-const AllTagName = "all"
+const (
+	AllTagName  = "all"
+	NoneTagName = "none"
+)
 
 type GUnit struct {
 	// Tags group tests into different sets. The key is the name of the tag and the value is a matcher.NamesPathsCfg
@@ -50,8 +53,9 @@ func (p *GUnit) Validate() error {
 		}
 		seenTagNames[normalized] = struct{}{}
 
-		if normalized == AllTagName {
-			return errors.Errorf(`"all" is a reserved name that cannot be used as a tag name`)
+		switch normalized {
+		case AllTagName, NoneTagName:
+			return errors.Errorf("%q is a reserved name that cannot be used as a tag name", normalized)
 		}
 	}
 

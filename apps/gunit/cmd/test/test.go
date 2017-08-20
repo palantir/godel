@@ -143,23 +143,22 @@ func (g *testCmdGenerator) runTestCmdForPkgs(pkgsParam []string, testParams test
 	if err != nil {
 		return err
 	}
-
-	// tagsMatcher is the matcher that represents the files that must be excluded to match the tag.
-	var tagsMatcher matcher.Matcher
-	if len(testParams.tags) == 0 {
-		// if no tags were provided, exclude all files matched by any tags (run only non-tagged tests)
-		tagsMatcher = cmd.AllTagsMatcher(cfg)
-	} else {
-		// otherwise, exclude files not matched by the specified tags
-		tagsMatcher, err = cmd.TagsMatcher(testParams.tags, cfg)
-		if err != nil {
-			return err
-		}
-		tagsMatcher = matcher.Not(tagsMatcher)
+	if err := cfg.Validate(); err != nil {
+		return err
 	}
 
-	m := matcher.Any(tagsMatcher, cfg.Exclude)
-	pkgs, err := cmd.PkgPaths(pkgsParam, wd, m)
+	// tagsMatcher is a matcher that matches the specified tags (or nil if no tags were specified)
+	tagsMatcher, err := cmd.TagsMatcher(testParams.tags, cfg)
+	if err != nil {
+		return err
+	}
+	excludeMatchers := []matcher.Matcher{cfg.Exclude}
+	if tagsMatcher != nil {
+		// if tagsMatcher is non-nil, should exclude all files that do not match the tags
+		excludeMatchers = append(excludeMatchers, matcher.Not(tagsMatcher))
+	}
+
+	pkgs, err := cmd.PkgPaths(pkgsParam, wd, matcher.Any(excludeMatchers...))
 	if err != nil {
 		return err
 	}
