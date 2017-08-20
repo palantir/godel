@@ -21,6 +21,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -75,7 +76,7 @@ func (a *AlmanacInfo) GetUnit(client *http.Client, product, branch, revision str
 	return a.get(client, strings.Join([]string{"/v1/units", product, branch, revision}, "/"))
 }
 
-func (a *AlmanacInfo) CreateUnit(client *http.Client, unit AlmanacUnit, version string) error {
+func (a *AlmanacInfo) CreateUnit(client *http.Client, unit AlmanacUnit, version string, stdout io.Writer) error {
 	endpoint := "/v1/units"
 
 	// set version field of metadata to be version
@@ -89,8 +90,11 @@ func (a *AlmanacInfo) CreateUnit(client *http.Client, unit AlmanacUnit, version 
 		return errors.Wrapf(err, "Failed to marshal %v as JSON", unit)
 	}
 
-	_, err = a.do(client, http.MethodPost, endpoint, string(jsonBytes))
-	return err
+	fmt.Fprintf(stdout, "Creating Almanac unit for product %s, branch %s, revision %s\n", unit.Product, unit.Branch, unit.Revision)
+	if _, err := a.do(client, http.MethodPost, endpoint, string(jsonBytes)); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (a *AlmanacInfo) ReleaseProduct(client *http.Client, product, branch, revision string) error {
