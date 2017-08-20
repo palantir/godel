@@ -54,7 +54,7 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, publisher Publisher,
 		// verify that distribution to publish exists
 		for _, artifactPath := range dist.FullArtifactsPaths(dist.ToDister(currDistCfg.Info), buildSpec, currDistCfg) {
 			if _, err := os.Stat(artifactPath); os.IsNotExist(err) {
-				return errors.Errorf("distribution for %v does not exist at %v", buildSpec.ProductName, artifactPath)
+				return errors.Errorf("distribution for %s does not exist at %s", buildSpec.ProductName, artifactPath)
 			}
 		}
 
@@ -65,13 +65,13 @@ func Run(buildSpecWithDeps params.ProductBuildSpecWithDeps, publisher Publisher,
 
 		artifactURLs, err := publisher.Publish(buildSpec, paths, stdout)
 		if err != nil {
-			return fmt.Errorf("Publish failed for %v: %v", buildSpec.ProductName, err)
+			return fmt.Errorf("Publish failed for %s: %v", buildSpec.ProductName, err)
 		}
 
 		if almanacInfo != nil {
 			for _, currArtifactURL := range artifactURLs {
 				if err := almanacPublish(currArtifactURL, *almanacInfo, buildSpec, currDistCfg, stdout); err != nil {
-					return fmt.Errorf("Almanac publish failed for %v: %v", buildSpec.ProductName, err)
+					return fmt.Errorf("Almanac publish failed for %s: %v", buildSpec.ProductName, err)
 				}
 			}
 		}
@@ -111,7 +111,7 @@ func productPath(buildSpecWithDeps params.ProductBuildSpecWithDeps, distCfg para
 
 	pomFilePath := pomFilePath(buildSpec, distCfg)
 	if err := ioutil.WriteFile(pomFilePath, pomBytes, 0644); err != nil {
-		return ProductPaths{}, errors.Wrapf(err, "failed to write POM file to %v", pomFilePath)
+		return ProductPaths{}, errors.Wrapf(err, "failed to write POM file to %s", pomFilePath)
 	}
 
 	return ProductPaths{
@@ -178,7 +178,7 @@ type artifactExistsFunc func(fi fileInfo, dstFileName, username, password string
 func newFileInfo(pathToFile string) (fileInfo, error) {
 	bytes, err := ioutil.ReadFile(pathToFile)
 	if err != nil {
-		return fileInfo{}, errors.Wrapf(err, "Failed to read file %v", pathToFile)
+		return fileInfo{}, errors.Wrapf(err, "Failed to read file %s", pathToFile)
 	}
 
 	sha1Bytes := sha1.Sum(bytes)
@@ -211,10 +211,10 @@ func (b BasicConnectionInfo) uploadFile(filePath, baseURL, artifactPath string, 
 
 	uploadURL, err := url.Parse(rawUploadURL)
 	if err != nil {
-		return rawUploadURL, errors.Wrapf(err, "Failed to parse %v as URL", rawUploadURL)
+		return rawUploadURL, errors.Wrapf(err, "Failed to parse %s as URL", rawUploadURL)
 	}
 
-	fmt.Fprintf(stdout, "Uploading %v to %v\n", fileInfo.path, rawUploadURL)
+	fmt.Fprintf(stdout, "Uploading %s to %s\n", fileInfo.path, rawUploadURL)
 
 	header := http.Header{}
 	addChecksumToHeader(header, "Md5", fileInfo.checksums.MD5)
@@ -239,7 +239,7 @@ func (b BasicConnectionInfo) uploadFile(filePath, baseURL, artifactPath string, 
 
 	resp, err := http.DefaultClient.Do(&req)
 	if err != nil {
-		return rawUploadURL, errors.Wrapf(err, "failed to upload %v to %v", fileInfo.path, rawUploadURL)
+		return rawUploadURL, errors.Wrapf(err, "failed to upload %s to %s", fileInfo.path, rawUploadURL)
 	}
 	defer func() {
 		if err := resp.Body.Close(); err != nil && rErr == nil {
@@ -248,7 +248,7 @@ func (b BasicConnectionInfo) uploadFile(filePath, baseURL, artifactPath string, 
 	}()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		msg := fmt.Sprintf("uploading %v to %v resulted in response %q", fileInfo.path, rawUploadURL, resp.Status)
+		msg := fmt.Sprintf("uploading %s to %s resulted in response %q", fileInfo.path, rawUploadURL, resp.Status)
 		if body, err := ioutil.ReadAll(resp.Body); err == nil {
 			bodyStr := string(body)
 			if bodyStr != "" {
@@ -261,8 +261,8 @@ func (b BasicConnectionInfo) uploadFile(filePath, baseURL, artifactPath string, 
 	return rawUploadURL, nil
 }
 
-func addChecksumToHeader(header http.Header, checksumName string, checksum string) {
-	header.Add(fmt.Sprintf("X-Checksum-%v", checksumName), checksum)
+func addChecksumToHeader(header http.Header, checksumName, checksum string) {
+	header.Add(fmt.Sprintf("X-Checksum-%s", checksumName), checksum)
 }
 
 func pomFilePath(buildSpec params.ProductBuildSpec, distCfg params.Dist) string {

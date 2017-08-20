@@ -73,7 +73,7 @@ func (b *BintrayConnectionInfo) addToDownloadsList(buildSpec params.ProductBuild
 func (b *BintrayConnectionInfo) runBintrayCommand(urlString, httpMethod, jsonContent, cmdMsg string, stdout io.Writer) (rErr error) {
 	url, err := url.Parse(urlString)
 	if err != nil {
-		return errors.Wrapf(err, "failed to parse %v as URL", urlString)
+		return errors.Wrapf(err, "failed to parse %s as URL", urlString)
 	}
 
 	capitalizedMsg := cmdMsg
@@ -110,7 +110,7 @@ func (b *BintrayConnectionInfo) runBintrayCommand(urlString, httpMethod, jsonCon
 	}()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		return errors.Errorf("%s resulted in response: %v", cmdMsg, resp.Status)
+		return errors.Errorf("%s resulted in response: %s", cmdMsg, resp.Status)
 	}
 
 	fmt.Fprint(stdout, "done")

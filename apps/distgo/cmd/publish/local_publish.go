@@ -33,7 +33,7 @@ type LocalPublishInfo struct {
 func (l *LocalPublishInfo) Publish(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) ([]string, error) {
 	productPath := path.Join(l.Path, paths.productPath)
 	if err := os.MkdirAll(productPath, 0755); err != nil {
-		return nil, errors.Wrapf(err, "Failed to create path to %v", productPath)
+		return nil, errors.Wrapf(err, "Failed to create path to %s", productPath)
 	}
 
 	if _, err := copyArtifact(paths.pomFilePath, productPath, stdout); err != nil {
@@ -53,6 +53,6 @@ func (l *LocalPublishInfo) Publish(buildSpec params.ProductBuildSpec, paths Prod
 
 func copyArtifact(src, dstDir string, stdout io.Writer) (string, error) {
 	dst := path.Join(dstDir, path.Base(src))
-	fmt.Fprintf(stdout, "Copying %v to %v\n", src, dst)
+	fmt.Fprintf(stdout, "Copying %s to %s\n", src, dst)
 	return dst, shutil.CopyFile(src, dst, false)
 }

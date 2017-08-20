@@ -92,25 +92,25 @@ func (a *ArtifactoryConnectionInfo) Publish(buildSpec params.ProductBuildSpec, p
 func computeArtifactChecksums(artifactoryURL, repoKey, username, password string, paths ProductPaths, stdout io.Writer) error {
 	for _, currArtifactPath := range paths.artifactPaths {
 		currArtifactURL := strings.Join([]string{paths.productPath, path.Base(currArtifactPath)}, "/")
-		if err := artifactorySetSHA256Checksum(artifactoryURL, repoKey, currArtifactURL, username, password, stdout); err != nil {
+		if err := artifactorySetSHA256Checksum(artifactoryURL, repoKey, currArtifactURL, username, password); err != nil {
 			return errors.Wrapf(err, "")
 		}
 	}
 	pomPath := strings.Join([]string{paths.productPath, path.Base(paths.pomFilePath)}, "/")
-	if err := artifactorySetSHA256Checksum(artifactoryURL, repoKey, pomPath, username, password, stdout); err != nil {
+	if err := artifactorySetSHA256Checksum(artifactoryURL, repoKey, pomPath, username, password); err != nil {
 		return errors.Wrapf(err, "")
 	}
 	return nil
 }
 
-func artifactorySetSHA256Checksum(baseURLString, repoKey, filePath, username, password string, stdout io.Writer) (rErr error) {
+func artifactorySetSHA256Checksum(baseURLString, repoKey, filePath, username, password string) (rErr error) {
 	apiURLString := baseURLString + "/api/checksum/sha256"
 	uploadURL, err := url.Parse(apiURLString)
 	if err != nil {
-		return errors.Wrapf(err, "failed to parse %v as URL", apiURLString)
+		return errors.Wrapf(err, "failed to parse %s as URL", apiURLString)
 	}
 
-	jsonContent := fmt.Sprintf(`{"repoKey":"%v","path":"%v"}`, repoKey, filePath)
+	jsonContent := fmt.Sprintf(`{"repoKey":"%s","path":"%s"}`, repoKey, filePath)
 	reader := strings.NewReader(jsonContent)
 
 	header := http.Header{}
@@ -126,7 +126,7 @@ func artifactorySetSHA256Checksum(baseURLString, repoKey, filePath, username, pa
 
 	resp, err := http.DefaultClient.Do(&req)
 	if err != nil {
-		return errors.Wrapf(err, "failed to trigger computation of SHA-256 checksum for %v", filePath)
+		return errors.Wrapf(err, "failed to trigger computation of SHA-256 checksum for %s", filePath)
 	}
 	defer func() {
 		if err := resp.Body.Close(); err != nil && rErr == nil {
@@ -135,7 +135,7 @@ func artifactorySetSHA256Checksum(baseURLString, repoKey, filePath, username, pa
 	}()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		return errors.Errorf("triggering computation of SHA-256 checksum for %v resulted in response: %v", filePath, resp.Status)
+		return errors.Errorf("triggering computation of SHA-256 checksum for %s resulted in response: %s", filePath, resp.Status)
 	}
 	return nil
 }

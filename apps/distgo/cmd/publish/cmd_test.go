@@ -57,7 +57,7 @@ func TestPublishBatchErrors(t *testing.T) {
 	wd, err := os.Getwd()
 	defer func() {
 		if err := os.Chdir(wd); err != nil {
-			fmt.Printf("Failed to restore working directory to %v: %v\n", wd, err)
+			fmt.Printf("Failed to restore working directory to %s: %v\n", wd, err)
 		}
 	}()
 	require.NoError(t, err)
@@ -189,7 +189,7 @@ func TestArtifactoryPublishChecksums(t *testing.T) {
 	wd, err := os.Getwd()
 	defer func() {
 		if err := os.Chdir(wd); err != nil {
-			fmt.Printf("Failed to restore working directory to %v: %v\n", wd, err)
+			fmt.Printf("Failed to restore working directory to %s: %v\n", wd, err)
 		}
 	}()
 	require.NoError(t, err)
@@ -421,7 +421,7 @@ func TestAlmanacPublishCheckURL(t *testing.T) {
 	wd, err := os.Getwd()
 	defer func() {
 		if err := os.Chdir(wd); err != nil {
-			fmt.Printf("Failed to restore working directory to %v: %v\n", wd, err)
+			fmt.Printf("Failed to restore working directory to %s: %v\n", wd, err)
 		}
 	}()
 	require.NoError(t, err)
