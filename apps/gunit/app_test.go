@@ -143,7 +143,8 @@ func TestRun(t *testing.T) {
 				},
 			},
 			wantMatch: func(currCaseTmpDir string) string {
-				return `(?s)Foo\n--- FAIL: TestFoo (.+)\n.+foo_test.go:[0-9]+: myFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + "\t[0-9.]+s"
+				return `(?s)` +
+					`Foo\n--- FAIL: TestFoo (.+)\n.+foo_test.go:[0-9]+: myFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + "\t[0-9.]+s"
 			},
 			wantError: "(?s).+1 package had failing tests:.+",
 		},
@@ -170,7 +171,8 @@ func TestRun(t *testing.T) {
 				},
 			},
 			wantMatch: func(currCaseTmpDir string) string {
-				return `(?s)foo_test.go:[0-9]+:[0-9]+: cannot find package.+\nFAIL\t` + pkgName(t, currCaseTmpDir) + `\t\[setup failed\]`
+				return `(?s)` +
+					`foo_test.go:[0-9]+:[0-9]+: cannot find package.+\nFAIL\t` + pkgName(t, currCaseTmpDir) + `\t\[setup failed\]`
 			},
 			wantError: "(?s).+1 package had failing tests:.+",
 		},
@@ -206,7 +208,8 @@ func TestRun(t *testing.T) {
 				"--tags", "integration",
 			},
 			wantMatch: func(currCaseTmpDir string) string {
-				return `(?s)--- FAIL: TestBar (.+)\n.+bar_test.go:[0-9]+: barFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + "/integration\t[0-9.]+s"
+				return `(?s)` +
+					`--- FAIL: TestBar (.+)\n.+bar_test.go:[0-9]+: barFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + "/integration\t[0-9.]+s"
 			},
 			wantError: "(?s).+1 package had failing tests:.+",
 		},
@@ -253,7 +256,8 @@ func TestRun(t *testing.T) {
 				"--tags", "bar,baz",
 			},
 			wantMatch: func(currCaseTmpDir string) string {
-				return `(?s)--- FAIL: TestBar (.+)\n.+bar_test.go:[0-9]+: barFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `/bar\t[0-9.]+s.+` +
+				return `(?s)` +
+					`--- FAIL: TestBar (.+)\n.+bar_test.go:[0-9]+: barFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `/bar\t[0-9.]+s.+` +
 					`--- FAIL: TestBaz (.+)\n.+baz_test.go:[0-9]+: bazFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `/baz\t[0-9.]+s.+`
 			},
 			wantError: "(?s).+2 packages had failing tests:.+",
@@ -301,7 +305,8 @@ func TestRun(t *testing.T) {
 				"--tags", "none",
 			},
 			wantMatch: func(currCaseTmpDir string) string {
-				return `(?s)--- FAIL: TestFoo (.+)\n.+foo_test.go:[0-9]+: fooFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `\t[0-9.]+s.+`
+				return `(?s)` +
+					`--- FAIL: TestFoo (.+)\n.+foo_test.go:[0-9]+: fooFail.+FAIL\t` + pkgName(t, currCaseTmpDir) + `\t[0-9.]+s.+`
 			},
 			wantError: "(?s).+1 package had failing tests:.+",
 		},
