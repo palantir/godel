@@ -16,10 +16,10 @@ package checkpath
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -29,10 +29,10 @@ import (
 	"github.com/termie/go-shutil"
 )
 
-func VerifyProject(wd string, info bool) error {
+func VerifyProject(wd string, apply bool, stdout io.Writer) error {
 	gopath := os.Getenv("GOPATH")
 	if gopath == "" {
-		return fmt.Errorf("GOPATH environment variable must be set")
+		return errors.Errorf("GOPATH environment variable must be set")
 	}
 
 	goroot := os.Getenv("GOROOT")
@@ -43,130 +43,85 @@ func VerifyProject(wd string, info bool) error {
 			// compiled GOROOT does not exist: get GOROOT from "go env GOROOT"
 			goEnvRoot := goEnvRoot()
 
-			if info {
-				fmt.Printf("GOROOT environment variable is not set and the value provided in the compiled code does not exist locally.\n")
-			}
+			fmt.Fprintln(stdout, "GOROOT environment variable is not set and the value provided in the compiled code does not exist locally.")
 
 			if goEnvRoot != "" {
 				shellCfgFiles := getShellCfgFiles()
-				if info {
-					fmt.Printf("'go env' reports that GOROOT is %v. Suggested fix:\n\texport GOROOT=%v\n", goEnvRoot, goEnvRoot)
+				if !apply {
+					fmt.Fprintf(stdout, "'go env' reports that GOROOT is %s. Suggested fix:\n\texport GOROOT=%s\n", goEnvRoot, goEnvRoot)
 					for _, currCfgFile := range shellCfgFiles {
-						fmt.Printf("\techo \"export GOROOT=%v\" >> %q \n", goEnvRoot, currCfgFile)
+						fmt.Fprintf(stdout, "\techo \"export GOROOT=%s\" >> %q \n", goEnvRoot, currCfgFile)
 					}
 				} else {
 					for _, currCfgFile := range shellCfgFiles {
-						fmt.Printf("Adding \"export GOROOT=%v\" to %v...\n", goEnvRoot, currCfgFile)
+						fmt.Fprintf(stdout, "Adding \"export GOROOT=%s\" to %s...\n", goEnvRoot, currCfgFile)
 						if err := appendToFile(currCfgFile, fmt.Sprintf("export GOROOT=%v\n", goEnvRoot)); err != nil {
-							fmt.Printf("Failed to add \"export GOROOT=%v\" in %v\n", goEnvRoot, currCfgFile)
+							fmt.Fprintf(stdout, "Failed to add \"export GOROOT=%s\" in %s\n", goEnvRoot, currCfgFile)
 						}
 					}
 				}
 			} else {
-				fmt.Printf("Unable to determine GOROOT using 'go env GOROOT'. Ensure that Go was installed properly with source files.\n")
+				fmt.Fprintln(stdout, "Unable to determine GOROOT using 'go env GOROOT'. Ensure that Go was installed properly with source files.")
 			}
 		}
 	}
 
 	srcPath, err := gitRepoRootPath(wd)
 	if err != nil {
-		return fmt.Errorf("Directory %q must be in a git project", wd)
+		return errors.Errorf("Directory %q must be in a git project", wd)
 	}
 
 	pkgPath, gitRemoteURL, err := gitRemoteOriginPkgPath(wd)
 	if err != nil {
-		return fmt.Errorf("Unable to determine URL of git remote for %v: verify that the project was checked out from a git remote and that the remote URL is set", wd)
+		return errors.Errorf("Unable to determine URL of git remote for %s: verify that the project was checked out from a git remote and that the remote URL is set", wd)
 	} else if pkgPath == "" {
-		return fmt.Errorf("Unable to determine the expected package path from git remote URL of %v", gitRemoteURL)
+		return errors.Errorf("Unable to determine the expected package path from git remote URL of %s", gitRemoteURL)
 	}
 
 	dstPath := path.Join(gopath, "src", pkgPath)
 	if srcPath == dstPath {
-		fmt.Printf("Project appears to be in the correct location\n")
+		fmt.Fprintln(stdout, "Project appears to be in the correct location")
 		return nil
 	}
 	dstPathParentDir := path.Dir(dstPath)
 
-	fmt.Printf("Project path %q differs from expected path %q\n", srcPath, dstPath)
+	fmt.Fprintf(stdout, "Project path %q differs from expected path %q\n", srcPath, dstPath)
 	if _, err := os.Stat(dstPath); !os.IsNotExist(err) {
-		if !info {
-			return fmt.Errorf("Destination path %q already exists", dstPath)
-		}
-		fmt.Printf("Expected destination path %q already exists.\nIf this project is known to be the correct one, remove or rename the file or directory at the destination path and run this command again.\n", dstPath)
+		fmt.Fprintf(stdout, "Expected destination path %q already exists.\n", dstPath)
+		fmt.Fprintln(stdout, "If this project is known to be the correct one, remove or rename the file or directory at the destination path and run this command again.")
 		return nil
 	}
 
 	var fixOperation func(srcPath, dstPath string) error
 	var fixOpMessage string
 	if pathsOnSameDevice(srcPath, gopath) {
-		if info {
-			fmt.Printf("Project and GOPATH are on same device. Suggested fix:\n\tmkdir -p %q && mv %q %q\n", dstPathParentDir, srcPath, dstPath)
+		if !apply {
+			fmt.Fprintf(stdout, "Project and GOPATH are on same device. Suggested fix:\n\tmkdir -p %q && mv %q %q\n", dstPathParentDir, srcPath, dstPath)
 		}
-		fixOpMessage = fmt.Sprintf("Moving %q to %q...\n", wd, dstPath)
+		fixOpMessage = fmt.Sprintf("Moving %q to %q...", wd, dstPath)
 		fixOperation = os.Rename
 	} else {
-		if info {
-			fmt.Printf("Project and GOPATH are on different devices. Suggested fix:\n\tmkdir -p %q && cp -r %q %q\n", dstPathParentDir, srcPath, dstPath)
+		if !apply {
+			fmt.Fprintf(stdout, "Project and GOPATH are on different devices. Suggested fix:\n\tmkdir -p %q && cp -r %q %q\n", dstPathParentDir, srcPath, dstPath)
 		}
-		fixOpMessage = fmt.Sprintf("Copying %q to %q...\n", wd, dstPath)
+		fixOpMessage = fmt.Sprintf("Copying %q to %q...", wd, dstPath)
 		fixOperation = func(srcPath, dstPath string) error {
 			return shutil.CopyTree(srcPath, dstPath, nil)
 		}
 	}
 
-	if info {
-		fmt.Printf("\n%v found issues. Run the following godel command to implement suggested fixes:\n\t%v\n", cmd, cmd)
+	if !apply {
+		fmt.Fprintf(stdout, "\n%s found issues. Run the following godel command to implement suggested fixes:\n\t%s\n", cmd, cmd)
 	} else {
 		if err := os.MkdirAll(dstPathParentDir, 0755); err != nil {
-			return fmt.Errorf("Failed to create path to %q: %v", dstPathParentDir, err)
+			return errors.Errorf("Failed to create path to %q: %v", dstPathParentDir, err)
 		}
-		fmt.Printf(fixOpMessage)
+		fmt.Fprintln(stdout, fixOpMessage)
 		if err := fixOperation(srcPath, dstPath); err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-func VerifyGoEnv(wd string) {
-	goroot := os.Getenv("GOROOT")
-	if goroot == "" {
-		// GOROOT is not set as environment variable: check value of GOROOT provided by compiled code
-		compiledGoRoot := runtime.GOROOT()
-		if info, err := os.Stat(compiledGoRoot); err != nil || !info.IsDir() {
-			// compiled GOROOT does not exist: get GOROOT from "go env GOROOT" command and display warning
-			goEnvRoot := goEnvRoot()
-
-			title := "GOROOT environment variable is empty"
-			content := fmt.Sprintf("GOROOT is required to build Go code. The GOROOT environment variable was not set and the value of GOROOT in the compiled code does not exist locally.\n")
-			content += fmt.Sprintf("Run the godel command '%v --info' for more information.", cmd)
-
-			if goEnvRoot != "" {
-				content += fmt.Sprintf("\nFalling back to value provided by 'go env GOROOT': %v", goEnvRoot)
-				if err := os.Setenv("GOROOT", goEnvRoot); err != nil {
-					fmt.Printf("Failed to set GOROOT environment variable: %v", err)
-					return
-				}
-			}
-			printWarning(title, content)
-		}
-	}
-
-	gopath := os.Getenv("GOPATH")
-	if gopath == "" {
-		title := "GOPATH environment variable is empty"
-		content := fmt.Sprintf("GOPATH is required to build Go code.\nSee https://golang.org/doc/code.html#GOPATH for more information.")
-		printWarning(title, content)
-		return
-	}
-
-	goSrcPath := path.Join(gopath, "src")
-	if !isSubdir(goSrcPath, wd) {
-		title := "project directory is not a subdirectory of $GOPATH/src"
-		content := fmt.Sprintf("%q is not a subdirectory of the GOPATH/src directory (%q): the project location is likely incorrect.\n", wd, goSrcPath)
-		content += fmt.Sprintf("Run the godel command '%v --info' for more information.", cmd)
-		printWarning(title, content)
-	}
 }
 
 func goEnvRoot() string {
@@ -210,15 +165,6 @@ func checkForCfgFile(name string) string {
 	return ""
 }
 
-func printWarning(title, content string) {
-	warning := fmt.Sprintf("| WARNING: %v |", title)
-	fmt.Println(strings.Repeat("-", len(warning)))
-	fmt.Println(warning)
-	fmt.Println(strings.Repeat("-", len(warning)))
-	fmt.Println(content)
-	fmt.Println()
-}
-
 func pathsOnSameDevice(p1, p2 string) bool {
 	id1, ok := getDeviceID(p1)
 	if !ok {
@@ -242,11 +188,6 @@ func getDeviceID(p string) (interface{}, bool) {
 		return s.Dev, true
 	}
 	return 0, false
-}
-
-func isSubdir(base, dst string) bool {
-	relPath, err := filepath.Rel(base, dst)
-	return err == nil && !strings.HasPrefix(relPath, "..")
 }
 
 func gitRepoRootPath(dir string) (string, error) {

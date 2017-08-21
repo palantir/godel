@@ -21,8 +21,8 @@ import (
 )
 
 const (
-	cmd      = "check-path"
-	infoFlag = "info"
+	cmd       = "check-path"
+	applyFlag = "apply"
 )
 
 func Command() cli.Command {
@@ -30,14 +30,14 @@ func Command() cli.Command {
 		Name:  cmd,
 		Usage: "Verify that the Go environment is set up properly and that the project is in the proper location",
 		Flags: []flag.Flag{
-			flag.BoolFlag{Name: infoFlag, Usage: "Provide information on current state and suggest fixes without executing them"},
+			flag.BoolFlag{Name: applyFlag, Usage: "Apply the recommended changes"},
 		},
 		Action: func(ctx cli.Context) error {
 			wd, err := dirs.GetwdEvalSymLinks()
 			if err != nil {
 				return err
 			}
-			return VerifyProject(wd, ctx.Bool(infoFlag))
+			return VerifyProject(wd, ctx.Bool(applyFlag), ctx.App.Stdout)
 		},
 	}
 }
