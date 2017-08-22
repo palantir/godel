@@ -92,7 +92,7 @@ stages:
             mkdir -p "$TESTS_DIR"
             CGO_ENABLED=0 go install ./vendor/github.com/palantir/amalgomate
             PATH=$PATH:$GOPATH/bin
-            ./godelw verify --apply=false --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"
+            ./godelw verify --apply=false --tags=none --junit-output="$TESTS_DIR/$PROJECT-$TESTS_NAME-tests.xml"
           else
             echo "Skipping: current node is $CIRCLE_NODE_INDEX"
           fi
