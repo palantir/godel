@@ -48,9 +48,10 @@ func VerifyProject(wd string, apply bool, stdout io.Writer) error {
 			if goEnvRoot != "" {
 				shellCfgFiles := getShellCfgFiles()
 				if !apply {
-					fmt.Fprintf(stdout, "'go env' reports that GOROOT is %s. Suggested fix:\n\texport GOROOT=%s\n", goEnvRoot, goEnvRoot)
+					fmt.Fprintf(stdout, "'go env' reports that GOROOT is %s. Suggested fix:\n", goEnvRoot)
+					fmt.Fprintf(stdout, "  export GOROOT=%s\n", goEnvRoot)
 					for _, currCfgFile := range shellCfgFiles {
-						fmt.Fprintf(stdout, "\techo \"export GOROOT=%s\" >> %q \n", goEnvRoot, currCfgFile)
+						fmt.Fprintf(stdout, "  echo \"export GOROOT=%s\" >> %q \n", goEnvRoot, currCfgFile)
 					}
 				} else {
 					for _, currCfgFile := range shellCfgFiles {
@@ -96,13 +97,15 @@ func VerifyProject(wd string, apply bool, stdout io.Writer) error {
 	var fixOpMessage string
 	if pathsOnSameDevice(srcPath, gopath) {
 		if !apply {
-			fmt.Fprintf(stdout, "Project and GOPATH are on same device. Suggested fix:\n\tmkdir -p %q && mv %q %q\n", dstPathParentDir, srcPath, dstPath)
+			fmt.Fprintln(stdout, "Project and GOPATH are on same device. Suggested fix:")
+			fmt.Fprintf(stdout, "  mkdir -p %q && mv %q %q\n", dstPathParentDir, srcPath, dstPath)
 		}
 		fixOpMessage = fmt.Sprintf("Moving %q to %q...", wd, dstPath)
 		fixOperation = os.Rename
 	} else {
 		if !apply {
-			fmt.Fprintf(stdout, "Project and GOPATH are on different devices. Suggested fix:\n\tmkdir -p %q && cp -r %q %q\n", dstPathParentDir, srcPath, dstPath)
+			fmt.Fprintln(stdout, "Project and GOPATH are on different devices. Suggested fix:")
+			fmt.Fprintf(stdout, "  mkdir -p %q && cp -r %q %q\n", dstPathParentDir, srcPath, dstPath)
 		}
 		fixOpMessage = fmt.Sprintf("Copying %q to %q...", wd, dstPath)
 		fixOperation = func(srcPath, dstPath string) error {
@@ -111,7 +114,8 @@ func VerifyProject(wd string, apply bool, stdout io.Writer) error {
 	}
 
 	if !apply {
-		fmt.Fprintf(stdout, "\n%s found issues. Run the following godel command to implement suggested fixes:\n\t%s\n", cmd, cmd)
+		fmt.Fprintf(stdout, "%s found issues. Run the following godel command to implement suggested fixes:\n", cmd)
+		fmt.Fprintf(stdout, "  %s --%s\n", cmd, applyFlag)
 	} else {
 		if err := os.MkdirAll(dstPathParentDir, 0755); err != nil {
 			return errors.Errorf("Failed to create path to %q: %v", dstPathParentDir, err)
