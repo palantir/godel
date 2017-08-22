@@ -22,7 +22,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-const Unspecified = "Unspecified"
+const Unspecified = "unspecified"
 
 type ProjectInfo struct {
 	Version  string
