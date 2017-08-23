@@ -50,9 +50,9 @@ func Run(rootDir string, cfg config.GoGenerate, verify bool, stdout io.Writer) e
 	var outputParts []string
 	outputParts = append(outputParts, fmt.Sprintf("Generators produced output that differed from what already exists: %v", sortedKeys))
 	for _, k := range sortedKeys {
-		outputParts = append(outputParts, fmt.Sprintf("\t%s:", k))
+		outputParts = append(outputParts, fmt.Sprintf("  %s:", k))
 		for _, currGenLine := range strings.Split(diff[k].String(), "\n") {
-			outputParts = append(outputParts, fmt.Sprintf("\t\t%s", currGenLine))
+			outputParts = append(outputParts, fmt.Sprintf("    %s", currGenLine))
 		}
 	}
 	return fmt.Errorf(strings.Join(outputParts, "\n"))

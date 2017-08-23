@@ -283,7 +283,7 @@ func main() {
 	output, err := cmd.CombinedOutput()
 	require.Error(t, err)
 
-	want := "Generators produced output that differed from what already exists: [foo]\n\tfoo:\n\t\tgen/output.txt: previously had checksum 0682c5f2076f099c34cfdd15a9e063849ed437a49677e6fcc5b4198c76575be5, now has checksum 380a300b764683667309818ff127a401c6ea6ab1959f386fe0f05505d660ba37\n"
+	want := "Generators produced output that differed from what already exists: [foo]\n  foo:\n    gen/output.txt: previously had checksum 0682c5f2076f099c34cfdd15a9e063849ed437a49677e6fcc5b4198c76575be5, now has checksum 380a300b764683667309818ff127a401c6ea6ab1959f386fe0f05505d660ba37\n"
 	assert.Equal(t, want, string(output))
 }
 
