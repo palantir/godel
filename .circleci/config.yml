@@ -262,7 +262,7 @@ jobs:
       - restore_cache:
           keys:
             - dist-{{ .Environment.CIRCLE_SHA1 }}-v1
-      - run: ./godelw publish github --url https://api.github.com --user nmiyake --password $GITHUB_TOKEN --owner nmiyake --repository echgo
+      - run: ./godelw publish bintray --url https://api.bintray.com --subject palantir --repository releases --user "$BINTRAY_USER" --password "$BINTRAY_PASSWORD" --publish --downloads-list godel
 
 ### Workflows ###
 workflows:
