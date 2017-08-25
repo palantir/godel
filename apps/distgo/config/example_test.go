@@ -66,8 +66,6 @@ products:
     dist:
       dist-type:
         type: bin
-        info:
-          omit-init-sh: true
       script: |
               function setup_wrapper {
                 # logic for function (omitted for brevity)
@@ -80,7 +78,7 @@ group-id: com.palantir.godel`
 
 	cfg := configFromYML(yml)
 	fmt.Printf("%q", fmt.Sprintf("%+v", cfg))
-	// Output: "{Products:map[godel:{Build:{Skip:false Script: MainPkg:./cmd/godel OutputDir: BuildArgsScript: VersionVar:main.Version Environment:map[CGO_ENABLED:0] OSArchs:[darwin-amd64 linux-amd64]} Run:{Args:[]} Dist:[{OutputDir: InputDir: InputProducts:[] Script:function setup_wrapper {\n  # logic for function (omitted for brevity)\n}\n\n# copy contents of resources directory\nmkdir -p \"$DIST_DIR/wrapper\"\nsetup_wrapper \"$DIST_DIR/wrapper\"\n DistType:{Type:bin Info:{OmitInitSh:true InitShTemplateFile:}} Publish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] DockerImages:[] DefaultPublish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] BuildOutputDir: DistOutputDir: DistScriptInclude: GroupID:com.palantir.godel Exclude:{Names:[] Paths:[]}}"
+	// Output: "{Products:map[godel:{Build:{Skip:false Script: MainPkg:./cmd/godel OutputDir: BuildArgsScript: VersionVar:main.Version Environment:map[CGO_ENABLED:0] OSArchs:[darwin-amd64 linux-amd64]} Run:{Args:[]} Dist:[{OutputDir: InputDir: InputProducts:[] Script:function setup_wrapper {\n  # logic for function (omitted for brevity)\n}\n\n# copy contents of resources directory\nmkdir -p \"$DIST_DIR/wrapper\"\nsetup_wrapper \"$DIST_DIR/wrapper\"\n DistType:{Type:bin Info:{OmitInitSh:<nil> InitShTemplateFile:}} Publish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] DockerImages:[] DefaultPublish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] BuildOutputDir: DistOutputDir: DistScriptInclude: GroupID:com.palantir.godel Exclude:{Names:[] Paths:[]}}"
 }
 
 func Example_manual() {
@@ -153,8 +151,6 @@ products:
     dist:
       dist-type:
         type: bin
-        info:
-          omit-init-sh: true
       script: |
               function setup_wrapper {
                 # logic for function (omitted for brevity)
@@ -172,7 +168,7 @@ group-id: com.palantir.godel`
 
 	cfg := configFromYML(yml)
 	fmt.Printf("%q", fmt.Sprintf("%+v", cfg))
-	// Output: "{Products:map[godel:{Build:{Skip:false Script: MainPkg:./cmd/godel OutputDir: BuildArgsScript: VersionVar:main.Version Environment:map[CGO_ENABLED:0] OSArchs:[darwin-amd64 linux-amd64]} Run:{Args:[]} Dist:[{OutputDir: InputDir: InputProducts:[] Script:function setup_wrapper {\n  # logic for function (omitted for brevity)\n}\n\n# copy contents of resources directory\nmkdir -p \"$DIST_DIR/wrapper\"\nsetup_wrapper \"$DIST_DIR/wrapper\"\n DistType:{Type:bin Info:{OmitInitSh:true InitShTemplateFile:}} Publish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] DockerImages:[{Repository:palantir/godel Tag:latest ContextDir:path/to/context/dir Deps:[]}] DefaultPublish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] BuildOutputDir: DistOutputDir: DistScriptInclude: GroupID:com.palantir.godel Exclude:{Names:[] Paths:[]}}"
+	// Output: "{Products:map[godel:{Build:{Skip:false Script: MainPkg:./cmd/godel OutputDir: BuildArgsScript: VersionVar:main.Version Environment:map[CGO_ENABLED:0] OSArchs:[darwin-amd64 linux-amd64]} Run:{Args:[]} Dist:[{OutputDir: InputDir: InputProducts:[] Script:function setup_wrapper {\n  # logic for function (omitted for brevity)\n}\n\n# copy contents of resources directory\nmkdir -p \"$DIST_DIR/wrapper\"\nsetup_wrapper \"$DIST_DIR/wrapper\"\n DistType:{Type:bin Info:{OmitInitSh:<nil> InitShTemplateFile:}} Publish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] DockerImages:[{Repository:palantir/godel Tag:latest ContextDir:path/to/context/dir Deps:[] Info:{Type: Data:<nil>} BuildArgsScript:}] DefaultPublish:{GroupID: Almanac:{Metadata:map[] Tags:[]}}}] BuildOutputDir: DistOutputDir: DistScriptInclude: GroupID:com.palantir.godel Exclude:{Names:[] Paths:[]}}"
 }
 
 func configFromYML(yml string) config.Project {
