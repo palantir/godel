@@ -234,11 +234,10 @@ jobs:
     <<: *darwin-linux-no-cgo
     steps:
       - checkout
-      - add_ssh_keys
       - *godel-root-cache-restore
       - *godel-version
       - *godel-root-cache-save
-      - run: ./godelw github-wiki --docs-dir docs --repository=git@github.com:nmiyake/echgo.wiki.git
+      - run: ./godelw github-wiki --docs-dir docs --repository=git@github.com:palantir/godel.wiki.git
 
   ### Dist/Publish ###
   dist:
