@@ -234,6 +234,7 @@ jobs:
     <<: *darwin-linux-no-cgo
     steps:
       - checkout
+      - add_ssh_keys
       - *godel-root-cache-restore
       - *godel-version
       - *godel-root-cache-save
