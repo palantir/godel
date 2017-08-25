@@ -492,7 +492,7 @@ func TestBuildInstallErrorMessage(t *testing.T) {
 	}
 
 	want := `(?s)go install failed: failed to install a Go standard library package due to insufficient permissions to create directory.\n` +
-		`This typically means that the standard library for the OS/architectecture combination have not been installed locally and the current user does not have write permissions to GOROOT/pkg.\n` +
+		`This typically means that the standard library for the OS/architecture combination have not been installed locally and the current user does not have write permissions to GOROOT/pkg.\n` +
 		fmt.Sprintf("Run \"sudo env GOOS=dragonfly GOARCH=amd64 %s install std\" to install the standard packages for this combination as root and then try again.\n", goBinary) +
 		`Full error: build command \[.+/go install ./foo\] run with additional environment variables \[GOOS=dragonfly GOARCH=amd64\] failed with output:\n` +
 		`go install .+: mkdir .+: permission denied$`
