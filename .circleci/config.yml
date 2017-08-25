@@ -172,6 +172,7 @@ jobs:
   integration-alpine-go-1.7:
     <<: *alpine-go-1_7
     steps:
+      - run: apk update && apk add --no-cache openssh
       - checkout
       - *godel-root-cache-restore
       - *godel-version
@@ -187,6 +188,7 @@ jobs:
   integration-alpine-go-1.8:
     <<: *alpine-go-1_8
     steps:
+      - run: apk update && apk add --no-cache openssh
       - checkout
       - *godel-root-cache-restore
       - *godel-version
