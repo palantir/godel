@@ -72,7 +72,7 @@ func (g git) exec(args ...string) (string, error) {
 	cmd.Dir = string(g)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("%v failed: %v", cmd.Args, err)
+		return "", fmt.Errorf("%v failed\nError: %v\nOutput: %s", cmd.Args, err, string(output))
 	}
 	return strings.TrimSpace(string(output)), nil
 }
