@@ -71,6 +71,9 @@ func TestPublishLocal(t *testing.T) {
 					Build: params.Build{
 						MainPkg: "./.",
 					},
+					Dist: []params.Dist{{
+						Info: &params.SLSDistInfo{},
+					}},
 					Publish: params.Publish{
 						GroupID: "com.palantir.distgo-publish-test",
 					},
@@ -346,7 +349,7 @@ echo "test-dist-contents" > "$DIST_DIR/$PRODUCT-$VERSION.tgz"
 			},
 		},
 		{
-			name: "local publish for product with no distribution specified creates SLS",
+			name: "local publish for product with no distribution specified creates os-arch-bin",
 			buildSpec: func(projectDir string) params.ProductBuildSpecWithDeps {
 				specWithDeps, err := params.NewProductBuildSpecWithDeps(params.NewProductBuildSpec(projectDir, "publish-test-service", git.ProjectInfo{
 					Version:  "0.0.1",
@@ -355,6 +358,9 @@ echo "test-dist-contents" > "$DIST_DIR/$PRODUCT-$VERSION.tgz"
 				}, params.Product{
 					Build: params.Build{
 						MainPkg: "./.",
+						OSArchs: []osarch.OSArch{
+							{OS: "darwin", Arch: "amd64"},
+						},
 					},
 					Publish: params.Publish{
 						GroupID: "com.palantir.distgo-publish-test",
@@ -365,7 +371,7 @@ echo "test-dist-contents" > "$DIST_DIR/$PRODUCT-$VERSION.tgz"
 			},
 			wantPaths: []string{
 				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1.pom",
-				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1.sls.tgz",
+				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1-darwin-amd64.tgz",
 			},
 			wantContent: map[string]string{
 				"com/palantir/distgo-publish-test/publish-test-service/0.0.1/publish-test-service-0.0.1.pom": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -375,7 +381,7 @@ echo "test-dist-contents" > "$DIST_DIR/$PRODUCT-$VERSION.tgz"
 					"<groupId>com.palantir.distgo-publish-test</groupId>\n" +
 					"<artifactId>publish-test-service</artifactId>\n" +
 					"<version>0.0.1</version>\n" +
-					"<packaging>sls.tgz</packaging>\n" +
+					"<packaging>tgz</packaging>\n" +
 					"</project>\n",
 			},
 		},
@@ -441,21 +447,21 @@ echo "test-dist-contents" > "$DIST_DIR/$PRODUCT-$VERSION.tgz"
 		currSpecWithDeps := currCase.buildSpec(currTmp)
 
 		err = build.Run(build.RequiresBuild(currSpecWithDeps, nil).Specs(), nil, build.Context{}, ioutil.Discard)
-		require.NoError(t, err, "Case %d", i)
+		require.NoError(t, err, "Case %d: %s", i, currCase.name)
 
 		err = dist.Run(currSpecWithDeps, ioutil.Discard)
-		require.NoError(t, err, "Case %d", i)
+		require.NoError(t, err, "Case %d: %s", i, currCase.name)
 
 		repo := path.Join(currTmp, "repository")
 		err = publish.Run(currSpecWithDeps, &publish.LocalPublishInfo{
 			Path: repo,
 		}, nil, ioutil.Discard)
-		require.NoError(t, err, "Case %d", i)
+		require.NoError(t, err, "Case %d: %s", i, currCase.name)
 
 		for _, currPath := range currCase.wantPaths {
 			info, err := os.Stat(path.Join(repo, currPath))
-			require.NoError(t, err, "Case %d", i)
-			assert.False(t, info.IsDir(), "Case %d", i)
+			require.NoError(t, err, "Case %d: %s", i, currCase.name)
+			assert.False(t, info.IsDir(), "Case %d: %s", i, currCase.name)
 		}
 
 		for k, v := range currCase.wantContent {
