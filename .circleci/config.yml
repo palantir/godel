@@ -1,35 +1,35 @@
 ### Docker images ###
-alpine-go-1.7: &alpine-go-1_7
+alpine-go-curr: &alpine-go-curr
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:alpine-go-1.7.6-t108
+    - image: nmiyake/go:alpine-go-1.9-t111
 
-alpine-go-1.8: &alpine-go-1_8
+alpine-go-prev: &alpine-go-prev
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:alpine-go-1.8.3-t108
+    - image: nmiyake/go:alpine-go-1.8.3-t111
 
 brew-go: &brew-go
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:brew-go-t108
+    - image: nmiyake/go:brew-go-t111
 
 darwin-linux: &darwin-linux
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:go-darwin-linux-1.8.3-t108
+    - image: nmiyake/go:go-darwin-linux-1.9-t111
 
 darwin-linux-no-cgo: &darwin-linux-no-cgo
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:go-darwin-linux-no-cgo-1.8.3-t108
+    - image: nmiyake/go:go-darwin-linux-no-cgo-1.9-t111
       environment:
         CGO_ENABLED: 0
 
 darwin-linux-rpm-fpm: &darwin-linux-rpm-fpm
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:go-darwin-linux-1.8.3-docker-17.03.0-ce-rpm-fpm-t108
+    - image: nmiyake/go:go-darwin-linux-1.9-docker-17.03.0-ce-rpm-fpm-t111
 
 ### Shared cache steps ###
 godel-gouser-cache-restore: &godel-gouser-cache-restore
@@ -77,6 +77,9 @@ store-test-results: &store-test-results
 go-install-packages: &go-install-packages
   run: go install $(./godelw packages)
 
+go-version: &go-version
+  run: go version
+
 godel-version: &godel-version
   run: ./godelw version
 
@@ -94,6 +97,7 @@ jobs:
     steps:
       - setup_remote_docker
       - checkout
+      - *go-version
       - *godel-gouser-cache-restore
       - *godel-version
       - *godel-gouser-cache-save
@@ -109,6 +113,7 @@ jobs:
     <<: *darwin-linux-no-cgo
     steps:
       - checkout
+      - *go-version
       - *godel-root-cache-restore
       - *godel-version
       - *godel-root-cache-save
@@ -125,6 +130,7 @@ jobs:
       <<: *darwin-linux-no-cgo
       steps:
         - checkout
+        - *go-version
         - *godel-root-cache-restore
         - *godel-version
         - *godel-root-cache-save
@@ -140,6 +146,7 @@ jobs:
     <<: *darwin-linux
     steps:
       - checkout
+      - *go-version
       - *godel-root-cache-restore
       - *godel-version
       - *godel-root-cache-save
@@ -157,6 +164,7 @@ jobs:
     <<: *darwin-linux-no-cgo
     steps:
       - checkout
+      - *go-version
       - *godel-root-cache-restore
       - *godel-version
       - *godel-root-cache-save
@@ -169,32 +177,33 @@ jobs:
       - *store-artifacts
 
   ### Integration tests ###
-  integration-alpine-go-1.7:
-    <<: *alpine-go-1_7
+  integration-alpine-go-curr:
+    <<: *alpine-go-curr
     steps:
-      - run: apk update && apk add --no-cache openssh
       - checkout
+      - *go-version
       - *godel-root-cache-restore
       - *godel-version
       - *godel-root-cache-save
       - *go-install-packages
-      - run: echo 'export TESTS_NAME=integration-alpine-go1.7' >> $BASH_ENV
+      - run: echo 'export TESTS_NAME=integration-alpine-go-curr' >> $BASH_ENV
       - *define-tests-dir
       - *mkdir-tests-dir
       - run: ./godelw test --tags=integration --junit-output="${TESTS_DIR}/${CIRCLE_PROJECT_REPONAME}-${TESTS_NAME}-tests.xml"
       - *store-test-results
       - *store-artifacts
 
-  integration-alpine-go-1.8:
-    <<: *alpine-go-1_8
+  integration-alpine-go-prev:
+    <<: *alpine-go-prev
     steps:
       - run: apk update && apk add --no-cache openssh
       - checkout
+      - *go-version
       - *godel-root-cache-restore
       - *godel-version
       - *godel-root-cache-save
       - *go-install-packages
-      - run: echo 'export TESTS_NAME=integration-alpine-go1.8' >> $BASH_ENV
+      - run: echo 'export TESTS_NAME=integration-alpine-go-prev' >> $BASH_ENV
       - *define-tests-dir
       - *mkdir-tests-dir
       - run: ./godelw test --tags=integration --junit-output="${TESTS_DIR}/${CIRCLE_PROJECT_REPONAME}-${TESTS_NAME}-tests.xml"
@@ -205,6 +214,7 @@ jobs:
     <<: *brew-go
     steps:
       - checkout
+      - *go-version
       - *godel-linuxbrew-cache-restore
       - *godel-version
       - *godel-linuxbrew-cache-save
@@ -220,11 +230,12 @@ jobs:
     <<: *darwin-linux-no-cgo
     steps:
       - checkout
+      - *go-version
       - *godel-root-cache-restore
       - *godel-version
       - *godel-root-cache-save
       - *go-install-packages
-      - run: echo 'export TESTS_NAME=integration-go1.8' >> $BASH_ENV
+      - run: echo 'export TESTS_NAME=integration-go-std' >> $BASH_ENV
       - *define-tests-dir
       - *mkdir-tests-dir
       - run: ./godelw test --tags=integration --junit-output="${TESTS_DIR}/${CIRCLE_PROJECT_REPONAME}-${TESTS_NAME}-tests.xml"
@@ -236,6 +247,7 @@ jobs:
     <<: *darwin-linux-no-cgo
     steps:
       - checkout
+      - *go-version
       - *godel-root-cache-restore
       - *godel-version
       - *godel-root-cache-save
@@ -246,6 +258,7 @@ jobs:
     <<: *darwin-linux-no-cgo
     steps:
       - checkout
+      - *go-version
       - *godel-root-cache-restore
       - *godel-version
       - *godel-root-cache-save
@@ -258,6 +271,7 @@ jobs:
     <<: *darwin-linux-no-cgo
     steps:
       - checkout
+      - *go-version
       - *godel-root-cache-restore
       - *godel-version
       - *godel-root-cache-save
@@ -291,11 +305,11 @@ workflows:
          filters:
            tags:
              only: /.*/
-      - integration-alpine-go-1.7:
+      - integration-alpine-go-curr:
          filters:
            tags:
              only: /.*/
-      - integration-alpine-go-1.8:
+      - integration-alpine-go-prev:
          filters:
            tags:
              only: /.*/
@@ -318,8 +332,8 @@ workflows:
             - godel
             - gonform
             - gunit
-            - integration-alpine-go-1.7
-            - integration-alpine-go-1.8
+            - integration-alpine-go-curr
+            - integration-alpine-go-prev
             - integration-brew
             - integration-std
             - okgo
@@ -333,8 +347,8 @@ workflows:
             - godel
             - gonform
             - gunit
-            - integration-alpine-go-1.7
-            - integration-alpine-go-1.8
+            - integration-alpine-go-curr
+            - integration-alpine-go-prev
             - integration-brew
             - integration-std
             - okgo
