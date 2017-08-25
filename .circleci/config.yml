@@ -269,16 +269,46 @@ workflows:
   version: 2
   build-publish:
     jobs:
-      - dist
-      - distgo
-      - godel
-      - gonform
-      - gunit
-      - integration-alpine-go-1.7
-      - integration-alpine-go-1.8
-      - integration-brew
-      - integration-std
-      - okgo
+      - dist:
+         filters:
+           tags:
+             only: /.*/
+      - distgo:
+         filters:
+           tags:
+             only: /.*/
+      - godel:
+         filters:
+           tags:
+             only: /.*/
+      - gonform:
+         filters:
+           tags:
+             only: /.*/
+      - gunit:
+         filters:
+           tags:
+             only: /.*/
+      - integration-alpine-go-1.7:
+         filters:
+           tags:
+             only: /.*/
+      - integration-alpine-go-1.8:
+         filters:
+           tags:
+             only: /.*/
+      - integration-brew:
+         filters:
+           tags:
+             only: /.*/
+      - integration-std:
+         filters:
+           tags:
+             only: /.*/
+      - okgo:
+          filters:
+            tags:
+              only: /.*/
       - wiki:
           requires:
             - dist
