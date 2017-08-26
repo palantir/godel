@@ -184,14 +184,44 @@ func Foo() {
 .+
 .+ \(from \$GOROOT\)
 .+ \(from \$GOPATH\)\)`,
-					`foo.go:4:2: undeclared name: bar`,
 				}
 			},
 			customMatcher: func(caseNum int, want, got []string) {
-				assert.Equal(t, len(want), len(got), "Case %d: number of output lines do not match")
-
-				for i := range want {
-					assert.Regexp(t, want[i], got[i], "Case %d", i)
+				ok := assert.Equal(t, len(want), len(got), "Case %d: number of output lines do not match", caseNum)
+				if ok {
+					for i := range want {
+						assert.Regexp(t, want[i], got[i], "Case %d, want case %d", caseNum, i)
+					}
+				}
+			},
+		},
+		{
+			check: cmdlib.Instance().MustNewCmd("compiles"),
+			filesToWrite: []gofiles.GoFileSpec{
+				{
+					RelPath: "foo/foo.go",
+					Src: `package foo
+func Foo() {
+	bar.Bar()
+	baz.Baz()
+}`,
+				},
+			},
+			pathToCheck: func(projectDir string) string {
+				return path.Join(projectDir, "foo")
+			},
+			want: func(files map[string]gofiles.GoFile) []string {
+				return []string{
+					`foo.go:3:2: undeclared name: bar`,
+					`foo.go:4:2: undeclared name: baz`,
+				}
+			},
+			customMatcher: func(caseNum int, want, got []string) {
+				ok := assert.Equal(t, len(want), len(got), "Case %d: number of output lines do not match", caseNum)
+				if ok {
+					for i := range want {
+						assert.Regexp(t, want[i], got[i], "Case %d, want case %d", caseNum, i)
+					}
 				}
 			},
 		},

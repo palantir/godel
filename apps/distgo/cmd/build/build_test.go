@@ -422,7 +422,7 @@ func TestBuildErrorMessage(t *testing.T) {
 		},
 	)
 
-	want := `(?s)^go install failed: build command \[.+go install ./foo\] run with additional environment variables \[GOOS=.+ GOARCH=.+\] failed with output:.+foo/main.go:1: syntax error: non-declaration statement outside function body$`
+	want := `(?s)^go install failed: build command \[.+go install ./foo\] run with additional environment variables \[GOOS=.+ GOARCH=.+\] failed with output:.+foo/main.go:1:15: syntax error: non-declaration statement outside function body$`
 
 	buf := &bytes.Buffer{}
 	err = build.Run([]params.ProductBuildSpec{buildSpec, buildSpec}, nil, build.Context{
