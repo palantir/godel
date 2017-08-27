@@ -2,34 +2,34 @@
 alpine-go-curr: &alpine-go-curr
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:alpine-go-1.9-t111
+    - image: nmiyake/go:alpine-go-1.9-t112
 
 alpine-go-prev: &alpine-go-prev
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:alpine-go-1.8.3-t111
+    - image: nmiyake/go:alpine-go-1.8.3-t112
 
 brew-go: &brew-go
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:brew-go-t111
+    - image: nmiyake/go:brew-go-t112
 
 darwin-linux: &darwin-linux
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:go-darwin-linux-1.9-t111
+    - image: nmiyake/go:go-darwin-linux-1.9-t112
 
 darwin-linux-no-cgo: &darwin-linux-no-cgo
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:go-darwin-linux-no-cgo-1.9-t111
+    - image: nmiyake/go:go-darwin-linux-no-cgo-1.9-t112
       environment:
         CGO_ENABLED: 0
 
 darwin-linux-rpm-fpm: &darwin-linux-rpm-fpm
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:go-darwin-linux-1.9-docker-17.03.0-ce-rpm-fpm-t111
+    - image: nmiyake/go:go-darwin-linux-1.9-docker-17.03.0-ce-rpm-fpm-t112
 
 ### Shared cache steps ###
 godel-gouser-cache-restore: &godel-gouser-cache-restore
@@ -196,7 +196,6 @@ jobs:
   integration-alpine-go-prev:
     <<: *alpine-go-prev
     steps:
-      - run: apk update && apk add --no-cache openssh
       - checkout
       - *go-version
       - *godel-root-cache-restore
