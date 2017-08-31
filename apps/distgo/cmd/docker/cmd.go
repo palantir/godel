@@ -20,6 +20,7 @@ import (
 	"github.com/palantir/pkg/cli/cfgcli"
 	"github.com/palantir/pkg/cli/flag"
 
+	"github.com/palantir/godel/apps/distgo/cmd"
 	"github.com/palantir/godel/apps/distgo/config"
 )
 
@@ -47,6 +48,7 @@ func Command() cli.Command {
 		Flags: []flag.Flag{
 			verboseFlag,
 			baseRepoFlag,
+			cmd.ProductsParam,
 		},
 		Action: func(ctx cli.Context) error {
 			cfg, err := config.Load(cfgcli.ConfigPath, cfgcli.ConfigJSON)
@@ -57,7 +59,14 @@ func Command() cli.Command {
 			if err != nil {
 				return err
 			}
-			return Build(cfg, wd, ctx.String(baseRepoFlagName), ctx.Bool(verboseFlagName), ctx.App.Stdout)
+			return Build(
+				ctx.Slice(cmd.ProductsParamName),
+				cfg,
+				wd,
+				ctx.String(baseRepoFlagName),
+				ctx.Bool(verboseFlagName),
+				ctx.App.Stdout,
+			)
 		},
 	}
 
@@ -66,6 +75,7 @@ func Command() cli.Command {
 		Flags: []flag.Flag{
 			verboseFlag,
 			baseRepoFlag,
+			cmd.ProductsParam,
 		},
 		Action: func(ctx cli.Context) error {
 			cfg, err := config.Load(cfgcli.ConfigPath, cfgcli.ConfigJSON)
@@ -76,7 +86,14 @@ func Command() cli.Command {
 			if err != nil {
 				return err
 			}
-			return Publish(cfg, wd, ctx.String(baseRepoFlagName), ctx.Bool(verboseFlagName), ctx.App.Stdout)
+			return Publish(
+				ctx.Slice(cmd.ProductsParamName),
+				cfg,
+				wd,
+				ctx.String(baseRepoFlagName),
+				ctx.Bool(verboseFlagName),
+				ctx.App.Stdout,
+			)
 		},
 	}
 

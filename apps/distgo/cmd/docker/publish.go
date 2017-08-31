@@ -28,15 +28,13 @@ import (
 	"github.com/palantir/godel/apps/distgo/params"
 )
 
-func Publish(cfg params.Project, wd, baseRepo string, verbose bool, stdout io.Writer) error {
+func Publish(products []string, cfg params.Project, wd, baseRepo string, verbose bool, stdout io.Writer) error {
 	// find all products with docker images and tag them with correct version and push
-	var products []string
-	for productName, product := range cfg.Products {
-		if len(product.DockerImages) > 0 {
-			products = append(products, productName)
-		}
+	_, productsToPublishImage, err := productsToDistAndBuildImage(products, cfg)
+	if err != nil {
+		return err
 	}
-	buildSpecsWithDeps, err := build.SpecsWithDepsForArgs(cfg, products, wd)
+	buildSpecsWithDeps, err := build.SpecsWithDepsForArgs(cfg, productsToPublishImage, wd)
 	if err != nil {
 		return err
 	}
