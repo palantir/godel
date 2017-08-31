@@ -27,26 +27,16 @@ import (
 	"github.com/palantir/godel/apps/distgo/params"
 )
 
-func Build(cfg params.Project, wd string, baseRepo string, stdout io.Writer) error {
+func Build(products []string, cfg params.Project, wd string, baseRepo string, stdout io.Writer) error {
 	// the docker build tasks first runs dist task on the products
 	// on which the docker images have a dependency. after building the dists,
 	// the images are built in ordered way since the images can have dependencies among themselves.
-	productsToDist := make(map[string]struct{})
-	productsToBuildImage := make(map[string]struct{})
-	for productName, productSpec := range cfg.Products {
-		if len(productSpec.DockerImages) > 0 {
-			productsToBuildImage[productName] = struct{}{}
-		}
-		for _, image := range productSpec.DockerImages {
-			for _, dep := range image.Deps {
-				if isDist(dep.Type) {
-					productsToDist[dep.Product] = struct{}{}
-				}
-			}
-		}
+	productsToDist, productsToBuildImage, err := productsToDistAndBuildImage(products, cfg)
+	if err != nil {
+		return err
 	}
 
-	productsToDistRequired, err := dist.RequiresDist(setToSlice(productsToDist), cfg, wd)
+	productsToDistRequired, err := dist.RequiresDist(productsToDist, cfg, wd)
 	if err != nil {
 		return err
 	}
@@ -58,7 +48,7 @@ func Build(cfg params.Project, wd string, baseRepo string, stdout io.Writer) err
 	}
 
 	// build docker images
-	buildSpecsWithDeps, err := build.SpecsWithDepsForArgs(cfg, setToSlice(productsToBuildImage), wd)
+	buildSpecsWithDeps, err := build.SpecsWithDepsForArgs(cfg, productsToBuildImage, wd)
 	if err != nil {
 		return err
 	}
@@ -145,15 +135,6 @@ func dockerDepsToMap(deps []params.DockerDep) map[string]map[params.DockerDepTyp
 	return m
 }
 
-func isDist(dep params.DockerDepType) bool {
-	switch dep {
-	case params.DockerDepSLS, params.DockerDepBin, params.DockerDepRPM:
-		return true
-	default:
-		return false
-	}
-}
-
 func buildSpecsMap(specs []params.ProductBuildSpecWithDeps) map[string]params.ProductBuildSpecWithDeps {
 	specMap := make(map[string]params.ProductBuildSpecWithDeps)
 	for _, spec := range specs {
@@ -168,12 +149,4 @@ func buildDistsMap(spec params.ProductBuildSpec) map[string]params.Dist {
 		distMap[string(dist.Info.Type())] = dist
 	}
 	return distMap
-}
-
-func setToSlice(s map[string]struct{}) []string {
-	var result []string
-	for item := range s {
-		result = append(result, item)
-	}
-	return result
 }
