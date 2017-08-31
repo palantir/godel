@@ -20,6 +20,7 @@ import (
 	"github.com/palantir/pkg/cli/cfgcli"
 	"github.com/palantir/pkg/cli/flag"
 
+	"github.com/palantir/godel/apps/distgo/cmd"
 	"github.com/palantir/godel/apps/distgo/config"
 )
 
@@ -39,6 +40,7 @@ func Command() cli.Command {
 	build := cli.Command{
 		Name: "build",
 		Flags: []flag.Flag{
+			cmd.ProductsParam,
 			baseRepo,
 		},
 		Action: func(ctx cli.Context) error {
@@ -50,13 +52,20 @@ func Command() cli.Command {
 			if err != nil {
 				return err
 			}
-			return Build(cfg, wd, ctx.String(baseRepoFlagName), ctx.App.Stdout)
+			return Build(
+				ctx.Slice(cmd.ProductsParamName),
+				cfg,
+				wd,
+				ctx.String(baseRepoFlagName),
+				ctx.App.Stdout,
+			)
 		},
 	}
 
 	publish := cli.Command{
 		Name: "publish",
 		Flags: []flag.Flag{
+			cmd.ProductsParam,
 			baseRepo,
 		},
 		Action: func(ctx cli.Context) error {
@@ -68,7 +77,13 @@ func Command() cli.Command {
 			if err != nil {
 				return err
 			}
-			return Publish(cfg, wd, ctx.String(baseRepoFlagName), ctx.App.Stdout)
+			return Publish(
+				ctx.Slice(cmd.ProductsParamName),
+				cfg,
+				wd,
+				ctx.String(baseRepoFlagName),
+				ctx.App.Stdout,
+			)
 		},
 	}
 
