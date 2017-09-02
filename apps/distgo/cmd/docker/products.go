@@ -20,12 +20,11 @@ func productsToDistAndBuildImage(
 		for product := range cfg.FilteredProducts() {
 			products = append(products, product)
 		}
-	} else {
-		if err := validateProducts(products, cfg); err != nil {
-			return nil, nil, err
-		}
 	}
 	sort.Strings(products)
+	if err := validateProducts(products, cfg); err != nil {
+		return nil, nil, err
+	}
 
 	visited := make(map[string]struct{})
 	distProducts := make(map[string]struct{})
