@@ -588,7 +588,7 @@ echo "test_label=test_value"`,
 
 		orderedSpecs, err := docker.OrderBuildSpecs(spec)
 		require.NoError(t, err, "Case %d: %s", i, currCase.name)
-		err = docker.RunBuild(orderedSpecs, os.Stdout)
+		err = docker.RunBuild(orderedSpecs, false, os.Stdout)
 		require.NoError(t, err, "Case %d: %s", i, currCase.name)
 
 		if currCase.validate != nil {

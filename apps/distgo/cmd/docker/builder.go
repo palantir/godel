@@ -16,12 +16,13 @@ package docker
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/palantir/godel/apps/distgo/params"
 )
 
 type Builder interface {
-	build(buildSpec params.ProductBuildSpecWithDeps) error
+	build(buildSpec params.ProductBuildSpecWithDeps, stdout io.Writer) error
 }
 
 func GetBuilder(image params.DockerImage) Builder {

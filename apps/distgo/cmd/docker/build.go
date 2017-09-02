@@ -17,6 +17,7 @@ package docker
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path"
 
@@ -27,7 +28,7 @@ import (
 	"github.com/palantir/godel/apps/distgo/params"
 )
 
-func Build(cfg params.Project, wd string, baseRepo string, stdout io.Writer) error {
+func Build(cfg params.Project, wd, baseRepo string, verbose bool, stdout io.Writer) error {
 	// the docker build tasks first runs dist task on the products
 	// on which the docker images have a dependency. after building the dists,
 	// the images are built in ordered way since the images can have dependencies among themselves.
@@ -75,14 +76,14 @@ func Build(cfg params.Project, wd string, baseRepo string, stdout io.Writer) err
 			}
 		}
 	}
-	return RunBuild(orderedSpecs, stdout)
+	return RunBuild(orderedSpecs, verbose, stdout)
 }
 
-func RunBuild(buildSpecsWithDeps []params.ProductBuildSpecWithDeps, stdout io.Writer) error {
+func RunBuild(buildSpecsWithDeps []params.ProductBuildSpecWithDeps, verbose bool, stdout io.Writer) error {
 	specsMap := buildSpecsMap(buildSpecsWithDeps)
 	for i := range buildSpecsWithDeps {
 		for _, image := range buildSpecsWithDeps[i].Spec.DockerImages {
-			if err := buildImage(image, buildSpecsWithDeps[i], specsMap, stdout); err != nil {
+			if err := buildImage(image, buildSpecsWithDeps[i], specsMap, verbose, stdout); err != nil {
 				return err
 			}
 		}
@@ -90,7 +91,7 @@ func RunBuild(buildSpecsWithDeps []params.ProductBuildSpecWithDeps, stdout io.Wr
 	return nil
 }
 
-func buildImage(image params.DockerImage, buildSpecsWithDeps params.ProductBuildSpecWithDeps, specsMap map[string]params.ProductBuildSpecWithDeps, stdout io.Writer) error {
+func buildImage(image params.DockerImage, buildSpecsWithDeps params.ProductBuildSpecWithDeps, specsMap map[string]params.ProductBuildSpecWithDeps, verbose bool, stdout io.Writer) error {
 	fmt.Fprintf(stdout, "Building docker image for %s and tagging it as %s:%s\n", buildSpecsWithDeps.Spec.ProductName, image.Repository, image.Tag)
 
 	contextDir := path.Join(buildSpecsWithDeps.Spec.ProjectDir, image.ContextDir)
@@ -131,7 +132,11 @@ func buildImage(image params.DockerImage, buildSpecsWithDeps params.ProductBuild
 		}
 	}
 	builder := GetBuilder(image)
-	return builder.build(buildSpecsWithDeps)
+	buildWriter := ioutil.Discard
+	if verbose {
+		buildWriter = stdout
+	}
+	return builder.build(buildSpecsWithDeps, buildWriter)
 }
 
 func dockerDepsToMap(deps []params.DockerDep) map[string]map[params.DockerDepType]string {

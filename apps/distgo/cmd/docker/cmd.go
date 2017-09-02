@@ -25,13 +25,19 @@ import (
 
 const (
 	baseRepoFlagName = "base-repo"
+	verboseFlagName  = "verbose"
 )
 
 var (
-	baseRepo = flag.StringFlag{
+	baseRepoFlag = flag.StringFlag{
 		Name:  baseRepoFlagName,
 		Usage: "This is joined with per image repository path while building/publishing images",
 		Value: "",
+	}
+	verboseFlag = flag.BoolFlag{
+		Name:  verboseFlagName,
+		Alias: "v",
+		Usage: "Print the output from the Docker commands",
 	}
 )
 
@@ -39,7 +45,8 @@ func Command() cli.Command {
 	build := cli.Command{
 		Name: "build",
 		Flags: []flag.Flag{
-			baseRepo,
+			verboseFlag,
+			baseRepoFlag,
 		},
 		Action: func(ctx cli.Context) error {
 			cfg, err := config.Load(cfgcli.ConfigPath, cfgcli.ConfigJSON)
@@ -50,14 +57,15 @@ func Command() cli.Command {
 			if err != nil {
 				return err
 			}
-			return Build(cfg, wd, ctx.String(baseRepoFlagName), ctx.App.Stdout)
+			return Build(cfg, wd, ctx.String(baseRepoFlagName), ctx.Bool(verboseFlagName), ctx.App.Stdout)
 		},
 	}
 
 	publish := cli.Command{
 		Name: "publish",
 		Flags: []flag.Flag{
-			baseRepo,
+			verboseFlag,
+			baseRepoFlag,
 		},
 		Action: func(ctx cli.Context) error {
 			cfg, err := config.Load(cfgcli.ConfigPath, cfgcli.ConfigJSON)
@@ -68,7 +76,7 @@ func Command() cli.Command {
 			if err != nil {
 				return err
 			}
-			return Publish(cfg, wd, ctx.String(baseRepoFlagName), ctx.App.Stdout)
+			return Publish(cfg, wd, ctx.String(baseRepoFlagName), ctx.Bool(verboseFlagName), ctx.App.Stdout)
 		},
 	}
 

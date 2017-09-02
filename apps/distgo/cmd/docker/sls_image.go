@@ -15,8 +15,10 @@
 package docker
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -39,7 +41,7 @@ type slsImageBuilder struct {
 	info  *params.SLSDockerImageInfo
 }
 
-func (sib *slsImageBuilder) build(buildSpec params.ProductBuildSpecWithDeps) error {
+func (sib *slsImageBuilder) build(buildSpec params.ProductBuildSpecWithDeps, stdout io.Writer) error {
 	contextDir := path.Join(buildSpec.Spec.ProjectDir, sib.image.ContextDir)
 	configFile := path.Join(contextDir, ConfigurationFileName)
 	var args []string
@@ -65,8 +67,11 @@ func (sib *slsImageBuilder) build(buildSpec params.ProductBuildSpecWithDeps) err
 	args = append(args, contextDir)
 
 	buildCmd := exec.Command("docker", args...)
-	if output, err := buildCmd.CombinedOutput(); err != nil {
-		return errors.Wrap(err, fmt.Sprintf("docker build failed with error:\n%s\n", string(output)))
+	bufWriter := &bytes.Buffer{}
+	buildCmd.Stdout = io.MultiWriter(stdout, bufWriter)
+	buildCmd.Stderr = bufWriter
+	if err := buildCmd.Run(); err != nil {
+		return errors.Wrap(err, fmt.Sprintf("docker build failed with error:\n%s\n", bufWriter.String()))
 	}
 	return nil
 }

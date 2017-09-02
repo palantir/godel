@@ -15,8 +15,10 @@
 package docker
 
 import (
+	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os/exec"
 	"path"
 
@@ -26,7 +28,7 @@ import (
 	"github.com/palantir/godel/apps/distgo/params"
 )
 
-func Publish(cfg params.Project, wd string, baseRepo string, stdout io.Writer) error {
+func Publish(cfg params.Project, wd, baseRepo string, verbose bool, stdout io.Writer) error {
 	// find all products with docker images and tag them with correct version and push
 	var products []string
 	for productName, product := range cfg.Products {
@@ -38,6 +40,10 @@ func Publish(cfg params.Project, wd string, baseRepo string, stdout io.Writer) e
 	if err != nil {
 		return err
 	}
+	dockerWriter := ioutil.Discard
+	if verbose {
+		dockerWriter = stdout
+	}
 	for _, specWithDeps := range buildSpecsWithDeps {
 		versionTag := specWithDeps.Spec.ProductVersion
 		for _, image := range specWithDeps.Spec.DockerImages {
@@ -47,10 +53,10 @@ func Publish(cfg params.Project, wd string, baseRepo string, stdout io.Writer) e
 			}
 			buildTag := fmt.Sprintf("%s:%s", repo, image.Tag)
 			publishTag := fmt.Sprintf("%s:%s", repo, versionTag)
-			if err := tagImage(buildTag, publishTag); err != nil {
+			if err := tagImage(buildTag, publishTag, dockerWriter); err != nil {
 				return err
 			}
-			if err := pushImage(publishTag); err != nil {
+			if err := pushImage(publishTag, dockerWriter); err != nil {
 				return err
 			}
 		}
@@ -58,27 +64,33 @@ func Publish(cfg params.Project, wd string, baseRepo string, stdout io.Writer) e
 	return nil
 }
 
-func tagImage(original, new string) error {
+func tagImage(original, new string, stdout io.Writer) error {
 	var args []string
 	args = append(args, "tag")
 	args = append(args, original)
 	args = append(args, new)
 
 	buildCmd := exec.Command("docker", args...)
-	if output, err := buildCmd.CombinedOutput(); err != nil {
-		return errors.Wrap(err, fmt.Sprintf("docker tag failed with error:\n%s\n Make sure to run docker build before docker publish.\n", string(output)))
+	bufWriter := &bytes.Buffer{}
+	buildCmd.Stdout = io.MultiWriter(stdout, bufWriter)
+	buildCmd.Stderr = bufWriter
+	if err := buildCmd.Run(); err != nil {
+		return errors.Wrap(err, fmt.Sprintf("docker tag failed with error:\n%s\n Make sure to run docker build before docker publish.\n", bufWriter.String()))
 	}
 	return nil
 }
 
-func pushImage(tag string) error {
+func pushImage(tag string, stdout io.Writer) error {
 	var args []string
 	args = append(args, "push")
 	args = append(args, tag)
 
 	buildCmd := exec.Command("docker", args...)
-	if output, err := buildCmd.CombinedOutput(); err != nil {
-		return errors.Wrap(err, fmt.Sprintf("docker push failed with error:\n%s\n", string(output)))
+	bufWriter := &bytes.Buffer{}
+	buildCmd.Stdout = io.MultiWriter(stdout, bufWriter)
+	buildCmd.Stderr = bufWriter
+	if err := buildCmd.Run(); err != nil {
+		return errors.Wrap(err, fmt.Sprintf("docker push failed with error:\n%s\n", bufWriter.String()))
 	}
 	return nil
 }
