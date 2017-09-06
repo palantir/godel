@@ -49,6 +49,7 @@ func Command() cli.Command {
 		Subcommands: []cli.Command{
 			buildArtifactsCommand("build", "Print the paths to the build artifacts for products"),
 			artifactsCommand("dist", "Print the paths to the distribution artifacts for products", distArtifactsAction),
+			artifactsCommand("docker", "Print the labels for the Docker tags for products", dockerArtifactsAction),
 		},
 	}
 }
@@ -119,4 +120,14 @@ func buildArtifactsAction(ctx cli.Context, specs []params.ProductBuildSpecWithDe
 
 func distArtifactsAction(ctx cli.Context, specs []params.ProductBuildSpecWithDeps, absPath bool) (map[string]OrderedStringSliceMap, error) {
 	return DistArtifacts(specs, absPath)
+}
+
+func dockerArtifactsAction(ctx cli.Context, specs []params.ProductBuildSpecWithDeps, absPath bool) (map[string]OrderedStringSliceMap, error) {
+	artifacts := make(map[string]OrderedStringSliceMap)
+	for k, v := range DockerArtifacts(specs) {
+		ordered := newOrderedStringSliceMap()
+		ordered.PutValues(k, v)
+		artifacts[k] = ordered
+	}
+	return artifacts, nil
 }

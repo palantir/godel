@@ -15,6 +15,7 @@
 package artifacts
 
 import (
+	"fmt"
 	"path/filepath"
 	"strconv"
 
@@ -24,6 +25,19 @@ import (
 	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 )
+
+// DockerArtifacts returns a map from product name to a slice that contains all of the Docker repository:tag labels
+// defined for the products.
+func DockerArtifacts(buildSpecsWithDeps []params.ProductBuildSpecWithDeps) map[string][]string {
+	output := make(map[string][]string)
+	for _, spec := range buildSpecsWithDeps {
+		for _, currImage := range spec.Spec.DockerImages {
+			imageName := fmt.Sprint(currImage.Repository, ":", currImage.Tag)
+			output[spec.Spec.ProductName] = append(output[spec.Spec.ProductName], imageName)
+		}
+	}
+	return output
+}
 
 // DistArtifacts returns a map from product name to OrderedStringSliceMap, where the values of the OrderedStringSliceMap
 // contains the mapping from the String representation of the index of the dist type ("0", "1", etc.) to the paths for

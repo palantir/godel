@@ -366,6 +366,90 @@ func TestDistArtifacts(t *testing.T) {
 	}
 }
 
+func TestDockerArtifacts(t *testing.T) {
+	tmpDir, cleanup, err := dirs.TempDir("", "")
+	defer cleanup()
+	require.NoError(t, err)
+
+	for i, currCase := range []struct {
+		specs func(projectDir string) []params.ProductBuildSpecWithDeps
+		want  map[string][]string
+	}{
+		{
+			specs: func(projectDir string) []params.ProductBuildSpecWithDeps {
+				return []params.ProductBuildSpecWithDeps{}
+			},
+			want: map[string][]string{},
+		},
+		{
+			specs: func(projectDir string) []params.ProductBuildSpecWithDeps {
+				return []params.ProductBuildSpecWithDeps{
+					createSpecWithDockerImages(projectDir, "foo", "0.1.0", nil,
+						params.DockerImage{
+							Repository: "foo/foo",
+							Tag:        "snapshot",
+						},
+					),
+				}
+			},
+			want: map[string][]string{
+				"foo": {"foo/foo:snapshot"},
+			},
+		},
+		{
+			specs: func(projectDir string) []params.ProductBuildSpecWithDeps {
+				return []params.ProductBuildSpecWithDeps{
+					createSpecWithDockerImages(projectDir, "foo", "0.1.0", nil,
+						params.DockerImage{
+							Repository: "foo/foo",
+							Tag:        "snapshot",
+						},
+					),
+					createSpecWithDockerImages(projectDir, "bar", "0.1.0", nil,
+						params.DockerImage{
+							Repository: "bar/bar",
+							Tag:        "snapshot",
+						},
+					),
+				}
+			},
+			want: map[string][]string{
+				"foo": {"foo/foo:snapshot"},
+				"bar": {"bar/bar:snapshot"},
+			},
+		},
+		{
+			specs: func(projectDir string) []params.ProductBuildSpecWithDeps {
+				return []params.ProductBuildSpecWithDeps{
+					createSpecWithDockerImages(projectDir, "foo", "0.1.0", nil,
+						params.DockerImage{
+							Repository: "foo/foo",
+							Tag:        "snapshot",
+						},
+						params.DockerImage{
+							Repository: "foo/foo",
+							Tag:        "release",
+						},
+					),
+				}
+			},
+			want: map[string][]string{
+				"foo": {
+					"foo/foo:snapshot",
+					"foo/foo:release",
+				},
+			},
+		},
+	} {
+		currProjectDir, err := ioutil.TempDir(tmpDir, "")
+		require.NoError(t, err)
+
+		got := artifacts.DockerArtifacts(currCase.specs(currProjectDir))
+		require.NoError(t, err, "Case %d", i)
+		assert.Equal(t, currCase.want, got, "Case %d", i)
+	}
+}
+
 func toAbs(input map[string][]string, baseDir string) map[string][]string {
 	absWant := make(map[string][]string, len(input))
 	for k, v := range input {
@@ -390,6 +474,23 @@ func createSpecWithDists(projectDir, productName, productVersion string, osArchs
 					OSArchs:   osArchs,
 				},
 				Dist: dists,
+			},
+			ProjectDir:     projectDir,
+			ProductName:    productName,
+			ProductVersion: productVersion,
+		},
+	}
+}
+
+func createSpecWithDockerImages(projectDir, productName, productVersion string, osArchs []osarch.OSArch, images ...params.DockerImage) params.ProductBuildSpecWithDeps {
+	return params.ProductBuildSpecWithDeps{
+		Spec: params.ProductBuildSpec{
+			Product: params.Product{
+				Build: params.Build{
+					OutputDir: "build",
+					OSArchs:   osArchs,
+				},
+				DockerImages: images,
 			},
 			ProjectDir:     projectDir,
 			ProductName:    productName,
