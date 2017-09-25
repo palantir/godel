@@ -44,6 +44,9 @@ func (g vendoredGrouper) importGroup(importPath string) int {
 }
 
 func (g vendoredGrouper) inThisRepo(importPath string) bool {
+	if !strings.HasSuffix(importPath, "/") {
+		importPath += "/"
+	}
 	return strings.HasPrefix(importPath, g.repoPath)
 }
 
