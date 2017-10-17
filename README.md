@@ -22,6 +22,7 @@ Features
 * `./godelw check` runs a variety of code linting checks on all the code in a project
 * `./godelw license` applies a specified license header to all Go files in a project
   * Supports configuring custom license headers for specific directories or files
+* `./godelw generate` runs `go generate` tasks for a project
 * `./godelw test` runs the tests in the project
   * Configuration can be used to define test sets (such as integration tests) and run specific test sets
   * Supports outputting the test results in a JUnit XML format
