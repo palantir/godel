@@ -26,16 +26,33 @@ gödel establishes clear separation between configuration and logic. All of the 
 in config files in `godel/config` and all of the generic logic for running actions is in gödel. This allows the logic to
 be tested and generalized, and also makes it possible to roll out updates cleanly across multiple different projects.
 
-If it's not automatically enforced, it's not a convention
----------------------------------------------------------
+If a convention isn't enforced with automation, it will decay
+-------------------------------------------------------------
 Whether it be indentation level, coding style, license headers on files or tasks that create generated code, if a
-practice is not enforced in an automated manner, it's not a convention. This is similar to the philosophy behind
-[gofmt](https://blog.golang.org/go-fmt-your-code). Establishing a convention and asking people to follow it (by running
-the program themselves, creating a Git hook for it, etc.) is great. However, if the convention is not checked and
-enforced in an automated manner, it is doomed to fail (a.k.a. [second law of thermodynamics](https://en.wikipedia.org/wiki/Second_law_of_thermodynamics)).
+convention is not enforced in an automated manner, it will inevitably decay over time (this is especially true for
+larger code bases with multiple contributors). This is similar to the philosophy behind [gofmt](https://blog.golang.org/go-fmt-your-code).
+Establishing a convention and asking people to follow it (whether it be by running a program themselves, creating a Git
+hook for it, or trying to catch it in code reviews) is great. However, if the convention is not checked and enforced in
+an automated manner, it is doomed to fail (a.k.a. [second law of thermodynamics](https://en.wikipedia.org/wiki/Second_law_of_thermodynamics)).
 
 gödel tasks are designed to be able to run as part of CI to verify and enforce best practices for formatting, linting
 checks, license headers and more.
+
+Embed expertise and knowledge into tools so that it scales
+----------------------------------------------------------
+As people spend time working in a codebase or ecosystem, they start to develop expertise. If someone has been working in
+Go for a while, knowing that a project must be in a `$GOPATH` is second nature. If `go build ./...` fails due to failing
+to build something in the vendor directory, they can easily reason/Google their way to running
+`go build $(go list ./... | grep -v /vendor/)` instead. One may also know tricks like the fact that running `go install std`
+to build the standard library for different OS/architectures before cross-compiling saves a ton of time for repeated
+cross-platform compilations. Pushing out tips and tricks like this to all of the developers that might work on a project
+is hard to do, and even if an effective mechanism for it exists inertia is a powerful force and many people will not
+alter their practices. However, adding this kind of information/logic to tooling provides it for free to anyone who uses
+the tools.
+
+gödel bakes in many of these kinds of optimizations and expertise into the tooling so that even people who are new to Go
+can immediately create projects and start writing, building and publishing code in Go without having to learn these
+kinds of optimizations themselves.
 
 Tasks that apply should be able to verify
 -----------------------------------------

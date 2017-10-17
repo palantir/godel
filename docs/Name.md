@@ -51,7 +51,7 @@ NFC-normalized format. This would ensure that any instances of `go¨del` would b
 
 In Bash scripts, the following function was used to return `go¨del` on Darwin systems and `gödel` on all other systems:
 
-```bash
+```
 normalize() {
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # HFS file systems use deconstructed UTF-8
