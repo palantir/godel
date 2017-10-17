@@ -21,9 +21,9 @@ import (
 	"github.com/kardianos/osext"
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/amalgomate/amalgomated"
-	"github.com/palantir/godel"
 	"github.com/pkg/errors"
 
+	"github.com/palantir/godel"
 	"github.com/palantir/godel/cmd"
 	"github.com/palantir/godel/cmd/clicmds"
 )
