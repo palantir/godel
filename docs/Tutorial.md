@@ -10,7 +10,7 @@ The repository at https://github.com/nmiyake/echgo contains the result of walkin
 
 The tutorial consists of the following steps:
 
-* [Add gödel to a project](https://github.com/palantir/godel/wiki/Add-g%C3%B6del-to-a-project)
+* [Add gödel to a project](https://github.com/palantir/godel/wiki/Add-g%C3%B6del)
 * [Add Git hooks to enforce formatting](https://github.com/palantir/godel/wiki/Add-git-hooks)
 * [Generate IDE project for Gogland](https://github.com/palantir/godel/wiki/Generate-IDE-project)
 * [Format Go files](https://github.com/palantir/godel/wiki/Format)
