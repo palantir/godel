@@ -90,7 +90,7 @@ start)
     mkdir -p "var/log"
     mkdir -p "var/run"
 
-    PID=$($SERVICE_CMD > var/log/$SERVICE-startup.log 2>&1 & echo $!)
+    PID=$($SERVICE_CMD >> var/log/$SERVICE-startup.log 2>&1 & echo $!)
     echo $PID > $PIDFILE
     sleep 1
     if is_process_active $PID; then
