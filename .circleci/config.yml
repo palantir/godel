@@ -2,34 +2,34 @@
 alpine-go-curr: &alpine-go-curr
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:alpine-go-1.9.1-t124
+    - image: nmiyake/go:alpine-go-1.9.2-t125
 
 alpine-go-prev: &alpine-go-prev
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:alpine-go-1.8.3-t124
+    - image: nmiyake/go:alpine-go-1.8.3-t125
 
 brew-go: &brew-go
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:brew-go-t124
+    - image: nmiyake/go:brew-go-t125
 
 darwin-linux: &darwin-linux
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:go-darwin-linux-1.9.1-t124
+    - image: nmiyake/go:go-darwin-linux-1.9.2-t125
 
 darwin-linux-no-cgo: &darwin-linux-no-cgo
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:go-darwin-linux-no-cgo-1.9.1-t124
+    - image: nmiyake/go:go-darwin-linux-no-cgo-1.9.2-t125
       environment:
         CGO_ENABLED: 0
 
 darwin-linux-rpm-fpm: &darwin-linux-rpm-fpm
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:go-darwin-linux-no-cgo-1.9.1-docker-17.03.0-ce-rpm-fpm-t124
+    - image: nmiyake/go:go-darwin-linux-no-cgo-1.9.2-docker-17.03.0-ce-rpm-fpm-t125
 
 ### Shared cache steps ###
 godel-gouser-cache-restore: &godel-gouser-cache-restore
