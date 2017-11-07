@@ -1,0 +1,146 @@
+// Copyright 2016 Palantir Technologies, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package builtintasks
+
+import (
+	"fmt"
+	"io"
+	"os"
+	"sort"
+	"strings"
+
+	"github.com/spf13/cobra"
+
+	"github.com/palantir/godel/framework/godellauncher"
+)
+
+func VerifyTask(tasks []godellauncher.Task) godellauncher.Task {
+	const (
+		verifyCmdName = "verify"
+		apply         = "apply"
+	)
+
+	verifyTasks, verifyTaskFlags := extractVerifyTasks(tasks)
+	skipVerifyTasks := make(map[string]*bool)
+	verifyTaskFlagVals := make(map[string]map[godellauncher.VerifyFlag]interface{})
+
+	cmd := &cobra.Command{
+		Use:   verifyCmdName,
+		Short: "Run verify tasks for project",
+	}
+
+	applyVar := cmd.Flags().Bool(apply, true, "Apply changes when possible")
+	for _, task := range verifyTasks {
+		// add "skip" flag for task. TODO: instead of adding a flag per task, create a single "skip" flag that takes parameters.
+		skipVerifyTasks[task.Name] = cmd.Flags().Bool("skip-"+task.Name, false, fmt.Sprintf("Skip '%s' task", task.Name))
+
+		flags, ok := verifyTaskFlags[task.Name]
+		if !ok {
+			continue
+		}
+		if len(flags) == 0 {
+			continue
+		}
+
+		// hook up task-specific flags
+		verifyTaskFlagVals[task.Name] = make(map[godellauncher.VerifyFlag]interface{})
+		for _, f := range flags {
+			flagVal, err := f.AddFlag(cmd.Flags())
+			if err != nil {
+				panic(err)
+			}
+			verifyTaskFlagVals[task.Name][f] = flagVal
+		}
+	}
+
+	cmd.SilenceErrors = true
+	cmd.SilenceUsage = true
+	return godellauncher.Task{
+		Name:        cmd.Use,
+		Description: cmd.Short,
+		RunImpl: func(t *godellauncher.Task, global godellauncher.GlobalConfig, stdout io.Writer) error {
+			args := []string{global.Executable}
+			args = append(args, global.Task)
+			args = append(args, global.TaskArgs...)
+			os.Args = args
+
+			cmd.RunE = func(cmd *cobra.Command, args []string) error {
+				var failedChecks []string
+				for _, task := range verifyTasks {
+					// skip the task
+					if *skipVerifyTasks[task.Name] {
+						continue
+					}
+
+					var taskFlagArgs []string
+					if !*applyVar {
+						taskFlagArgs = append(taskFlagArgs, task.Verify.VerifyArgs...)
+					}
+
+					// get task-specific flag values
+					for _, f := range verifyTaskFlags[task.Name] {
+						flagArgs, err := f.ToFlagArgs(verifyTaskFlagVals[task.Name][f])
+						if err != nil {
+							panic(err)
+						}
+						taskFlagArgs = append(taskFlagArgs, flagArgs...)
+					}
+
+					taskGlobal := global
+					taskGlobal.Task = task.Name
+					taskGlobal.TaskArgs = taskFlagArgs
+
+					fmt.Fprintf(stdout, "Running %s...\n", task.Name)
+					if err := task.Run(taskGlobal, stdout); err != nil {
+						nameWithFlag := task.Name
+						if !*applyVar {
+							nameWithFlag = strings.Join(append([]string{task.Name}, task.Verify.VerifyArgs...), " ")
+						}
+						failedChecks = append(failedChecks, nameWithFlag)
+					}
+				}
+
+				if len(failedChecks) != 0 {
+					msgParts := []string{"Failed tasks:"}
+					for _, check := range failedChecks {
+						msgParts = append(msgParts, "\t"+check)
+					}
+					return fmt.Errorf(strings.Join(msgParts, "\n"))
+				}
+				return nil
+			}
+
+			rootCmd := godellauncher.CobraCmdToRootCmd(cmd)
+			rootCmd.SetOutput(stdout)
+			return rootCmd.Execute()
+		},
+	}
+}
+
+func extractVerifyTasks(tasks []godellauncher.Task) ([]godellauncher.Task, map[string][]godellauncher.VerifyFlag) {
+	var verifyTasks []godellauncher.Task
+	verifyTaskFlags := make(map[string][]godellauncher.VerifyFlag)
+	for _, task := range tasks {
+		if task.Verify == nil {
+			continue
+		}
+		verifyTasks = append(verifyTasks, task)
+		verifyTaskFlags[task.Name] = task.Verify.VerifyTaskFlags
+	}
+	sort.SliceStable(verifyTasks, func(i, j int) bool {
+		return verifyTasks[i].Verify.Ordering < verifyTasks[j].Verify.Ordering
+	})
+	return verifyTasks, verifyTaskFlags
+}

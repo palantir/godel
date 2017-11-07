@@ -45,7 +45,7 @@ products:
         type: os-arch-bin
   godel:
     build:
-      main-pkg: ./main/godel
+      main-pkg: ./.
       environment:
         CGO_ENABLED: "0"
       os-archs:
@@ -53,7 +53,7 @@ products:
           arch: amd64
         - os: linux
           arch: amd64
-      version-var: github.com/palantir/godel/cmd/godel.Version
+      version-var: github.com/palantir/godel/framework/godel.Version
     dist:
       dist-type:
         type: bin

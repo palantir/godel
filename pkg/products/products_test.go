@@ -36,7 +36,7 @@ func TestBin(t *testing.T) {
 	require.NoError(t, err)
 	cmd := exec.Command(bin, "version")
 	output, err := cmd.CombinedOutput()
-	require.NoError(t, err)
+	require.NoError(t, err, "Command %v failed.\nOutput:\n%s\nError:\n%v", cmd.Args, string(output), err)
 
 	assert.True(t, strings.HasPrefix(string(output), "godel version"))
 }
