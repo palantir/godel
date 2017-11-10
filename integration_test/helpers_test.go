@@ -27,7 +27,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/godel/layout"
+	"github.com/palantir/godel/framework/builtintasks/installupdate/layout"
 )
 
 func setUpGödelTestAndDownload(t *testing.T, testRootDir, gödelTGZ string, version string) string {

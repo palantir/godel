@@ -120,13 +120,13 @@ func main() {
 		args []string
 		want string
 	}{
-		{want: `(?s).+Failed tasks:\n\tformat -v -l\n\tgenerate --verify\n\timports --verify\n\tlicense --verify\n\tcheck\n\ttest`},
+		{want: `(?s).+Failed tasks:\n\tformat -l\n\tgenerate --verify\n\timports --verify\n\tlicense --verify\n\tcheck\n\ttest`},
 		{args: []string{"--skip-format"}, want: `(?s).+Failed tasks:\n\tgenerate --verify\n\timports --verify\n\tlicense --verify\n\tcheck\n\ttest`},
-		{args: []string{"--skip-check"}, want: `(?s).+Failed tasks:\n\tformat -v -l\n\tgenerate --verify\n\timports --verify\n\tlicense --verify\n\ttest`},
-		{args: []string{"--skip-generate"}, want: `(?s).+Failed tasks:\n\tformat -v -l\n\timports --verify\n\tlicense --verify\n\tcheck\n\ttest`},
-		{args: []string{"--skip-imports"}, want: `(?s).+Failed tasks:\n\tformat -v -l\n\tgenerate --verify\n\tlicense --verify\n\tcheck\n\ttest`},
-		{args: []string{"--skip-license"}, want: `(?s).+Failed tasks:\n\tformat -v -l\n\tgenerate --verify\n\timports --verify\n\tcheck\n\ttest`},
-		{args: []string{"--skip-test"}, want: `(?s).+Failed tasks:\n\tformat -v -l\n\tgenerate --verify\n\timports --verify\n\tlicense --verify\n\tcheck`},
+		{args: []string{"--skip-check"}, want: `(?s).+Failed tasks:\n\tformat -l\n\tgenerate --verify\n\timports --verify\n\tlicense --verify\n\ttest`},
+		{args: []string{"--skip-generate"}, want: `(?s).+Failed tasks:\n\tformat -l\n\timports --verify\n\tlicense --verify\n\tcheck\n\ttest`},
+		{args: []string{"--skip-imports"}, want: `(?s).+Failed tasks:\n\tformat -l\n\tgenerate --verify\n\tlicense --verify\n\tcheck\n\ttest`},
+		{args: []string{"--skip-license"}, want: `(?s).+Failed tasks:\n\tformat -l\n\tgenerate --verify\n\timports --verify\n\tcheck\n\ttest`},
+		{args: []string{"--skip-test"}, want: `(?s).+Failed tasks:\n\tformat -l\n\tgenerate --verify\n\timports --verify\n\tlicense --verify\n\tcheck`},
 	} {
 		err = os.MkdirAll(path.Join(testProjectDir, "gen"), 0755)
 		require.NoError(t, err)

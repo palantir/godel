@@ -144,7 +144,7 @@ function verify_godel_version {
     local os=$3
 
     local expected_output="godel version $version"
-    local version_output=$($base_dir/godel-$version/bin/$os-amd64/godel --verify-path=false version)
+    local version_output=$($base_dir/godel-$version/bin/$os-amd64/godel version)
 
     if [ "$expected_output" != "$version_output" ]; then
         echo "Version reported by godel executable did not match expected version: expected \"$expected_output\", was \"$version_output\""
