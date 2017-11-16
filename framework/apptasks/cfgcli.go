@@ -34,7 +34,7 @@ func cfgCLIArgs(global godellauncher.GlobalConfig, cmdPath []string, cfgFileName
 		args = append(args, "--debug")
 	}
 	if global.Wrapper != "" {
-		gödelConfigDir, err := godellauncher.CfgDirPath(global.Wrapper)
+		gödelConfigDir, err := godellauncher.ConfigDirPath(path.Dir(global.Wrapper))
 		if err != nil {
 			return nil, err
 		}

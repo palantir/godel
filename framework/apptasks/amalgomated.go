@@ -41,8 +41,8 @@ var amalgomatedCmds = []amalgCmd{
 		CmdLib:     gonformcmd.Library,
 		AppCreator: gonform.App,
 		Verify: &godellauncher.VerifyOptions{
-			VerifyArgs: []string{"-l"},
-			Ordering:   verifyorder.Format,
+			ApplyFalseArgs: []string{"-l"},
+			Ordering:       verifyorder.Format,
 		},
 	},
 	{

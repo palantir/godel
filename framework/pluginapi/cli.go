@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package verifyorder
+package pluginapi
 
-const (
-	Format   = 100
-	Generate = 200
-	Imports  = 300
-	License  = 400
-	Check    = 500
-	Default  = 750
-	Test     = 1000
+import (
+	"io"
 )
+
+func InfoCmd(osArgs []string, stdout io.Writer, info Info) bool {
+	if len(osArgs) < 2 || osArgs[1] != InfoCommandName {
+		return false
+	}
+	_ = infoAction(info, stdout)
+	return true
+}

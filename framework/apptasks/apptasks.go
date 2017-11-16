@@ -76,8 +76,8 @@ func createDisgtoTask(name string) godellauncher.Task {
 
 func createBuiltinVerifyTask(name string, app *cli.App, cfgFileName string, verifyOrder int) godellauncher.Task {
 	return createBuiltinTaskHelper(name, app, nil, cfgFileName, &godellauncher.VerifyOptions{
-		Ordering:   verifyOrder,
-		VerifyArgs: []string{"--verify"},
+		Ordering:       verifyOrder,
+		ApplyFalseArgs: []string{"--verify"},
 	})
 }
 

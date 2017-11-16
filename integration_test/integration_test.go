@@ -765,7 +765,7 @@ func TestPublishWithNoAction(t *testing.T) {
 	cmd.Dir = testProjectDir
 	output, err := cmd.CombinedOutput()
 	require.Error(t, err)
-	assert.Regexp(t, regexp.MustCompile(`(?s)NAME:.+publish - Publish product distributions.+USAGE:.+godel publish.+SUBCOMMANDS:.+FLAGS:.+`), string(output))
+	assert.Regexp(t, `(?s)NAME:.+publish - Publish product distributions.+USAGE:.+godel publish.+SUBCOMMANDS:.+FLAGS:.+`, string(output))
 }
 
 func TestDebugFlagPrintsStackTrace(t *testing.T) {
@@ -781,7 +781,7 @@ func TestDebugFlagPrintsStackTrace(t *testing.T) {
 	cmd.Dir = testProjectDir
 	output, err = cmd.CombinedOutput()
 	require.Error(t, err)
-	assert.Regexp(t, `(?s)^Error: foo does not exist.+github.com/palantir/godel/framework/builtintasks/installupdate.localPkg.getPkg.+failed to install from foo into .+`, string(output))
+	assert.Regexp(t, `(?s)^Error: foo does not exist.+`+regexp.QuoteMeta(`github.com/palantir/godel/godelgetter.(*localFilePkg).Reader`)+`.+failed to install from foo into .+`, string(output))
 }
 
 func execCommand(t *testing.T, dir, cmdName string, args ...string) string {

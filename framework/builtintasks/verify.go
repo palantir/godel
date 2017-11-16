@@ -85,8 +85,10 @@ func VerifyTask(tasks []godellauncher.Task) godellauncher.Task {
 					}
 
 					var taskFlagArgs []string
-					if !*applyVar {
-						taskFlagArgs = append(taskFlagArgs, task.Verify.VerifyArgs...)
+					if *applyVar {
+						taskFlagArgs = append(taskFlagArgs, task.Verify.ApplyTrueArgs...)
+					} else {
+						taskFlagArgs = append(taskFlagArgs, task.Verify.ApplyFalseArgs...)
 					}
 
 					// get task-specific flag values
@@ -104,10 +106,13 @@ func VerifyTask(tasks []godellauncher.Task) godellauncher.Task {
 
 					fmt.Fprintf(stdout, "Running %s...\n", task.Name)
 					if err := task.Run(taskGlobal, stdout); err != nil {
-						nameWithFlag := task.Name
-						if !*applyVar {
-							nameWithFlag = strings.Join(append([]string{task.Name}, task.Verify.VerifyArgs...), " ")
+						var applyArgs []string
+						if *applyVar {
+							applyArgs = task.Verify.ApplyTrueArgs
+						} else {
+							applyArgs = task.Verify.ApplyFalseArgs
 						}
+						nameWithFlag := strings.Join(append([]string{task.Name}, applyArgs...), " ")
 						failedChecks = append(failedChecks, nameWithFlag)
 					}
 				}

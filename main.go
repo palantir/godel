@@ -16,7 +16,9 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"path"
 
 	"github.com/kardianos/osext"
 	"github.com/nmiyake/pkg/dirs"
@@ -28,6 +30,7 @@ import (
 	"github.com/palantir/godel/framework/builtintasks"
 	"github.com/palantir/godel/framework/godel"
 	"github.com/palantir/godel/framework/godellauncher"
+	"github.com/palantir/godel/framework/plugins"
 )
 
 func main() {
@@ -53,14 +56,22 @@ func runGodelApp(osArgs []string) int {
 	global, err := godellauncher.ParseAppArgs(os.Args)
 	if err != nil {
 		// match invalid flag output with that provided by Cobra CLI
-		printErrAndExit(fmt.Errorf(err.Error()+"\n"+godellauncher.UsageString(createTasks(""))), false)
+		printErrAndExit(fmt.Errorf(err.Error()+"\n"+godellauncher.UsageString(createTasks("", nil))), false)
 	}
 
-	allTasks := createTasks(global.Wrapper)
-	task, err := godellauncher.TaskForInput(global, allTasks)
+	var pluginTasks []godellauncher.Task
+	if global.Wrapper != "" {
+		// add tasks provided by plugins
+		pluginTasks, err = createPluginTasks(global.Wrapper, os.Stdout)
+		if err != nil {
+			printErrAndExit(err, global.Debug)
+		}
+	}
+	task, err := godellauncher.TaskForInput(global, createTasks(global.Wrapper, pluginTasks))
 	if err != nil {
 		// match missing command output with that provided by Cobra CLI
-		printErrAndExit(fmt.Errorf("%s\nRun '%s --help' for usage.", err.Error(), godel.AppName), false)
+		errTmpl := "%s\nRun '%s --help' for usage."
+		printErrAndExit(fmt.Errorf(errTmpl, err.Error(), godel.AppName), false)
 	}
 
 	if err := task.Run(global, os.Stdout); err != nil {
@@ -71,13 +82,30 @@ func runGodelApp(osArgs []string) int {
 	return 0
 }
 
-func createTasks(wrapperPath string) []godellauncher.Task {
+func createTasks(wrapperPath string, pluginTasks []godellauncher.Task) []godellauncher.Task {
 	var allTasks []godellauncher.Task
 	allTasks = append(allTasks, builtintasks.Tasks(wrapperPath)...)
 	allTasks = append(allTasks, apptasks.AmalgomatedTasks()...)
 	allTasks = append(allTasks, apptasks.AppTasks()...)
-	allTasks = append(allTasks, builtintasks.VerifyTask(allTasks))
+	allTasks = append(allTasks, builtintasks.VerifyTask(append(allTasks, pluginTasks...)))
+	allTasks = append(allTasks, pluginTasks...)
 	return allTasks
+}
+
+func createPluginTasks(wrapperPath string, stdout io.Writer) ([]godellauncher.Task, error) {
+	cfgDir, err := godellauncher.ConfigDirPath(path.Dir(wrapperPath))
+	if err != nil {
+		return nil, err
+	}
+	cfg, err := godellauncher.ReadGödelConfig(cfgDir)
+	if err != nil {
+		return nil, err
+	}
+	pluginTasks, err := plugins.LoadPluginsTasks(cfg.Plugins, stdout)
+	if err != nil {
+		return nil, err
+	}
+	return pluginTasks, nil
 }
 
 func printErrAndExit(err error, debug bool) {

@@ -29,22 +29,40 @@ import (
 )
 
 const (
-	gödelConfigYML   = "godel.yml"
+	GödelConfigYML   = "godel.yml"
 	excludeConfigYML = "exclude.yml"
 )
 
 type GödelConfig struct {
+	// Plugins specifies the configuration for the plugins configured for gödel. Excluded from JSON serialization
+	// because JSON serialization is only needed for legacy "exclude" back-compat (and will be removed in 2.0 release).
+	Plugins PluginsConfig `yaml:"plugins" json:"-"`
 	// Exclude specifies the files and directories that should be excluded from gödel operations.
 	Exclude matcher.NamesPathsCfg `yaml:"exclude" json:"exclude"`
 }
 
-// CfgDirPath returns the path to the gödel configuration directory given the path to the wrapper script. Returns an
-// error if the directory structure does not match what is expected.
-func CfgDirPath(wrapperPath string) (string, error) {
-	if wrapperPath == "" {
-		return "", errors.Errorf("no wrapper path was specified")
+type PluginsConfig struct {
+	DefaultResolvers []string                    `yaml:"resolvers"`
+	Plugins          []LocatorWithResolverConfig `yaml:"plugins"`
+}
+
+type LocatorWithResolverConfig struct {
+	Locator  LocatorConfig `yaml:"locator"`
+	Resolver string        `yaml:"resolver"`
+}
+
+type LocatorConfig struct {
+	ID        string            `yaml:"id"`
+	Checksums map[string]string `yaml:"checksums"`
+}
+
+// ConfigDirPath returns the path to the gödel configuration directory given the path to the project directory. Returns
+// an error if the directory structure does not match what is expected.
+func ConfigDirPath(projectDirPath string) (string, error) {
+	if projectDirPath == "" {
+		return "", errors.Errorf("projectDirPath was empty")
 	}
-	wrapper, err := specdir.New(path.Dir(wrapperPath), layout.WrapperSpec(), nil, specdir.Validate)
+	wrapper, err := specdir.New(projectDirPath, layout.WrapperSpec(), nil, specdir.Validate)
 	if err != nil {
 		return "", err
 	}
@@ -69,7 +87,7 @@ func GödelConfigJSON(cfgDir string) ([]byte, error) {
 // "gödel.yml".
 func ReadGödelConfig(cfgDir string) (GödelConfig, error) {
 	var gödelCfg GödelConfig
-	gödelYML := path.Join(cfgDir, gödelConfigYML)
+	gödelYML := path.Join(cfgDir, GödelConfigYML)
 	if _, err := os.Stat(gödelYML); err == nil {
 		bytes, err := ioutil.ReadFile(gödelYML)
 		if err != nil {

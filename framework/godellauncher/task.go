@@ -32,6 +32,9 @@ type Task struct {
 	// file-based configuration.
 	ConfigFile string
 
+	// Configures the manner in which the global flags are processed.
+	GlobalFlagOpts GlobalFlagOptions
+
 	// Verify stores the option for the "--verify" task. If non-nil, this command is run as part of the "verify" task.
 	Verify *VerifyOptions
 
@@ -40,14 +43,39 @@ type Task struct {
 	RunImpl func(t *Task, global GlobalConfig, stdout io.Writer) error
 }
 
+type GlobalFlagOptions struct {
+	// DebugFlag is the flag that is passed to the plugin when "debug" mode is true (for example, "--debug"). If empty,
+	// indicates that the plugin does not support a "debug" mode. The value should include any leading hyphens (this
+	// allows for specifying long or short-hand flags).
+	DebugFlag string
+	// ProjectDirFlag is the flag that is passed to the plugin for the project directory (for example, "--project-dir").
+	// If this value is non-empty, then the arguments "<ProjectDirFlag> <projectDirPath>" will be provided to the
+	// plugin. If empty, indicates that the plugin does not support a project directory flag. The value should include
+	// any leading hyphens (this allows for specifying long or short-hand flags).
+	ProjectDirFlag string
+	// GodelConfigFlag is the flag that is passed to the plugin for the godel configuration file (for example,
+	// "--godelConfig"). If this value is non-empty, then the arguments "<GodelConfigFlag> <godelConfigFilePath>" will
+	// be provided to the plugin. If empty, indicates that the plugin does not support a godel config flag. The value
+	// should include any leading hyphens (this allows for specifying long or short-hand flags).
+	GodelConfigFlag string
+	// ConfigFlag is the flag that is passed to the plugin for the configuration file (for example, "--config"). If this
+	// value is non-empty, then the arguments "<ConfigFlag> <configFilePath>" will be provided to the plugin. If empty,
+	// indicates that the plugin does not support a config flag. The value should include any leading hyphens (this
+	// allows for specifying long or short-hand flags).
+	ConfigFlag string
+}
+
 type VerifyOptions struct {
 	// VerifyTaskFlags stores the task-specific flags supported by this verify task.
 	VerifyTaskFlags []VerifyFlag
 	// Ordering stores the weighting/ordering of the task as it will be run in the verify task.
 	Ordering int
-	// VerifyArgs specifies the arguments (typically flags) that will be provided to to this verify task when apply mode
-	// is false. For example, []string{"--verify"} or []string{"-l"}.
-	VerifyArgs []string
+	// ApplyTrueArgs specifies the arguments (typically flags) that should be provided to the verify task when "apply"
+	// mode is true: for example, []string{"--apply"}. May be nil/empty.
+	ApplyTrueArgs []string
+	// ApplyFalseArgs specifies the arguments (typically flags) that should be provided to the verify task when "apply"
+	// mode is false: for example, []string{"--verify"} or []string{"-l"}.. May be nil/empty.
+	ApplyFalseArgs []string
 }
 
 type VerifyFlag struct {

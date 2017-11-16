@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package properties_test
+package installupdate
 
 import (
 	"io/ioutil"
@@ -22,8 +22,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/palantir/godel/framework/builtintasks/installupdate/properties"
 )
 
 const (
@@ -55,13 +53,13 @@ func TestReadProperties(t *testing.T) {
 				return dest.Name()
 			},
 			want: map[string]string{
-				properties.URLKey:      urlValue,
-				properties.ChecksumKey: checksumValue,
+				propertiesURLKey:      urlValue,
+				propertiesChecksumKey: checksumValue,
 			},
 		},
 	} {
 		propertiesFile := currCase.propertiesFileWriter(tmpDir)
-		got, err := properties.Read(propertiesFile)
+		got, err := readPropertiesFile(propertiesFile)
 		require.NoError(t, err)
 
 		assert.Equal(t, currCase.want, got, "Case %d", i)
