@@ -15,6 +15,7 @@
 package installupdate
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -25,6 +26,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/palantir/godel/framework/builtintasks/installupdate/layout"
+	"github.com/palantir/godel/godelgetter"
 )
 
 // NewInstall performs a new installation of gödel in the specified directory using the specified file as the source.
@@ -37,9 +39,7 @@ func NewInstall(dstDirPath, srcPkgPath string, stdout io.Writer) error {
 	if err := layout.VerifyDirExists(dstDirPath); err != nil {
 		return errors.Wrapf(err, "path %s does not specify an existing directory", dstDirPath)
 	}
-	if err := update(dstDirPath, PkgWithChecksum{
-		Pkg: srcPkgPath,
-	}, true, stdout); err != nil {
+	if err := update(dstDirPath, godelgetter.NewPkgSrc(srcPkgPath, ""), true, stdout); err != nil {
 		return errors.Wrapf(err, "failed to install from %s into %s", srcPkgPath, dstDirPath)
 	}
 	return nil
@@ -56,7 +56,7 @@ func Update(wrapperScriptPath string, stdout io.Writer) error {
 	if err != nil {
 		return errors.Wrapf(err, "wrapper script %s is not in a valid location", wrapperScriptPath)
 	}
-	pkg, err := GetDistPkgInfo(wrapper.Path(layout.WrapperConfigDir))
+	pkg, err := distPkgInfo(wrapper.Path(layout.WrapperConfigDir))
 	if err != nil {
 		return errors.Wrapf(err, "failed to get URL from properties file")
 	}
@@ -66,9 +66,23 @@ func Update(wrapperScriptPath string, stdout io.Writer) error {
 	return nil
 }
 
-func update(wrapperScriptDir string, pkg PkgWithChecksum, newInstall bool, stdout io.Writer) error {
-	pkgSrc := pkg.ToPkgSrc()
+// Returns the distribution URL and checksum (if it exists) from the configuration file in the provided directory.
+// Returns an error if the URL cannot be read.
+func distPkgInfo(configDir string) (godelgetter.PkgSrc, error) {
+	propsFilePath := path.Join(configDir, fmt.Sprintf("%s.properties", layout.AppName))
+	props, err := readPropertiesFile(propsFilePath)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to read properties file %s", propsFilePath)
+	}
+	url, ok := props[propertiesURLKey]
+	if !ok {
+		return nil, errors.Wrapf(err, "properties file %s does not contain key %s", propsFilePath, propertiesURLKey)
+	}
+	checksum := props[propertiesChecksumKey]
+	return godelgetter.NewPkgSrc(url, checksum), nil
+}
 
+func update(wrapperScriptDir string, pkg godelgetter.PkgSrc, newInstall bool, stdout io.Writer) error {
 	mode := specdir.Validate
 	if newInstall {
 		mode = specdir.SpecOnly
@@ -78,7 +92,7 @@ func update(wrapperScriptDir string, pkg PkgWithChecksum, newInstall bool, stdou
 		return errors.Wrapf(err, "%s is not a valid wrapper directory", wrapperScriptDir)
 	}
 
-	version, err := install(pkgSrc, stdout)
+	version, err := install(pkg, stdout)
 	if err != nil {
 		return err
 	}

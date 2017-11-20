@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package properties
+package installupdate
 
 import (
-	"fmt"
 	"io/ioutil"
 	"strings"
 
@@ -23,21 +22,19 @@ import (
 )
 
 const (
-	URLKey      = "distributionURL"
-	ChecksumKey = "distributionSHA256"
+	propertiesURLKey      = "distributionURL"
+	propertiesChecksumKey = "distributionSHA256"
 )
 
-// Read reads the file at the provided path and returns a map of the properties that it contains. The file should
-// contain one property per line and the line should be of the form "key=value". Any line that starts with the character
-// '#' is ignored.
-func Read(path string) (map[string]string, error) {
+// Reads the file at the provided path and returns the properties that it contains. The file should contain one property
+// per line and the line should be of the form "key=value". Any line that starts with the character '#' is ignored.
+func readPropertiesFile(path string) (map[string]string, error) {
 	bytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to read file %s", path)
 	}
 
 	properties := make(map[string]string)
-
 	lines := strings.Split(string(bytes), "\n")
 	for _, currLine := range lines {
 		currLine = strings.TrimSpace(currLine)
@@ -50,17 +47,7 @@ func Read(path string) (map[string]string, error) {
 		if equalsIndex == -1 {
 			return nil, errors.Errorf(`failed to find character "=" in line "%v" in file with lines "%v"`, currLine, lines)
 		}
-
 		properties[currLine[:equalsIndex]] = currLine[equalsIndex+1:]
 	}
 	return properties, nil
-}
-
-// Get returns the specified property from the provided map or returns an error if the requested key does not exist
-// in the provided map.
-func Get(properties map[string]string, key string) (string, error) {
-	if value, ok := properties[key]; ok {
-		return value, nil
-	}
-	return "", fmt.Errorf("property %v did not exist in map %v", key, properties)
 }

@@ -36,7 +36,7 @@ func PackagesTask() godellauncher.Task {
 				return errors.Wrapf(err, "failed to determine working directory")
 			}
 
-			cfgDir, err := godellauncher.CfgDirPath(wd)
+			cfgDir, err := godellauncher.ConfigDirPath(wd)
 			if err != nil {
 				return err
 			}
