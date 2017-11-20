@@ -90,7 +90,17 @@ start)
     mkdir -p "var/log"
     mkdir -p "var/run"
 
-    PID=$($SERVICE_CMD > var/log/$SERVICE-startup.log 2>&1 & echo $!)
+    # ensure at least MAX_STARTUP_LOG_FILE_SIZE bytes of startup logs are preserved,
+    MAX_STARTUP_LOG_FILE_SIZE=$(expr 32 \* 1024 \* 1024)
+    STARTUP_LOG_FILE_SIZE=$(eval "du -b var/log/$SERVICE-startup.log | tr -s '\t' ' ' | cut -d' ' -f1")
+    # backup existing startup logs if file exceed MAX_STARTUP_LOG_FILE_SIZE (32MB),
+    # already existing backup file will be lost
+    if [ $STARTUP_LOG_FILE_SIZE -gt $MAX_STARTUP_LOG_FILE_SIZE ]; then
+        mv var/log/$SERVICE-startup.log var/log/$SERVICE-startup.log.backup
+    fi
+
+    # run a service, append stderr and stdout to startup logs
+    PID=$($SERVICE_CMD >> var/log/$SERVICE-startup.log 2>&1 & echo $!)
     echo $PID > $PIDFILE
     sleep 1
     if is_process_active $PID; then
