@@ -20,17 +20,19 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func AddAllPFlags(fset *pflag.FlagSet) (debug *bool, projectDir *string, godelConfig *string, config *string) {
+func AddAllPFlags(fset *pflag.FlagSet) (debug *bool, projectDir *string, godelConfig *string, config *string, assets *[]string) {
 	goFlagSet := &flag.FlagSet{}
 	debug, projectDir, godelConfig, config = AddAllFlags(goFlagSet)
 	fset.AddGoFlagSet(goFlagSet)
+	assets = AddAssetsPFlag(fset)
 	return
 }
 
-func AddAllPFlagsPtrs(fset *pflag.FlagSet, debug *bool, projectDir *string, godelConfig *string, config *string) {
+func AddAllPFlagsPtrs(fset *pflag.FlagSet, debug *bool, projectDir *string, godelConfig *string, config *string, assets *[]string) {
 	goFlagSet := &flag.FlagSet{}
 	AddAllFlagsPtrs(goFlagSet, debug, projectDir, godelConfig, config)
 	fset.AddGoFlagSet(goFlagSet)
+	AddAssetsPFlagPtr(fset, assets)
 }
 
 func AddDebugPFlag(fset *pflag.FlagSet) *bool {
@@ -87,4 +89,17 @@ func AddConfigPFlagPtr(fset *pflag.FlagSet, config *string) {
 		return
 	}
 	fset.StringVar(config, ConfigFlagName, "", "path to the plugin configuration file")
+}
+
+func AddAssetsPFlag(fset *pflag.FlagSet) *[]string {
+	var assets []string
+	AddAssetsPFlagPtr(fset, &assets)
+	return &assets
+}
+
+func AddAssetsPFlagPtr(fset *pflag.FlagSet, assets *[]string) {
+	if assets == nil {
+		return
+	}
+	fset.StringSliceVar(assets, AssetsFlagName, nil, "path(s) to the plugin asset(s)")
 }
