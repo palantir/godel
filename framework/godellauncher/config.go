@@ -42,8 +42,15 @@ type GödelConfig struct {
 }
 
 type PluginsConfig struct {
-	DefaultResolvers []string                    `yaml:"resolvers"`
-	Plugins          []LocatorWithResolverConfig `yaml:"plugins"`
+	DefaultResolvers []string             `yaml:"resolvers"`
+	Plugins          []SinglePluginConfig `yaml:"plugins"`
+}
+
+type SinglePluginConfig struct {
+	// LocatorWithResolverConfig stores the locator and the resolver for the plugin.
+	LocatorWithResolverConfig `yaml:",inline"`
+	// Assets stores the locators and resolvers for the assets for this plugin.
+	Assets []LocatorWithResolverConfig `yaml:"assets"`
 }
 
 type LocatorWithResolverConfig struct {

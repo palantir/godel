@@ -26,7 +26,7 @@ import (
 
 type projectParams struct {
 	DefaultResolvers []resolver
-	Plugins          []locatorWithResolverParam
+	Plugins          []singlePluginParam
 }
 
 func projectParamsFromConfig(cfg godellauncher.PluginsConfig) (projectParams, error) {
@@ -38,17 +38,43 @@ func projectParamsFromConfig(cfg godellauncher.PluginsConfig) (projectParams, er
 		}
 		resolvers = append(resolvers, resolver)
 	}
-	var lwrParams []locatorWithResolverParam
+	var singlePluginParams []singlePluginParam
 	for _, p := range cfg.Plugins {
-		lwrParam, err := locatorWithResolverParamFromConfig(p)
+		singlePluginParam, err := singlePluginParamFromConfig(p)
 		if err != nil {
 			return projectParams{}, err
 		}
-		lwrParams = append(lwrParams, lwrParam)
+		singlePluginParams = append(singlePluginParams, singlePluginParam)
 	}
 	return projectParams{
 		DefaultResolvers: resolvers,
-		Plugins:          lwrParams,
+		Plugins:          singlePluginParams,
+	}, nil
+}
+
+type singlePluginParam struct {
+	locatorWithResolverParam
+	Assets []locatorWithResolverParam
+}
+
+func singlePluginParamFromConfig(c godellauncher.SinglePluginConfig) (singlePluginParam, error) {
+	pluginLocWithResolverParam, err := locatorWithResolverParamFromConfig(c.LocatorWithResolverConfig)
+	if err != nil {
+		return singlePluginParam{}, err
+	}
+
+	var assetParams []locatorWithResolverParam
+	for _, asset := range c.Assets {
+		assetLocWithResolverParam, err := locatorWithResolverParamFromConfig(asset)
+		if err != nil {
+			return singlePluginParam{}, err
+		}
+		assetParams = append(assetParams, assetLocWithResolverParam)
+	}
+
+	return singlePluginParam{
+		locatorWithResolverParam: pluginLocWithResolverParam,
+		Assets: assetParams,
 	}, nil
 }
 

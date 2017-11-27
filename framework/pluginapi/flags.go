@@ -31,6 +31,9 @@ const (
 	// ConfigFlagName is the name of the string flag that is provided as "--<ConfigFlagName> <config>", where "<config>"
 	// is the path to the configuration file for the plugin.
 	ConfigFlagName = "config"
+	// AssetsFlagName is the name of the assets flag that is provided as "--<AssetsFlagName> <assets>", where "<assets>"
+	// is a comma-delimited list of the paths to the assets for the plugin.
+	AssetsFlagName = "assets"
 )
 
 func AddDebugFlag(fset *flag.FlagSet) *bool {
