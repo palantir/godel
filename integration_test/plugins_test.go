@@ -63,7 +63,7 @@ func TestPlugins(t *testing.T) {
 	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
 	require.NoError(t, err)
 
-	cfg, err := godellauncher.ReadGödelConfig(cfgDir)
+	cfg, err := godellauncher.ReadGodelConfig(cfgDir)
 	require.NoError(t, err)
 
 	cfgContent := fmt.Sprintf(`
@@ -108,7 +108,7 @@ plugins:
 
 	cfgBytes, err := yaml.Marshal(cfg)
 	require.NoError(t, err)
-	err = ioutil.WriteFile(path.Join(cfgDir, godellauncher.GödelConfigYML), cfgBytes, 0644)
+	err = ioutil.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
 	require.NoError(t, err)
 
 	// plugin is resolved on first run
@@ -188,7 +188,7 @@ func TestPluginsWithAssets(t *testing.T) {
 	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
 	require.NoError(t, err)
 
-	cfg, err := godellauncher.ReadGödelConfig(cfgDir)
+	cfg, err := godellauncher.ReadGodelConfig(cfgDir)
 	require.NoError(t, err)
 
 	cfgContent := fmt.Sprintf(`
@@ -248,7 +248,7 @@ plugins:
 
 	cfgBytes, err := yaml.Marshal(cfg)
 	require.NoError(t, err)
-	err = ioutil.WriteFile(path.Join(cfgDir, godellauncher.GödelConfigYML), cfgBytes, 0644)
+	err = ioutil.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
 	require.NoError(t, err)
 
 	// plugin and asset is resolved on first run
@@ -259,7 +259,7 @@ plugins:
 		regexp.QuoteMeta(fmt.Sprintf(`Getting package from %s/repo/com/palantir/%s/1.0.0/%s-%s-1.0.0.tgz...`, testProjectDir, assetName, assetName, osarch.Current()))
 	assert.Regexp(t, wantOutput, gotOutput)
 
-	gödelHomeSpecDir, err := layout.GödelHomeSpecDir(specdir.SpecOnly)
+	gödelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.SpecOnly)
 	require.NoError(t, err)
 	assetsDir := gödelHomeSpecDir.Path(layout.AssetsDir)
 	assetPath := path.Join(assetsDir, "com.palantir-"+assetName+"-1.0.0")

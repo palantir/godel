@@ -40,7 +40,7 @@ func PackagesTask() godellauncher.Task {
 			if err != nil {
 				return err
 			}
-			cfg, err := godellauncher.ReadGödelConfig(cfgDir)
+			cfg, err := godellauncher.ReadGodelConfig(cfgDir)
 			if err != nil {
 				return err
 			}

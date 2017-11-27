@@ -35,12 +35,12 @@ import (
 // it does, that file will be used. Otherwise, the TGZ will be downloaded from the specified location and the downloaded
 // TGZ will be verified against the checksum. If the checksum is empty, no verification will occur. If the install
 // succeeds, the following files will be created:
-// "{{layout.GödelHomePath()}}/downloads/{{layout.AppName}}-{{version}}.tgz" and
-// "{{layout.GödelHomePath()}}/dists/{{layout.AppName}}-{{version}}". If the downloaded distribution matches a version
+// "{{layout.GodelHomePath()}}/downloads/{{layout.AppName}}-{{version}}.tgz" and
+// "{{layout.GodelHomePath()}}/dists/{{layout.AppName}}-{{version}}". If the downloaded distribution matches a version
 // that already exists in the distribution directory and a download occurs, the existing distribution will be
 // overwritten by the newly downloaded one. Returns the version of the distribution that was installed.
 func install(src godelgetter.PkgSrc, stdout io.Writer) (string, error) {
-	gödelHomeSpecDir, err := layout.GödelHomeSpecDir(specdir.Create)
+	gödelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to create SpecDir for gödel home")
 	}
@@ -84,7 +84,7 @@ func install(src godelgetter.PkgSrc, stdout io.Writer) (string, error) {
 		return "", errors.Errorf("version reported by executable does not match version specified by tgz: expected %s, was %s", tgzVersion, version)
 	}
 
-	gödelDist, err := layout.GödelDistLayout(version, specdir.Create)
+	gödelDist, err := layout.GodelDistLayout(version, specdir.Create)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to create distribution directory")
 	}

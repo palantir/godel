@@ -25,7 +25,7 @@ import (
 )
 
 func TestMarshalConfig(t *testing.T) {
-	cfg := godellauncher.GödelConfig{
+	cfg := godellauncher.GodelConfig{
 		Plugins: godellauncher.PluginsConfig{
 			Plugins: []godellauncher.SinglePluginConfig{
 				{
@@ -79,11 +79,11 @@ plugins:
         - locator:
             id: "com.palantir:asset:1.0.0"
 `
-	var got godellauncher.GödelConfig
+	var got godellauncher.GodelConfig
 	err := yaml.Unmarshal([]byte(cfgYAML), &got)
 	require.NoError(t, err)
 
-	want := godellauncher.GödelConfig{
+	want := godellauncher.GodelConfig{
 		Plugins: godellauncher.PluginsConfig{
 			DefaultResolvers: []string{
 				"foo/repo/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}.tgz",

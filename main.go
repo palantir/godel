@@ -97,7 +97,7 @@ func createPluginTasks(wrapperPath string, stdout io.Writer) ([]godellauncher.Ta
 	if err != nil {
 		return nil, err
 	}
-	cfg, err := godellauncher.ReadGödelConfig(cfgDir)
+	cfg, err := godellauncher.ReadGodelConfig(cfgDir)
 	if err != nil {
 		return nil, err
 	}
