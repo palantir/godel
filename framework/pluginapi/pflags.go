@@ -86,5 +86,5 @@ func AddConfigPFlagPtr(fset *pflag.FlagSet, config *string) {
 	if config == nil {
 		return
 	}
-	fset.String(ConfigFlagName, "", "path to the plugin configuration file")
+	fset.StringVar(config, ConfigFlagName, "", "path to the plugin configuration file")
 }
