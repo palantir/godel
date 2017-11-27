@@ -29,11 +29,11 @@ import (
 )
 
 const (
-	GödelConfigYML   = "godel.yml"
+	GodelConfigYML   = "godel.yml"
 	excludeConfigYML = "exclude.yml"
 )
 
-type GödelConfig struct {
+type GodelConfig struct {
 	// Plugins specifies the configuration for the plugins configured for gödel. Excluded from JSON serialization
 	// because JSON serialization is only needed for legacy "exclude" back-compat (and will be removed in 2.0 release).
 	Plugins PluginsConfig `yaml:"plugins" json:"-"`
@@ -76,9 +76,9 @@ func ConfigDirPath(projectDirPath string) (string, error) {
 	return wrapper.Path(layout.WrapperConfigDir), nil
 }
 
-// GödelConfigJSON returns the JSON representation of the gödel configuration read by ReadGödelConfig.
-func GödelConfigJSON(cfgDir string) ([]byte, error) {
-	cfg, err := ReadGödelConfig(cfgDir)
+// GodelConfigJSON returns the JSON representation of the gödel configuration read by ReadGodelConfig.
+func GodelConfigJSON(cfgDir string) ([]byte, error) {
+	cfg, err := ReadGodelConfig(cfgDir)
 	if err != nil {
 		return nil, err
 	}
@@ -89,19 +89,19 @@ func GödelConfigJSON(cfgDir string) ([]byte, error) {
 	return bytes, nil
 }
 
-// ReadGödelConfig reads the gödel configuration from the "gödel.yml" file in the specified directory and returns it. If
+// ReadGodelConfig reads the gödel configuration from the "gödel.yml" file in the specified directory and returns it. If
 // "exclude.yml" exists in the directory, it is also read and its elements are combined with the configuration read from
 // "gödel.yml".
-func ReadGödelConfig(cfgDir string) (GödelConfig, error) {
-	var gödelCfg GödelConfig
-	gödelYML := path.Join(cfgDir, GödelConfigYML)
+func ReadGodelConfig(cfgDir string) (GodelConfig, error) {
+	var gödelCfg GodelConfig
+	gödelYML := path.Join(cfgDir, GodelConfigYML)
 	if _, err := os.Stat(gödelYML); err == nil {
 		bytes, err := ioutil.ReadFile(gödelYML)
 		if err != nil {
-			return GödelConfig{}, errors.Wrapf(err, "failed to read file %s", gödelYML)
+			return GodelConfig{}, errors.Wrapf(err, "failed to read file %s", gödelYML)
 		}
 		if err := yaml.Unmarshal(bytes, &gödelCfg); err != nil {
-			return GödelConfig{}, errors.Wrapf(err, "failed to unmarshal gödel config YAML")
+			return GodelConfig{}, errors.Wrapf(err, "failed to unmarshal gödel config YAML")
 		}
 	}
 
@@ -111,10 +111,10 @@ func ReadGödelConfig(cfgDir string) (GödelConfig, error) {
 		var excludeCfg matcher.NamesPathsCfg
 		bytes, err := ioutil.ReadFile(excludeYML)
 		if err != nil {
-			return GödelConfig{}, errors.Wrapf(err, "failed to read file %s", excludeYML)
+			return GodelConfig{}, errors.Wrapf(err, "failed to read file %s", excludeYML)
 		}
 		if err := yaml.Unmarshal(bytes, &excludeCfg); err != nil {
-			return GödelConfig{}, errors.Wrapf(err, "failed to unmarshal exclude config YAML")
+			return GodelConfig{}, errors.Wrapf(err, "failed to unmarshal exclude config YAML")
 		}
 		gödelCfg.Exclude.Names = addNewElements(gödelCfg.Exclude.Names, excludeCfg.Names)
 		gödelCfg.Exclude.Paths = addNewElements(gödelCfg.Exclude.Paths, excludeCfg.Paths)

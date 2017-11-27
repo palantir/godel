@@ -97,7 +97,7 @@ func update(wrapperScriptDir string, pkg godelgetter.PkgSrc, newInstall bool, st
 		return err
 	}
 
-	gödelDist, err := layout.GödelDistLayout(version, specdir.Validate)
+	gödelDist, err := layout.GodelDistLayout(version, specdir.Validate)
 	if err != nil {
 		return errors.Wrapf(err, "unable to get gödel home directory")
 	}

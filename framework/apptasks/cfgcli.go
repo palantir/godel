@@ -41,7 +41,7 @@ func cfgCLIArgs(global godellauncher.GlobalConfig, cmdPath []string, cfgFileName
 		if cfgFileName != "" {
 			args = append(args, "--config", path.Join(gödelConfigDir, cfgFileName))
 		}
-		cfgJSON, err := godellauncher.GödelConfigJSON(gödelConfigDir)
+		cfgJSON, err := godellauncher.GodelConfigJSON(gödelConfigDir)
 		if err != nil {
 			return nil, err
 		}

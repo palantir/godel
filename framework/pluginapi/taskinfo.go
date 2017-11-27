@@ -218,7 +218,7 @@ func (ti *taskInfoImpl) globalFlagArgs(t *godellauncher.Task, global godellaunch
 	}
 
 	if t.GlobalFlagOpts.GodelConfigFlag != "" {
-		args = append(args, t.GlobalFlagOpts.GodelConfigFlag, path.Join(cfgDir, godellauncher.GödelConfigYML))
+		args = append(args, t.GlobalFlagOpts.GodelConfigFlag, path.Join(cfgDir, godellauncher.GodelConfigYML))
 	}
 
 	if t.GlobalFlagOpts.ConfigFlag != "" && t.ConfigFile != "" {

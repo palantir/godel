@@ -64,8 +64,8 @@ func allPaths(paths map[string]bool, pathStack []string, dir string) error {
 	return nil
 }
 
-func GödelDistLayout(version string, mode s.Mode) (s.SpecDir, error) {
-	rootDir, err := GödelHomePath()
+func GodelDistLayout(version string, mode s.Mode) (s.SpecDir, error) {
+	rootDir, err := GodelHomePath()
 	if err != nil {
 		return nil, err
 	}
@@ -81,9 +81,9 @@ func GödelDistLayout(version string, mode s.Mode) (s.SpecDir, error) {
 	return s.New(rootDir, gödelHomeSpec([]s.FileNodeProvider{AppSpec()}), values, mode)
 }
 
-// GödelHomePath returns the path to the gödel home directory. If $GODEL_HOME is set as an environment variable, that
+// GodelHomePath returns the path to the gödel home directory. If $GODEL_HOME is set as an environment variable, that
 // value is used. Otherwise, the value is "$HOME/{{defaultGödelHome}}"
-func GödelHomePath() (string, error) {
+func GodelHomePath() (string, error) {
 	// check the environment variable
 	if gödelHomeDir := os.Getenv(gödelHomeEnvVar); gödelHomeDir != "" {
 		return gödelHomeDir, nil
@@ -95,8 +95,8 @@ func GödelHomePath() (string, error) {
 	return "", fmt.Errorf("failed to get %s home directory", AppName)
 }
 
-func GödelHomeSpecDir(mode s.Mode) (s.SpecDir, error) {
-	rootDir, err := GödelHomePath()
+func GodelHomeSpecDir(mode s.Mode) (s.SpecDir, error) {
+	rootDir, err := GodelHomePath()
 	if err != nil {
 		return nil, err
 	}
@@ -104,10 +104,10 @@ func GödelHomeSpecDir(mode s.Mode) (s.SpecDir, error) {
 		gödelHomeTemplate: path.Base(rootDir),
 	}
 
-	return s.New(rootDir, GödelHomeSpec(), values, mode)
+	return s.New(rootDir, GodelHomeSpec(), values, mode)
 }
 
-func GödelHomeSpec() s.LayoutSpec {
+func GodelHomeSpec() s.LayoutSpec {
 	return gödelHomeSpec(nil)
 }
 

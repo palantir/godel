@@ -56,7 +56,7 @@ func LoadPluginsTasks(cfg godellauncher.PluginsConfig, stdout io.Writer) ([]gode
 		return nil, err
 	}
 
-	gödelHomeSpecDir, err := layout.GödelHomeSpecDir(specdir.Create)
+	gödelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create gödel home directory")
 	}
