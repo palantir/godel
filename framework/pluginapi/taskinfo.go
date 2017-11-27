@@ -20,6 +20,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 	"unicode"
 
 	"github.com/pkg/errors"
@@ -36,7 +37,7 @@ type TaskInfo interface {
 	GlobalFlagOptions() GlobalFlagOptions
 	VerifyOptions() VerifyOptions
 
-	toTask(pluginExecPath, cfgFileName string) godellauncher.Task
+	toTask(pluginExecPath, cfgFileName string, assets []string) godellauncher.Task
 }
 
 type taskInfoImpl struct {
@@ -146,7 +147,7 @@ func (ti *taskInfoImpl) GlobalFlagOptions() GlobalFlagOptions {
 	return ti.GlobalFlagOptionsVar
 }
 
-func (ti *taskInfoImpl) toTask(pluginExecPath, cfgFileName string) godellauncher.Task {
+func (ti *taskInfoImpl) toTask(pluginExecPath, cfgFileName string, assets []string) godellauncher.Task {
 	var verifyOpts *godellauncher.VerifyOptions
 	if ti.VerifyOptions() != nil {
 		opts := ti.VerifyOptionsVar.toGodelVerifyOptions()
@@ -166,6 +167,11 @@ func (ti *taskInfoImpl) toTask(pluginExecPath, cfgFileName string) godellauncher
 			cmdArgs, err := ti.globalFlagArgs(t, global)
 			if err != nil {
 				return err
+			}
+			// if assets are specified, provide as slice argument
+			if len(assets) > 0 {
+				cmdArgs = append(cmdArgs, "--"+AssetsFlagName)
+				cmdArgs = append(cmdArgs, strings.Join(assets, ","))
 			}
 			cmdArgs = append(cmdArgs, ti.CommandVar...)
 			cmdArgs = append(cmdArgs, global.TaskArgs...)

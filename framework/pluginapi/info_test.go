@@ -32,7 +32,7 @@ import (
 )
 
 var echoPluginTmpl = fmt.Sprintf(`#!/bin/sh
-if [ "$1" == "%s" ]; then
+if [ "$1" = "%s" ]; then
     echo '%s'
     exit 0
 fi
@@ -47,7 +47,7 @@ func TestNewInfo(t *testing.T) {
 	assert.Equal(t, pluginapi.CurrentSchemaVersion, info.PluginSchemaVersion())
 	assert.Equal(t, "group:product:1.0.0", info.ID())
 	assert.Equal(t, "foo.yml", info.ConfigFileName())
-	assert.Nil(t, info.Tasks(""))
+	assert.Nil(t, info.Tasks("", nil))
 }
 
 func TestInfoJSONMarshal(t *testing.T) {
@@ -120,7 +120,8 @@ func TestRunPluginFromInfo(t *testing.T) {
 		name         string
 		params       pluginapi.TaskInfoParam
 		globalConfig godellauncher.GlobalConfig
-		want         string
+		numAssets    int
+		want         func(assetDir string) string
 	}{
 		{
 			"no global flags",
@@ -128,7 +129,10 @@ func TestRunPluginFromInfo(t *testing.T) {
 			godellauncher.GlobalConfig{
 				TaskArgs: []string{"--echo-bool-flag", "-f", "echo-str-flag-val", "echo-arg"},
 			},
-			"--echo-bool-flag -f echo-str-flag-val echo-arg\n",
+			0,
+			func(assetDir string) string {
+				return "--echo-bool-flag -f echo-str-flag-val echo-arg\n"
+			},
 		},
 		{
 			"global debug flag support",
@@ -137,7 +141,10 @@ func TestRunPluginFromInfo(t *testing.T) {
 				TaskArgs: []string{"--echo-bool-flag", "-f", "echo-str-flag-val", "echo-arg"},
 				Debug:    true,
 			},
-			"--debug-flag --echo-bool-flag -f echo-str-flag-val echo-arg\n",
+			0,
+			func(assetDir string) string {
+				return "--debug-flag --echo-bool-flag -f echo-str-flag-val echo-arg\n"
+			},
 		},
 		{
 			"all global flag support without project dir configured",
@@ -150,7 +157,10 @@ func TestRunPluginFromInfo(t *testing.T) {
 			godellauncher.GlobalConfig{
 				TaskArgs: []string{"--echo-bool-flag", "-f", "echo-str-flag-val", "echo-arg"},
 			},
-			"--echo-bool-flag -f echo-str-flag-val echo-arg\n",
+			0,
+			func(assetDir string) string {
+				return "--echo-bool-flag -f echo-str-flag-val echo-arg\n"
+			},
 		},
 		{
 			"all global flag support with project dir configured",
@@ -164,7 +174,32 @@ func TestRunPluginFromInfo(t *testing.T) {
 				Wrapper:  "../../godelw",
 				TaskArgs: []string{"--echo-bool-flag", "-f", "echo-str-flag-val", "echo-arg"},
 			},
-			"--project-dir ../.. --godel-config ../../godel/config/godel.yml --config ../../godel/config/echo.yml --echo-bool-flag -f echo-str-flag-val echo-arg\n",
+			0,
+			func(assetDir string) string {
+				return "--project-dir ../.. --godel-config ../../godel/config/godel.yml --config ../../godel/config/echo.yml --echo-bool-flag -f echo-str-flag-val echo-arg\n"
+			},
+		},
+		{
+			"no global flags with asset",
+			nil,
+			godellauncher.GlobalConfig{
+				TaskArgs: []string{"--echo-bool-flag", "-f", "echo-str-flag-val", "echo-arg"},
+			},
+			1,
+			func(assetDir string) string {
+				return fmt.Sprintf("--assets %s/echo-4-asset-0 --echo-bool-flag -f echo-str-flag-val echo-arg\n", assetDir)
+			},
+		},
+		{
+			"no global flags with multiple assets",
+			nil,
+			godellauncher.GlobalConfig{
+				TaskArgs: []string{"--echo-bool-flag", "-f", "echo-str-flag-val", "echo-arg"},
+			},
+			2,
+			func(assetDir string) string {
+				return fmt.Sprintf("--assets %s/echo-5-asset-0,%s/echo-5-asset-1 --echo-bool-flag -f echo-str-flag-val echo-arg\n", assetDir, assetDir)
+			},
 		},
 	} {
 		pluginInfo, err := pluginapi.NewInfo("group", "echo", "1.0.0", "echo.yml",
@@ -178,7 +213,17 @@ func TestRunPluginFromInfo(t *testing.T) {
 		err = ioutil.WriteFile(pluginExecPath, []byte(fmt.Sprintf(echoPluginTmpl, string(pluginInfoJSON))), 0755)
 		require.NoError(t, err)
 
-		tasks := pluginInfo.Tasks(pluginExecPath)
+		var assets []string
+		for assetNum := 0; assetNum < tc.numAssets; assetNum++ {
+			assetPath := path.Join(tmpDir, fmt.Sprintf("echo-%d-asset-%d", i, assetNum))
+
+			err = ioutil.WriteFile(assetPath, []byte(fmt.Sprintf("asset %d", assetNum)), 0755)
+			require.NoError(t, err)
+
+			assets = append(assets, assetPath)
+		}
+
+		tasks := pluginInfo.Tasks(pluginExecPath, assets)
 		require.Equal(t, 1, len(tasks), "Case %d: %s", i, tc.name)
 
 		outBuf := &bytes.Buffer{}
@@ -188,7 +233,7 @@ func TestRunPluginFromInfo(t *testing.T) {
 		err = tasks[0].Run(tc.globalConfig, outBuf)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
-		assert.Equal(t, tc.want, outBuf.String(), "Case %d: %s", i, tc.name)
+		assert.Equal(t, tc.want(tmpDir), outBuf.String(), "Case %d: %s", i, tc.name)
 	}
 }
 
@@ -261,7 +306,7 @@ func TestRunPluginVerify(t *testing.T) {
 		err = ioutil.WriteFile(pluginExecPath, []byte(fmt.Sprintf(echoPluginTmpl, string(pluginInfoJSON))), 0755)
 		require.NoError(t, err)
 
-		tasks := pluginInfo.Tasks(pluginExecPath)
+		tasks := pluginInfo.Tasks(pluginExecPath, nil)
 		require.Equal(t, 1, len(tasks), "Case %d: %s", i, tc.name)
 
 		outBuf := &bytes.Buffer{}

@@ -37,8 +37,8 @@ type Info interface {
 	ID() string
 	// ConfigFileName returns the name of the configuration file used by the plugin.
 	ConfigFileName() string
-	// Tasks returns the tasks provided by the plugin. Requires the path to the plugin executable as input.
-	Tasks(pluginExecPath string) []godellauncher.Task
+	// Tasks returns the tasks provided by the plugin. Requires the path to the plugin executable and assets as input.
+	Tasks(pluginExecPath string, assets []string) []godellauncher.Task
 
 	// private function on interface to keep implementation private to package.
 	private()
@@ -133,10 +133,10 @@ func (infoImpl *infoImpl) ConfigFileName() string {
 	return infoImpl.ConfigFileNameVar
 }
 
-func (infoImpl *infoImpl) Tasks(pluginExecPath string) []godellauncher.Task {
+func (infoImpl *infoImpl) Tasks(pluginExecPath string, assets []string) []godellauncher.Task {
 	var tasks []godellauncher.Task
 	for _, ti := range infoImpl.TasksVar {
-		tasks = append(tasks, ti.toTask(pluginExecPath, infoImpl.ConfigFileNameVar))
+		tasks = append(tasks, ti.toTask(pluginExecPath, infoImpl.ConfigFileNameVar, assets))
 	}
 	return tasks
 }

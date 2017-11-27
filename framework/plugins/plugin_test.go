@@ -101,31 +101,39 @@ func TestResolvePlugins(t *testing.T) {
 	err = os.Mkdir(pluginsDir, 0755)
 	require.NoError(t, err)
 
+	assetsDir := path.Join(tmpDir, "assets")
+	err = os.Mkdir(assetsDir, 0755)
+	require.NoError(t, err)
+
 	downloadsDir := path.Join(tmpDir, "downloads")
 	err = os.Mkdir(downloadsDir, 0755)
 	require.NoError(t, err)
 
 	outBuf := &bytes.Buffer{}
-	plugins, errs := resolvePlugins(pluginsDir, downloadsDir, osArch, projectParams{
-		Plugins: []locatorWithResolverParam{
+	plugins, errs := resolvePlugins(pluginsDir, assetsDir, downloadsDir, osArch, projectParams{
+		Plugins: []singlePluginParam{
 			{
-				LocatorWithChecksums: locatorWithChecksumsParam{
-					locator: loc,
+				locatorWithResolverParam: locatorWithResolverParam{
+					LocatorWithChecksums: locatorWithChecksumsParam{
+						locator: loc,
+					},
+					Resolver: resolver,
 				},
-				Resolver: resolver,
 			},
 		},
 	}, outBuf)
 	assert.NoError(t, errs)
 
-	wantPlugins := map[locator]pluginapi.Info{
-		loc: pluginapi.MustNewInfo(
-			"com.palantir",
-			loc.Product,
-			"1.0.0",
-			"tester.yml",
-			pluginapi.MustNewTaskInfo("fooTest", "", pluginapi.TaskInfoCommand("foo")),
-		),
+	wantPlugins := map[locator]pluginInfoWithAssets{
+		loc: {
+			PluginInfo: pluginapi.MustNewInfo(
+				"com.palantir",
+				loc.Product,
+				"1.0.0",
+				"tester.yml",
+				pluginapi.MustNewTaskInfo("fooTest", "", pluginapi.TaskInfoCommand("foo")),
+			),
+		},
 	}
 	assert.Equal(t, wantPlugins, plugins)
 }
@@ -163,37 +171,43 @@ func createTestPlugin(t *testing.T, tmpDir string) (locator, resolver, osarch.OS
 func TestVerifyPluginCompatibility(t *testing.T) {
 	for i, tc := range []struct {
 		name  string
-		input map[locator]pluginapi.Info
+		input map[locator]pluginInfoWithAssets
 		want  string
 	}{
 		{
 			"no plugin conflicts",
-			map[locator]pluginapi.Info{
+			map[locator]pluginInfoWithAssets{
 				locator{
 					Group:   "com.palantir",
 					Product: "foo",
 					Version: "1.0.0",
-				}: pluginapi.MustNewInfo("com.palantir", "foo", "1.0.0", "foo.yml"),
+				}: {
+					PluginInfo: pluginapi.MustNewInfo("com.palantir", "foo", "1.0.0", "foo.yml"),
+				},
 			},
 			"",
 		},
 		{
 			"verify catches plugins with same group and product but different version",
-			map[locator]pluginapi.Info{
+			map[locator]pluginInfoWithAssets{
 				locator{
 					Group:   "com.palantir",
 					Product: "foo",
 					Version: "1.0.0",
-				}: pluginapi.MustNewInfo("com.palantir", "foo", "1.0.0", "foo.yml",
-					pluginapi.MustNewTaskInfo("foo", "", nil, nil, nil),
-				),
+				}: {
+					PluginInfo: pluginapi.MustNewInfo("com.palantir", "foo", "1.0.0", "foo.yml",
+						pluginapi.MustNewTaskInfo("foo", "", nil, nil, nil),
+					),
+				},
 				locator{
 					Group:   "com.palantir",
 					Product: "foo",
 					Version: "2.0.0",
-				}: pluginapi.MustNewInfo("com.palantir", "foo", "1.0.0", "foo.yml",
-					pluginapi.MustNewTaskInfo("foo", "", nil, nil, nil),
-				),
+				}: {
+					PluginInfo: pluginapi.MustNewInfo("com.palantir", "foo", "1.0.0", "foo.yml",
+						pluginapi.MustNewTaskInfo("foo", "", nil, nil, nil),
+					),
+				},
 			},
 			`2 plugins had compatibility issues:
     com.palantir:foo:1.0.0:
@@ -203,21 +217,25 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 		},
 		{
 			"verify catches plugins with conflicting commands",
-			map[locator]pluginapi.Info{
+			map[locator]pluginInfoWithAssets{
 				locator{
 					Group:   "com.palantir",
 					Product: "foo",
 					Version: "1.0.0",
-				}: pluginapi.MustNewInfo("com.palantir", "foo", "1.0.0", "foo.yml",
-					pluginapi.MustNewTaskInfo("foo", "", nil, nil, nil),
-				),
+				}: {
+					PluginInfo: pluginapi.MustNewInfo("com.palantir", "foo", "1.0.0", "foo.yml",
+						pluginapi.MustNewTaskInfo("foo", "", nil, nil, nil),
+					),
+				},
 				locator{
 					Group:   "com.palantir",
 					Product: "bar",
 					Version: "2.0.0",
-				}: pluginapi.MustNewInfo("com.palantir", "bar", "1.0.0", "foo.yml",
-					pluginapi.MustNewTaskInfo("foo", "", nil, nil),
-				),
+				}: {
+					PluginInfo: pluginapi.MustNewInfo("com.palantir", "bar", "1.0.0", "foo.yml",
+						pluginapi.MustNewTaskInfo("foo", "", nil, nil),
+					),
+				},
 			},
 			`2 plugins had compatibility issues:
     com.palantir:bar:2.0.0:
