@@ -23,8 +23,9 @@ import (
 	"github.com/termie/go-shutil"
 )
 
-// ChecksumForDirAction returns the Checksumset for the state of the target directory after running the provided action
-// on it. The target directory is returned to its original state after the action is run. Uses the following process:
+// ChecksumsForDirAfterAction returns the Checksumset for the state of the target directory after running the provided
+// action on it. The target directory is returned to its original state after the action is run. Uses the following
+// process:
 //
 // * Copies the target directory to a temporary location (unique location in the same parent directory)
 // * Moves the target directory to another temporary location (unique location in the same parent directory)
@@ -37,7 +38,7 @@ import (
 // The result of the above is that the checksums are computed for the directory after the action is run, but the target
 // directory stays in its original state. This function registers a signal handler that restores the state to the
 // original state on SIGINT or SIGTERM signals and then calls os.Exit(1).
-func ChecksumForDirAction(dir string, action func(dir string) error) (ChecksumSet, error) {
+func ChecksumsForDirAfterAction(dir string, action func(dir string) error) (ChecksumSet, error) {
 	var origDirCopy string
 	var origDirMoved string
 
