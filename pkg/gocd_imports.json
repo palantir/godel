@@ -7,6 +7,14 @@
             "importedFrom": [
                 "github.com/palantir/godel/pkg/dirchecksum"
             ]
+        },
+        {
+            "path": "github.com/palantir/godel/vendor/github.com/termie/go-shutil",
+            "numGoFiles": 1,
+            "numImportedGoFiles": 0,
+            "importedFrom": [
+                "github.com/palantir/godel/pkg/dirchecksum"
+            ]
         }
     ],
     "mainOnlyImports": [],
