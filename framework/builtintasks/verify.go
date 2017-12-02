@@ -122,7 +122,8 @@ func VerifyTask(tasks []godellauncher.Task) godellauncher.Task {
 					for _, check := range failedChecks {
 						msgParts = append(msgParts, "\t"+check)
 					}
-					return fmt.Errorf(strings.Join(msgParts, "\n"))
+					fmt.Fprintln(stdout, strings.Join(msgParts, "\n"))
+					return fmt.Errorf("")
 				}
 				return nil
 			}
