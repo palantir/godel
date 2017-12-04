@@ -32,12 +32,13 @@ type BintrayConnectionInfo struct {
 	BasicConnectionInfo
 	Subject       string
 	Repository    string
+	Product       string
 	Release       bool
 	DownloadsList bool
 }
 
 func (b *BintrayConnectionInfo) Publish(buildSpec params.ProductBuildSpec, paths ProductPaths, stdout io.Writer) ([]string, error) {
-	baseURL := strings.Join([]string{b.URL, "content", b.Subject, b.Repository, buildSpec.ProductName, buildSpec.ProductVersion, paths.productPath}, "/")
+	baseURL := strings.Join([]string{b.URL, "content", b.Subject, b.Repository, b.productOrBuildSpecProduct(buildSpec), buildSpec.ProductVersion, paths.productPath}, "/")
 	artifactURLs, err := b.uploadArtifacts(baseURL, paths, nil, stdout)
 	if err != nil {
 		return artifactURLs, err
@@ -56,7 +57,7 @@ func (b *BintrayConnectionInfo) Publish(buildSpec params.ProductBuildSpec, paths
 }
 
 func (b *BintrayConnectionInfo) release(buildSpec params.ProductBuildSpec, stdout io.Writer) error {
-	publishURLString := strings.Join([]string{b.URL, "content", b.Subject, b.Repository, buildSpec.ProductName, buildSpec.ProductVersion, "publish"}, "/")
+	publishURLString := strings.Join([]string{b.URL, "content", b.Subject, b.Repository, b.productOrBuildSpecProduct(buildSpec), buildSpec.ProductVersion, "publish"}, "/")
 	return b.runBintrayCommand(publishURLString, http.MethodPost, `{"publish_wait_for_secs":-1}`, "running Bintray publish for uploaded artifacts", stdout)
 }
 
@@ -116,4 +117,11 @@ func (b *BintrayConnectionInfo) runBintrayCommand(urlString, httpMethod, jsonCon
 	fmt.Fprint(stdout, "done")
 
 	return nil
+}
+
+func (b *BintrayConnectionInfo) productOrBuildSpecProduct(buildSpec params.ProductBuildSpec) string {
+	if b.Product != "" {
+		return b.Product
+	}
+	return buildSpec.ProductName
 }
