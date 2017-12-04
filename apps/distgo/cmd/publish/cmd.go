@@ -44,6 +44,7 @@ const (
 	almanacReleaseFlagName = "almanac-release"
 	repositoryFlagName     = "repository"
 	subjectFlagName        = "subject"
+	productFlagName        = "product"
 	publishFlagName        = "publish"
 	downloadsListFlagName  = "downloads-list"
 	pathFlagName           = "path"
@@ -180,6 +181,10 @@ var (
 				Usage:    "Repository that is the destination for the publish",
 				Required: true,
 			},
+			flag.StringFlag{
+				Name:  productFlagName,
+				Usage: "Bintray product for which publish should occur (if blank, product name of artifact is used)",
+			},
 			flag.BoolFlag{
 				Name:  publishFlagName,
 				Usage: "Publish uploaded content",
@@ -194,6 +199,7 @@ var (
 				BasicConnectionInfo: basicRemoteInfo(ctx),
 				Subject:             ctx.String(subjectFlagName),
 				Repository:          ctx.String(repositoryFlagName),
+				Product:             ctx.String(productFlagName),
 				Release:             ctx.Bool(publishFlagName),
 				DownloadsList:       ctx.Bool(downloadsListFlagName),
 			}
