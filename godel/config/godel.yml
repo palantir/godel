@@ -1,0 +1,14 @@
+exclude:
+  names:
+    - "\\..+"
+    - "vendor"
+    - "testdata"
+  paths:
+    - "apps/gonform/generated_src"
+    - "apps/gonform/vendor"
+    - "apps/gunit/generated_src"
+    - "apps/gunit/vendor"
+    - "apps/okgo/generated_src"
+    - "apps/okgo/vendor"
+    - "docker"
+    - "godel"
