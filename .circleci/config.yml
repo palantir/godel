@@ -35,30 +35,30 @@ darwin-linux-rpm-fpm: &darwin-linux-rpm-fpm
 godel-gouser-cache-restore: &godel-gouser-cache-restore
   restore_cache:
     keys:
-      - godel-gouser-cache-{{ checksum "godelw" }}-v1
+      - godel-gouser-cache-{{ checksum "godelw" }}-{{ checksum "godel/config/godel.yml" }}-v1
 godel-gouser-cache-save: &godel-gouser-cache-save
   save_cache:
-    key: godel-gouser-cache-{{ checksum "godelw" }}-v1
+    key: godel-gouser-cache-{{ checksum "godelw" }}-{{ checksum "godel/config/godel.yml" }}-v1
     paths:
       - /home/gouser/.godel
 
 godel-linuxbrew-cache-restore: &godel-linuxbrew-cache-restore
   restore_cache:
     keys:
-      - godel-linuxbrew-cache-{{ checksum "godelw" }}-v1
+      - godel-linuxbrew-cache-{{ checksum "godelw" }}-{{ checksum "godel/config/godel.yml" }}-v1
 godel-linuxbrew-cache-save: &godel-linuxbrew-cache-save
   save_cache:
-    key: godel-linuxbrew-cache-{{ checksum "godelw" }}-v1
+    key: godel-linuxbrew-cache-{{ checksum "godelw" }}-{{ checksum "godel/config/godel.yml" }}-v1
     paths:
       - /home/linuxbrew/.godel
 
 godel-root-cache-restore: &godel-root-cache-restore
   restore_cache:
     keys:
-      - godel-root-cache-{{ checksum "godelw" }}-v1
+      - godel-root-cache-{{ checksum "godelw" }}-{{ checksum "godel/config/godel.yml" }}-v1
 godel-root-cache-save: &godel-root-cache-save
   save_cache:
-    key: godel-root-cache-{{ checksum "godelw" }}-v1
+    key: godel-root-cache-{{ checksum "godelw" }}-{{ checksum "godel/config/godel.yml" }}-v1
     paths:
       - ~/.godel
 
