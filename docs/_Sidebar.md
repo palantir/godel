@@ -23,5 +23,6 @@
 * [Name](https://github.com/palantir/godel/wiki/Name)
 * [Philosophy](https://github.com/palantir/godel/wiki/Philosophy)
 * [Architecture](https://github.com/palantir/godel/wiki/Architecture)
+* [Plugins](https://github.com/palantir/godel/wiki/Plugins)
 * [Enable command completion](https://github.com/palantir/godel/wiki/Enable-command-completion)
 * [Configuration](https://github.com/palantir/godel/wiki/Configuration)
