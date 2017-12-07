@@ -29,7 +29,7 @@ type Build struct {
 	// defined:
 	//
 	//   PROJECT_DIR: the root directory of project
-	//   PRODUCT: product name,
+	//   PRODUCT: product name
 	//   VERSION: product version
 	//   IS_SNAPSHOT: 1 if the version contains a git hash as part of the string, 0 otherwise
 	Script string
