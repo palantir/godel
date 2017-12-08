@@ -25,6 +25,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/palantir/godel/apps/distgo/cmd"
 	"github.com/palantir/godel/apps/distgo/params"
 )
 
@@ -101,7 +102,7 @@ func GetBuildArgs(buildSpec params.ProductBuildSpec, script string) ([]string, e
 	combinedBuf := bytes.Buffer{}
 	stdoutMW := io.MultiWriter(&stdoutBuf, &combinedBuf)
 	stderrMW := io.MultiWriter(&stderrBuf, &combinedBuf)
-	if err := WriteAndExecute(buildSpec, script, stdoutMW, stderrMW, nil); err != nil || stderrBuf.String() != "" {
+	if err := WriteAndExecute(buildSpec, script, stdoutMW, stderrMW, cmd.ScriptEnvVariables(buildSpec, "")); err != nil || stderrBuf.String() != "" {
 		return nil, errors.Wrapf(err, "failed to execute build args script for %v: %v", buildSpec.ProductName, combinedBuf.String())
 	}
 
