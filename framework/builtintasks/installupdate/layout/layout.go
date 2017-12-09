@@ -25,18 +25,6 @@ import (
 	s "github.com/palantir/pkg/specdir"
 )
 
-const (
-	AppName           = "godel"
-	WrapperName       = "godelw"
-	DistsDir          = "dists"
-	DownloadsDir      = "downloads"
-	PluginsDir        = "plugins"
-	AssetsDir         = "assets"
-	gödelHomeTemplate = "gödel-home"
-	gödelHomeEnvVar   = "GODEL_HOME"
-	defaultGödelHome  = ".godel"
-)
-
 // AllPaths returns a map that contains all of the paths in the provided directory. The paths are relative to the
 // directory. The boolean key is true if the path is a directory, false otherwise.
 func AllPaths(dir string) (map[string]bool, error) {
@@ -81,6 +69,18 @@ func GodelDistLayout(version string, mode s.Mode) (s.SpecDir, error) {
 	return s.New(rootDir, gödelHomeSpec([]s.FileNodeProvider{AppSpec()}), values, mode)
 }
 
+const (
+	gödelHomeTemplate = "gödel-home"
+	gödelHomeEnvVar   = "GODEL_HOME"
+	defaultGödelHome  = ".godel"
+
+	AssetsDir    = "assets"
+	CacheDir     = "cache"
+	DistsDir     = "dists"
+	DownloadsDir = "downloads"
+	PluginsDir   = "plugins"
+)
+
 // GodelHomePath returns the path to the gödel home directory. If $GODEL_HOME is set as an environment variable, that
 // value is used. Otherwise, the value is "$HOME/{{defaultGödelHome}}"
 func GodelHomePath() (string, error) {
@@ -114,16 +114,18 @@ func GodelHomeSpec() s.LayoutSpec {
 func gödelHomeSpec(providers []s.FileNodeProvider) s.LayoutSpec {
 	return s.NewLayoutSpec(
 		s.Dir(s.TemplateName(gödelHomeTemplate), "",
+			s.Dir(s.LiteralName("assets"), AssetsDir),
+			s.Dir(s.LiteralName("cache"), CacheDir),
 			s.Dir(s.LiteralName("dists"), DistsDir, providers...),
 			s.Dir(s.LiteralName("downloads"), DownloadsDir),
 			s.Dir(s.LiteralName("plugins"), PluginsDir),
-			s.Dir(s.LiteralName("assets"), AssetsDir),
 		),
 		true,
 	)
 }
 
 const (
+	AppName         = "godel"
 	AppDir          = "gödel-app"
 	AppExecutable   = "app-executable"
 	osTemplate      = "os"
@@ -162,6 +164,7 @@ const (
 	WrapperScriptFile = "wrapper-script"
 	WrapperAppDir     = "wrapper-app"
 	WrapperConfigDir  = "config"
+	WrapperName       = "godelw"
 )
 
 func WrapperSpec() s.LayoutSpec {

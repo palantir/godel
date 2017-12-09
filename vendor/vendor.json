@@ -480,6 +480,12 @@
 			"revisionTime": "2017-07-05T14:35:08Z"
 		},
 		{
+			"checksumSHA1": "HePpbyxsZ5NR8pa+6hAIN/eo+MQ=",
+			"path": "github.com/palantir/pkg/cobracli",
+			"revision": "72fc21d797a58b78a674190cf65f6238c949b570",
+			"revisionTime": "2017-11-21T22:40:01Z"
+		},
+		{
 			"checksumSHA1": "CPYwjCsLKBVtaJte9x5bP81z2mg=",
 			"path": "github.com/palantir/pkg/matcher",
 			"revision": "ac9dcc410953c58a09d9cdd7bc0270e2917fd943",

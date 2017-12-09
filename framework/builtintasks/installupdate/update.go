@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/pkg/specdir"
@@ -29,18 +30,18 @@ import (
 	"github.com/palantir/godel/godelgetter"
 )
 
-// NewInstall performs a new installation of gödel in the specified directory using the specified file as the source.
+// NewInstall performs a new installation of gödel in the specified directory using the specified package as the source.
 // Calls "Install" to install the package provided as a parameter. Once the package is installed, the wrapper and
 // settings files are copied from the newly downloaded distribution to the specified path. If there was a previous
 // installation of gödel in the path, it is overwritten by the new file. However, changes in the "var" directory are
 // purely additive -- files that have been added in this directory in the new distribution will be added, but existing
 // files will not be modified or removed.
-func NewInstall(dstDirPath, srcPkgPath string, stdout io.Writer) error {
+func NewInstall(dstDirPath string, srcPkg godelgetter.PkgSrc, stdout io.Writer) error {
 	if err := layout.VerifyDirExists(dstDirPath); err != nil {
 		return errors.Wrapf(err, "path %s does not specify an existing directory", dstDirPath)
 	}
-	if err := update(dstDirPath, godelgetter.NewPkgSrc(srcPkgPath, ""), true, stdout); err != nil {
-		return errors.Wrapf(err, "failed to install from %s into %s", srcPkgPath, dstDirPath)
+	if err := update(dstDirPath, srcPkg, true, stdout); err != nil {
+		return errors.Wrapf(err, "failed to install from %s into %s", srcPkg.Path(), dstDirPath)
 	}
 	return nil
 }
@@ -62,6 +63,30 @@ func Update(wrapperScriptPath string, stdout io.Writer) error {
 	}
 	if err := update(wrapperScriptDir, pkg, false, stdout); err != nil {
 		return errors.Wrapf(err, "failed to update")
+	}
+	return nil
+}
+
+func SetGodelChecksum(configDir, checksum string) error {
+	return setGodelPropertyKey(configDir, propertiesChecksumKey, checksum)
+}
+
+func setGodelPropertyKey(configDir, key, val string) error {
+	propsFilePath := path.Join(configDir, fmt.Sprintf("%s.properties", layout.AppName))
+	bytes, err := ioutil.ReadFile(propsFilePath)
+	if err != nil {
+		return errors.Wrapf(err, "failed to read properties file")
+	}
+	lines := strings.Split(string(bytes), "\n")
+	for i, currLine := range lines {
+		if !strings.HasPrefix(currLine, key+"=") {
+			continue
+		}
+		lines[i] = key + "=" + val
+	}
+	output := strings.Join(lines, "\n")
+	if err := ioutil.WriteFile(propsFilePath, []byte(output), 0644); err != nil {
+		return errors.Wrapf(err, "failed to write properties file")
 	}
 	return nil
 }

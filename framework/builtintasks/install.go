@@ -21,6 +21,7 @@ import (
 
 	"github.com/palantir/godel/framework/builtintasks/installupdate"
 	"github.com/palantir/godel/framework/godellauncher"
+	"github.com/palantir/godel/godelgetter"
 )
 
 func InstallTask() godellauncher.Task {
@@ -35,7 +36,7 @@ func InstallTask() godellauncher.Task {
 			if len(args) == 0 {
 				return errors.Errorf("path to package to install must be provided as an argument")
 			}
-			return installupdate.NewInstall(wd, args[0], cmd.OutOrStdout())
+			return installupdate.NewInstall(wd, godelgetter.NewPkgSrc(args[0], ""), cmd.OutOrStdout())
 		},
 	})
 }
