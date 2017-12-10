@@ -59,7 +59,7 @@ func (r goTemplateResolver) Resolve(locator locatorWithChecksumsParam, osArch os
 	}
 	srcURL := buf.String()
 
-	if _, err := godelgetter.Download(godelgetter.NewPkgSrc(srcURL, ""), dst, stdout); err != nil {
+	if err := godelgetter.Download(godelgetter.NewPkgSrc(srcURL, ""), dst, stdout); err != nil {
 		return errors.Wrapf(err, "failed to resolve artifact at %s", srcURL)
 	}
 	return nil
