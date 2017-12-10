@@ -29,6 +29,7 @@ import (
 
 // DownloadIntoDirectory downloads the provided package into the specified output directory. The output directory must
 // already exist. The download progress is written to the provided writer. Returns the path to the downloaded file.
+// Is a no-op if the path of pkgSrc and the download destination both refer to the same file (and the file exists).
 func DownloadIntoDirectory(pkgSrc PkgSrc, dstDir string, w io.Writer) (rPkg string, rErr error) {
 	if dstDirInfo, err := os.Stat(dstDir); err != nil {
 		if os.IsNotExist(err) {
@@ -38,27 +39,35 @@ func DownloadIntoDirectory(pkgSrc PkgSrc, dstDir string, w io.Writer) (rPkg stri
 	} else if !dstDirInfo.IsDir() {
 		return "", errors.Errorf("destination path %s exists, but is not a directory", dstDir)
 	}
-	return Download(pkgSrc, path.Join(dstDir, pkgSrc.Name()), w)
+
+	dstFilePath := path.Join(dstDir, pkgSrc.Name())
+	srcFi, srcErr := os.Stat(pkgSrc.Path())
+	dstFi, dstErr := os.Stat(dstFilePath)
+	if srcErr != nil || dstErr != nil || !os.SameFile(srcFi, dstFi) {
+		if err := Download(pkgSrc, dstFilePath, w); err != nil {
+			return "", err
+		}
+	}
+	return dstFilePath, nil
 }
 
 // Download downloads the provided package to the specified path. The parent directory of the path must exist. If the
-// destination file already exists, it is overwritten. The download progress is written to the provided writer. Returns
-// the path to the downloaded file.
-func Download(pkgSrc PkgSrc, dstFilePath string, w io.Writer) (rPkg string, rErr error) {
+// destination file already exists, it is overwritten. The download progress is written to the provided writer.
+func Download(pkgSrc PkgSrc, dstFilePath string, w io.Writer) (rErr error) {
 	wantChecksum := pkgSrc.Checksum()
 	if info, err := os.Stat(dstFilePath); err == nil {
 		if info.IsDir() {
-			return "", errors.Errorf("destination path %s already exists and is a directory", dstFilePath)
+			return errors.Errorf("destination path %s already exists and is a directory", dstFilePath)
 		}
 		if wantChecksum != "" {
 			// if tgz already exists at destination and checksum is known, verify checksum of existing tgz.
 			// If it matches, use existing file.
 			checksum, err := computeSHA256Checksum(dstFilePath)
 			if err != nil {
-				return "", errors.Wrapf(err, "failed to compute checksum of %s", dstFilePath)
+				return errors.Wrapf(err, "failed to compute checksum of %s", dstFilePath)
 			}
 			if checksum == wantChecksum {
-				return dstFilePath, nil
+				return nil
 			}
 		}
 	}
@@ -66,7 +75,7 @@ func Download(pkgSrc PkgSrc, dstFilePath string, w io.Writer) (rPkg string, rErr
 	// create new file for package (overwrite any existing file)
 	dstFile, err := os.Create(dstFilePath)
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to create file %s", dstFilePath)
+		return errors.Wrapf(err, "failed to create file %s", dstFilePath)
 	}
 	defer func() {
 		if err := dstFile.Close(); err != nil && rErr == nil {
@@ -76,7 +85,7 @@ func Download(pkgSrc PkgSrc, dstFilePath string, w io.Writer) (rPkg string, rErr
 
 	r, size, err := pkgSrc.Reader()
 	if err != nil {
-		return "", err
+		return err
 	}
 	defer func() {
 		if err := r.Close(); err != nil && rErr == nil {
@@ -89,17 +98,17 @@ func Download(pkgSrc PkgSrc, dstFilePath string, w io.Writer) (rPkg string, rErr
 
 	fmt.Fprintf(w, "Getting package from %v...\n", pkgSrc.Path())
 	if err := copyWithProgress(mw, r, size, w); err != nil {
-		return "", errors.Wrapf(err, "failed to copy package %s to %s", pkgSrc.Path(), dstFilePath)
+		return errors.Wrapf(err, "failed to copy package %s to %s", pkgSrc.Path(), dstFilePath)
 	}
 
 	// verify checksum if provided
 	if wantChecksum != "" {
 		actualChecksum := hex.EncodeToString(h.Sum(nil))
 		if wantChecksum != actualChecksum {
-			return "", errors.Errorf("SHA-256 checksum of downloaded package did not match expected checksum: expected %s, was %s", wantChecksum, actualChecksum)
+			return errors.Errorf("SHA-256 checksum of downloaded package did not match expected checksum: expected %s, was %s", wantChecksum, actualChecksum)
 		}
 	}
-	return dstFilePath, nil
+	return nil
 }
 
 func copyWithProgress(w io.Writer, r io.Reader, dataLen int64, stdout io.Writer) error {
