@@ -15,6 +15,9 @@
 package builtintasks
 
 import (
+	"path"
+	"time"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
@@ -23,14 +26,35 @@ import (
 )
 
 func UpdateTask(wrapperPath string) godellauncher.Task {
-	return godellauncher.CobraCLITask(&cobra.Command{
+	var (
+		syncFlag          bool
+		versionFlag       string
+		cacheDurationFlag time.Duration
+	)
+
+	cmd := &cobra.Command{
 		Use:   "update",
-		Short: "Download and install the version of gödel specified in the godel.properties file",
+		Short: "Update gödel for project",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if wrapperPath == "" {
 				return errors.Errorf("wrapper path not specified")
 			}
-			return installupdate.Update(wrapperPath, cmd.OutOrStdout())
+			projectDir := path.Dir(wrapperPath)
+
+			if syncFlag {
+				// if sync flag is true, update version to what is specified in gödel.yml
+				pkgSrc, err := installupdate.GodelPropsDistPkgInfo(projectDir)
+				if err != nil {
+					return err
+				}
+				return installupdate.Update(projectDir, pkgSrc, cmd.OutOrStdout())
+			}
+			return installupdate.InstallVersion(projectDir, versionFlag, cacheDurationFlag, false, cmd.OutOrStdout())
 		},
-	})
+	}
+	cmd.Flags().BoolVar(&syncFlag, "sync", true, "use version and checksum specified in godel.properties")
+	cmd.Flags().StringVar(&versionFlag, "version", "", "version to update (if blank, uses latest version)")
+	cmd.Flags().DurationVar(&cacheDurationFlag, "cache-duration", time.Hour, "duration for which cache entries should be considered valid")
+
+	return godellauncher.CobraCLITask(cmd)
 }
