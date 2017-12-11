@@ -15,34 +15,20 @@
 package main
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"path"
 	"time"
 
-	"github.com/google/go-github/github"
 	"github.com/nmiyake/pkg/dirs"
-	"github.com/palantir/pkg/specdir"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/palantir/godel/framework/builtintasks/installupdate"
-	"github.com/palantir/godel/framework/builtintasks/installupdate/layout"
-	"github.com/palantir/godel/godelgetter"
 )
 
 func rootCmd() *cobra.Command {
-	const (
-		versionFlagName     = "version"
-		ignoreCacheFlagName = "ignore-cache"
+	var (
+		versionFlag       string
+		cacheDurationFlag time.Duration
 	)
-
-	var versionFlag string
-	var ignoreCacheFlag bool
 
 	cmd := &cobra.Command{
 		Use:   "godelinit",
@@ -55,131 +41,11 @@ to the project. If a specific version of godel is desired, it can be specified u
 			if err != nil {
 				return errors.Wrapf(err, "failed to determine working directory")
 			}
-			latestVersion := versionFlag
-			if latestVersion == "" {
-				latestVersion, err = latestGodelVersion(ignoreCacheFlag)
-				if err != nil {
-					return err
-				}
-			}
-			pkgPath, checksum, err := downloadedTGZForVersion(latestVersion)
-			if err != nil {
-				pkgPath = fmt.Sprintf("https://palantir.bintray.com/releases/com/palantir/godel/godel/%s/godel-%s.tgz", latestVersion, latestVersion)
-				checksum = ""
-			}
-			if err := installupdate.NewInstall(wd, godelgetter.NewPkgSrc(pkgPath, checksum), cmd.OutOrStdout()); err != nil {
-				return err
-			}
-			// update godel.properties with checksum
-			if checksum != "" {
-				if err := updateChecksum(wd, checksum); err != nil {
-					return err
-				}
-			}
-			return nil
+			return installupdate.InstallVersion(wd, versionFlag, cacheDurationFlag, true, cmd.OutOrStdout())
 		},
 	}
 
-	cmd.Flags().StringVar(&versionFlag, versionFlagName, "", "version to install (if unspecified, latest is used)")
-	cmd.Flags().BoolVar(&ignoreCacheFlag, ignoreCacheFlagName, false, "ignore cache when determining latest version")
-
+	cmd.Flags().StringVar(&versionFlag, "version", "", "version to install (if unspecified, latest is used)")
+	cmd.Flags().DurationVar(&cacheDurationFlag, "cache-duration", time.Hour, "duration for which cache entries should be considered valid")
 	return cmd
-}
-
-func updateChecksum(projectDir, checksum string) error {
-	wrapperSpec, err := specdir.New(projectDir, layout.WrapperSpec(), nil, specdir.Validate)
-	if err != nil {
-		return errors.Wrapf(err, "unable to create wrapper spec")
-	}
-	cfgDirPath := wrapperSpec.Path(layout.WrapperConfigDir)
-	return installupdate.SetGodelChecksum(cfgDirPath, checksum)
-}
-
-func downloadedTGZForVersion(version string) (string, string, error) {
-	gödelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
-	if err != nil {
-		return "", "", errors.Wrapf(err, "failed to create SpecDir for gödel home")
-	}
-	downloadsDirPath := gödelHomeSpecDir.Path(layout.DownloadsDir)
-	downloadedTGZ := path.Join(downloadsDirPath, fmt.Sprintf("%s-%s.tgz", layout.AppName, version))
-	if _, err := os.Stat(downloadedTGZ); err != nil {
-		return "", "", errors.Wrapf(err, "failed to stat downloaded TGZ file")
-	}
-	checksum, err := layout.Checksum(downloadedTGZ)
-	if err != nil {
-		return "", "", errors.Wrapf(err, "failed to compute checksum")
-	}
-	return downloadedTGZ, checksum, nil
-}
-
-func latestGodelVersion(ignoreCache bool) (string, error) {
-	if !ignoreCache {
-		versionCfg, err := readLatestCachedVersion()
-		if err == nil && storedLatestVersionValid(versionCfg) {
-			return versionCfg.LatestVersion, nil
-		}
-	}
-	client := github.NewClient(http.DefaultClient)
-	rel, _, err := client.Repositories.GetLatestRelease(context.Background(), "palantir", "godel")
-	if err != nil {
-		return "", errors.Wrap(err, "failed to determine latest release")
-	}
-	latestVersion := *rel.TagName
-	if err := writeLatestCachedVersion(latestVersion); err != nil {
-		return "", errors.Wrapf(err, "failed to write latest version to cache")
-	}
-	return latestVersion, nil
-}
-
-const latestVersionFileName = "latest-version.json"
-
-func readLatestCachedVersion() (versionConfig, error) {
-	gödelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
-	if err != nil {
-		return versionConfig{}, errors.Wrapf(err, "failed to create SpecDir for gödel home")
-	}
-	cacheDirPath := gödelHomeSpecDir.Path(layout.CacheDir)
-	latestVersionFile := path.Join(cacheDirPath, latestVersionFileName)
-
-	bytes, err := ioutil.ReadFile(latestVersionFile)
-	if err != nil {
-		return versionConfig{}, errors.Wrapf(err, "failed to read version file")
-	}
-	var versionCfg versionConfig
-	if err := json.Unmarshal(bytes, &versionCfg); err != nil {
-		return versionConfig{}, errors.Wrapf(err, "failed to unmarshal version file")
-	}
-	return versionCfg, nil
-}
-
-func writeLatestCachedVersion(version string) error {
-	gödelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
-	if err != nil {
-		return errors.Wrapf(err, "failed to create SpecDir for gödel home")
-	}
-	cacheDirPath := gödelHomeSpecDir.Path(layout.CacheDir)
-	latestVersionFile := path.Join(cacheDirPath, latestVersionFileName)
-
-	bytes, err := json.Marshal(versionConfig{
-		LatestVersion: version,
-		Timestamp:     time.Now().Unix(),
-	})
-	if err != nil {
-		return errors.Wrapf(err, "failed to marshal version config as JSON")
-	}
-
-	if err := ioutil.WriteFile(latestVersionFile, bytes, 0644); err != nil {
-		return errors.Wrap(err, "failed to write version file")
-	}
-	return nil
-}
-
-func storedLatestVersionValid(cfg versionConfig) bool {
-	storedTime := time.Unix(cfg.Timestamp, 0)
-	return !storedTime.Before(time.Now().Add(-1 * time.Hour))
-}
-
-type versionConfig struct {
-	LatestVersion string `json:"latestVersion"`
-	Timestamp     int64  `json:"timestamp"`
 }

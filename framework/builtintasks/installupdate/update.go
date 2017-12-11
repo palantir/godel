@@ -15,13 +15,18 @@
 package installupdate
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"strings"
+	"time"
 
+	"github.com/google/go-github/github"
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/pkg/specdir"
 	"github.com/pkg/errors"
@@ -46,32 +51,168 @@ func NewInstall(dstDirPath string, srcPkg godelgetter.PkgSrc, stdout io.Writer) 
 	return nil
 }
 
-// Update updates gödel. Calls "Install" to download and install the package specified in the "{{properties.Url}}"
-// property of the properties file for the provided gödel wrapper script. Once the package is installed, the provided
-// wrapper file and its directory are overwritten with the files provided by the package that was downloaded. However,
-// changes in the "var" directory are purely additive -- files that have been added in this directory in the new
-// distribution will be added, but existing files will not be modified or removed.
-func Update(wrapperScriptPath string, stdout io.Writer) error {
-	wrapperScriptDir := path.Dir(wrapperScriptPath)
-	wrapper, err := specdir.New(wrapperScriptDir, layout.WrapperSpec(), nil, specdir.Validate)
-	if err != nil {
-		return errors.Wrapf(err, "wrapper script %s is not in a valid location", wrapperScriptPath)
-	}
-	pkg, err := distPkgInfo(wrapper.Path(layout.WrapperConfigDir))
-	if err != nil {
-		return errors.Wrapf(err, "failed to get URL from properties file")
-	}
-	if err := update(wrapperScriptDir, pkg, false, stdout); err != nil {
-		return errors.Wrapf(err, "failed to update")
+// Update updates the gödel installation in the specified directory to be the distribution specified by the provided
+// package source. Once the package is installed, the existing wrapper script and its directory are overwritten with the
+// files provided by the package that was downloaded. However, changes in the "godel" directory are purely additive --
+// files that have been added in this directory in the new distribution will be added, but existing files will not be
+// modified or removed.
+func Update(projectDirPath string, srcPkg godelgetter.PkgSrc, stdout io.Writer) error {
+	if err := update(projectDirPath, srcPkg, false, stdout); err != nil {
+		return errors.Wrapf(err, "update failed")
 	}
 	return nil
 }
 
-func SetGodelChecksum(configDir, checksum string) error {
-	return setGodelPropertyKey(configDir, propertiesChecksumKey, checksum)
+// InstallVersion installs the specified version of gödel in the provided project directory. If targetVersion is the
+// empty string, the latest version is determined and used.
+func InstallVersion(projectDir, targetVersion string, cacheValidDuration time.Duration, newInstall bool, stdout io.Writer) error {
+	if targetVersion == "" {
+		version, err := latestGodelVersion(cacheValidDuration)
+		if err != nil {
+			return err
+		}
+		targetVersion = version
+	}
+	pkgSrc, err := pkgSrcForVersion(targetVersion)
+	if err != nil {
+		return err
+	}
+
+	var installFn func(string, godelgetter.PkgSrc, io.Writer) error
+	if newInstall {
+		installFn = NewInstall
+	} else {
+		installFn = Update
+	}
+	if err := installFn(projectDir, pkgSrc, stdout); err != nil {
+		return err
+	}
+
+	// update godel.properties with checksum
+	if checksum := pkgSrc.Checksum(); checksum != "" {
+		if err := setGodelPropertyKey(projectDir, propertiesChecksumKey, checksum); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func setGodelPropertyKey(configDir, key, val string) error {
+// pkgSrcForVersion returns a package source for the provided version. If the distribution for the provided version has
+// been downloaded locally, the package source uses the filesystem path. Otherwise, the package source specifies the
+// Bintray download URL.
+func pkgSrcForVersion(version string) (godelgetter.PkgSrc, error) {
+	if version == "" {
+		return nil, errors.Errorf("version for package must be specified")
+	}
+	pkgPath, checksum, err := downloadedTGZForVersion(version)
+	if err != nil {
+		pkgPath = fmt.Sprintf("https://palantir.bintray.com/releases/com/palantir/godel/godel/%s/godel-%s.tgz", version, version)
+		checksum = ""
+	}
+	return godelgetter.NewPkgSrc(pkgPath, checksum), nil
+}
+
+// downloadedTGZForVersion returns the path and checksum for the downloaded TGZ for the specified version. Returns an
+// error if the TGZ for the specified version does not exist (has not been downloaded).
+func downloadedTGZForVersion(version string) (string, string, error) {
+	gödelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
+	if err != nil {
+		return "", "", errors.Wrapf(err, "failed to create SpecDir for gödel home")
+	}
+	downloadsDirPath := gödelHomeSpecDir.Path(layout.DownloadsDir)
+	downloadedTGZ := path.Join(downloadsDirPath, fmt.Sprintf("%s-%s.tgz", layout.AppName, version))
+	if _, err := os.Stat(downloadedTGZ); err != nil {
+		return "", "", errors.Wrapf(err, "failed to stat downloaded TGZ file")
+	}
+	checksum, err := layout.Checksum(downloadedTGZ)
+	if err != nil {
+		return "", "", errors.Wrapf(err, "failed to compute checksum")
+	}
+	return downloadedTGZ, checksum, nil
+}
+
+// latestGodelVersion returns the latest version of gödel. Does so by querying the GitHub API or looking up the value
+// from cache. If a cache value is within the timeframe of the provided duration (time.Now - cacheExpiration), it is
+// returned.
+func latestGodelVersion(cacheExpiration time.Duration) (string, error) {
+	if cacheExpiration != 0 {
+		versionCfg, err := readLatestCachedVersion()
+		if err == nil && storedLatestVersionValid(versionCfg, cacheExpiration) {
+			return versionCfg.LatestVersion, nil
+		}
+	}
+	client := github.NewClient(http.DefaultClient)
+	rel, _, err := client.Repositories.GetLatestRelease(context.Background(), "palantir", "godel")
+	if err != nil {
+		return "", errors.Wrap(err, "failed to determine latest release")
+	}
+	latestVersion := *rel.TagName
+	if err := writeLatestCachedVersion(latestVersion); err != nil {
+		return "", errors.Wrapf(err, "failed to write latest version to cache")
+	}
+	return latestVersion, nil
+}
+
+const latestVersionFileName = "latest-version.json"
+
+func readLatestCachedVersion() (versionConfig, error) {
+	gödelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
+	if err != nil {
+		return versionConfig{}, errors.Wrapf(err, "failed to create SpecDir for gödel home")
+	}
+	cacheDirPath := gödelHomeSpecDir.Path(layout.CacheDir)
+	latestVersionFile := path.Join(cacheDirPath, latestVersionFileName)
+
+	bytes, err := ioutil.ReadFile(latestVersionFile)
+	if err != nil {
+		return versionConfig{}, errors.Wrapf(err, "failed to read version file")
+	}
+	var versionCfg versionConfig
+	if err := json.Unmarshal(bytes, &versionCfg); err != nil {
+		return versionConfig{}, errors.Wrapf(err, "failed to unmarshal version file")
+	}
+	return versionCfg, nil
+}
+
+func writeLatestCachedVersion(version string) error {
+	gödelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
+	if err != nil {
+		return errors.Wrapf(err, "failed to create SpecDir for gödel home")
+	}
+	cacheDirPath := gödelHomeSpecDir.Path(layout.CacheDir)
+	latestVersionFile := path.Join(cacheDirPath, latestVersionFileName)
+
+	bytes, err := json.Marshal(versionConfig{
+		LatestVersion: version,
+		Timestamp:     time.Now().Unix(),
+	})
+	if err != nil {
+		return errors.Wrapf(err, "failed to marshal version config as JSON")
+	}
+
+	if err := ioutil.WriteFile(latestVersionFile, bytes, 0644); err != nil {
+		return errors.Wrap(err, "failed to write version file")
+	}
+	return nil
+}
+
+func storedLatestVersionValid(cfg versionConfig, cacheExpiration time.Duration) bool {
+	storedTime := time.Unix(cfg.Timestamp, 0)
+	return !storedTime.Before(time.Now().Add(-1 * cacheExpiration))
+}
+
+type versionConfig struct {
+	LatestVersion string `json:"latestVersion"`
+	Timestamp     int64  `json:"timestamp"`
+}
+
+func setGodelPropertyKey(projectDir, key, val string) error {
+	wrapperSpec, err := specdir.New(projectDir, layout.WrapperSpec(), nil, specdir.Validate)
+	if err != nil {
+		return errors.Wrapf(err, "unable to create wrapper spec")
+	}
+	configDir := wrapperSpec.Path(layout.WrapperConfigDir)
+
 	propsFilePath := path.Join(configDir, fmt.Sprintf("%s.properties", layout.AppName))
 	bytes, err := ioutil.ReadFile(propsFilePath)
 	if err != nil {
@@ -91,9 +232,15 @@ func setGodelPropertyKey(configDir, key, val string) error {
 	return nil
 }
 
-// Returns the distribution URL and checksum (if it exists) from the configuration file in the provided directory.
-// Returns an error if the URL cannot be read.
-func distPkgInfo(configDir string) (godelgetter.PkgSrc, error) {
+// GodelPropsDistPkgInfo returns a package that consists of the distribution URL and checksum (if it exists) from the
+// gödel configuration file for the gödel installation in the provided project directory.
+func GodelPropsDistPkgInfo(projectDir string) (godelgetter.PkgSrc, error) {
+	wrapperSpec, err := specdir.New(projectDir, layout.WrapperSpec(), nil, specdir.Validate)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to create wrapper spec")
+	}
+	configDir := wrapperSpec.Path(layout.WrapperConfigDir)
+
 	propsFilePath := path.Join(configDir, fmt.Sprintf("%s.properties", layout.AppName))
 	props, err := readPropertiesFile(propsFilePath)
 	if err != nil {

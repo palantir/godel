@@ -24,6 +24,6 @@ import (
 )
 
 func TestUpdateUsesPathFromExecutable(t *testing.T) {
-	err := installupdate.Update("invalid-script", ioutil.Discard)
-	assert.EqualError(t, err, "wrapper script invalid-script is not in a valid location: godelw does not exist")
+	err := installupdate.Update("invalid-path", nil, ioutil.Discard)
+	assert.EqualError(t, err, "update failed: invalid-path is not a valid wrapper directory: invalid-path/godelw does not exist")
 }
