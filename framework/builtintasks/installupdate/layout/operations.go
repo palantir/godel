@@ -160,11 +160,11 @@ func SyncDir(srcDir, dstDir string, skip []string) (bool, error) {
 			// if dst file and src file are different types, remove dst
 			remove = true
 		} else if !dstFileInfo.IsDir() {
-			srcChecksum, err := checksum(srcFilePath)
+			srcChecksum, err := Checksum(srcFilePath)
 			if err != nil {
 				return modified, errors.Wrapf(err, "failed to compute checksum for %s", srcFilePath)
 			}
-			dstChecksum, err := checksum(dstFilePath)
+			dstChecksum, err := Checksum(dstFilePath)
 			if err != nil {
 				return modified, errors.Wrapf(err, "failed to compute checksum for %s", dstFilePath)
 			}
@@ -236,7 +236,7 @@ func toMap(input []os.FileInfo) map[string]os.FileInfo {
 	return m
 }
 
-func checksum(p string) (string, error) {
+func Checksum(p string) (string, error) {
 	f, err := os.Open(p)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to open %s", p)
