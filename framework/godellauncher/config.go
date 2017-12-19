@@ -34,11 +34,30 @@ const (
 )
 
 type GodelConfig struct {
+	// DefaultTasks specifies the configuration for the default tasks for gödel. Excluded from JSON serialization
+	// because JSON serialization is only needed for legacy "exclude" back-compat (and will be removed in 2.0 release).
+	DefaultTasks DefaultTasksConfig `yaml:"default-tasks" json:"-"`
 	// Plugins specifies the configuration for the plugins configured for gödel. Excluded from JSON serialization
 	// because JSON serialization is only needed for legacy "exclude" back-compat (and will be removed in 2.0 release).
 	Plugins PluginsConfig `yaml:"plugins" json:"-"`
 	// Exclude specifies the files and directories that should be excluded from gödel operations.
 	Exclude matcher.NamesPathsCfg `yaml:"exclude" json:"exclude"`
+}
+
+type DefaultTasksConfig map[string]SingleDefaultTaskConfig
+
+type SingleDefaultTaskConfig struct {
+	// LocatorWithResolverConfig contains the configuration for the locator and resolver. Any value provided here
+	// overrides the default value.
+	LocatorWithResolverConfig `yaml:",inline"`
+	// ExcludeAllDefaultAssets specifies whether or not all of the default assets should be excluded. If this value is
+	// true, then DefaultAssetsToExclude is ignored.
+	ExcludeAllDefaultAssets bool `yaml:"exclude-all-default-assets"`
+	// DefaultAssetsToExclude specifies the assets that should be excluded if they are provided by the default
+	// configuration. Only used if ExcludeAllDefaultAssets is false.
+	DefaultAssetsToExclude []string `yaml:"exclude-default-assets"`
+	// Assets specifies the custom assets that should be added to the default task.
+	Assets []LocatorWithResolverConfig `yaml:"assets"`
 }
 
 type PluginsConfig struct {
@@ -89,7 +108,21 @@ func GodelConfigJSON(cfgDir string) ([]byte, error) {
 	return bytes, nil
 }
 
-// ReadGodelConfig reads the gödel configuration from the "gödel.yml" file in the specified directory and returns it. If
+// ReadGodelConfigFromProjectDir reads the gödel configuration from the "godel.yml" file in the configuration file for
+// the gödel project with the specified project directory and returns it.
+func ReadGodelConfigFromProjectDir(projectDir string) (GodelConfig, error) {
+	cfgDir, err := ConfigDirPath(projectDir)
+	if err != nil {
+		return GodelConfig{}, err
+	}
+	cfg, err := ReadGodelConfig(cfgDir)
+	if err != nil {
+		return GodelConfig{}, err
+	}
+	return cfg, nil
+}
+
+// ReadGodelConfig reads the gödel configuration from the "godel.yml" file in the specified directory and returns it. If
 // "exclude.yml" exists in the directory, it is also read and its elements are combined with the configuration read from
 // "gödel.yml".
 func ReadGodelConfig(cfgDir string) (GodelConfig, error) {

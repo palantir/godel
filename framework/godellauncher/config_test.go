@@ -48,7 +48,8 @@ func TestMarshalConfig(t *testing.T) {
 	got, err := yaml.Marshal(cfg)
 	require.NoError(t, err)
 
-	want := `plugins:
+	want := `default-tasks: {}
+plugins:
   resolvers: []
   plugins:
   - locator:
@@ -84,6 +85,71 @@ plugins:
 	require.NoError(t, err)
 
 	want := godellauncher.GodelConfig{
+		Plugins: godellauncher.PluginsConfig{
+			DefaultResolvers: []string{
+				"foo/repo/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}.tgz",
+			},
+			Plugins: []godellauncher.SinglePluginConfig{
+				{
+					LocatorWithResolverConfig: godellauncher.LocatorWithResolverConfig{
+						Locator: godellauncher.LocatorConfig{
+							ID: "com.palantir:plugin:1.0.0",
+						},
+					},
+					Assets: []godellauncher.LocatorWithResolverConfig{
+						{
+							Locator: godellauncher.LocatorConfig{
+								ID: "com.palantir:asset:1.0.0",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	assert.Equal(t, want, got)
+}
+
+func TestUnmarshalConfigWithDefaults(t *testing.T) {
+	cfgYAML := `
+default-tasks:
+  com.palantir.godel:format:
+    exclude-default-assets:
+      - com.palantir.godel:foo-asset
+      - com.palantir.godel:bar-asset
+    assets:
+      - locator:
+          id: "com.palantir.godel:bar-asset:1.0.0"
+plugins:
+  resolvers:
+    - foo/repo/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}.tgz
+  plugins:
+    - locator:
+        id: "com.palantir:plugin:1.0.0"
+      assets:
+        - locator:
+            id: "com.palantir:asset:1.0.0"
+`
+	var got godellauncher.GodelConfig
+	err := yaml.Unmarshal([]byte(cfgYAML), &got)
+	require.NoError(t, err)
+
+	want := godellauncher.GodelConfig{
+		DefaultTasks: godellauncher.DefaultTasksConfig{
+			"com.palantir.godel:format": godellauncher.SingleDefaultTaskConfig{
+				DefaultAssetsToExclude: []string{
+					"com.palantir.godel:foo-asset",
+					"com.palantir.godel:bar-asset",
+				},
+				Assets: []godellauncher.LocatorWithResolverConfig{
+					{
+						Locator: godellauncher.LocatorConfig{
+							ID: "com.palantir.godel:bar-asset:1.0.0",
+						},
+					},
+				},
+			},
+		},
 		Plugins: godellauncher.PluginsConfig{
 			DefaultResolvers: []string{
 				"foo/repo/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}.tgz",
