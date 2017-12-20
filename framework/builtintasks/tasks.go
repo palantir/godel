@@ -23,6 +23,7 @@ func Tasks(wrapperPath string) []godellauncher.Task {
 		VersionTask(),
 		InstallTask(),
 		UpdateTask(wrapperPath),
+		InfoTask(wrapperPath),
 		CheckPathTask(),
 		GitHooksTask(),
 		GitHubWikiTask(),
