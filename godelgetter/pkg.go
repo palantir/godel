@@ -43,6 +43,8 @@ type PkgSrc interface {
 	// Returns the expected SHA-256 checksum for the package. If this function returns an empty string, then a checksum
 	// will not be performed.
 	Checksum() string
+	// Same returns true if the PkgSrc is known to provide the same file as the destination path.
+	Same(dstPath string) bool
 	// Returns a reader that can be used to read the package and the size of the package. Reader will be open and ready
 	// for reads -- the caller is responsible for closing the reader when done.
 	Reader() (io.ReadCloser, int64, error)
@@ -69,6 +71,11 @@ type remotePkg struct {
 	basePkg
 }
 
+func (p *remotePkg) Same(dstPath string) bool {
+	// remote packages are never known to be the same as local paths
+	return false
+}
+
 func (p *remotePkg) Reader() (io.ReadCloser, int64, error) {
 	response, err := http.Get(p.path)
 	if err != nil {
@@ -82,6 +89,12 @@ func (p *remotePkg) Reader() (io.ReadCloser, int64, error) {
 
 type localFilePkg struct {
 	basePkg
+}
+
+func (p *localFilePkg) Same(dstPath string) bool {
+	srcFi, srcErr := os.Stat(p.path)
+	dstFi, dstErr := os.Stat(dstPath)
+	return srcErr == nil && dstErr == nil && os.SameFile(srcFi, dstFi)
 }
 
 func (p *localFilePkg) Reader() (io.ReadCloser, int64, error) {

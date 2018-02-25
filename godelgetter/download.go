@@ -41,9 +41,7 @@ func DownloadIntoDirectory(pkgSrc PkgSrc, dstDir string, w io.Writer) (rPkg stri
 	}
 
 	dstFilePath := path.Join(dstDir, pkgSrc.Name())
-	srcFi, srcErr := os.Stat(pkgSrc.Path())
-	dstFi, dstErr := os.Stat(dstFilePath)
-	if srcErr != nil || dstErr != nil || !os.SameFile(srcFi, dstFi) {
+	if !pkgSrc.Same(dstFilePath) {
 		if err := Download(pkgSrc, dstFilePath, w); err != nil {
 			return "", err
 		}
@@ -60,7 +58,7 @@ func Download(pkgSrc PkgSrc, dstFilePath string, w io.Writer) (rErr error) {
 			return errors.Errorf("destination path %s already exists and is a directory", dstFilePath)
 		}
 		if wantChecksum != "" {
-			// if tgz already exists at destination and checksum is known, verify checksum of existing tgz.
+			// if file already exists at destination and checksum is known, verify checksum of existing file.
 			// If it matches, use existing file.
 			checksum, err := computeSHA256Checksum(dstFilePath)
 			if err != nil {
@@ -72,6 +70,17 @@ func Download(pkgSrc PkgSrc, dstFilePath string, w io.Writer) (rErr error) {
 		}
 	}
 
+	// open reader from source
+	r, size, err := pkgSrc.Reader()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := r.Close(); err != nil && rErr == nil {
+			rErr = errors.Wrapf(err, "failed to close reader for %s in defer", pkgSrc.Path())
+		}
+	}()
+
 	// create new file for package (overwrite any existing file)
 	dstFile, err := os.Create(dstFilePath)
 	if err != nil {
@@ -80,16 +89,6 @@ func Download(pkgSrc PkgSrc, dstFilePath string, w io.Writer) (rErr error) {
 	defer func() {
 		if err := dstFile.Close(); err != nil && rErr == nil {
 			rErr = errors.Wrapf(err, "failed to close file %s in defer", dstFilePath)
-		}
-	}()
-
-	r, size, err := pkgSrc.Reader()
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err := r.Close(); err != nil && rErr == nil {
-			rErr = errors.Wrapf(err, "failed to close reader for %s in defer", pkgSrc.Path())
 		}
 	}()
 
