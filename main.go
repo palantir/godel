@@ -54,9 +54,12 @@ func runGodelApp(osArgs []string) int {
 	os.Args = osArgs
 
 	global, err := godellauncher.ParseAppArgs(os.Args)
+	tasksCfgInfo := godellauncher.TasksConfigInfo{
+		BuiltinPluginsConfig: godellauncher.BuiltinDefaultPluginsConfig(),
+	}
 	if err != nil {
 		// match invalid flag output with that provided by Cobra CLI
-		printErrAndExit(fmt.Errorf(err.Error()+"\n"+godellauncher.UsageString(createTasks("", nil, nil))), false)
+		printErrAndExit(fmt.Errorf(err.Error()+"\n"+godellauncher.UsageString(createTasks("", nil, nil, tasksCfgInfo))), false)
 	}
 
 	var defaultTasks, pluginTasks []godellauncher.Task
@@ -66,15 +69,37 @@ func runGodelApp(osArgs []string) int {
 			printErrAndExit(err, global.Debug)
 		}
 
+		configProvidersParam, err := godelCfg.TasksConfigProviders.ToParam()
+		if err != nil {
+			printErrAndExit(err, global.Debug)
+		}
+		providedConfigs, err := plugins.LoadProvidedConfigurations(configProvidersParam, os.Stdout)
+		if err != nil {
+			printErrAndExit(err, global.Debug)
+		}
+		// combine base configuration with resolved configurations
+		godelCfg.TasksConfig.Combine(providedConfigs...)
+		tasksCfgInfo.TasksConfig = godelCfg.TasksConfig
+
 		// add default tasks
 		defaultTasksCfg := godellauncher.DefaultTasksPluginsConfig(godelCfg.DefaultTasks)
-		defaultTasks, err = plugins.LoadPluginsTasks(defaultTasksCfg, os.Stdout)
+		defaultTasksParam, err := defaultTasksCfg.ToParam()
+		if err != nil {
+			printErrAndExit(err, global.Debug)
+		}
+
+		tasksCfgInfo.DefaultTasksPluginsConfig = defaultTasksCfg
+		defaultTasks, err = plugins.LoadPluginsTasks(defaultTasksParam, os.Stdout)
 		if err != nil {
 			printErrAndExit(err, global.Debug)
 		}
 
 		// add tasks provided by plugins
-		pluginTasks, err = plugins.LoadPluginsTasks(godelCfg.Plugins, os.Stdout)
+		pluginsParam, err := godelCfg.Plugins.ToParam()
+		if err != nil {
+			printErrAndExit(err, global.Debug)
+		}
+		pluginTasks, err = plugins.LoadPluginsTasks(pluginsParam, os.Stdout)
 		if err != nil {
 			printErrAndExit(err, global.Debug)
 		}
@@ -84,12 +109,16 @@ func runGodelApp(osArgs []string) int {
 			combinedCfg := godelCfg.Plugins
 			combinedCfg.DefaultResolvers = append(combinedCfg.DefaultResolvers, godelCfg.Plugins.DefaultResolvers...)
 			combinedCfg.Plugins = append(combinedCfg.Plugins, godelCfg.Plugins.Plugins...)
-			if _, err := plugins.LoadPluginsTasks(combinedCfg, ioutil.Discard); err != nil {
+			combinedParam, err := combinedCfg.ToParam()
+			if err != nil {
+				printErrAndExit(err, global.Debug)
+			}
+			if _, err := plugins.LoadPluginsTasks(combinedParam, ioutil.Discard); err != nil {
 				printErrAndExit(err, global.Debug)
 			}
 		}
 	}
-	task, err := godellauncher.TaskForInput(global, createTasks(global.Wrapper, defaultTasks, pluginTasks))
+	task, err := godellauncher.TaskForInput(global, createTasks(global.Wrapper, defaultTasks, pluginTasks, tasksCfgInfo))
 	if err != nil {
 		// match missing command output with that provided by Cobra CLI
 		errTmpl := "%s\nRun '%s --help' for usage."
@@ -104,9 +133,9 @@ func runGodelApp(osArgs []string) int {
 	return 0
 }
 
-func createTasks(wrapperPath string, defaultTasks, pluginTasks []godellauncher.Task) []godellauncher.Task {
+func createTasks(wrapperPath string, defaultTasks, pluginTasks []godellauncher.Task, tasksCfgInfo godellauncher.TasksConfigInfo) []godellauncher.Task {
 	var allTasks []godellauncher.Task
-	allTasks = append(allTasks, builtintasks.Tasks(wrapperPath)...)
+	allTasks = append(allTasks, builtintasks.Tasks(wrapperPath, tasksCfgInfo)...)
 	allTasks = append(allTasks, apptasks.AmalgomatedTasks()...)
 	allTasks = append(allTasks, apptasks.AppTasks()...)
 	allTasks = append(allTasks, defaultTasks...)

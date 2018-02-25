@@ -16,15 +16,31 @@ package godellauncher
 
 import (
 	"strings"
+
+	"github.com/palantir/godel/framework/artifactresolver"
 )
 
 const defaultResolver = "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
 
-var defaultPluginsConfig = PluginsConfig{
-	DefaultResolvers: []string{defaultResolver},
+type TasksConfigInfo struct {
+	// BuiltinPluginsConfig is the configuration for built-in plugins that is built as part of gödel.
+	BuiltinPluginsConfig PluginsConfig
+	// TasksConfig is the fully resolved user-provided tasks configuration.
+	TasksConfig TasksConfig
+	// DefaultTasksPluginsConfig is the plugin configuration used to load the default tasks. It is a result of combining
+	// the BuiltinPluginsConfig with the DefaultTasks config of TasksConfig.
+	DefaultTasksPluginsConfig PluginsConfig
+}
+
+func BuiltinDefaultPluginsConfig() PluginsConfig {
+	return PluginsConfig{
+		DefaultResolvers: []string{defaultResolver},
+	}
 }
 
 func DefaultTasksPluginsConfig(config DefaultTasksConfig) PluginsConfig {
+	defaultPluginsConfig := BuiltinDefaultPluginsConfig()
+
 	// start with configuration that uses default resolver
 	pluginsCfg := PluginsConfig{
 		DefaultResolvers: defaultPluginsConfig.DefaultResolvers,
@@ -58,7 +74,7 @@ func DefaultTasksPluginsConfig(config DefaultTasksConfig) PluginsConfig {
 	return pluginsCfg
 }
 
-func assetConfigFromDefault(baseCfg []LocatorWithResolverConfig, cfg SingleDefaultTaskConfig) []LocatorWithResolverConfig {
+func assetConfigFromDefault(baseCfg []artifactresolver.LocatorWithResolverConfig, cfg SingleDefaultTaskConfig) []artifactresolver.LocatorWithResolverConfig {
 	if cfg.ExcludeAllDefaultAssets {
 		return nil
 	}
@@ -66,7 +82,7 @@ func assetConfigFromDefault(baseCfg []LocatorWithResolverConfig, cfg SingleDefau
 	for _, currExclude := range cfg.DefaultAssetsToExclude {
 		exclude[currExclude] = struct{}{}
 	}
-	var out []LocatorWithResolverConfig
+	var out []artifactresolver.LocatorWithResolverConfig
 	for _, asset := range baseCfg {
 		if _, ok := exclude[locatorIDWithoutVersion(asset.Locator.ID)]; ok {
 			continue
