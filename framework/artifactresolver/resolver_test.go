@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package plugins
+package artifactresolver
 
 import (
 	"bytes"
@@ -44,14 +44,14 @@ func TestResolverLocal(t *testing.T) {
 	srcFileAbs, err := filepath.Abs(srcFile)
 	require.NoError(t, err)
 
-	r, err := newTemplateResolver(srcFileAbs)
+	r, err := NewTemplateResolver(srcFileAbs)
 	require.NoError(t, err)
 
 	dstFile := path.Join(tmpDir, "dstFile")
 	dstFileAbs, err := filepath.Abs(dstFile)
 	require.NoError(t, err)
 
-	err = r.Resolve(locatorWithChecksumsParam{}, osarch.OSArch{}, dstFileAbs, ioutil.Discard)
+	err = r.Resolve(LocatorParam{}, osarch.OSArch{}, dstFileAbs, ioutil.Discard)
 	require.NoError(t, err)
 	bytes, err := ioutil.ReadFile(dstFileAbs)
 	require.NoError(t, err)
@@ -69,14 +69,14 @@ func TestResolverURL(t *testing.T) {
 	require.NoError(t, err)
 	defer cleanup()
 
-	r, err := newTemplateResolver(ts.URL)
+	r, err := NewTemplateResolver(ts.URL)
 	require.NoError(t, err)
 
 	dstFile := path.Join(tmpDir, "dstFile")
 	dstFileAbs, err := filepath.Abs(dstFile)
 	require.NoError(t, err)
 
-	err = r.Resolve(locatorWithChecksumsParam{}, osarch.OSArch{}, dstFileAbs, ioutil.Discard)
+	err = r.Resolve(LocatorParam{}, osarch.OSArch{}, dstFileAbs, ioutil.Discard)
 	require.NoError(t, err)
 	bytes, err := ioutil.ReadFile(dstFileAbs)
 	require.NoError(t, err)
@@ -98,22 +98,22 @@ func TestRenderResolve(t *testing.T) {
 	for i, tc := range []struct {
 		name     string
 		template string
-		locator  locatorWithChecksumsParam
+		locator  LocatorParam
 		osArch   osarch.OSArch
 		want     string
 	}{
 		{
 			"literal template",
 			ts.URL + "/foo",
-			locatorWithChecksumsParam{},
+			LocatorParam{},
 			osarch.OSArch{},
 			"/foo",
 		},
 		{
 			"template with values",
 			ts.URL + "/foo/{{Group}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}",
-			locatorWithChecksumsParam{
-				locator: locator{
+			LocatorParam{
+				Locator: Locator{
 					Group:   "Group",
 					Product: "Product",
 					Version: "Version",
@@ -128,8 +128,8 @@ func TestRenderResolve(t *testing.T) {
 		{
 			"group path",
 			ts.URL + "/foo/{{GroupPath}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}",
-			locatorWithChecksumsParam{
-				locator: locator{
+			LocatorParam{
+				Locator: Locator{
 					Group:   "a.b.c",
 					Product: "Product",
 					Version: "Version",
@@ -142,7 +142,7 @@ func TestRenderResolve(t *testing.T) {
 			"/foo/a/b/c/Product-darwin-amd64-Version",
 		},
 	} {
-		r, err := newTemplateResolver(tc.template)
+		r, err := NewTemplateResolver(tc.template)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 		buf := &bytes.Buffer{}
 		err = r.Resolve(tc.locator, tc.osArch, dstFile, buf)
