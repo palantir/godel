@@ -1,20 +1,7 @@
-plugins:
-  resolvers:
-    - https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz
-  plugins:
-    - locator:
-        id: "com.palantir:amalgomate-plugin:1.2.0"
 exclude:
   names:
     - "\\..+"
     - "vendor"
     - "testdata"
   paths:
-    - "apps/gonform/generated_src"
-    - "apps/gonform/vendor"
-    - "apps/gunit/generated_src"
-    - "apps/gunit/vendor"
-    - "apps/okgo/generated_src"
-    - "apps/okgo/vendor"
-    - "docker"
     - "godel"

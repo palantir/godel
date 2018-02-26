@@ -26,11 +26,6 @@ darwin-linux-no-cgo: &darwin-linux-no-cgo
       environment:
         CGO_ENABLED: 0
 
-darwin-linux-rpm-fpm: &darwin-linux-rpm-fpm
-  working_directory: /go/src/github.com/palantir/godel
-  docker:
-    - image: nmiyake/go:go-darwin-linux-no-cgo-1.9.2-docker-17.03.0-ce-rpm-fpm-t125
-
 ### Shared cache steps ###
 godel-gouser-cache-restore: &godel-gouser-cache-restore
   restore_cache:
@@ -105,7 +100,6 @@ test_steps: &test_steps
   - *define-tests-dir
   - *mkdir-tests-dir
   - *godel-dist-product
-  - run: go install ./vendor/github.com/palantir/amalgomate
   - *run-tests
   - *store-test-results
   - *store-artifacts
@@ -126,52 +120,11 @@ jobs:
       - run: ./godelw verify --apply=false --skip-test
 
   ### Base tests ###
-  distgo:
-    <<: *darwin-linux-rpm-fpm
-    environment:
-      PRODUCT_NAME: distgo
-      TAG_NAME: distgo
-    # define custom steps because image runs with non-root user
-    steps:
-      - setup_remote_docker
-      - checkout
-      - *go-version
-      - *godel-gouser-cache-restore
-      - *godel-version
-      - *godel-gouser-cache-save
-      - *define-tests-dir
-      - *mkdir-tests-dir
-      - *godel-dist-product
-      - *run-tests
-      - *store-test-results
-      - *store-artifacts
-
   godel:
     <<: *darwin-linux-no-cgo
     environment:
       PRODUCT_NAME: godel
       TAG_NAME: none
-    steps: *test_steps
-
-  gonform:
-      <<: *darwin-linux-no-cgo
-      environment:
-        PRODUCT_NAME: gonform
-        TAG_NAME: gonform
-      steps: *test_steps
-
-  gunit:
-    <<: *darwin-linux
-    environment:
-      PRODUCT_NAME: gunit
-      TAG_NAME: gunit
-    steps: *test_steps
-
-  okgo:
-    <<: *darwin-linux-no-cgo
-    environment:
-      PRODUCT_NAME: okgo
-      TAG_NAME: okgo
     steps: *test_steps
 
   ### Integration tests ###
@@ -240,7 +193,7 @@ jobs:
       - *godel-root-cache-save
       - run: ./godelw dist
       - save_cache:
-          key: dist-{{ .Environment.CIRCLE_SHA1 }}-v1
+          key: dist-{{ .Environment.CIRCLE_WORKFLOW_ID }}-{{ .Environment.CIRCLE_SHA1 }}-v1
           paths:
             - dist
   publish:
@@ -253,22 +206,18 @@ jobs:
       - *godel-root-cache-save
       - restore_cache:
           keys:
-            - dist-{{ .Environment.CIRCLE_SHA1 }}-v1
+            - dist-{{ .Environment.CIRCLE_WORKFLOW_ID }}-{{ .Environment.CIRCLE_SHA1 }}-v1
       - run: ./godelw publish bintray --url https://api.bintray.com --subject palantir --repository releases --user "$BINTRAY_USER" --password "$BINTRAY_PASSWORD" --publish --downloads-list godel
 
 ### Workflows ###
 requires_products: &requires_products
   - verify
   - dist
-  - distgo
   - godel
-  - gonform
-  - gunit
   - integration-alpine-go-curr
   - integration-alpine-go-prev
   - integration-brew
   - integration-std
-  - okgo
 
 all-tags-filter: &all-tags-filter
   filters:
@@ -283,13 +232,7 @@ workflows:
           <<: *all-tags-filter
       - dist:
           <<: *all-tags-filter
-      - distgo:
-          <<: *all-tags-filter
       - godel:
-          <<: *all-tags-filter
-      - gonform:
-          <<: *all-tags-filter
-      - gunit:
           <<: *all-tags-filter
       - integration-alpine-go-curr:
           <<: *all-tags-filter
@@ -298,8 +241,6 @@ workflows:
       - integration-brew:
           <<: *all-tags-filter
       - integration-std:
-          <<: *all-tags-filter
-      - okgo:
           <<: *all-tags-filter
       - wiki:
           requires: *requires_products
@@ -310,6 +251,6 @@ workflows:
           requires: *requires_products
           filters:
             tags:
-              only: /^[0-9]+(\.[0-9]+)+(-rc[0-9]+)?(-alpha[0-9]+)?$/
+              only: /^v?[0-9]+(\.[0-9]+)+(-rc[0-9]+)?(-alpha[0-9]+)?$/
             branches:
               ignore: /.*/

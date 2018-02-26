@@ -1,51 +1,7 @@
 products:
-  distgo:
-    build:
-      output-dir: ./apps/distgo/build
-      main-pkg: ./apps/distgo/main/distgo
-      environment:
-        CGO_ENABLED: "0"
-      version-var: github.com/palantir/godel/cmd/godel.Version
-    dist:
-      output-dir: ./apps/distgo/dist
-      dist-type:
-        type: os-arch-bin
-  gonform:
-    build:
-      output-dir: ./apps/gonform/build
-      main-pkg: ./apps/gonform/main/gonform
-      environment:
-        CGO_ENABLED: "0"
-      version-var: github.com/palantir/godel/cmd/godel.Version
-    dist:
-      output-dir: ./apps/gonform/dist
-      dist-type:
-        type: os-arch-bin
-  gunit:
-    build:
-      output-dir: ./apps/gunit/build
-      main-pkg: ./apps/gunit/main/gunit
-      environment:
-        CGO_ENABLED: "0"
-      version-var: github.com/palantir/godel/cmd/godel.Version
-    dist:
-      output-dir: ./apps/gunit/dist
-      dist-type:
-        type: os-arch-bin
-  okgo:
-    build:
-      output-dir: ./apps/okgo/build
-      main-pkg: ./apps/okgo/main/okgo
-      environment:
-        CGO_ENABLED: "0"
-      version-var: github.com/palantir/godel/cmd/godel.Version
-    dist:
-      output-dir: ./apps/okgo/dist
-      dist-type:
-        type: os-arch-bin
   godel:
     build:
-      main-pkg: ./.
+      main-pkg: .
       environment:
         CGO_ENABLED: "0"
       os-archs:
