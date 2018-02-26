@@ -190,8 +190,14 @@ func resolveAssets(assetsDir, downloadsDir string, assetParams []artifactresolve
 	}
 
 	// encountered errors: summarize and return
+	var sortedKeys []artifactresolver.Locator
+	for k := range assetErrors {
+		sortedKeys = append(sortedKeys, k)
+	}
+	sortLocators(sortedKeys)
+
 	errStringsParts := []string{fmt.Sprintf("failed to resolve %d asset(s):", len(assetErrors))}
-	for _, k := range assets {
+	for _, k := range sortedKeys {
 		errStringsParts = append(errStringsParts, assetErrors[k].Error())
 	}
 	return nil, errors.New(strings.Join(errStringsParts, "\n"+strings.Repeat(" ", indentSpaces)))

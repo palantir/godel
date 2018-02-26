@@ -179,7 +179,7 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 		{
 			"no plugin conflicts",
 			map[artifactresolver.Locator]pluginInfoWithAssets{
-				artifactresolver.Locator{
+				{
 					Group:   "com.palantir",
 					Product: "foo",
 					Version: "1.0.0",
@@ -192,7 +192,7 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 		{
 			"verify catches plugins with same group and product but different version",
 			map[artifactresolver.Locator]pluginInfoWithAssets{
-				artifactresolver.Locator{
+				{
 					Group:   "com.palantir",
 					Product: "foo",
 					Version: "1.0.0",
@@ -201,7 +201,7 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 						pluginapi.MustNewTaskInfo("foo", "", nil, nil, nil),
 					),
 				},
-				artifactresolver.Locator{
+				{
 					Group:   "com.palantir",
 					Product: "foo",
 					Version: "2.0.0",
@@ -220,7 +220,7 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 		{
 			"verify catches plugins with conflicting commands",
 			map[artifactresolver.Locator]pluginInfoWithAssets{
-				artifactresolver.Locator{
+				{
 					Group:   "com.palantir",
 					Product: "foo",
 					Version: "1.0.0",
@@ -229,7 +229,7 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 						pluginapi.MustNewTaskInfo("foo", "", nil, nil, nil),
 					),
 				},
-				artifactresolver.Locator{
+				{
 					Group:   "com.palantir",
 					Product: "bar",
 					Version: "2.0.0",
