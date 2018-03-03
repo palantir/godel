@@ -103,7 +103,7 @@ func NewInfo(group, product, version, configFileName string, tasks ...TaskInfo) 
 		})
 	}
 
-	return &infoImpl{
+	return infoImpl{
 		PluginSchemaVersionVar: CurrentSchemaVersion,
 		IDVar:             id,
 		ConfigFileNameVar: configFileName,
@@ -111,6 +111,8 @@ func NewInfo(group, product, version, configFileName string, tasks ...TaskInfo) 
 	}, nil
 }
 
+// infoImpl is a concrete implementation of Info. Note that the functions are defined on non-pointer receivers to reduce
+// bugs in calling functions in closures.
 type infoImpl struct {
 	PluginSchemaVersionVar string `json:"pluginSchemaVersion"`
 	// ID is the identifier for a plugin and is a string of the form "group:product:version".
@@ -121,19 +123,19 @@ type infoImpl struct {
 	TasksVar []taskInfoImpl `json:"tasks"`
 }
 
-func (infoImpl *infoImpl) PluginSchemaVersion() string {
+func (infoImpl infoImpl) PluginSchemaVersion() string {
 	return infoImpl.PluginSchemaVersionVar
 }
 
-func (infoImpl *infoImpl) ID() string {
+func (infoImpl infoImpl) ID() string {
 	return infoImpl.IDVar
 }
 
-func (infoImpl *infoImpl) ConfigFileName() string {
+func (infoImpl infoImpl) ConfigFileName() string {
 	return infoImpl.ConfigFileNameVar
 }
 
-func (infoImpl *infoImpl) Tasks(pluginExecPath string, assets []string) []godellauncher.Task {
+func (infoImpl infoImpl) Tasks(pluginExecPath string, assets []string) []godellauncher.Task {
 	var tasks []godellauncher.Task
 	for _, ti := range infoImpl.TasksVar {
 		tasks = append(tasks, ti.toTask(pluginExecPath, infoImpl.ConfigFileNameVar, assets))
@@ -141,7 +143,7 @@ func (infoImpl *infoImpl) Tasks(pluginExecPath string, assets []string) []godell
 	return tasks
 }
 
-func (infoImpl *infoImpl) private() {}
+func (infoImpl infoImpl) private() {}
 
 // InfoFromPlugin returns the Info for the plugin at the specified path. Does so by invoking the InfoCommand on the
 // plugin and parsing the output.
@@ -156,5 +158,5 @@ func InfoFromPlugin(pluginPath string) (Info, error) {
 	if err := json.Unmarshal(bytes, &info); err != nil {
 		return nil, errors.Wrapf(err, "failed to unmarshal plugin information for plugin %s from output %q", pluginPath, string(bytes))
 	}
-	return &info, nil
+	return info, nil
 }

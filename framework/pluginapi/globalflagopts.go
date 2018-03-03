@@ -29,6 +29,8 @@ type GlobalFlagOptions interface {
 	toGodelGlobalFlagOptions() godellauncher.GlobalFlagOptions
 }
 
+// globalFlagOptionsImpl is a concrete implementation of GlobalFlagOptions. Note that the functions are defined on
+// non-pointer receivers to reduce bugs in calling functions in closures.
 type globalFlagOptionsImpl struct {
 	DebugFlagVar       string `json:"debugFlag"`
 	ProjectDirFlagVar  string `json:"projectDirFlag"`
@@ -71,33 +73,33 @@ func GlobalFlagOptionsParamConfigFlag(configFlag string) GlobalFlagOptionsParam 
 }
 
 func NewGlobalFlagOptions(params ...GlobalFlagOptionsParam) GlobalFlagOptions {
-	impl := &globalFlagOptionsImpl{}
+	impl := globalFlagOptionsImpl{}
 	for _, p := range params {
 		if p == nil {
 			continue
 		}
-		p.apply(impl)
+		p.apply(&impl)
 	}
 	return impl
 }
 
-func (g *globalFlagOptionsImpl) DebugFlag() string {
+func (g globalFlagOptionsImpl) DebugFlag() string {
 	return g.DebugFlagVar
 }
 
-func (g *globalFlagOptionsImpl) ProjectDirFlag() string {
+func (g globalFlagOptionsImpl) ProjectDirFlag() string {
 	return g.ProjectDirFlagVar
 }
 
-func (g *globalFlagOptionsImpl) GodelConfigFlag() string {
+func (g globalFlagOptionsImpl) GodelConfigFlag() string {
 	return g.GodelConfigFlagVar
 }
 
-func (g *globalFlagOptionsImpl) ConfigFlag() string {
+func (g globalFlagOptionsImpl) ConfigFlag() string {
 	return g.ConfigFlagVar
 }
 
-func (g *globalFlagOptionsImpl) toGodelGlobalFlagOptions() godellauncher.GlobalFlagOptions {
+func (g globalFlagOptionsImpl) toGodelGlobalFlagOptions() godellauncher.GlobalFlagOptions {
 	return godellauncher.GlobalFlagOptions{
 		DebugFlag:       g.DebugFlagVar,
 		ProjectDirFlag:  g.ProjectDirFlagVar,

@@ -30,6 +30,8 @@ type VerifyOptions interface {
 	toGodelVerifyOptions() godellauncher.VerifyOptions
 }
 
+// verifyOptionsImpl is a concrete implementation of VerifyOptions. Note that the functions are defined on non-pointer
+// receivers to reduce bugs in calling functions in closures.
 type verifyOptionsImpl struct {
 	VerifyTaskFlagsVar []verifyFlagImpl `json:"verifyTaskFlags"`
 	OrderingVar        *int             `json:"ordering"`
@@ -80,41 +82,39 @@ func VerifyOptionsApplyFalseArgs(args ...string) VerifyOptionsParam {
 }
 
 func NewVerifyOptions(params ...VerifyOptionsParam) VerifyOptions {
-	vOpts := &verifyOptionsImpl{}
+	vOpts := verifyOptionsImpl{}
 	for _, p := range params {
 		if p == nil {
 			continue
 		}
-		p.apply(vOpts)
+		p.apply(&vOpts)
 	}
 	return vOpts
 }
 
-func (vo *verifyOptionsImpl) VerifyTaskFlags() []VerifyFlag {
+func (vo verifyOptionsImpl) VerifyTaskFlags() []VerifyFlag {
 	var flags []VerifyFlag
 	for _, flag := range vo.VerifyTaskFlagsVar {
-		flag := flag
-		flags = append(flags, &flag)
+		flags = append(flags, flag)
 	}
 	return flags
 }
 
-func (vo *verifyOptionsImpl) Ordering() *int {
+func (vo verifyOptionsImpl) Ordering() *int {
 	return vo.OrderingVar
 }
 
-func (vo *verifyOptionsImpl) ApplyTrueArgs() []string {
+func (vo verifyOptionsImpl) ApplyTrueArgs() []string {
 	return vo.ApplyTrueArgsVar
 }
 
-func (vo *verifyOptionsImpl) ApplyFalseArgs() []string {
+func (vo verifyOptionsImpl) ApplyFalseArgs() []string {
 	return vo.ApplyFalseArgsVar
 }
 
-func (vo *verifyOptionsImpl) toGodelVerifyOptions() godellauncher.VerifyOptions {
+func (vo verifyOptionsImpl) toGodelVerifyOptions() godellauncher.VerifyOptions {
 	var flags []godellauncher.VerifyFlag
 	for _, f := range vo.VerifyTaskFlagsVar {
-		f := f
 		flags = append(flags, f.toGodelVerifyFlag())
 	}
 
@@ -140,6 +140,8 @@ type VerifyFlag interface {
 	toGodelVerifyFlag() godellauncher.VerifyFlag
 }
 
+// verifyFlagImpl is a concrete implementation of VerifyFlag. Note that the functions are defined on non-pointer
+// receivers to reduce bugs in calling functions in closures.
 type verifyFlagImpl struct {
 	NameVar        string                 `json:"name"`
 	DescriptionVar string                 `json:"description"`
@@ -147,26 +149,26 @@ type verifyFlagImpl struct {
 }
 
 func NewVerifyFlag(name, description string, typ godellauncher.FlagType) VerifyFlag {
-	return &verifyFlagImpl{
+	return verifyFlagImpl{
 		NameVar:        name,
 		DescriptionVar: description,
 		TypeVar:        typ,
 	}
 }
 
-func (vf *verifyFlagImpl) Name() string {
+func (vf verifyFlagImpl) Name() string {
 	return vf.NameVar
 }
 
-func (vf *verifyFlagImpl) Description() string {
+func (vf verifyFlagImpl) Description() string {
 	return vf.DescriptionVar
 }
 
-func (vf *verifyFlagImpl) Type() godellauncher.FlagType {
+func (vf verifyFlagImpl) Type() godellauncher.FlagType {
 	return vf.TypeVar
 }
 
-func (vf *verifyFlagImpl) toGodelVerifyFlag() godellauncher.VerifyFlag {
+func (vf verifyFlagImpl) toGodelVerifyFlag() godellauncher.VerifyFlag {
 	return godellauncher.VerifyFlag{
 		Name:        vf.NameVar,
 		Description: vf.DescriptionVar,
