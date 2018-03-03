@@ -22,6 +22,10 @@ import (
 
 const defaultResolver = "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
 
+var defaultPluginsConfig = PluginsConfig{
+	DefaultResolvers: []string{defaultResolver},
+}
+
 type TasksConfigInfo struct {
 	// BuiltinPluginsConfig is the configuration for built-in plugins that is built as part of gödel.
 	BuiltinPluginsConfig PluginsConfig
@@ -33,14 +37,10 @@ type TasksConfigInfo struct {
 }
 
 func BuiltinDefaultPluginsConfig() PluginsConfig {
-	return PluginsConfig{
-		DefaultResolvers: []string{defaultResolver},
-	}
+	return defaultPluginsConfig
 }
 
 func DefaultTasksPluginsConfig(config DefaultTasksConfig) PluginsConfig {
-	defaultPluginsConfig := BuiltinDefaultPluginsConfig()
-
 	// start with configuration that uses default resolver
 	pluginsCfg := PluginsConfig{
 		DefaultResolvers: defaultPluginsConfig.DefaultResolvers,
