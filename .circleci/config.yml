@@ -113,6 +113,18 @@ test_steps: &test_steps
 ### Jobs ###
 version: 2
 jobs:
+  ### Verify ###
+  verify:
+    <<: *darwin-linux-no-cgo
+    steps:
+      - checkout
+      - *go-version
+      - *godel-root-cache-restore
+      - *godel-version
+      - *godel-root-cache-save
+      - *go-install-packages
+      - run: ./godelw verify --apply=false --skip-test
+
   ### Base tests ###
   distgo:
     <<: *darwin-linux-rpm-fpm
@@ -246,6 +258,7 @@ jobs:
 
 ### Workflows ###
 requires_products: &requires_products
+  - verify
   - dist
   - distgo
   - godel
@@ -266,6 +279,8 @@ workflows:
   version: 2
   build-publish:
     jobs:
+      - verify:
+          <<: *all-tags-filter
       - dist:
           <<: *all-tags-filter
       - distgo:
