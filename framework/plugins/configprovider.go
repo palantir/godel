@@ -30,6 +30,7 @@ import (
 	"github.com/palantir/godel/framework/artifactresolver"
 	"github.com/palantir/godel/framework/builtintasks/installupdate/layout"
 	"github.com/palantir/godel/framework/godellauncher"
+	"github.com/palantir/godel/framework/internal/pathsinternal"
 )
 
 // LoadProvidedConfigurations returns all of the godellauncher.GodelConfig configurations provided by the specified
@@ -116,10 +117,10 @@ func resolveAndVerifyConfigProvider(
 	stdout io.Writer) (currLocator artifactresolver.Locator, ok bool) {
 
 	currLocator = currArtifact.LocatorWithChecksums.Locator
-	currDstPath := path.Join(dstBaseDir, configFileName(currLocator))
+	currDstPath := path.Join(dstBaseDir, pathsinternal.ConfigProviderFileName(currLocator))
 
 	if _, err := os.Stat(currDstPath); os.IsNotExist(err) {
-		downloadDstPath := path.Join(downloadsDir, configFileName(currLocator))
+		downloadDstPath := path.Join(downloadsDir, pathsinternal.ConfigProviderFileName(currLocator))
 		if err := artifactresolver.ResolveArtifact(currArtifact, defaultResolvers, osarch.Current(), downloadDstPath, artifactresolver.SHA256ChecksumFile, stdout); err != nil {
 			artifactErrors[currLocator] = err
 			return currLocator, false
@@ -164,7 +165,7 @@ func resolveAndVerifyConfigProvider(
 }
 
 func readConfigFromProvider(locator artifactresolver.Locator, configsDir string) (godellauncher.TasksConfig, error) {
-	cfgPath := path.Join(configsDir, configFileName(locator))
+	cfgPath := path.Join(configsDir, pathsinternal.ConfigProviderFileName(locator))
 
 	cfgBytes, err := ioutil.ReadFile(cfgPath)
 	if err != nil {
@@ -176,8 +177,4 @@ func readConfigFromProvider(locator artifactresolver.Locator, configsDir string)
 		return godellauncher.TasksConfig{}, errors.Wrapf(err, "failed to unmarshal %q as godellauncher.GodelConfig", string(cfgBytes))
 	}
 	return tasksCfg, nil
-}
-
-func configFileName(locator artifactresolver.Locator) string {
-	return pluginFileName(locator) + ".yml"
 }

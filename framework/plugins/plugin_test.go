@@ -33,6 +33,7 @@ import (
 	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 	"github.com/palantir/godel/framework/artifactresolver"
 	"github.com/palantir/godel/framework/godellauncher"
+	"github.com/palantir/godel/framework/internal/pathsinternal"
 	"github.com/palantir/godel/framework/pluginapi"
 )
 
@@ -53,7 +54,7 @@ func TestInfoFromResolved(t *testing.T) {
 	err = ioutil.WriteFile(pluginFile, []byte(fmt.Sprintf(pluginScriptTmpl, pluginName)), 0755)
 	require.NoError(t, err)
 
-	gotInfo, err := pluginapi.InfoFromPlugin(path.Join(tmpDir, pluginFileName(artifactresolver.Locator{
+	gotInfo, err := pluginapi.InfoFromPlugin(path.Join(tmpDir, pathsinternal.PluginFileName(artifactresolver.Locator{
 		Group:   "com.palantir",
 		Product: pluginName,
 		Version: "1.0.0",
@@ -83,7 +84,7 @@ exit 1
 `), 0755)
 	require.NoError(t, err)
 
-	_, err = pluginapi.InfoFromPlugin(path.Join(tmpDir, pluginFileName(artifactresolver.Locator{
+	_, err = pluginapi.InfoFromPlugin(path.Join(tmpDir, pathsinternal.PluginFileName(artifactresolver.Locator{
 		Group:   "com.palantir",
 		Product: pluginName,
 		Version: "1.0.0",
