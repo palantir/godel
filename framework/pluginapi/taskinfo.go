@@ -40,6 +40,8 @@ type TaskInfo interface {
 	toTask(pluginExecPath, cfgFileName string, assets []string) godellauncher.Task
 }
 
+// taskInfoImpl is a concrete implementation of TaskInfo. Note that the functions are defined on non-pointer receivers
+// to reduce bugs in calling functions in closures.
 type taskInfoImpl struct {
 	NameVar              string                 `json:"name"`
 	DescriptionVar       string                 `json:"description"`
@@ -118,36 +120,36 @@ func NewTaskInfo(name, description string, params ...TaskInfoParam) (TaskInfo, e
 		}
 		p.apply(impl)
 	}
-	return impl, nil
+	return *impl, nil
 }
 
-func (ti *taskInfoImpl) Name() string {
+func (ti taskInfoImpl) Name() string {
 	return ti.NameVar
 }
 
-func (ti *taskInfoImpl) Description() string {
+func (ti taskInfoImpl) Description() string {
 	return ti.DescriptionVar
 }
 
-func (ti *taskInfoImpl) Command() []string {
+func (ti taskInfoImpl) Command() []string {
 	return ti.CommandVar
 }
 
-func (ti *taskInfoImpl) VerifyOptions() VerifyOptions {
+func (ti taskInfoImpl) VerifyOptions() VerifyOptions {
 	if ti.VerifyOptionsVar == nil {
 		return nil
 	}
 	return ti.VerifyOptionsVar
 }
 
-func (ti *taskInfoImpl) GlobalFlagOptions() GlobalFlagOptions {
+func (ti taskInfoImpl) GlobalFlagOptions() GlobalFlagOptions {
 	if ti.GlobalFlagOptionsVar == nil {
 		return nil
 	}
 	return ti.GlobalFlagOptionsVar
 }
 
-func (ti *taskInfoImpl) toTask(pluginExecPath, cfgFileName string, assets []string) godellauncher.Task {
+func (ti taskInfoImpl) toTask(pluginExecPath, cfgFileName string, assets []string) godellauncher.Task {
 	var verifyOpts *godellauncher.VerifyOptions
 	if ti.VerifyOptions() != nil {
 		opts := ti.VerifyOptionsVar.toGodelVerifyOptions()
@@ -191,7 +193,7 @@ func (ti *taskInfoImpl) toTask(pluginExecPath, cfgFileName string, assets []stri
 	}
 }
 
-func (ti *taskInfoImpl) globalFlagArgs(t *godellauncher.Task, global godellauncher.GlobalConfig) ([]string, error) {
+func (ti taskInfoImpl) globalFlagArgs(t *godellauncher.Task, global godellauncher.GlobalConfig) ([]string, error) {
 	var args []string
 	if global.Debug && t.GlobalFlagOpts.DebugFlag != "" {
 		args = append(args, t.GlobalFlagOpts.DebugFlag)
