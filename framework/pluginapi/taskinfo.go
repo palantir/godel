@@ -179,7 +179,7 @@ func (ti taskInfoImpl) toTask(pluginExecPath, cfgFileName string, assets []strin
 			cmdArgs = append(cmdArgs, global.TaskArgs...)
 			cmd := exec.Command(pluginExecPath, cmdArgs...)
 			cmd.Stdout = stdout
-			cmd.Stderr = os.Stderr
+			cmd.Stderr = stdout
 			cmd.Stdin = os.Stdin
 			if err := cmd.Run(); err != nil {
 				if _, ok := err.(*exec.ExitError); ok {
