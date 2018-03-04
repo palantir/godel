@@ -22,13 +22,12 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/palantir/pkg/specdir"
 	"github.com/pkg/errors"
 
 	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 	"github.com/palantir/godel/framework/artifactresolver"
-	"github.com/palantir/godel/framework/builtintasks/installupdate/layout"
 	"github.com/palantir/godel/framework/godellauncher"
+	"github.com/palantir/godel/framework/internal/pathsinternal"
 	"github.com/palantir/godel/framework/pluginapi"
 )
 
@@ -52,13 +51,10 @@ type pluginInfoWithAssets struct {
 //
 // Returns all of the tasks provided by the plugins in the provided parameters.
 func LoadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer) ([]godellauncher.Task, error) {
-	gödelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
+	pluginsDir, assetsDir, downloadsDir, err := pathsinternal.ResourceDirs()
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to create gödel home directory")
+		return nil, err
 	}
-	pluginsDir := gödelHomeSpecDir.Path(layout.PluginsDir)
-	assetsDir := gödelHomeSpecDir.Path(layout.AssetsDir)
-	downloadsDir := gödelHomeSpecDir.Path(layout.DownloadsDir)
 
 	plugins, err := resolvePlugins(pluginsDir, assetsDir, downloadsDir, osarch.Current(), pluginsParam, stdout)
 	if err != nil {
@@ -76,12 +72,12 @@ func LoadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer)
 
 	var tasks []godellauncher.Task
 	for _, pluginLoc := range sortedPluginLocators {
-		pluginExecPath := pluginPath(pluginsDir, pluginLoc)
+		pluginExecPath := pathsinternal.PluginPath(pluginsDir, pluginLoc)
 		pluginInfoWithAssets := plugins[pluginLoc]
 
 		var assetPaths []string
 		for _, assetLoc := range pluginInfoWithAssets.Assets {
-			assetPaths = append(assetPaths, pluginPath(assetsDir, assetLoc))
+			assetPaths = append(assetPaths, pathsinternal.PluginPath(assetsDir, assetLoc))
 		}
 		tasks = append(tasks, pluginInfoWithAssets.PluginInfo.Tasks(pluginExecPath, assetPaths)...)
 	}
@@ -124,7 +120,7 @@ func resolvePlugins(pluginsDir, assetsDir, downloadsDir string, osArch osarch.OS
 		if !ok {
 			continue
 		}
-		info, err := pluginapi.InfoFromPlugin(path.Join(pluginsDir, pluginFileName(currPluginLocator)))
+		info, err := pluginapi.InfoFromPlugin(path.Join(pluginsDir, pathsinternal.PluginFileName(currPluginLocator)))
 		if err != nil {
 			pluginErrors[currPluginLocator] = errors.Wrapf(err, "failed to get plugin info for plugin %+v", currPluginLocator)
 			continue
@@ -212,10 +208,10 @@ func resolveAndVerify(
 	stdout io.Writer) (currLocator artifactresolver.Locator, ok bool) {
 
 	currLocator = currArtifact.LocatorWithChecksums.Locator
-	currDstPath := path.Join(dstBaseDir, pluginFileName(currLocator))
+	currDstPath := path.Join(dstBaseDir, pathsinternal.PluginFileName(currLocator))
 
 	if _, err := os.Stat(currDstPath); os.IsNotExist(err) {
-		tgzDstPath := path.Join(downloadsDir, pluginFileName(currLocator)+".tgz")
+		tgzDstPath := path.Join(downloadsDir, pathsinternal.PluginFileName(currLocator)+".tgz")
 		if err := artifactresolver.ResolveArtifactTGZ(currArtifact, defaultResolvers, osArch, tgzDstPath, stdout); err != nil {
 			artifactErrors[currLocator] = err
 			return currLocator, false
@@ -345,12 +341,4 @@ func sortLocators(locs []artifactresolver.Locator) {
 	sort.Slice(locs, func(i, j int) bool {
 		return locs[i].String() < locs[j].String()
 	})
-}
-
-func pluginPath(pluginDir string, locator artifactresolver.Locator) string {
-	return path.Join(pluginDir, pluginFileName(locator))
-}
-
-func pluginFileName(locator artifactresolver.Locator) string {
-	return fmt.Sprintf("%s-%s-%s", locator.Group, locator.Product, locator.Version)
 }
