@@ -29,7 +29,7 @@ import (
 	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/git"
 	"github.com/palantir/godel/apps/distgo/pkg/imports"
-	"github.com/palantir/godel/apps/distgo/pkg/osarch"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 // RequiresBuild returns a slice that contains the ProductBuildSpecs that have not been built for the provided

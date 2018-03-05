@@ -21,7 +21,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/palantir/godel/apps/distgo/pkg/git"
-	"github.com/palantir/godel/apps/distgo/pkg/osarch"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 // ProductBuildSpec defines all of the parameters for building a specific product.

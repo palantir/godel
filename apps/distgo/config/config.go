@@ -25,7 +25,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/palantir/godel/apps/distgo/params"
-	"github.com/palantir/godel/apps/distgo/pkg/osarch"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 type Project struct {

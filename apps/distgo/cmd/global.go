@@ -20,7 +20,7 @@ import (
 
 	"github.com/palantir/pkg/cli/flag"
 
-	"github.com/palantir/godel/apps/distgo/pkg/osarch"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 const (

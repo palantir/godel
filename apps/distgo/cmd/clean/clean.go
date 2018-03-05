@@ -29,7 +29,7 @@ import (
 	"github.com/palantir/godel/apps/distgo/cmd/build"
 	"github.com/palantir/godel/apps/distgo/cmd/dist"
 	"github.com/palantir/godel/apps/distgo/params"
-	"github.com/palantir/godel/apps/distgo/pkg/osarch"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 func Products(products []string, cfg params.Project, dryRun bool, wd string, stdout io.Writer) error {

@@ -31,8 +31,8 @@ import (
 
 	"github.com/palantir/godel/apps/distgo/cmd"
 	"github.com/palantir/godel/apps/distgo/params"
-	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 	"github.com/palantir/godel/apps/distgo/pkg/script"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 type buildUnit struct {

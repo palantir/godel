@@ -30,10 +30,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
 
-	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 	"github.com/palantir/godel/framework/builtintasks/installupdate/layout"
 	"github.com/palantir/godel/framework/godellauncher"
 	"github.com/palantir/godel/framework/pluginapi"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 var echoPluginTmpl = fmt.Sprintf(`#!/bin/sh

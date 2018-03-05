@@ -27,7 +27,7 @@ import (
 
 	"github.com/palantir/godel/apps/distgo/cmd/build"
 	"github.com/palantir/godel/apps/distgo/params"
-	"github.com/palantir/godel/apps/distgo/pkg/osarch"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 type osArchsBinDister params.OSArchsBinDistInfo
