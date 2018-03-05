@@ -32,7 +32,7 @@ import (
 	"github.com/palantir/godel/apps/distgo/cmd/publish"
 	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/git"
-	"github.com/palantir/godel/apps/distgo/pkg/osarch"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 const (

@@ -24,11 +24,11 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 	"github.com/palantir/godel/framework/artifactresolver"
 	"github.com/palantir/godel/framework/godellauncher"
 	"github.com/palantir/godel/framework/internal/pathsinternal"
 	"github.com/palantir/godel/framework/pluginapi"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 const (

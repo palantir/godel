@@ -15,7 +15,7 @@
 package params
 
 import (
-	"github.com/palantir/godel/apps/distgo/pkg/osarch"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 type Build struct {

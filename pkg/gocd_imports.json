@@ -33,6 +33,7 @@
             "numImportedGoFiles": 9,
             "importedFrom": [
                 "github.com/palantir/godel/pkg/dirchecksum_test",
+                "github.com/palantir/godel/pkg/osarch_test",
                 "github.com/palantir/godel/pkg/products_test"
             ]
         },
@@ -42,6 +43,7 @@
             "numImportedGoFiles": 15,
             "importedFrom": [
                 "github.com/palantir/godel/pkg/dirchecksum_test",
+                "github.com/palantir/godel/pkg/osarch_test",
                 "github.com/palantir/godel/pkg/products_test"
             ]
         }

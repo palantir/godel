@@ -24,7 +24,7 @@ import (
 
 	"github.com/palantir/godel/apps/distgo/config"
 	"github.com/palantir/godel/apps/distgo/params"
-	"github.com/palantir/godel/apps/distgo/pkg/osarch"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 func TestReadConfig(t *testing.T) {

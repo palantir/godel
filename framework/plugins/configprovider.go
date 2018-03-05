@@ -26,11 +26,11 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 
-	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 	"github.com/palantir/godel/framework/artifactresolver"
 	"github.com/palantir/godel/framework/builtintasks/installupdate/layout"
 	"github.com/palantir/godel/framework/godellauncher"
 	"github.com/palantir/godel/framework/internal/pathsinternal"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 // LoadProvidedConfigurations returns all of the godellauncher.GodelConfig configurations provided by the specified

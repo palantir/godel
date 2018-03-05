@@ -17,7 +17,7 @@ package binspec
 import (
 	"github.com/palantir/pkg/specdir"
 
-	"github.com/palantir/godel/apps/distgo/pkg/osarch"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 // New returns a LayoutSpec that is rooted at a "bin" directory and contains directories of the form "{{os}}-{{arch}}"

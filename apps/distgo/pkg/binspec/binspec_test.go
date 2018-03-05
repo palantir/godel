@@ -26,7 +26,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/palantir/godel/apps/distgo/pkg/binspec"
-	"github.com/palantir/godel/apps/distgo/pkg/osarch"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 func TestBinSpecCreateDirectoryStructureFailBadRootDirectory(t *testing.T) {

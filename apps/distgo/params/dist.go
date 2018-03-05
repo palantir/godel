@@ -17,7 +17,7 @@ package params
 import (
 	"github.com/palantir/pkg/matcher"
 
-	"github.com/palantir/godel/apps/distgo/pkg/osarch"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 type Dist struct {

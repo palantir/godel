@@ -30,9 +30,9 @@ import (
 	"github.com/palantir/godel/apps/distgo/cmd"
 	"github.com/palantir/godel/apps/distgo/cmd/build"
 	"github.com/palantir/godel/apps/distgo/params"
-	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 	"github.com/palantir/godel/apps/distgo/pkg/script"
 	"github.com/palantir/godel/apps/distgo/pkg/slsspec"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 func RequiresDist(products []string, cfg params.Project, wd string) ([]string, error) {
