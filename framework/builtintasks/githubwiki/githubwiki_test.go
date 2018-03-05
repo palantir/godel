@@ -25,10 +25,9 @@ import (
 	"testing"
 
 	"github.com/nmiyake/pkg/dirs"
+	"github.com/palantir/pkg/gittest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/palantir/godel/apps/distgo/pkg/git/gittest"
 )
 
 func TestSyncGitHubWiki(t *testing.T) {
