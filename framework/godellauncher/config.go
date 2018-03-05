@@ -60,16 +60,27 @@ type TasksConfig struct {
 // Combine combines the provided TasksConfig configurations with the base configuration. In cases where values are
 // overwritten, the last (most recent) values in the inputs will take precedence.
 func (c *TasksConfig) Combine(configs ...TasksConfig) {
+	if c.DefaultTasks.Tasks == nil {
+		c.DefaultTasks.Tasks = make(map[string]SingleDefaultTaskConfig)
+	}
+
 	for _, cfg := range configs {
-		// DefaultTask key/values are simply copied (and overwritten with last writer wins for any duplicate keys)
-		for k, v := range cfg.DefaultTasks {
-			c.DefaultTasks[k] = v
+		// DefaultTask resolvers are appended
+		c.DefaultTasks.DefaultResolvers = append(c.DefaultTasks.DefaultResolvers, cfg.DefaultTasks.DefaultResolvers...)
+		// DefaultTask tasks key/values are simply copied (and overwritten with last writer wins for any duplicate keys)
+		for k, v := range cfg.DefaultTasks.Tasks {
+			c.DefaultTasks.Tasks[k] = v
 		}
 
 		// Plugin resolvers and definitions are appended
 		c.Plugins.DefaultResolvers = append(c.Plugins.DefaultResolvers, cfg.Plugins.DefaultResolvers...)
 		c.Plugins.Plugins = append(c.Plugins.Plugins, cfg.Plugins.Plugins...)
 	}
+}
+
+type DefaultTasksConfig struct {
+	DefaultResolvers []string                           `yaml:"resolvers"`
+	Tasks            map[string]SingleDefaultTaskConfig `yaml:"tasks"`
 }
 
 type TasksConfigProvidersParam struct {
@@ -104,8 +115,6 @@ func (c *TasksConfigProvidersConfig) ToParam() (TasksConfigProvidersParam, error
 		ConfigProviders:  configProviders,
 	}, nil
 }
-
-type DefaultTasksConfig map[string]SingleDefaultTaskConfig
 
 type SingleDefaultTaskConfig struct {
 	// LocatorWithResolverConfig contains the configuration for the locator and resolver. Any value provided here

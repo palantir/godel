@@ -54,7 +54,9 @@ func TestMarshalConfig(t *testing.T) {
 	want := `tasks-config-providers:
   resolvers: []
   providers: []
-default-tasks: {}
+default-tasks:
+  resolvers: []
+  tasks: {}
 plugins:
   resolvers: []
   plugins:
@@ -121,13 +123,16 @@ plugins:
 func TestUnmarshalConfigWithDefaults(t *testing.T) {
 	cfgYAML := `
 default-tasks:
-  com.palantir.godel:format:
-    exclude-default-assets:
-      - com.palantir.godel:foo-asset
-      - com.palantir.godel:bar-asset
-    assets:
-      - locator:
-          id: "com.palantir.godel:bar-asset:1.0.0"
+  resolvers:
+    - default/repo/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}.tgz
+  tasks:
+    com.palantir.godel:format:
+      exclude-default-assets:
+        - com.palantir.godel:foo-asset
+        - com.palantir.godel:bar-asset
+      assets:
+        - locator:
+            id: "com.palantir.godel:bar-asset:1.0.0"
 plugins:
   resolvers:
     - foo/repo/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}.tgz
@@ -145,15 +150,20 @@ plugins:
 	want := godellauncher.GodelConfig{
 		TasksConfig: godellauncher.TasksConfig{
 			DefaultTasks: godellauncher.DefaultTasksConfig{
-				"com.palantir.godel:format": godellauncher.SingleDefaultTaskConfig{
-					DefaultAssetsToExclude: []string{
-						"com.palantir.godel:foo-asset",
-						"com.palantir.godel:bar-asset",
-					},
-					Assets: []artifactresolver.LocatorWithResolverConfig{
-						{
-							Locator: artifactresolver.LocatorConfig{
-								ID: "com.palantir.godel:bar-asset:1.0.0",
+				DefaultResolvers: []string{
+					"default/repo/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}.tgz",
+				},
+				Tasks: map[string]godellauncher.SingleDefaultTaskConfig{
+					"com.palantir.godel:format": {
+						DefaultAssetsToExclude: []string{
+							"com.palantir.godel:foo-asset",
+							"com.palantir.godel:bar-asset",
+						},
+						Assets: []artifactresolver.LocatorWithResolverConfig{
+							{
+								Locator: artifactresolver.LocatorConfig{
+									ID: "com.palantir.godel:bar-asset:1.0.0",
+								},
 							},
 						},
 					},
