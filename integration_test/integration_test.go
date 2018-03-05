@@ -26,11 +26,11 @@ import (
 
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/nmiyake/pkg/gofiles"
+	"github.com/palantir/pkg/gittest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/palantir/godel/apps/distgo/pkg/git"
-	"github.com/palantir/godel/apps/distgo/pkg/git/gittest"
 	"github.com/palantir/godel/pkg/products"
 )
 

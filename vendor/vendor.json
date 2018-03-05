@@ -486,6 +486,12 @@
 			"revisionTime": "2017-11-21T22:40:01Z"
 		},
 		{
+			"checksumSHA1": "64E9EnAKJ/K+/EEah33tP20kHhU=",
+			"path": "github.com/palantir/pkg/gittest",
+			"revision": "b59de130c1302a3c591efcfb0fd575727f53d0d2",
+			"revisionTime": "2018-03-05T04:12:51Z"
+		},
+		{
 			"checksumSHA1": "CPYwjCsLKBVtaJte9x5bP81z2mg=",
 			"path": "github.com/palantir/pkg/matcher",
 			"revision": "ac9dcc410953c58a09d9cdd7bc0270e2917fd943",

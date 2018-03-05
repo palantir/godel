@@ -29,6 +29,7 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	dockercli "github.com/docker/docker/client"
 	"github.com/nmiyake/pkg/dirs"
+	"github.com/palantir/pkg/gittest"
 	"github.com/stretchr/testify/require"
 
 	"github.com/palantir/godel/apps/distgo/cmd/build"
@@ -36,7 +37,6 @@ import (
 	"github.com/palantir/godel/apps/distgo/cmd/docker"
 	"github.com/palantir/godel/apps/distgo/params"
 	"github.com/palantir/godel/apps/distgo/pkg/git"
-	"github.com/palantir/godel/apps/distgo/pkg/git/gittest"
 	"github.com/palantir/godel/apps/distgo/pkg/osarch"
 )
 

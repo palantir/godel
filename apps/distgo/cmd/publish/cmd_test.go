@@ -30,13 +30,13 @@ import (
 
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/pkg/cli/cfgcli"
+	"github.com/palantir/pkg/gittest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/palantir/godel/apps/distgo/cmd/artifacts"
 	"github.com/palantir/godel/apps/distgo/cmd/build"
 	"github.com/palantir/godel/apps/distgo/config"
-	"github.com/palantir/godel/apps/distgo/pkg/git/gittest"
 )
 
 const testMain = "package main; func main(){}"

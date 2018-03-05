@@ -47,19 +47,6 @@
             ]
         },
         {
-            "path": "github.com/palantir/godel/vendor/github.com/stretchr/testify/require",
-            "numGoFiles": 5,
-            "numImportedGoFiles": 15,
-            "importedFrom": [
-                "github.com/palantir/godel/apps/distgo/pkg/binspec_test",
-                "github.com/palantir/godel/apps/distgo/pkg/git/gittest",
-                "github.com/palantir/godel/apps/distgo/pkg/git_test",
-                "github.com/palantir/godel/apps/distgo/pkg/imports_test",
-                "github.com/palantir/godel/apps/distgo/pkg/osarch_test",
-                "github.com/palantir/godel/apps/distgo/pkg/slsspec_test"
-            ]
-        },
-        {
             "path": "github.com/palantir/godel/vendor/gopkg.in/yaml.v2",
             "numGoFiles": 13,
             "numImportedGoFiles": 0,
@@ -90,9 +77,29 @@
             ]
         },
         {
+            "path": "github.com/palantir/godel/vendor/github.com/palantir/pkg/gittest",
+            "numGoFiles": 1,
+            "numImportedGoFiles": 0,
+            "importedFrom": [
+                "github.com/palantir/godel/apps/distgo/pkg/git_test"
+            ]
+        },
+        {
             "path": "github.com/palantir/godel/vendor/github.com/stretchr/testify/assert",
             "numGoFiles": 6,
             "numImportedGoFiles": 9,
+            "importedFrom": [
+                "github.com/palantir/godel/apps/distgo/pkg/binspec_test",
+                "github.com/palantir/godel/apps/distgo/pkg/git_test",
+                "github.com/palantir/godel/apps/distgo/pkg/imports_test",
+                "github.com/palantir/godel/apps/distgo/pkg/osarch_test",
+                "github.com/palantir/godel/apps/distgo/pkg/slsspec_test"
+            ]
+        },
+        {
+            "path": "github.com/palantir/godel/vendor/github.com/stretchr/testify/require",
+            "numGoFiles": 5,
+            "numImportedGoFiles": 15,
             "importedFrom": [
                 "github.com/palantir/godel/apps/distgo/pkg/binspec_test",
                 "github.com/palantir/godel/apps/distgo/pkg/git_test",
