@@ -45,11 +45,13 @@ func DefaultTasksPluginsConfig(config DefaultTasksConfig) PluginsConfig {
 	pluginsCfg := PluginsConfig{
 		DefaultResolvers: defaultPluginsConfig.DefaultResolvers,
 	}
+	// append default resolvers provided by the configuration
+	pluginsCfg.DefaultResolvers = append(pluginsCfg.DefaultResolvers, config.DefaultResolvers...)
 
 	for _, currPlugin := range defaultPluginsConfig.Plugins {
 		currKey := locatorIDWithoutVersion(currPlugin.Locator.ID)
 
-		cfgParam, ok := config[currKey]
+		cfgParam, ok := config.Tasks[currKey]
 		if !ok {
 			// if custom configuration is not specified, use default and continue
 			pluginsCfg.Plugins = append(pluginsCfg.Plugins, currPlugin)
