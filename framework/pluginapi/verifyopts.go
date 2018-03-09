@@ -51,15 +51,13 @@ func (f verifyOptsFunc) apply(impl *verifyOptionsImpl) {
 
 func VerifyOptionsTaskFlags(flags ...VerifyFlag) VerifyOptionsParam {
 	return verifyOptsFunc(func(impl *verifyOptionsImpl) {
-		var verifyFlagImpls []verifyFlagImpl
 		for _, f := range flags {
-			verifyFlagImpls = append(verifyFlagImpls, verifyFlagImpl{
+			impl.VerifyTaskFlagsVar = append(impl.VerifyTaskFlagsVar, verifyFlagImpl{
 				NameVar:        f.Name(),
 				DescriptionVar: f.Description(),
 				TypeVar:        f.Type(),
 			})
 		}
-		impl.VerifyTaskFlagsVar = verifyFlagImpls
 	})
 }
 
