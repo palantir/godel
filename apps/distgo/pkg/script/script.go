@@ -30,7 +30,7 @@ import (
 )
 
 func Write(buildSpec params.ProductBuildSpec, script string) (name string, cleanup func() error, rErr error) {
-	tmpFile, err := ioutil.TempFile(buildSpec.ProjectDir, "")
+	tmpFile, err := ioutil.TempFile(buildSpec.Build.OutputDir, "distgo-script-")
 	if err != nil {
 		return "", nil, errors.Wrapf(err, "Failed to create script file")
 	}
