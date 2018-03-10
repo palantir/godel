@@ -73,8 +73,9 @@ func Hidden() Matcher {
 }
 
 // Name returns a Matcher that matches the on the name of all of the components of a path using the provided
-// expressions. Each part of the path is tested against the expressions independently (no path separators). The name
-// must fully match the expression to be considered a match.
+// expressions. Each part of the path (except for ".." components, which are ignored and cannot be matched) is tested
+// against the expressions independently (no path separators). The name must fully match the expression to be considered
+// a match.
 func Name(regexps ...string) Matcher {
 	compiled := make([]*regexp.Regexp, len(regexps))
 	for i, curr := range regexps {
@@ -88,6 +89,10 @@ type nameMatcher []*regexp.Regexp
 func (m nameMatcher) Match(inputRelPath string) bool {
 	for _, currSubpath := range allSubpaths(inputRelPath) {
 		currName := path.Base(currSubpath)
+		// do not match relative path components
+		if currName == ".." {
+			continue
+		}
 		for _, currRegExp := range []*regexp.Regexp(m) {
 			matchLoc := currRegExp.FindStringIndex(currName)
 			if len(matchLoc) > 0 && matchLoc[0] == 0 && matchLoc[1] == len(currName) {
@@ -131,7 +136,7 @@ func (m *pathMatcher) Match(inputRelPath string) bool {
 					panic(fmt.Sprintf("filepath: Match(%q): %v", currMatcherPath, err))
 				}
 			} else {
-				match = (currMatcherPath == currSubpath)
+				match = currMatcherPath == currSubpath
 			}
 			if match {
 				return true
@@ -141,9 +146,10 @@ func (m *pathMatcher) Match(inputRelPath string) bool {
 	return false
 }
 
-// allSubpaths returns the provided relative paths and all of its subpaths up to (but not including) ".". For example,
-// "foo/bar/baz.txt" return [foo/bar/baz.txt foo/bar foo], while "foo.txt" returns [foo.txt]. Returns nil if the
-// provided path is an absolute path.
+// allSubpaths returns the provided relative path and all of its subpaths up to (but not including) ".". For example,
+// "foo/bar/baz.txt" returns [foo/bar/baz.txt foo/bar foo], while "foo.txt" returns [foo.txt]. This applies for ".."
+// paths as well: a path of the form "../foo/bar/baz.txt" returns [../foo/bar/baz.txt ../foo/bar ../foo ..]. Returns nil
+// if the input path is not a relative path.
 func allSubpaths(relPath string) []string {
 	if path.IsAbs(relPath) {
 		return nil

@@ -1,7 +1,0 @@
-packages:
-  gojunitreport:
-    main: github.com/jstemmer/go-junit-report
-  gotest:
-    main: github.com/nmiyake/gotest
-  gt:
-    main: rsc.io/gt

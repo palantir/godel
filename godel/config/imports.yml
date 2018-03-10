@@ -1,3 +1,2 @@
 root-dirs:
-  - apps/distgo/pkg
   - pkg

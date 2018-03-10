@@ -20,13 +20,10 @@ import (
 	"os"
 	"path"
 
-	"github.com/kardianos/osext"
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/nmiyake/pkg/errorstringer"
-	"github.com/palantir/amalgomate/amalgomated"
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/framework/apptasks"
 	"github.com/palantir/godel/framework/builtintasks"
 	"github.com/palantir/godel/framework/godel"
 	"github.com/palantir/godel/framework/godellauncher"
@@ -34,20 +31,10 @@ import (
 )
 
 func main() {
-	gödelPath, err := osext.Executable()
-	if err != nil {
-		printErrAndExit(errors.Wrapf(err, "failed to determine path for current executable"), false)
-	}
-
 	if err := dirs.SetGoEnvVariables(); err != nil {
 		printErrAndExit(errors.Wrapf(err, "failed to set Go environment variables"), false)
 	}
-
-	cmdLib, err := apptasks.AmalgomatedCmdLib(gödelPath)
-	if err != nil {
-		printErrAndExit(errors.Wrapf(err, "failed to create amalgomated CmdLib"), false)
-	}
-	os.Exit(amalgomated.RunApp(os.Args, nil, cmdLib, runGodelApp))
+	os.Exit(runGodelApp(os.Args))
 }
 
 func runGodelApp(osArgs []string) int {
@@ -136,8 +123,6 @@ func runGodelApp(osArgs []string) int {
 func createTasks(wrapperPath string, defaultTasks, pluginTasks []godellauncher.Task, tasksCfgInfo godellauncher.TasksConfigInfo) []godellauncher.Task {
 	var allTasks []godellauncher.Task
 	allTasks = append(allTasks, builtintasks.Tasks(wrapperPath, tasksCfgInfo)...)
-	allTasks = append(allTasks, apptasks.AmalgomatedTasks()...)
-	allTasks = append(allTasks, apptasks.AppTasks()...)
 	allTasks = append(allTasks, defaultTasks...)
 	allTasks = append(allTasks, builtintasks.VerifyTask(append(allTasks, pluginTasks...)))
 	allTasks = append(allTasks, pluginTasks...)

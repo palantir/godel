@@ -1,16 +1,4 @@
 tags:
-  distgo:
-    paths:
-      - "apps/distgo"
-  gonform:
-    paths:
-      - "apps/gonform"
-  gunit:
-    paths:
-      - "apps/gunit"
-  okgo:
-    paths:
-      - "apps/okgo"
   integration:
     paths:
       - "integration_test"

@@ -49,7 +49,7 @@ func TestInstallGitHooks(t *testing.T) {
 				require.NoError(t, err, "Case %d", caseNum)
 				bytes, err := ioutil.ReadFile(path.Join(projectDir, ".git/hooks/pre-commit"))
 				require.NoError(t, err, "Case %d", caseNum)
-				assert.Regexp(t, regexp.MustCompile(`(?s).+\./godelw format -l runAll \$gofiles.+`), string(bytes), "Case %d", caseNum)
+				assert.Regexp(t, regexp.MustCompile(`(?s).+\./godelw format --verify \$gofiles.+`), string(bytes), "Case %d", caseNum)
 			},
 		},
 		{

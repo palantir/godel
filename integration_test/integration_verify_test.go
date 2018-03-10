@@ -29,17 +29,6 @@ import (
 )
 
 const (
-	generateYML = `
-generators:
-  foo:
-    go-generate-dir: gen
-    gen-paths:
-      paths:
-        - "gen/output.txt"
-`
-	importsYML = `
-root-dirs:
-  - .`
 	licenseYML = `
 header: |
   // Copyright 2016 Palantir Technologies, Inc.
@@ -65,54 +54,26 @@ func TestVerify(t *testing.T) {
 		{
 			RelPath: "main.go",
 			Src: `package main
-	import "fmt"
+import "fmt"
 
-	func main() {
-		fmt.Println("hello, world!")
-	}`,
+func main() {
+	fmt.Println("hello, world!")
+}`,
 		},
 		{
 			RelPath: "main_test.go",
 			Src: `package main_test
-	import "testing"
+import "testing"
 
-	func TestFoo(t *testing.T) {
-		t=t
-		t.Fail()
-	}`,
-		},
-		{
-			RelPath: "gen/testbar.go",
-			Src: `package testbar
-
-//go:generate go run generator_main.go
-`,
-		},
-		{
-			RelPath: "gen/generator_main.go",
-			Src: `// +build ignore
-
-package main
-
-import (
-	"io/ioutil"
-)
-
-func main() {
-	if err := ioutil.WriteFile("output.txt", []byte("foo-output"), 0644); err != nil {
-		panic(err)
-	}
-}
-`,
+func TestFoo(t *testing.T) {
+	t=t
+	t.Fail()
+}`,
 		},
 	}
 	_, err := gofiles.Write(testProjectDir, specs)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "generate.yml"), []byte(generateYML), 0644)
-	require.NoError(t, err)
-	err = ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "imports.yml"), []byte(importsYML), 0644)
-	require.NoError(t, err)
 	err = ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "license.yml"), []byte(licenseYML), 0644)
 	require.NoError(t, err)
 
@@ -120,13 +81,11 @@ func main() {
 		args []string
 		want string
 	}{
-		{want: `(?s).+Failed tasks:\n\tformat -l\n\tgenerate --verify\n\timports --verify\n\tlicense --verify\n\tcheck\n\ttest`},
-		{args: []string{"--skip-format"}, want: `(?s).+Failed tasks:\n\tgenerate --verify\n\timports --verify\n\tlicense --verify\n\tcheck\n\ttest`},
-		{args: []string{"--skip-check"}, want: `(?s).+Failed tasks:\n\tformat -l\n\tgenerate --verify\n\timports --verify\n\tlicense --verify\n\ttest`},
-		{args: []string{"--skip-generate"}, want: `(?s).+Failed tasks:\n\tformat -l\n\timports --verify\n\tlicense --verify\n\tcheck\n\ttest`},
-		{args: []string{"--skip-imports"}, want: `(?s).+Failed tasks:\n\tformat -l\n\tgenerate --verify\n\tlicense --verify\n\tcheck\n\ttest`},
-		{args: []string{"--skip-license"}, want: `(?s).+Failed tasks:\n\tformat -l\n\tgenerate --verify\n\timports --verify\n\tcheck\n\ttest`},
-		{args: []string{"--skip-test"}, want: `(?s).+Failed tasks:\n\tformat -l\n\tgenerate --verify\n\timports --verify\n\tlicense --verify\n\tcheck`},
+		{want: `(?s).+Failed tasks:\n\tformat --verify\n\tlicense --verify\n\tcheck\n\ttest`},
+		{args: []string{"--skip-format"}, want: `(?s).+Failed tasks:\n\tlicense --verify\n\tcheck\n\ttest`},
+		{args: []string{"--skip-check"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tlicense --verify\n\ttest`},
+		{args: []string{"--skip-license"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tcheck\n\ttest`},
+		{args: []string{"--skip-test"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tlicense --verify\n\tcheck`},
 	} {
 		err = os.MkdirAll(path.Join(testProjectDir, "gen"), 0755)
 		require.NoError(t, err)
@@ -164,50 +123,18 @@ func TestVerifyApply(t *testing.T) {
 		t.Fail()
 	}`,
 		},
-		{
-			RelPath: "gen/testbar.go",
-			Src: `package testbar
-
-//go:generate go run generator_main.go
-`,
-		},
-		{
-			RelPath: "gen/generator_main.go",
-			Src: `// +build ignore
-
-package main
-
-import (
-	"io/ioutil"
-)
-
-func main() {
-	if err := ioutil.WriteFile("output.txt", []byte("foo-output"), 0644); err != nil {
-		panic(err)
-	}
-}
-`,
-		},
 	}
 
 	const (
 		formattedTestSrc = `package main_test
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestFoo(t *testing.T) {
 	t = t
 	t.Fail()
 }
 `
-		generatedOutput = `foo-output`
-		importsJSON     = `{
-    "imports": [],
-    "mainOnlyImports": [],
-    "testOnlyImports": []
-}`
 		licensedTestSrc = `// Copyright 2016 Palantir Technologies, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -245,9 +172,7 @@ package main_test
 
 package main_test
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestFoo(t *testing.T) {
 	t = t
@@ -255,32 +180,21 @@ func TestFoo(t *testing.T) {
 }
 `
 	)
-	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "generate.yml"), []byte(generateYML), 0644)
-	require.NoError(t, err)
-	err = ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "imports.yml"), []byte(importsYML), 0644)
-	require.NoError(t, err)
-	err = ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "license.yml"), []byte(licenseYML), 0644)
+	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "license.yml"), []byte(licenseYML), 0644)
 	require.NoError(t, err)
 
 	for i, currCase := range []struct {
-		args               []string
-		want               string
-		wantTestSrc        string
-		wantImportsJSON    string
-		wantGenerateOutput string
+		args        []string
+		want        string
+		wantTestSrc string
 	}{
-		{want: `(?s).+Failed tasks:\n\tcheck\n\ttest`, wantTestSrc: licensedAndFormattedTestSrc, wantImportsJSON: importsJSON, wantGenerateOutput: generatedOutput},
-		{args: []string{"--skip-format"}, want: `(?s).+Failed tasks:\n\tcheck\n\ttest`, wantTestSrc: licensedTestSrc, wantImportsJSON: importsJSON, wantGenerateOutput: generatedOutput},
-		{args: []string{"--skip-check"}, want: `(?s).+Failed tasks:\n\ttest`, wantTestSrc: licensedAndFormattedTestSrc, wantImportsJSON: importsJSON, wantGenerateOutput: generatedOutput},
-		{args: []string{"--skip-generate"}, want: `(?s).+Failed tasks:\n\tcheck\n\ttest`, wantTestSrc: licensedAndFormattedTestSrc, wantImportsJSON: importsJSON},
-		{args: []string{"--skip-imports"}, want: `(?s).+Failed tasks:\n\tcheck\n\ttest`, wantTestSrc: licensedAndFormattedTestSrc, wantGenerateOutput: generatedOutput},
-		{args: []string{"--skip-license"}, want: `(?s).+Failed tasks:\n\tcheck\n\ttest`, wantTestSrc: formattedTestSrc, wantImportsJSON: importsJSON, wantGenerateOutput: generatedOutput},
-		{args: []string{"--skip-test"}, want: `(?s).+Failed tasks:\n\tcheck`, wantTestSrc: licensedAndFormattedTestSrc, wantImportsJSON: importsJSON, wantGenerateOutput: generatedOutput},
+		{want: `(?s).+Failed tasks:\n\tcheck\n\ttest`, wantTestSrc: licensedAndFormattedTestSrc},
+		{args: []string{"--skip-format"}, want: `(?s).+Failed tasks:\n\tcheck\n\ttest`, wantTestSrc: licensedTestSrc},
+		{args: []string{"--skip-check"}, want: `(?s).+Failed tasks:\n\ttest`, wantTestSrc: licensedAndFormattedTestSrc},
+		{args: []string{"--skip-license"}, want: `(?s).+Failed tasks:\n\tcheck\n\ttest`, wantTestSrc: formattedTestSrc},
+		{args: []string{"--skip-test"}, want: `(?s).+Failed tasks:\n\tcheck`, wantTestSrc: licensedAndFormattedTestSrc},
 	} {
 		_, err := gofiles.Write(testProjectDir, specs)
-		require.NoError(t, err)
-
-		err = ioutil.WriteFile(path.Join(testProjectDir, "gen", "output.txt"), []byte(""), 0644)
 		require.NoError(t, err)
 
 		cmd := exec.Command("./godelw", append([]string{"verify"}, currCase.args...)...)
@@ -292,22 +206,6 @@ func TestFoo(t *testing.T) {
 		bytes, err := ioutil.ReadFile(path.Join(testProjectDir, "main_test.go"))
 		require.NoError(t, err, "Case %d", i)
 		assert.Equal(t, currCase.wantTestSrc, string(bytes), "Case %d", i)
-
-		gotGeneratedOutput, err := ioutil.ReadFile(path.Join(testProjectDir, "gen", "output.txt"))
-		require.NoError(t, err, "Case %d", i)
-		assert.Equal(t, currCase.wantGenerateOutput, string(gotGeneratedOutput), "Case %d", i)
-
-		importsJSONPath := path.Join(testProjectDir, "gocd_imports.json")
-		if currCase.wantImportsJSON == "" {
-			_, err = os.Stat(importsJSONPath)
-			assert.True(t, os.IsNotExist(err), "Case %d: gocd_imports.json should not exist", i)
-		} else {
-			bytes, err = ioutil.ReadFile(importsJSONPath)
-			require.NoError(t, err, "Case %d", i)
-			assert.Equal(t, currCase.wantImportsJSON, string(bytes), "Case %d", i)
-			err = os.Remove(importsJSONPath)
-			require.NoError(t, err, "Case %d", i)
-		}
 	}
 }
 
@@ -406,6 +304,6 @@ func TestFooIntegration(t *testing.T) {}
 	output, err = cmd.CombinedOutput()
 	outputStr = string(output)
 	require.NoError(t, err, "Command %v failed with error %v. Output: %q", cmd.Args, err, outputStr)
-	assert.Regexp(t, fmt.Sprintf(`(?s).+%s\s+[0-9.]+s.+`, files["main.go"].ImportPath), outputStr)
-	assert.Regexp(t, fmt.Sprintf(`(?s).+%s\s+[0-9.]+s.+`, files["integration_tests/integration_test.go"].ImportPath), outputStr)
+	assert.Regexp(t, fmt.Sprintf(`(?s).+%s\s+(\(cached\)|[0-9.]+s).+`, files["main.go"].ImportPath), outputStr)
+	assert.Regexp(t, fmt.Sprintf(`(?s).+%s\s+(\(cached\)|[0-9.]+s).+`, files["integration_tests/integration_test.go"].ImportPath), outputStr)
 }

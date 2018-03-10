@@ -29,7 +29,7 @@ var hooks = map[string]string{
 gofiles=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')
 [ -z "$gofiles" ] && exit 0
 
-unformatted=$(./godelw format -l runAll $gofiles)
+unformatted=$(./godelw format --verify $gofiles)
 exitCode=$?
 [ "$exitCode" -eq "0" ] && exit 0
 
