@@ -52,7 +52,7 @@ func UpdateTask(wrapperPath string) godellauncher.Task {
 			return installupdate.InstallVersion(projectDir, versionFlag, cacheDurationFlag, false, cmd.OutOrStdout())
 		},
 	}
-	cmd.Flags().BoolVar(&syncFlag, "sync", true, "use version and checksum specified in godel.properties")
+	cmd.Flags().BoolVar(&syncFlag, "sync", false, "use version and checksum specified in godel.properties")
 	cmd.Flags().StringVar(&versionFlag, "version", "", "version to update (if blank, uses latest version)")
 	cmd.Flags().DurationVar(&cacheDurationFlag, "cache-duration", time.Hour, "duration for which cache entries should be considered valid")
 
