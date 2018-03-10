@@ -15,7 +15,6 @@
 package godellauncher
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path"
@@ -30,31 +29,25 @@ import (
 )
 
 const (
-	GodelConfigYML   = "godel.yml"
-	excludeConfigYML = "exclude.yml"
+	GodelConfigYML = "godel.yml"
 )
 
 type GodelConfig struct {
-	// TasksConfigProviders specifies the providers used to load provided task configuration. Excluded from JSON
-	// serialization because JSON serialization is only needed for legacy "exclude" back-compat (and will be removed in
-	// 2.0 release).
-	TasksConfigProviders TasksConfigProvidersConfig `yaml:"tasks-config-providers" json:"-"`
+	// TasksConfigProviders specifies the providers used to load provided task configuration.
+	TasksConfigProviders TasksConfigProvidersConfig `yaml:"tasks-config-providers"`
 
-	// TasksConfig contains the configuration for the tasks (default and plugin). Excluded from JSON serialization
-	// because JSON serialization is only needed for legacy "exclude" back-compat (and will be removed in 2.0 release).
-	TasksConfig `yaml:",inline" json:"-"`
+	// TasksConfig contains the configuration for the tasks (default and plugin).
+	TasksConfig `yaml:",inline"`
 
 	// Exclude specifies the files and directories that should be excluded from gödel operations.
-	Exclude matcher.NamesPathsCfg `yaml:"exclude" json:"exclude"`
+	Exclude matcher.NamesPathsCfg `yaml:"exclude"`
 }
 
 type TasksConfig struct {
-	// DefaultTasks specifies the configuration for the default tasks for gödel. Excluded from JSON serialization
-	// because JSON serialization is only needed for legacy "exclude" back-compat (and will be removed in 2.0 release).
-	DefaultTasks DefaultTasksConfig `yaml:"default-tasks" json:"-"`
-	// Plugins specifies the configuration for the plugins configured for gödel. Excluded from JSON serialization
-	// because JSON serialization is only needed for legacy "exclude" back-compat (and will be removed in 2.0 release).
-	Plugins PluginsConfig `yaml:"plugins" json:"-"`
+	// DefaultTasks specifies the configuration for the default tasks for gödel.
+	DefaultTasks DefaultTasksConfig `yaml:"default-tasks"`
+	// Plugins specifies the configuration for the plugins configured for gödel.
+	Plugins PluginsConfig `yaml:"plugins"`
 }
 
 // Combine combines the provided TasksConfig configurations with the base configuration. In cases where values are
@@ -207,19 +200,6 @@ func ConfigDirPath(projectDirPath string) (string, error) {
 	return wrapper.Path(layout.WrapperConfigDir), nil
 }
 
-// GodelConfigJSON returns the JSON representation of the gödel configuration read by ReadGodelConfig.
-func GodelConfigJSON(cfgDir string) ([]byte, error) {
-	cfg, err := ReadGodelConfig(cfgDir)
-	if err != nil {
-		return nil, err
-	}
-	bytes, err := json.Marshal(cfg)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to marshal configuration as JSON")
-	}
-	return bytes, nil
-}
-
 // ReadGodelConfigFromProjectDir reads the gödel configuration from the "godel.yml" file in the configuration file for
 // the gödel project with the specified project directory and returns it.
 func ReadGodelConfigFromProjectDir(projectDir string) (GodelConfig, error) {
@@ -234,9 +214,7 @@ func ReadGodelConfigFromProjectDir(projectDir string) (GodelConfig, error) {
 	return cfg, nil
 }
 
-// ReadGodelConfig reads the gödel configuration from the "godel.yml" file in the specified directory and returns it. If
-// "exclude.yml" exists in the directory, it is also read and its elements are combined with the configuration read from
-// "gödel.yml".
+// ReadGodelConfig reads the gödel configuration from the "godel.yml" file in the specified directory and returns it.
 func ReadGodelConfig(cfgDir string) (GodelConfig, error) {
 	var gödelCfg GodelConfig
 	gödelYML := path.Join(cfgDir, GodelConfigYML)
@@ -249,36 +227,5 @@ func ReadGodelConfig(cfgDir string) (GodelConfig, error) {
 			return GodelConfig{}, errors.Wrapf(err, "failed to unmarshal gödel config YAML")
 		}
 	}
-
-	// legacy support: if "exclude.yml" exists, combine the "Exclude" configuration it defines with the new one
-	excludeYML := path.Join(cfgDir, excludeConfigYML)
-	if _, err := os.Stat(excludeYML); err == nil {
-		var excludeCfg matcher.NamesPathsCfg
-		bytes, err := ioutil.ReadFile(excludeYML)
-		if err != nil {
-			return GodelConfig{}, errors.Wrapf(err, "failed to read file %s", excludeYML)
-		}
-		if err := yaml.Unmarshal(bytes, &excludeCfg); err != nil {
-			return GodelConfig{}, errors.Wrapf(err, "failed to unmarshal exclude config YAML")
-		}
-		gödelCfg.Exclude.Names = addNewElements(gödelCfg.Exclude.Names, excludeCfg.Names)
-		gödelCfg.Exclude.Paths = addNewElements(gödelCfg.Exclude.Paths, excludeCfg.Paths)
-	}
-
 	return gödelCfg, nil
-}
-
-func addNewElements(original, new []string) []string {
-	set := make(map[string]struct{})
-	for _, s := range original {
-		set[s] = struct{}{}
-	}
-
-	for _, s := range new {
-		if _, ok := set[s]; ok {
-			continue
-		}
-		original = append(original, s)
-	}
-	return original
 }
