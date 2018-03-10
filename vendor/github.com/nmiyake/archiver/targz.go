@@ -8,31 +8,13 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/nmiyake/paxtar"
 )
 
-// Tar creates a .tar file at tarPath containing the
-// contents of files listed in filePaths. File paths can
-// be those of regular files or directories. Regular
+// TarGz creates a .tar.gz file at targzPath containing
+// the contents of files listed in filePaths. File paths
+// can be those of regular files or directories. Regular
 // files are stored at the 'root' of the archive, and
 // directories are recursively added.
-func Tar(tarPath string, filePaths []string) error {
-	out, err := os.Create(tarPath)
-	if err != nil {
-		return fmt.Errorf("error creating %s: %v", tarPath, err)
-	}
-	defer out.Close()
-
-	tarWriter := paxtar.NewWriter(out)
-	defer tarWriter.Close()
-
-	return tarball(filePaths, tarWriter, tarPath)
-}
-
-// TarGz creates a .tar.gz file at targzPath containing
-// the contents of files listed in filePaths. It works
-// the same way Tar does, but with gzip compression.
 func TarGz(targzPath string, filePaths []string) error {
 	out, err := os.Create(targzPath)
 	if err != nil {
@@ -43,7 +25,7 @@ func TarGz(targzPath string, filePaths []string) error {
 	gzWriter := gzip.NewWriter(out)
 	defer gzWriter.Close()
 
-	tarWriter := paxtar.NewWriter(gzWriter)
+	tarWriter := tar.NewWriter(gzWriter)
 	defer tarWriter.Close()
 
 	return tarball(filePaths, tarWriter, targzPath)
@@ -51,7 +33,7 @@ func TarGz(targzPath string, filePaths []string) error {
 
 // tarball writes all files listed in filePaths into tarWriter, which is
 // writing into a file located at dest.
-func tarball(filePaths []string, tarWriter *paxtar.Writer, dest string) error {
+func tarball(filePaths []string, tarWriter *tar.Writer, dest string) error {
 	for _, fpath := range filePaths {
 		err := tarFile(tarWriter, fpath, dest)
 		if err != nil {
@@ -63,7 +45,7 @@ func tarball(filePaths []string, tarWriter *paxtar.Writer, dest string) error {
 
 // tarFile writes the file at source into tarWriter. It does so
 // recursively for directories.
-func tarFile(tarWriter *paxtar.Writer, source, dest string) error {
+func tarFile(tarWriter *tar.Writer, source, dest string) error {
 	sourceInfo, err := os.Stat(source)
 	if err != nil {
 		return fmt.Errorf("%s: stat: %v", source, err)
@@ -79,7 +61,7 @@ func tarFile(tarWriter *paxtar.Writer, source, dest string) error {
 			return fmt.Errorf("error walking to %s: %v", path, err)
 		}
 
-		header, err := paxtar.FileInfoHeader(info, path)
+		header, err := tar.FileInfoHeader(info, path)
 		if err != nil {
 			return fmt.Errorf("%s: making header: %v", path, err)
 		}
@@ -106,31 +88,20 @@ func tarFile(tarWriter *paxtar.Writer, source, dest string) error {
 			return nil
 		}
 
-		if header.Typeflag == paxtar.TypeReg {
+		if header.Typeflag == tar.TypeReg {
 			file, err := os.Open(path)
 			if err != nil {
 				return fmt.Errorf("%s: open: %v", path, err)
 			}
 			defer file.Close()
 
-			_, err = io.CopyN(tarWriter, file, info.Size())
-			if err != nil && err != io.EOF {
+			_, err = io.Copy(tarWriter, file)
+			if err != nil {
 				return fmt.Errorf("%s: copying contents: %v", path, err)
 			}
 		}
 		return nil
 	})
-}
-
-// Untar untars source and puts the contents into destination.
-func Untar(source, destination string) error {
-	f, err := os.Open(source)
-	if err != nil {
-		return fmt.Errorf("%s: failed to open archive: %v", source, err)
-	}
-	defer f.Close()
-
-	return untar(tar.NewReader(f), destination)
 }
 
 // UntarGz untars source and decompresses the contents into destination.

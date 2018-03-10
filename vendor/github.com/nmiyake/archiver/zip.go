@@ -62,7 +62,7 @@ func zipFile(w *zip.Writer, source string) error {
 		}
 
 		if baseDir != "" {
-			header.Name = path.Join(baseDir, strings.TrimPrefix(fpath, source))
+			header.Name = filepath.Join(baseDir, strings.TrimPrefix(fpath, source))
 		}
 
 		if info.IsDir() {
@@ -93,8 +93,8 @@ func zipFile(w *zip.Writer, source string) error {
 			}
 			defer file.Close()
 
-			_, err = io.CopyN(writer, file, info.Size())
-			if err != nil && err != io.EOF {
+			_, err = io.Copy(writer, file)
+			if err != nil {
 				return fmt.Errorf("%s: copying contents: %v", fpath, err)
 			}
 		}
@@ -135,7 +135,7 @@ func unzipFile(zf *zip.File, destination string) error {
 }
 
 func writeNewFile(fpath string, in io.Reader, fm os.FileMode) error {
-	err := os.MkdirAll(filepath.Dir(fpath), 0755)
+	err := os.MkdirAll(path.Dir(fpath), 0755)
 	if err != nil {
 		return fmt.Errorf("%s: making directory for file: %v", fpath, err)
 	}
@@ -159,7 +159,7 @@ func writeNewFile(fpath string, in io.Reader, fm os.FileMode) error {
 }
 
 func writeNewSymbolicLink(fpath string, target string) error {
-	err := os.MkdirAll(filepath.Dir(fpath), 0755)
+	err := os.MkdirAll(path.Dir(fpath), 0755)
 	if err != nil {
 		return fmt.Errorf("%s: making directory for file: %v", fpath, err)
 	}
@@ -211,9 +211,9 @@ var CompressedFormats = map[string]struct{}{
 }
 
 type (
-	// MakeFunc is a function that makes an archive.
-	MakeFunc func(string, []string) error
+	// CompressFunc is a function that makes an archive.
+	CompressFunc func(string, []string) error
 
-	// OpenFunc is a function that extracts an archive.
-	OpenFunc func(string, string) error
+	// DecompressFunc is a function that extracts an archive.
+	DecompressFunc func(string, string) error
 )

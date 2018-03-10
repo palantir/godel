@@ -13,6 +13,8 @@ const (
 	vmGlobalAddr      = 0x3C000
 	vmGlobalSize      = 0x02000
 	vmFixedGlobalSize = 0x40
+
+	maxUint32 = 1<<32 - 1
 )
 
 // v3Filter is the interface type for RAR V3 filters.
@@ -30,10 +32,14 @@ var (
 	}{
 		{0xad576887, 53, e8FilterV3},
 		{0x3cd7e57e, 57, e8e9FilterV3},
+		{0x3769893f, 120, itaniumFilterV3},
 		{0x0e06077d, 29, deltaFilterV3},
 		{0x1c2c5dc8, 149, filterRGBV3},
 		{0xbc85e701, 216, filterAudioV3},
 	}
+
+	// itanium filter byte masks
+	byteMask = []int{4, 4, 6, 6, 0, 0, 7, 7, 4, 4, 0, 0, 4, 4, 0, 0}
 )
 
 func filterE8(c byte, v5 bool, buf []byte, offset int64) ([]byte, error) {
@@ -68,6 +74,48 @@ func e8FilterV3(r map[int]uint32, global, buf []byte, offset int64) ([]byte, err
 
 func e8e9FilterV3(r map[int]uint32, global, buf []byte, offset int64) ([]byte, error) {
 	return filterE8(0xe9, false, buf, offset)
+}
+
+func getBits(buf []byte, pos, count uint) uint32 {
+	n := binary.LittleEndian.Uint32(buf[pos/8:])
+	n >>= pos & 7
+	mask := uint32(maxUint32) >> (32 - count)
+	return n & mask
+}
+
+func setBits(buf []byte, pos, count uint, bits uint32) {
+	mask := uint32(maxUint32) >> (32 - count)
+	mask <<= pos & 7
+	bits <<= pos & 7
+	n := binary.LittleEndian.Uint32(buf[pos/8:])
+	n = (n & ^mask) | (bits & mask)
+	binary.LittleEndian.PutUint32(buf[pos/8:], n)
+}
+
+func itaniumFilterV3(r map[int]uint32, global, buf []byte, offset int64) ([]byte, error) {
+	fileOffset := uint32(offset) >> 4
+
+	for b := buf; len(b) > 21; b = b[16:] {
+		c := int(b[0]&0x1f) - 0x10
+		if c >= 0 {
+			mask := byteMask[c]
+			if mask != 0 {
+				for i := uint(0); i <= 2; i++ {
+					if mask&(1<<i) == 0 {
+						continue
+					}
+					pos := i*41 + 18
+					if getBits(b, pos+24, 4) == 5 {
+						n := getBits(b, pos, 20)
+						n -= fileOffset
+						setBits(b, pos, 20, n)
+					}
+				}
+			}
+		}
+		fileOffset++
+	}
+	return buf, nil
 }
 
 func filterDelta(n int, buf []byte) ([]byte, error) {
