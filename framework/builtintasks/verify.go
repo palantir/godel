@@ -43,7 +43,6 @@ func VerifyTask(tasks []godellauncher.Task) godellauncher.Task {
 
 	applyVar := cmd.Flags().Bool(apply, true, "Apply changes when possible")
 	for _, task := range verifyTasks {
-		// add "skip" flag for task. TODO: instead of adding a flag per task, create a single "skip" flag that takes parameters.
 		skipVerifyTasks[task.Name] = cmd.Flags().Bool("skip-"+task.Name, false, fmt.Sprintf("Skip '%s' task", task.Name))
 
 		flags, ok := verifyTaskFlags[task.Name]
