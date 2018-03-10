@@ -1,0 +1,85 @@
+working_dir: &working_dir
+  working_directory: /go/src/github.com/palantir/pkg
+
+go-version: &go-version
+  run: go version
+
+godel-cache-restore: &godel-cache-restore
+  restore_cache:
+    keys:
+      - godel-cache-{{ checksum "godelw" }}-v1
+
+godel-version: &godel-version
+  run: ./godelw version
+
+godel-cache-save: &godel-cache-save
+  save_cache:
+    key: godel-cache-{{ checksum "godelw" }}-v1
+    paths:
+      - ~/.godel
+
+define-tests-dir: &define-tests-dir
+  run: echo 'export TESTS_DIR=/tmp/test-results' >> $BASH_ENV
+
+mkdir-tests-dir: &mkdir-tests-dir
+  run: mkdir -p "${TESTS_DIR}"
+
+go-install-packages: &go-install-packages
+  run: go install $(./godelw packages)
+
+godelw-verify: &godelw-verify
+  run: ./godelw verify --junit-output="$TESTS_DIR/$CIRCLE_PROJECT_REPONAME-tests.xml"
+
+godelw-test: &godelw-test
+  run: ./godelw test --junit-output="$TESTS_DIR/$CIRCLE_PROJECT_REPONAME-tests.xml"
+
+store-test-results: &store-test-results
+  type: test-results-store
+  path: /tmp/test-results
+
+store-artifacts: &store-artifacts
+  type: artifacts-store
+  path: /tmp/test-results
+  destination: test-results
+
+version: 2
+jobs:
+  go-1.9:
+    <<: *working_dir
+    docker:
+      - image: golang:1.9.2
+    steps:
+      - checkout
+      - *go-version
+      - *godel-cache-restore
+      - *godel-version
+      - *godel-cache-save
+      - *define-tests-dir
+      - *mkdir-tests-dir
+      - *go-install-packages
+      - *godelw-verify
+      - *store-test-results
+      - *store-artifacts
+  go-1.8:
+    <<: *working_dir
+    docker:
+      - image: golang:1.8.5
+    steps:
+      - checkout
+      - *go-version
+      - *godel-cache-restore
+      - *godel-version
+      - *godel-cache-save
+      - *define-tests-dir
+      - *mkdir-tests-dir
+      - *go-install-packages
+      - *godelw-test
+      - *store-test-results
+      - *store-artifacts
+
+workflows:
+  version: 2
+  build-publish:
+    jobs:
+      - go-1.9
+      - go-1.8
