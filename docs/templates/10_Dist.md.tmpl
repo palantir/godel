@@ -22,14 +22,12 @@ artifacts other than the binary (such as documentation or resources).
 Observe the default behavior by removing the configuration in the `godel/config/dist.yml` file and running
 `./godelw dist`:
 
-```
-➜ echo '' > godel/config/dist-plugin.yml
-➜ ./godelw dist
-Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-dirty/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.199s)
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-dirty/os-arch-bin/echgo2-0.0.1-dirty-linux-amd64.tgz
-Finished creating os-arch-bin distribution for echgo2
-```
+```START_TUTORIAL_CODE
+echo '' > godel/config/dist-plugin.yml
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+./godelw dist
+```END_TUTORIAL_CODE
 
 The default dist settings creates a tgz distribution for each `bin` output for the OS/architecture of the host platform.
 Note that, because the build output for the new version was not present, the build task was run as well. If the required
@@ -41,8 +39,8 @@ can be configured using the `output-dir` property). The `./godelw clean` command
 
 Update the `dist-plugin.yml` to explicitly configure the dist parameters of the product:
 
-```
-➜ echo 'products:
+```START_TUTORIAL_CODE
+echo 'products:
   echgo2:
     build:
       main-pkg: .
@@ -61,17 +59,13 @@ Update the `dist-plugin.yml` to explicitly configure the dist parameters of the 
               arch: amd64
             - os: linux
               arch: amd64' > godel/config/dist-plugin.yml
-```
+```END_TUTORIAL_CODE
 
 Run `./godelw dist` to verify that the distributions are built:
 
-```
-➜ ./godelw dist
-Building echgo2 for darwin-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-dirty/darwin-amd64/echgo2
-Finished building echgo2 for darwin-amd64 (0.205s)
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-dirty/os-arch-bin/echgo2-0.0.1-dirty-darwin-amd64.tgz, /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-dirty/os-arch-bin/echgo2-0.0.1-dirty-linux-amd64.tgz
-Finished creating os-arch-bin distribution for echgo2
-```
+```START_TUTORIAL_CODE
+./godelw dist
+```END_TUTORIAL_CODE
 
 The `dist` operation will run the `build` operation for inputs that need to be built. In the this run, the `dist`
 operation only built the output for `linux-amd64` because the previous step in the tutorial (in which we ran `dist` with
@@ -80,12 +74,12 @@ considered up-to-date.
 
 Commit this update:
 
-```
-➜ git add godel/config/dist-plugin.yml
-➜ git commit -m "Specify dist configuration"
-[master 14e6d3c] Specify dist configuration
- 1 file changed, 9 insertions(+)
-```
+```START_TUTORIAL_CODE
+git add godel/config/dist-plugin.yml
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git commit -m "Specify dist configuration"
+```END_TUTORIAL_CODE
 
 On its own, this functionality may not seem very spectacular. However, these distribution artifacts can be used as
 inputs to other tasks such as `publish` and `docker`. Furthermore, for more complicated distributions, it can be useful
@@ -117,30 +111,22 @@ date if any of the following is true:
 
 Run `./godelw dist` to generate the dist artifacts. This run will build and dist because the commit is new:
 
-```
-➜ ./godelw dist
-Building echgo2 for darwin-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c/darwin-amd64/echgo2
-Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c/linux-amd64/echgo2
-Finished building echgo2 for darwin-amd64 (0.230s)
-Finished building echgo2 for linux-amd64 (0.249s)
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c/os-arch-bin/echgo2-0.0.1-1-g14e6d3c-darwin-amd64.tgz, /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c/os-arch-bin/echgo2-0.0.1-1-g14e6d3c-linux-amd64.tgz
-Finished creating os-arch-bin distribution for echgo2
-```
+```START_TUTORIAL_CODE
+./godelw dist
+```END_TUTORIAL_CODE
 
 Running this same operation again will not do anything because all of the outputs are up-to-date:
 
-```
-➜ ./godelw dist
-```
+```START_TUTORIAL_CODE
+./godelw dist
+```END_TUTORIAL_CODE
 
 The `--force` flag can be used to specify that the dist artifacts should be generated even if they are not considered
 out of date:
 
-```
-➜ ./godelw dist --force
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c/os-arch-bin/echgo2-0.0.1-1-g14e6d3c-darwin-amd64.tgz, /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c/os-arch-bin/echgo2-0.0.1-1-g14e6d3c-linux-amd64.tgz
-Finished creating os-arch-bin distribution for echgo2
-```
+```START_TUTORIAL_CODE
+./godelw dist --force
+```END_TUTORIAL_CODE
 
 ### Create specific distributions
 By default, `./godelw dist` will create all of the distributions for all of the products defined for a project. However,
@@ -149,8 +135,8 @@ that only specific distributions should be built.
 
 First, start by modifying `dist-plugin.yml` to add another distribution type for `echgo2`:
 
-```
-➜ echo 'products:
+```START_TUTORIAL_CODE
+echo 'products:
   echgo2:
     build:
       main-pkg: .
@@ -172,21 +158,13 @@ First, start by modifying `dist-plugin.yml` to add another distribution type for
                 arch: amd64
         bin:
           type: bin' > godel/config/dist-plugin.yml
-```
+```END_TUTORIAL_CODE
 
 Verify that running `./godelw dist --force` generates both distributions:
 
-```
-➜ ./godelw dist --force
-Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c-dirty/linux-amd64/echgo2
-Building echgo2 for darwin-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c-dirty/darwin-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.212s)
-Finished building echgo2 for darwin-amd64 (0.220s)
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c-dirty/bin/echgo2-0.0.1-1-g14e6d3c-dirty.tgz
-Finished creating bin distribution for echgo2
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c-dirty/os-arch-bin/echgo2-0.0.1-1-g14e6d3c-dirty-darwin-amd64.tgz, /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c-dirty/os-arch-bin/echgo2-0.0.1-1-g14e6d3c-dirty-linux-amd64.tgz
-Finished creating os-arch-bin distribution for echgo2
-```
+```START_TUTORIAL_CODE
+./godelw dist --force
+```END_TUTORIAL_CODE
 
 Because there is only one product, only the dist outputs for that product are generated. If there were multiple
 products, then running `./godelw dist echgo2` would generate all of the dist outputs for the `echgo2` product.
@@ -194,17 +172,15 @@ products, then running `./godelw dist echgo2` would generate all of the dist out
 A specific dister for a product can be run using the `<product>.<name>` syntax. For example, to generate just the
 "bin" dist, run `./godelw dist --force echgo2.bin`:
 
-```
-➜ ./godelw dist --force echgo2.bin
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c-dirty/bin/echgo2-0.0.1-1-g14e6d3c-dirty.tgz
-Finished creating bin distribution for echgo2
-```
+```START_TUTORIAL_CODE
+./godelw dist --force echgo2.bin
+```END_TUTORIAL_CODE
 
 Revert these changes by running the following:
 
-```
-➜ ./godelw clean
-```
+```START_TUTORIAL_CODE
+./godelw clean
+```END_TUTORIAL_CODE
 
 ### Specify a script to run arbitrary actions during the distribution step
 Distributions may need to perform various actions as part of their distribution process that go beyond requiring static
@@ -215,8 +191,8 @@ run, but before the dister's archive action is run.
 
 Run the following to create a configuration that writes a `timestamp.txt` file to each dist output directory:
 
-```
-➜ echo 'products:
+```START_TUTORIAL_CODE
+echo 'products:
   echgo2:
     build:
       main-pkg: .
@@ -234,7 +210,7 @@ Run the following to create a configuration that writes a `timestamp.txt` file t
                 set -euo pipefail
                 creation_date=$(date)
                 echo "Distribution created at $(date)" > "$DIST_WORK_DIR/timestamp.txt"' > godel/config/dist-plugin.yml
-```
+```END_TUTORIAL_CODE
 
 The specified script writes a file called "timestamp.txt" that contains the output of running `date` and writes it to
 the distribution output directory. The environment variables such as `DIST_WORK_DIR` are injected by `distgo`. Refer to
@@ -242,58 +218,32 @@ the dist config documentation for a full description of the environment variable
 
 Run the `dist` command:
 
-```
-➜ ./godelw dist --force
-Building echgo2 for darwin-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c-dirty/darwin-amd64/echgo2
-Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c-dirty/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.201s)
-Finished building echgo2 for darwin-amd64 (0.268s)
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c-dirty/bin/echgo2-0.0.1-1-g14e6d3c-dirty.tgz
-Finished creating bin distribution for echgo2
-```
+```START_TUTORIAL_CODE
+./godelw dist --force
+```END_TUTORIAL_CODE
 
 Verify that `timestamp.txt` was created in the distribution directory:
 
-```
-➜ tree out/dist
-out/dist
-`-- echgo2
-    `-- 0.0.1-1-g14e6d3c-dirty
-        `-- bin
-            |-- echgo2-0.0.1-1-g14e6d3c-dirty
-            |   |-- bin
-            |   |   |-- darwin-amd64
-            |   |   |   `-- echgo2
-            |   |   `-- linux-amd64
-            |   |       `-- echgo2
-            |   `-- timestamp.txt
-            `-- echgo2-0.0.1-1-g14e6d3c-dirty.tgz
-
-7 directories, 4 files
-```
+```START_TUTORIAL_CODE
+tree out/dist
+```END_TUTORIAL_CODE
 
 Revert these changes by running the following:
 
-```
-➜ ./godelw clean
-➜ git checkout -- godel/config/dist-plugin.yml
-```
+```START_TUTORIAL_CODE
+./godelw clean
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git checkout -- godel/config/dist-plugin.yml
+```END_TUTORIAL_CODE
 
 ### Dry run
 The `--dry-run` flag can be used to preview the operations that would be performed by `./godelw dist` without actually
 performing them:
 
-```
-➜ ./godelw dist --force --dry-run
-[DRY RUN] Building echgo2 for darwin-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c/darwin-amd64/echgo2
-[DRY RUN] Run: /usr/local/go/bin/go build -o /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c/darwin-amd64/echgo2 -ldflags -X main.version=0.0.1-1-g14e6d3c ./.
-[DRY RUN] Finished building echgo2 for darwin-amd64 (0.000s)
-[DRY RUN] Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c/linux-amd64/echgo2
-[DRY RUN] Run: /usr/local/go/bin/go build -o /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c/linux-amd64/echgo2 -ldflags -X main.version=0.0.1-1-g14e6d3c ./.
-[DRY RUN] Finished building echgo2 for linux-amd64 (0.001s)
-[DRY RUN] Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c/os-arch-bin/echgo2-0.0.1-1-g14e6d3c-darwin-amd64.tgz, /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c/os-arch-bin/echgo2-0.0.1-1-g14e6d3c-linux-amd64.tgz
-[DRY RUN] Finished creating os-arch-bin distribution for echgo2
-```
+```START_TUTORIAL_CODE
+./godelw dist --force --dry-run
+```END_TUTORIAL_CODE
 
 ### Add disters
 The `os-arch-bin`, `bin` and `manual` dister types are built-in as part of the distgo plugin. However, it is possible to

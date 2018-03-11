@@ -14,8 +14,8 @@ Run tests
 ---------
 We will now add some tests to our program. Run the following to add tests for the `echo` package:
 
-```
-➜ SRC='package echo_test
+```START_TUTORIAL_CODE
+SRC='package echo_test
 
 import (
 	"testing"
@@ -37,25 +37,22 @@ func TestEcho(t *testing.T) {
 		}
 	}
 }' && SRC=${SRC//PROJECT_PATH/$PROJECT_PATH} && echo "$SRC" > echo/echo_test.go
-```
+```END_TUTORIAL_CODE
 
 Run `./godelw test` to run all of the Go tests in the project:
 
-```
-➜ ./godelw test
-?   	github.com/nmiyake/echgo2     	[no test files]
-ok  	github.com/nmiyake/echgo2/echo	0.002s
-```
+```START_TUTORIAL_CODE
+./godelw test
+```END_TUTORIAL_CODE
 
 Commit the test to the repository:
 
-```
-➜ git add echo
-➜ git commit -m "Add tests for echo package"
-[master d371b57] Add tests for echo package
- 1 file changed, 22 insertions(+)
- create mode 100644 echo/echo_test.go
-```
+```START_TUTORIAL_CODE
+git add echo
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git commit -m "Add tests for echo package"
+```END_TUTORIAL_CODE
 
 Tutorial end state
 ------------------
@@ -85,35 +82,21 @@ in more detail.
 The `./godelw test --junit-output=<file>` command can be used to generate a JUnit-style output XML file that summarizes
 the results of running the tests (implemented using [go-junit-report](https://github.com/jstemmer/go-junit-report)):
 
-```
-➜ ./godelw test --junit-output=output.xml
-?   	github.com/nmiyake/echgo2     	[no test files]
-=== RUN   TestEcho
---- PASS: TestEcho (0.00s)
-PASS
-ok  	github.com/nmiyake/echgo2/echo	0.002s
-```
+```START_TUTORIAL_CODE
+./godelw test --junit-output=output.xml
+```END_TUTORIAL_CODE
 
 Verify that this operation wrote a JUnit report:
 
-```
-➜ cat output.xml
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuites>
-	<testsuite tests="1" failures="0" time="0.002" name="github.com/nmiyake/echgo2/echo">
-		<properties>
-			<property name="go.version" value="go1.10"></property>
-		</properties>
-		<testcase classname="echo" name="TestEcho" time="0.000"></testcase>
-	</testsuite>
-</testsuites>
-```
+```START_TUTORIAL_CODE
+cat output.xml
+```END_TUTORIAL_CODE
 
 Remove the output by running the following:
 
-```
-➜ rm output.xml
-```
+```START_TUTORIAL_CODE
+rm output.xml
+```END_TUTORIAL_CODE
 
 ### Run tests with flags
 In some instances, we may want to specify flags for the `go test` operation -- for example, in the previous section, we
@@ -126,15 +109,6 @@ The flags provided after the `./godelw test` command are passed directly to the 
 
 For example, the following command prints the output as JSON:
 
-```
-➜ ./godelw test -- -json
-{"Time":"2018-03-29T18:36:40.1006919Z","Action":"output","Package":"github.com/nmiyake/echgo2","Output":"?   \tgithub.com/nmiyake/echgo2\t[no test files]\n"}
-{"Time":"2018-03-29T18:36:40.1008433Z","Action":"skip","Package":"github.com/nmiyake/echgo2","Elapsed":0}
-{"Time":"2018-03-29T18:36:40.1009413Z","Action":"run","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho"}
-{"Time":"2018-03-29T18:36:40.100968Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho","Output":"=== RUN   TestEcho\n"}
-{"Time":"2018-03-29T18:36:40.1009894Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho","Output":"--- PASS: TestEcho (0.00s)\n"}
-{"Time":"2018-03-29T18:36:40.1010123Z","Action":"pass","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho","Elapsed":0}
-{"Time":"2018-03-29T18:36:40.1010205Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Output":"PASS\n"}
-{"Time":"2018-03-29T18:36:40.1010296Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Output":"ok  \tgithub.com/nmiyake/echgo2/echo\t(cached)\n"}
-{"Time":"2018-03-29T18:36:40.1010452Z","Action":"pass","Package":"github.com/nmiyake/echgo2/echo","Elapsed":0}
-```
+```START_TUTORIAL_CODE
+./godelw test -- -json
+```END_TUTORIAL_CODE

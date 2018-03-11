@@ -35,40 +35,33 @@ their dependencies.
 The `./godelw packages` command can be used to print all of the packages in a project based on the project
 configuration:
 
-```
-➜ ./godelw packages
-./.
-./echo
-./generator
-./integration_test
-```
+```START_TUTORIAL_CODE
+./godelw packages
+```END_TUTORIAL_CODE
 
 This command excludes any packages that would be excluded based on the `exclude` configuration. This command can be
 combined with `go install` (or any program that takes a list of packages as inputs):
 
-```
-➜ go install $(./godelw packages)
-```
+```START_TUTORIAL_CODE
+go install $(./godelw packages)
+```END_TUTORIAL_CODE
 
 `./godelw project-version` can be used to print the version of the project as determined by gödel (this is also the
 string used as the version for the `dist` and `publish` tasks):
 
-```
-➜ ./godelw project-version
-1.0.0
-```
+```START_TUTORIAL_CODE
+./godelw project-version
+```END_TUTORIAL_CODE
 
 `./godelw artifacts` can be invoked with `build` or `dist` (and optionally a list of products) to output the location in
 which the build and distribution artifacts will be generated:
 
-```
-➜ ./godelw artifacts build echgo2
-out/build/echgo2/1.0.0/darwin-amd64/echgo2
-out/build/echgo2/1.0.0/linux-amd64/echgo2
-➜ ./godelw artifacts dist
-out/dist/echgo2/1.0.0/os-arch-bin/echgo2-1.0.0-darwin-amd64.tgz
-out/dist/echgo2/1.0.0/os-arch-bin/echgo2-1.0.0-linux-amd64.tgz
-```
+```START_TUTORIAL_CODE
+./godelw artifacts build echgo2
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+./godelw artifacts dist
+```END_TUTORIAL_CODE
 
 These commands can be useful to use as inputs to other programs or as part of scripts/CI tasks for a project.
 

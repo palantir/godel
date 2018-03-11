@@ -108,24 +108,27 @@ environment variables are set and the required programs are available.
 
 Start the tutorial by creating the directory for your project and setting it to be the working directory:
 
-```
-➜ mkdir -p ${GOPATH}/src/${PROJECT_PATH} && cd $_
-➜ pwd
-/go/src/github.com/nmiyake/echgo2
-```
+```START_TUTORIAL_CODE
+mkdir -p ${GOPATH}/src/${PROJECT_PATH} && cd $_
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+pwd
+```END_TUTORIAL_CODE
 
 Initialize a git repository, add a README and commit it:
 
-```
-➜ git init
-Initialized empty Git repository in /go/src/github.com/nmiyake/echgo2/.git/
-➜ echo 'echgo2 is a program that echoes input provided by the user.' > README.md
-➜ git add README.md
-➜ git commit -m "Initial commit"
-[master (root-commit) d58bb82] Initial commit
- 1 file changed, 1 insertion(+)
- create mode 100644 README.md
-```
+```START_TUTORIAL_CODE
+git init
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+echo 'echgo2 is a program that echoes input provided by the user.' > README.md
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git add README.md
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git commit -m "Initial commit"
+```END_TUTORIAL_CODE
 
 Tutorial end state
 ------------------

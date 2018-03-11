@@ -23,11 +23,9 @@ a product from source for faster iteration.
 
 Use `./godelw run` to invoke `echgo2`:
 
-```
-➜ ./godelw run echgo2 foo
-/usr/local/go/bin/go run -ldflags -X main.version=0.0.1 /go/src/github.com/nmiyake/echgo2/main.go foo
-foo
-```
+```START_TUTORIAL_CODE
+./godelw run echgo2 foo
+```END_TUTORIAL_CODE
 
 This uses `go run` to run the product. Note that the build flags configured for the product in its `build` section are
 automatically provided to the `go run` invocation.
@@ -38,11 +36,9 @@ flags and arguments provided after the name of the product to run are passed to 
 operator should be used after the product name to disable flag parsing. Run the following to run the equivalent of
 `echgo2 -version`:
 
-```
-➜ ./godelw run echgo2 -- -version
-/usr/local/go/bin/go run -ldflags -X main.version=0.0.1 /go/src/github.com/nmiyake/echgo2/main.go -version
-echgo2 version: 0.0.1
-```
+```START_TUTORIAL_CODE
+./godelw run echgo2 -- -version
+```END_TUTORIAL_CODE
 
 Tutorial end state
 ------------------

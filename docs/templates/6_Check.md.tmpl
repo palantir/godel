@@ -20,13 +20,15 @@ function and refactor the current echo functionality to be a simple echoer that 
 
 Run the following to update the program to perform this refactor:
 
-```
-➜ echo 'package echo
+```START_TUTORIAL_CODE
+echo 'package echo
 
 type Echoer interface {
 	Echo(in string) string
 }' > echo/echoer.go
-➜ echo 'package echo
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+echo 'package echo
 
 func NewEchoer() Echoer {
 	return &simpleEchoer{}
@@ -37,7 +39,9 @@ type simpleEchoer struct{}
 func (_ *simpleEchoer) Echo(in string) string {
 	return in
 }' > echo/echo.go
-➜ SRC='package main
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+SRC='package main
 
 import (
 	"fmt"
@@ -51,46 +55,20 @@ func main() {
 	echoer := echo.NewEchoer()
 	fmt.Println(echoer.Echo(strings.Join(os.Args[1:], " ")))
 }' && SRC=${SRC//PROJECT_PATH/$PROJECT_PATH} && echo "$SRC" > main.go
-```
+```END_TUTORIAL_CODE
 
 These files are formatted correctly and form a fully functioning program. Run `./godelw check` to run static code checks
 on the project:
 
-```
-➜ ./godelw check
-[compiles]      Running compiles...
-[extimport]     Running extimport...
-[errcheck]      Running errcheck...
-[deadcode]      Running deadcode...
-[extimport]     Finished extimport
-[golint]        Running golint...
-[golint]        echo/echo.go:9:1: receiver name should not be an underscore, omit the name if it is unused
-[golint]        Finished golint
-[govet]         Running govet...
-[govet]         Finished govet
-[importalias]   Running importalias...
-[importalias]   Finished importalias
-[ineffassign]   Running ineffassign...
-[ineffassign]   Finished ineffassign
-[novendor]      Running novendor...
-[novendor]      Finished novendor
-[outparamcheck] Running outparamcheck...
-[errcheck]      Finished errcheck
-[unconvert]     Running unconvert...
-[compiles]      Finished compiles
-[varcheck]      Running varcheck...
-[deadcode]      Finished deadcode
-[outparamcheck] Finished outparamcheck
-[varcheck]      Finished varcheck
-[unconvert]     Finished unconvert
-Check(s) produced output: [golint]
-```
+```START_TUTORIAL_CODE|fail=true
+./godelw check
+```END_TUTORIAL_CODE
 
 The output indicates that there was an issue identified by the `golint` check. Fix the issue by updating the receiver
 name:
 
-```
-➜ echo 'package echo
+```START_TUTORIAL_CODE
+echo 'package echo
 
 func NewEchoer() Echoer {
 	return &simpleEchoer{}
@@ -101,47 +79,22 @@ type simpleEchoer struct{}
 func (e *simpleEchoer) Echo(in string) string {
 	return in
 }' > echo/echo.go
-```
+```END_TUTORIAL_CODE
 
 Run `./godelw check` again to verify that the issue has been resolved:
 
-```
-➜ ./godelw check
-[compiles]      Running compiles...
-[extimport]     Running extimport...
-[deadcode]      Running deadcode...
-[errcheck]      Running errcheck...
-[extimport]     Finished extimport
-[golint]        Running golint...
-[golint]        Finished golint
-[govet]         Running govet...
-[govet]         Finished govet
-[importalias]   Running importalias...
-[importalias]   Finished importalias
-[ineffassign]   Running ineffassign...
-[ineffassign]   Finished ineffassign
-[novendor]      Running novendor...
-[novendor]      Finished novendor
-[outparamcheck] Running outparamcheck...
-[errcheck]      Finished errcheck
-[unconvert]     Running unconvert...
-[compiles]      Finished compiles
-[varcheck]      Running varcheck...
-[deadcode]      Finished deadcode
-[outparamcheck] Finished outparamcheck
-[unconvert]     Finished unconvert
-[varcheck]      Finished varcheck
-```
+```START_TUTORIAL_CODE
+./godelw check
+```END_TUTORIAL_CODE
 
 Commit the changes to the repository:
 
-```
-➜ git add main.go echo
-➜ git commit -m "Add echoer interface"
-[master 49a405e] Add echoer interface
- 3 files changed, 14 insertions(+), 2 deletions(-)
- create mode 100644 echo/echoer.go
-```
+```START_TUTORIAL_CODE
+git add main.go echo
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git commit -m "Add echoer interface"
+```END_TUTORIAL_CODE
 
 Refer to the "More" sections below for examples of configuring the checks in different ways.
 
@@ -163,46 +116,20 @@ More
 In some instances, it may be desirable to suppress certain issues flagged by checks. As an example, modify
 `echo/echoer.go` as follows:
 
-```
-➜ echo 'package echo
+```START_TUTORIAL_CODE
+echo 'package echo
 
 // Echoes the input.
 type Echoer interface {
 	Echo(in string) string
 }' > echo/echoer.go
-```
+```END_TUTORIAL_CODE
 
 Running `./godelw check` flags the following:
 
-```
-➜ ./godelw check
-[extimport]     Running extimport...
-[compiles]      Running compiles...
-[deadcode]      Running deadcode...
-[errcheck]      Running errcheck...
-[extimport]     Finished extimport
-[golint]        Running golint...
-[golint]        echo/echoer.go:3:1: comment on exported type Echoer should be of the form "Echoer ..." (with optional leading article)
-[golint]        Finished golint
-[govet]         Running govet...
-[govet]         Finished govet
-[importalias]   Running importalias...
-[importalias]   Finished importalias
-[ineffassign]   Running ineffassign...
-[ineffassign]   Finished ineffassign
-[novendor]      Running novendor...
-[novendor]      Finished novendor
-[outparamcheck] Running outparamcheck...
-[errcheck]      Finished errcheck
-[unconvert]     Running unconvert...
-[deadcode]      Finished deadcode
-[varcheck]      Running varcheck...
-[compiles]      Finished compiles
-[outparamcheck] Finished outparamcheck
-[unconvert]     Finished unconvert
-[varcheck]      Finished varcheck
-Check(s) produced output: [golint]
-```
+```START_TUTORIAL_CODE|fail=true
+./godelw check
+```END_TUTORIAL_CODE
 
 Although this is a valid check performed by `go lint`, not all projects conform exactly with the Go style for comments.
 In some cases, it makes sense to disable specific checks like this. This can be done by updating the
@@ -211,62 +138,33 @@ contains `comment on exported type \w should be of the form` in its message.
 
 The default configuration for `godel/config/check-plugin.yml` is as follows:
 
-```
-➜ cat godel/config/check-plugin.yml
-checks:
-  golint:
-    filters:
-      - value: "should have comment or be unexported"
-      - value: "or a comment on this block"
-```
+```START_TUTORIAL_CODE
+cat godel/config/check-plugin.yml
+```END_TUTORIAL_CODE
 
 Add the line `- value: "comment on exported type [[:word:]]+ should be of the form"` to this configuration:
 
-```
-➜ echo 'checks:
+```START_TUTORIAL_CODE
+echo 'checks:
   golint:
     filters:
       - value: "should have comment or be unexported"
       - value: "or a comment on this block"
       - value: "comment on exported type [[:word:]]+ should be of the form"' > godel/config/check-plugin.yml
-```
+```END_TUTORIAL_CODE
 
 Re-run `./godelw check` with the updated configuration to verify that lines that match this output are no longer
 reported:
 
-```
-➜ ./godelw check
-[extimport]     Running extimport...
-[compiles]      Running compiles...
-[deadcode]      Running deadcode...
-[errcheck]      Running errcheck...
-[extimport]     Finished extimport
-[golint]        Running golint...
-[golint]        Finished golint
-[govet]         Running govet...
-[govet]         Finished govet
-[importalias]   Running importalias...
-[importalias]   Finished importalias
-[ineffassign]   Running ineffassign...
-[ineffassign]   Finished ineffassign
-[novendor]      Running novendor...
-[novendor]      Finished novendor
-[outparamcheck] Running outparamcheck...
-[errcheck]      Finished errcheck
-[unconvert]     Running unconvert...
-[deadcode]      Finished deadcode
-[varcheck]      Running varcheck...
-[outparamcheck] Finished outparamcheck
-[compiles]      Finished compiles
-[unconvert]     Finished unconvert
-[varcheck]      Finished varcheck
-```
+```START_TUTORIAL_CODE
+./godelw check
+```END_TUTORIAL_CODE
 
 Revert the local changes by running the following:
 
-```
-➜ git checkout -- echo godel
-```
+```START_TUTORIAL_CODE
+git checkout -- echo godel
+```END_TUTORIAL_CODE
 
 Filters have a `type` and a `value`. When `type` is not specified (as in the examples above), it defaults to `message`,
 which means that the value is matched against the message of the output. The `type` field for filters can also be `name`
@@ -302,45 +200,23 @@ Checks can be disabled completely for the entire project by setting the `skip` f
 
 For example, the following configuration will disable the `golint` check for the project:
 
-```
-➜ echo 'checks:
+```START_TUTORIAL_CODE
+echo 'checks:
   golint:
     skip: true' > godel/config/check-plugin.yml
-```
+```END_TUTORIAL_CODE
 
 Run `./godelw check` with the updated configuration to verify that the `golint` check is no longer run:
 
-```
-➜ ./godelw check
-[deadcode]      Running deadcode...
-[compiles]      Running compiles...
-[extimport]     Running extimport...
-[errcheck]      Running errcheck...
-[extimport]     Finished extimport
-[govet]         Running govet...
-[govet]         Finished govet
-[importalias]   Running importalias...
-[importalias]   Finished importalias
-[ineffassign]   Running ineffassign...
-[ineffassign]   Finished ineffassign
-[novendor]      Running novendor...
-[novendor]      Finished novendor
-[outparamcheck] Running outparamcheck...
-[deadcode]      Finished deadcode
-[unconvert]     Running unconvert...
-[errcheck]      Finished errcheck
-[varcheck]      Running varcheck...
-[compiles]      Finished compiles
-[outparamcheck] Finished outparamcheck
-[unconvert]     Finished unconvert
-[varcheck]      Finished varcheck
-```
+```START_TUTORIAL_CODE
+./godelw check
+```END_TUTORIAL_CODE
 
 Revert the local changes by running the following:
 
-```
-➜ git checkout -- godel
-```
+```START_TUTORIAL_CODE
+git checkout -- godel
+```END_TUTORIAL_CODE
 
 ### Configure checks
 Many checks offer customizable parameters for the checks. Such parameters are specified in the `config` field of the
@@ -353,13 +229,9 @@ useful when iterating on code in an attempt to fix an issue flagged by a specifi
 
 For example, the following runs only `deadcode` and `govet`:
 
-```
-➜ ./godelw check deadcode govet
-[deadcode] Running deadcode...
-[govet]    Running govet...
-[govet]    Finished govet
-[deadcode] Finished deadcode
-```
+```START_TUTORIAL_CODE
+./godelw check deadcode govet
+```END_TUTORIAL_CODE
 
 ### Run an underlying check directly
 Running an individual check using `check` runs just that check, but it still runs it through the `check` task, which
@@ -374,81 +246,25 @@ place a `--` after the check so that all of the flags and arguments are passed d
 
 For example, `errcheck` can be invoked directly as follows:
 
-```
-➜ ./godelw run-check errcheck -- --help
-Usage of /root/.godel/assets/com.palantir.godel-okgo-asset-errcheck-errcheck-asset-1.0.0-rc2:
-  -abspath
-    	print absolute paths to files
-  -asserts
-    	if true, check for ignored type assertion results
-  -blank
-    	if true, check for errors assigned to blank identifier
-  -exclude string
-    	Path to a file containing a list of functions to exclude from checking
-  -ignore value
-    	[deprecated] comma-separated list of pairs of the form pkg:regex
-    	            the regex is used to ignore names within pkg. (default "fmt:.*")
-  -ignorepkg string
-    	comma-separated list of package paths to ignore
-  -ignoretests
-    	if true, checking of _test.go files is disabled
-  -tags value
-    	space-separated list of build tags to include
-  -verbose
-    	produce more verbose logging
-```
+```START_TUTORIAL_CODE
+./godelw run-check errcheck -- --help
+```END_TUTORIAL_CODE
 
 The help output printed here is that of `errcheck`, and we could have supplied the errcheck flags and arguments directly
 in place of `--help`. Also note the use of `--` to indicate that all of the flags/arguments should be passed to the
 underlying command. In this instance, if `--` was not used, the `--help` flag would have shown the output for
 `run-check errcheck` instead:
 
-```
-➜ ./godelw run-check errcheck --help
-Usage:
-  okgo run-check errcheck [flags]
-
-Flags:
-  -h, --help   help for errcheck
-
-Global Flags:
-      --assets stringSlice    path(s) to the plugin asset(s)
-      --config string         path to the plugin configuration file
-      --debug                 run in debug mode
-      --godel-config string   path to the godel.yml configuration file
-      --project-dir string    path to project directory
-```
+```START_TUTORIAL_CODE
+./godelw run-check errcheck --help
+```END_TUTORIAL_CODE
 
 ### Run checks sequentially
 Checks can be run sequentially by running with the `--parallel=false` flag:
 
-```
-➜ ./godelw check --parallel=false
-Running compiles...
-Finished compiles
-Running deadcode...
-Finished deadcode
-Running errcheck...
-Finished errcheck
-Running extimport...
-Finished extimport
-Running golint...
-Finished golint
-Running govet...
-Finished govet
-Running importalias...
-Finished importalias
-Running ineffassign...
-Finished ineffassign
-Running novendor...
-Finished novendor
-Running outparamcheck...
-Finished outparamcheck
-Running unconvert...
-Finished unconvert
-Running varcheck...
-Finished varcheck
-```
+```START_TUTORIAL_CODE
+./godelw check --parallel=false
+```END_TUTORIAL_CODE
 
 ### Constituent checks
 gödel includes the following checks by default:
@@ -478,8 +294,8 @@ For example, we can add the [nobadfuncs check](https://github.com/palantir/go-no
 [godel-okgo-asset-nobadfuncs asset](https://github.com/palantir/godel-okgo-asset-nobadfuncs). Modify the
 `godel/config/godel.yml` file as follows:
 
-```
-➜ echo 'default-tasks:
+```START_TUTORIAL_CODE
+echo 'default-tasks:
   resolvers:
     - https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz
   tasks:
@@ -493,24 +309,20 @@ exclude:
     - "vendor"
   paths:
     - "godel"' > godel/config/godel.yml
-```
+```END_TUTORIAL_CODE
 
 This adds the asset, which makes it available as a check:
 
-```
-➜ ./godelw check nobadfuncs
-Getting package from https://palantir.bintray.com/releases/com/palantir/godel-okgo-asset-nobadfuncs/nobadfuncs-asset/1.0.0-rc2/nobadfuncs-asset-1.0.0-rc2-linux-amd64.tgz...
- 3.80 MiB / 3.80 MiB  100.00% 1s
-Running nobadfuncs...
-Finished nobadfuncs
-```
+```START_TUTORIAL_CODE
+./godelw check nobadfuncs
+```END_TUTORIAL_CODE
 
 Although the `skip` configuration makes it easy to disable a check, it is also possible to remove the check entirely.
 This can be done by updating the `exclude-default-assets` configuration. For example, the following configuration
 removes the `novendor` check entirely:
 
-```
-➜ echo 'default-tasks:
+```START_TUTORIAL_CODE
+echo 'default-tasks:
   resolvers:
     - https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz
   tasks:
@@ -523,17 +335,16 @@ exclude:
     - "vendor"
   paths:
     - "godel"' > godel/config/godel.yml
-```
+```END_TUTORIAL_CODE
 
 Verify that `novendor` is no longer present as a check:
 
-```
-➜ ./godelw check novendor
-Error: provided checker type(s) [novendor] not valid: valid values are [compiles deadcode errcheck extimport golint govet importalias ineffassign outparamcheck unconvert varcheck]
-```
+```START_TUTORIAL_CODE|fail=true
+./godelw check novendor
+```END_TUTORIAL_CODE
 
 Revert the local changes by running the following:
 
-```
-➜ git checkout -- godel
-```
+```START_TUTORIAL_CODE
+git checkout -- godel
+```END_TUTORIAL_CODE
