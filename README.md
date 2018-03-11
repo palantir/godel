@@ -49,6 +49,7 @@ The following features are provided by a default gödel installation (either as 
 * `./godelw verify` runs all of the tasks that declare support for verification
   * Can be used locally as a single command to apply changes and run checks
   * Can be used in CI to verify that a project is in the proper state without applying changes
+* `./godelw github-wiki` mirrors a documents directory to a GitHub Wiki repository
 
 This list is not exhaustive -- run `./godelw --help` for a list of all of the available commands. Furthermore, custom
 
