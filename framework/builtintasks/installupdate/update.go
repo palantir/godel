@@ -147,6 +147,10 @@ func latestGodelVersion(cacheExpiration time.Duration) (string, error) {
 		return "", errors.Wrap(err, "failed to determine latest release")
 	}
 	latestVersion := *rel.TagName
+	if len(latestVersion) >= 2 && latestVersion[0] == 'v' && latestVersion[1] >= '0' && latestVersion[1] <= '9' {
+		// if version begins with 'v' and is followed by a digit, trim the leading 'v'
+		latestVersion = latestVersion[1:]
+	}
 	if err := writeLatestCachedVersion(latestVersion); err != nil {
 		return "", errors.Wrapf(err, "failed to write latest version to cache")
 	}
