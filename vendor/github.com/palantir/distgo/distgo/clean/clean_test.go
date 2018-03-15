@@ -139,7 +139,7 @@ func TestClean(t *testing.T) {
 				gittest.CreateGitTag(t, projectDir, "0.1.0")
 			},
 			func(projectInfo distgo.ProjectInfo, projectParam distgo.ProjectParam) {
-				err := dist.Products(projectInfo, projectParam, nil, false, ioutil.Discard)
+				err := dist.Products(projectInfo, projectParam, nil, nil, false, ioutil.Discard)
 				require.NoError(t, err)
 
 				productTaskOutputInfo, err := distgo.ToProductTaskOutputInfo(projectInfo, projectParam.Products["foo"])

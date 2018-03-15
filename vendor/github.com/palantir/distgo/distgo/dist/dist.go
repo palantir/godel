@@ -20,6 +20,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -27,11 +28,23 @@ import (
 	"github.com/palantir/distgo/distgo/build"
 )
 
-func Products(projectInfo distgo.ProjectInfo, projectParam distgo.ProjectParam, productDistIDs []distgo.ProductDistID, dryRun bool, stdout io.Writer) error {
+func Products(projectInfo distgo.ProjectInfo, projectParam distgo.ProjectParam, configModTime *time.Time, productDistIDs []distgo.ProductDistID, dryRun bool, stdout io.Writer) error {
 	productParams, err := distgo.ProductParamsForDistProductArgs(projectParam.Products, productDistIDs...)
 	if err != nil {
 		return err
 	}
+
+	filteredDistProductsMap := make(map[distgo.ProductID]distgo.ProductParam)
+	// copy old values into new map
+	for k, v := range projectParam.Products {
+		filteredDistProductsMap[k] = v
+	}
+	// copy computed params into map, which may filter dists for products
+	for _, v := range productParams {
+		filteredDistProductsMap[v.ID] = v
+	}
+	// update products for projectParam
+	projectParam.Products = filteredDistProductsMap
 
 	allProducts, _, dependentProducts := distgo.ClassifyProductParams(productParams)
 	var productParamsToBuild []distgo.ProductParam
@@ -58,6 +71,8 @@ func Products(projectInfo distgo.ProjectInfo, projectParam distgo.ProjectParam, 
 		}, stdout); err != nil {
 			return err
 		}
+		// if any of the products needed to be re-built, require dist to be performed
+		configModTime = nil
 	}
 
 	// sort dist product tasks in topological order
@@ -66,7 +81,7 @@ func Products(projectInfo distgo.ProjectInfo, projectParam distgo.ProjectParam, 
 		return err
 	}
 	for _, currProductID := range topoOrderedIDs {
-		requiresDistParam, err := RequiresDist(projectInfo, targetProducts[currProductID])
+		requiresDistParam, err := RequiresDist(projectInfo, targetProducts[currProductID], configModTime)
 		if err != nil {
 			return err
 		}
@@ -114,7 +129,6 @@ func Run(projectInfo distgo.ProjectInfo, productParam distgo.ProductParam, dryRu
 			}
 		}
 
-		fmt.Fprintln(stdout, distgo.ProductDistArtifactPaths(projectInfo, productOutputInfo))
 		distgo.PrintlnOrDryRunPrintln(stdout, fmt.Sprintf("Creating distribution for %s at %v", productParam.ID, strings.Join(distgo.ProductDistArtifactPaths(projectInfo, productOutputInfo)[currDistID], ", ")), dryRun)
 		if !dryRun {
 			// run dist task

@@ -244,7 +244,7 @@ func addChecksumToHeader(header http.Header, checksumName, checksum string) {
 }
 
 func MavenProductPath(productTaskOutputInfo distgo.ProductTaskOutputInfo, groupID string) string {
-	return path.Join(groupID, string(productTaskOutputInfo.Product.ID), productTaskOutputInfo.Project.Version)
+	return path.Join(strings.Replace(groupID, ".", "/", -1), string(productTaskOutputInfo.Product.ID), productTaskOutputInfo.Project.Version)
 }
 
 // GetRequiredGroupID returns the value for the GroupID based on the provided inputs. If the provided flagVals map

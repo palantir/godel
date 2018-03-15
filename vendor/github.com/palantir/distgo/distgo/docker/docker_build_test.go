@@ -23,6 +23,7 @@ import (
 	"path"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/godel/pkg/osarch"
@@ -242,11 +243,12 @@ RUN echo 'Tags for foo: {{Tags "foo" "print-dockerfile"}}'
 		projectInfo, err := projectParam.ProjectInfo(projectDir)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
-		err = dist.Products(projectInfo, projectParam, nil, false, ioutil.Discard)
+		preDistTime := time.Now().Truncate(time.Second).Add(-1 * time.Second)
+		err = dist.Products(projectInfo, projectParam, nil, nil, false, ioutil.Discard)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
 		buffer := &bytes.Buffer{}
-		err = docker.BuildProducts(projectInfo, projectParam, nil, false, false, buffer)
+		err = docker.BuildProducts(projectInfo, projectParam, &preDistTime, nil, false, false, buffer)
 		if tc.wantErrorRegexp == "" {
 			require.NoError(t, err, "Case %d: %s", i, tc.name)
 		} else {

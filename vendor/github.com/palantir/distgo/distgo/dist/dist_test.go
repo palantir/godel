@@ -290,7 +290,7 @@ func main() {}
 		projectInfo, err := projectParam.ProjectInfo(projectDir)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
-		err = dist.Products(projectInfo, projectParam, nil, false, ioutil.Discard)
+		err = dist.Products(projectInfo, projectParam, nil, nil, false, ioutil.Discard)
 		if tc.wantErrorRegexp == "" {
 			require.NoError(t, err, "Case %d: %s", i, tc.name)
 		} else {

@@ -25,6 +25,7 @@ import (
 	"sort"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/godel/pkg/osarch"
@@ -205,12 +206,13 @@ os-arch-bin: [%s/out/dist/foo/0.1.0/os-arch-bin/foo-0.1.0-%s.tgz]
 		projectInfo, err := projectParam.ProjectInfo(projectDir)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
+		preDistTime := time.Now().Truncate(time.Second).Add(-1 * time.Second)
 		buffer := &bytes.Buffer{}
-		err = dist.Products(projectInfo, projectParam, nil, false, buffer)
+		err = dist.Products(projectInfo, projectParam, nil, nil, false, buffer)
 		require.NoError(t, err, "Case %d: %s\nOutput: %s", i, tc.name, buffer.String())
 
 		buffer = &bytes.Buffer{}
-		err = publish.Products(projectInfo, projectParam, tc.distIDs, &testPublisher{}, nil, true, buffer)
+		err = publish.Products(projectInfo, projectParam, &preDistTime, tc.distIDs, &testPublisher{}, nil, true, buffer)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
 		if tc.wantStdoutRegexp != nil {

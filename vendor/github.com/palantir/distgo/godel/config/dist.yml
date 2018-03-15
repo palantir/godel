@@ -10,4 +10,4 @@ products:
         - os: linux
           arch: amd64
       version-var: github.com/palantir/distgo/vendor/github.com/palantir/pkg/cobracli.Version
-group-id: com.palantir.godel
+group-id: com.palantir.distgo

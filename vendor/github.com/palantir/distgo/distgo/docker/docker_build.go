@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"sort"
 	"text/template"
+	"time"
 
 	"github.com/palantir/godel/pkg/osarch"
 	"github.com/pkg/errors"
@@ -31,7 +32,7 @@ import (
 	"github.com/palantir/distgo/distgo/dist"
 )
 
-func BuildProducts(projectInfo distgo.ProjectInfo, projectParam distgo.ProjectParam, productDockerIDs []distgo.ProductDockerID, verbose, dryRun bool, stdout io.Writer) error {
+func BuildProducts(projectInfo distgo.ProjectInfo, projectParam distgo.ProjectParam, configModTime *time.Time, productDockerIDs []distgo.ProductDockerID, verbose, dryRun bool, stdout io.Writer) error {
 	// determine products that match specified productDockerIDs
 	productParams, err := distgo.ProductParamsForDockerProductArgs(projectParam.Products, productDockerIDs...)
 	if err != nil {
@@ -44,9 +45,21 @@ func BuildProducts(projectInfo distgo.ProjectInfo, projectParam distgo.ProjectPa
 		productDistIDs = append(productDistIDs, distgo.ProductDistID(currProductParam.ID))
 	}
 	// run dist for products (will only run dist for productDistIDs that require dist artifact generation)
-	if err := dist.Products(projectInfo, projectParam, productDistIDs, dryRun, stdout); err != nil {
+	if err := dist.Products(projectInfo, projectParam, configModTime, productDistIDs, dryRun, stdout); err != nil {
 		return err
 	}
+
+	filteredDockerProductsMap := make(map[distgo.ProductID]distgo.ProductParam)
+	// copy old values into new map
+	for k, v := range projectParam.Products {
+		filteredDockerProductsMap[k] = v
+	}
+	// copy computed params into map, which may filter dists for products
+	for _, v := range productParams {
+		filteredDockerProductsMap[v.ID] = v
+	}
+	// update products for projectParam
+	projectParam.Products = filteredDockerProductsMap
 
 	// sort Docker product tasks in topological order
 	allProducts, _, _ := distgo.ClassifyProductParams(productParams)

@@ -64,7 +64,7 @@ func TestBintrayPublisher(t *testing.T) {
 				},
 			},
 			wantOutput: func(projectDir string) string {
-				return fmt.Sprintf(`[DRY RUN] Uploading %s/out/dist/foo/1.0.0/os-arch-bin/foo-1.0.0-%s.tgz to http://artifactory.domain.com/content/testSubject/testRepo/testProduct/1.0.0/com.test.group/foo/1.0.0/foo-1.0.0-%s.tgz
+				return fmt.Sprintf(`[DRY RUN] Uploading %s/out/dist/foo/1.0.0/os-arch-bin/foo-1.0.0-%s.tgz to http://artifactory.domain.com/content/testSubject/testRepo/testProduct/1.0.0/com/test/group/foo/1.0.0/foo-1.0.0-%s.tgz
 [DRY RUN] Running Bintray publish for uploaded artifacts...done
 [DRY RUN] Adding artifact to Bintray downloads list for package...done
 `, projectDir, osarch.Current().String(), osarch.Current().String())
@@ -105,7 +105,7 @@ func TestBintrayPublisher(t *testing.T) {
 				},
 			},
 			wantOutput: func(projectDir string) string {
-				return fmt.Sprintf(`[DRY RUN] Uploading %s/out/dist/foo/1.0.0/os-arch-bin/foo-1.0.0-%s.tgz to http://artifactory.domain.com/content/testSubject/testRepo/foo/1.0.0/com.test.group/foo/1.0.0/foo-1.0.0-%s.tgz
+				return fmt.Sprintf(`[DRY RUN] Uploading %s/out/dist/foo/1.0.0/os-arch-bin/foo-1.0.0-%s.tgz to http://artifactory.domain.com/content/testSubject/testRepo/foo/1.0.0/com/test/group/foo/1.0.0/foo-1.0.0-%s.tgz
 [DRY RUN] Running Bintray publish for uploaded artifacts...done
 [DRY RUN] Adding artifact to Bintray downloads list for package...done
 `, projectDir, osarch.Current().String(), osarch.Current().String())

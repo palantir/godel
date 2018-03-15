@@ -69,22 +69,19 @@ func (d *manualDister) RunDist(distID distgo.DistID, productTaskOutputInfo distg
 }
 
 func (d *manualDister) GenerateDistArtifacts(distID distgo.DistID, productTaskOutputInfo distgo.ProductTaskOutputInfo, runDistResult []byte) error {
-	artifactPaths, err := d.Artifacts(productTaskOutputInfo.Product.DistOutputInfos.DistInfos[distID].DistNameTemplateRendered)
-	if err != nil {
-		return err
-	}
-	if len(artifactPaths) != 1 {
+	outputArtifactPaths := productTaskOutputInfo.ProductDistArtifactPaths()[distID]
+	if len(outputArtifactPaths) != 1 {
 		return errors.Errorf("manual distribution must produce a single artifact")
 	}
 
-	// manual dister depends on the script to generate the declared output -- verify that the output exists, and fail if it does not.
-	fi, err := os.Stat(artifactPaths[0])
+	// manual dister depends on the script to generate the declared output -- verify that the output exists, and fail if it does not
+	fi, err := os.Stat(outputArtifactPaths[0])
 	if os.IsNotExist(err) {
-		return errors.Wrapf(err, "expected output does not exist at %s", artifactPaths[0])
+		return errors.Wrapf(err, "expected output does not exist at %s", outputArtifactPaths[0])
 	}
 	// output should not be a directory
 	if fi.IsDir() {
-		return errors.Errorf("output at %s is a directory", artifactPaths[0])
+		return errors.Errorf("output at %s is a directory", outputArtifactPaths[0])
 	}
 	return nil
 }

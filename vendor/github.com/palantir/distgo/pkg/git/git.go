@@ -25,8 +25,9 @@ const Unspecified = "unspecified"
 
 // ProjectVersion returns the version string for the git repository that the provided directory is in. The output is the
 // output of "git describe --tags --first-parent" followed by "-dirty" if the repository currently has any uncommitted
-// changes (including untracked files) as determined by "git status --porcelain". Returns "unspecified" if the
-// repository does not contain any tags.
+// changes (including untracked files) as determined by "git status --porcelain". If the output starts with the
+// character 'v' followed by a digit (0-9), then the leading 'v' is trimmed. Returns "unspecified" if the repository
+// does not contain any tags.
 func ProjectVersion(gitDir string) (string, error) {
 	tags, err := Tags(gitDir)
 	if err != nil {
@@ -41,6 +42,11 @@ func ProjectVersion(gitDir string) (string, error) {
 	result, err := CmdOutput(gitDir, "describe", "--tags", "--first-parent")
 	if err != nil {
 		return "", err
+	}
+
+	// if tag name starts with "v#", strip the leading 'v'.
+	if len(result) >= 2 && result[0] == 'v' && result[1] >= '0' && result[1] <= '9' {
+		result = result[1:]
 	}
 
 	// use "git status --porcelain" rather than "git describe --dirty" to ensure that the existence of untracked files

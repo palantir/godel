@@ -60,7 +60,13 @@ func TestProjectInfo(t *testing.T) {
 			gitOperations: func(gitDir string) {
 				gittest.CreateGitTag(t, gitDir, "v0.0.1")
 			},
-			want: "^" + regexp.QuoteMeta("v0.0.1") + "$",
+			want: "^" + regexp.QuoteMeta("0.0.1") + "$",
+		},
+		{
+			gitOperations: func(gitDir string) {
+				gittest.CreateGitTag(t, gitDir, "version-string")
+			},
+			want: "^" + regexp.QuoteMeta("version-string") + "$",
 		},
 		{
 			gitOperations: func(gitDir string) {
@@ -90,7 +96,7 @@ func TestProjectInfo(t *testing.T) {
 			gitOperations: func(gitDir string) {
 				gittest.CreateGitTag(t, gitDir, "v1.0.0")
 			},
-			want: "^" + regexp.QuoteMeta("v1.0.0") + "$",
+			want: "^" + regexp.QuoteMeta("1.0.0") + "$",
 		},
 		{
 			gitOperations: func(gitDir string) {

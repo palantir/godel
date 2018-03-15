@@ -69,6 +69,7 @@ var (
 func (p *artifactoryPublisherImpl) Flags() ([]distgo.PublisherFlag, error) {
 	return append(BasicConnectionInfoFlags(),
 		artifactoryPublisherRepositoryFlag,
+		GroupIDFlag,
 	), nil
 }
 

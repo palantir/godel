@@ -312,80 +312,81 @@ func TestBuildErrorMessage(t *testing.T) {
 	assert.Regexp(t, want, err.Error())
 }
 
-func TestBuildInstallErrorMessage(t *testing.T) {
-	tmp, cleanup, err := dirs.TempDir(".", "")
-	defer cleanup()
-	require.NoError(t, err)
-
-	goRoot, err := dirs.GoRoot()
-	require.NoError(t, err)
-	_, err = os.Stat(goRoot)
-	require.NoError(t, err)
-
-	pkgDir := path.Join(goRoot, "pkg")
-	_, err = os.Stat(pkgDir)
-	require.NoError(t, err)
-
-	osArchPkgDir := path.Join(pkgDir, "dragonfly_amd64")
-	_, err = os.Stat(osArchPkgDir)
-	if os.IsNotExist(err) {
-		// if directory does not exist, attempt to create it (and clean up afterwards)
-		if err := os.Mkdir(osArchPkgDir, 0444); err == nil {
-			defer func() {
-				if err := os.RemoveAll(osArchPkgDir); err != nil {
-					fmt.Printf("Failed to remove directory %v: %v\n", osArchPkgDir, err)
-				}
-			}()
-		}
-		// if creation failed, assume that write permissions do not exist, which is sufficient for the test
-	}
-
-	mainFilePath := path.Join(tmp, "foo/main.go")
-	err = os.MkdirAll(path.Dir(mainFilePath), 0755)
-	require.NoError(t, err)
-	err = ioutil.WriteFile(mainFilePath, []byte(`package main`), 0644)
-	require.NoError(t, err)
-
-	projectInfo := distgo.ProjectInfo{
-		ProjectDir: tmp,
-	}
-	productParam := createBuildProductParam(func(param *distgo.ProductParam) {
-		param.Build.MainPkg = "./foo"
-		param.Build.OSArchs = []osarch.OSArch{
-			{
-				OS:   "dragonfly",
-				Arch: "amd64",
-			},
-		}
-	})
-
-	goBinary := "go"
-	if output, err := exec.Command("command", "-v", "go").CombinedOutput(); err == nil {
-		goBinary = strings.TrimSpace(string(output))
-	}
-
-	wantRegexps := []*regexp.Regexp{
-		regexp.MustCompile(`^` + regexp.QuoteMeta(`go build failed: failed to install a Go standard library package due to insufficient permissions to create directory.`) + `$`),
-		regexp.MustCompile(`^` + regexp.QuoteMeta(`This typically means that the standard library for the OS/architecture combination have not been installed locally and the current user does not have write permissions to GOROOT/pkg.`) + `$`),
-		regexp.MustCompile(`^` + regexp.QuoteMeta(fmt.Sprintf(`Run "sudo env GOOS=dragonfly GOARCH=amd64 %s install std" to install the standard packages for this combination as root and then try again.`, goBinary)) + `$`),
-		regexp.MustCompile(fmt.Sprintf(`Full error: build command \[.+/go build -i -o out/build/testProduct/dragonfly-amd64/testProduct ./foo\] run in directory %s with additional environment variables \[GOOS=dragonfly GOARCH=amd64\] failed with output:`, tmp)),
-		regexp.MustCompile(`go build [^:]+: mkdir [^:]+: permission denied`),
-	}
-
-	buf := &bytes.Buffer{}
-	err = build.Run(projectInfo, []distgo.ProductParam{productParam}, build.Options{
-		Install:  true,
-		Parallel: false,
-	}, buf)
-
-	parts := strings.Split(err.Error(), "\n")
-	for i := range parts {
-		if i >= len(wantRegexps) {
-			break
-		}
-		assert.Regexp(t, wantRegexps[i], parts[i])
-	}
-}
+// TODO: run test in environment where current user is not root and re-enable
+//func TestBuildInstallErrorMessage(t *testing.T) {
+//	tmp, cleanup, err := dirs.TempDir(".", "")
+//	defer cleanup()
+//	require.NoError(t, err)
+//
+//	goRoot, err := dirs.GoRoot()
+//	require.NoError(t, err)
+//	_, err = os.Stat(goRoot)
+//	require.NoError(t, err)
+//
+//	pkgDir := path.Join(goRoot, "pkg")
+//	_, err = os.Stat(pkgDir)
+//	require.NoError(t, err)
+//
+//	osArchPkgDir := path.Join(pkgDir, "dragonfly_amd64")
+//	_, err = os.Stat(osArchPkgDir)
+//	if os.IsNotExist(err) {
+//		// if directory does not exist, attempt to create it (and clean up afterwards)
+//		if err := os.Mkdir(osArchPkgDir, 0444); err == nil {
+//			defer func() {
+//				if err := os.RemoveAll(osArchPkgDir); err != nil {
+//					fmt.Printf("Failed to remove directory %v: %v\n", osArchPkgDir, err)
+//				}
+//			}()
+//		}
+//		// if creation failed, assume that write permissions do not exist, which is sufficient for the test
+//	}
+//
+//	mainFilePath := path.Join(tmp, "foo/main.go")
+//	err = os.MkdirAll(path.Dir(mainFilePath), 0755)
+//	require.NoError(t, err)
+//	err = ioutil.WriteFile(mainFilePath, []byte(`package main`), 0644)
+//	require.NoError(t, err)
+//
+//	projectInfo := distgo.ProjectInfo{
+//		ProjectDir: tmp,
+//	}
+//	productParam := createBuildProductParam(func(param *distgo.ProductParam) {
+//		param.Build.MainPkg = "./foo"
+//		param.Build.OSArchs = []osarch.OSArch{
+//			{
+//				OS:   "dragonfly",
+//				Arch: "amd64",
+//			},
+//		}
+//	})
+//
+//	goBinary := "go"
+//	if output, err := exec.Command("command", "-v", "go").CombinedOutput(); err == nil {
+//		goBinary = strings.TrimSpace(string(output))
+//	}
+//
+//	wantRegexps := []*regexp.Regexp{
+//		regexp.MustCompile(`^` + regexp.QuoteMeta(`go build failed: failed to install a Go standard library package due to insufficient permissions to create directory.`) + `$`),
+//		regexp.MustCompile(`^` + regexp.QuoteMeta(`This typically means that the standard library for the OS/architecture combination have not been installed locally and the current user does not have write permissions to GOROOT/pkg.`) + `$`),
+//		regexp.MustCompile(`^` + regexp.QuoteMeta(fmt.Sprintf(`Run "sudo env GOOS=dragonfly GOARCH=amd64 %s install std" to install the standard packages for this combination as root and then try again.`, goBinary)) + `$`),
+//		regexp.MustCompile(fmt.Sprintf(`Full error: build command \[.+/go build -i -o out/build/testProduct/dragonfly-amd64/testProduct ./foo\] run in directory %s with additional environment variables \[GOOS=dragonfly GOARCH=amd64\] failed with output:`, tmp)),
+//		regexp.MustCompile(`go build [^:]+: mkdir [^:]+: permission denied`),
+//	}
+//
+//	buf := &bytes.Buffer{}
+//	err = build.Run(projectInfo, []distgo.ProductParam{productParam}, build.Options{
+//		Install:  true,
+//		Parallel: false,
+//	}, buf)
+//
+//	parts := strings.Split(err.Error(), "\n")
+//	for i := range parts {
+//		if i >= len(wantRegexps) {
+//			break
+//		}
+//		assert.Regexp(t, wantRegexps[i], parts[i])
+//	}
+//}
 
 func TestBuildAllParallel(t *testing.T) {
 	tmp, cleanup, err := dirs.TempDir("", "")

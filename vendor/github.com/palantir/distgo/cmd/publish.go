@@ -74,7 +74,7 @@ func addPublishSubcommands() {
 					}
 					flagVals[currFlag.Name] = val
 				}
-				return publish.Products(projectInfo, projectParam, distgo.ToProductDistIDs(args), publisher, flagVals, publishDryRunFlagVal, cmd.OutOrStdout())
+				return publish.Products(projectInfo, projectParam, distgoConfigModTime(), distgo.ToProductDistIDs(args), publisher, flagVals, publishDryRunFlagVal, cmd.OutOrStdout())
 			},
 		}
 		for _, currFlag := range currFlags {
