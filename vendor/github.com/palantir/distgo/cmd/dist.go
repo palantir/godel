@@ -15,6 +15,8 @@
 package cmd
 
 import (
+	"time"
+
 	"github.com/spf13/cobra"
 
 	"github.com/palantir/distgo/distgo"
@@ -30,17 +32,25 @@ var (
 			if err != nil {
 				return err
 			}
-			return dist.Products(projectInfo, projectParam, distgo.ToProductDistIDs(args), distDryRunFlagVal, cmd.OutOrStdout())
+
+			var configFileModTime *time.Time
+			if !distForceFlagVal {
+				// if force flag is false, use modification time of configuration file
+				configFileModTime = distgoConfigModTime()
+			}
+			return dist.Products(projectInfo, projectParam, configFileModTime, distgo.ToProductDistIDs(args), distDryRunFlagVal, cmd.OutOrStdout())
 		},
 	}
 )
 
 var (
 	distDryRunFlagVal bool
+	distForceFlagVal  bool
 )
 
 func init() {
 	distCmd.Flags().BoolVar(&distDryRunFlagVal, "dry-run", false, "print the operations that would be performed")
+	distCmd.Flags().BoolVar(&distForceFlagVal, "force", false, "create distribution outputs even if they are considered up-to-date")
 
 	RootCmd.AddCommand(distCmd)
 }

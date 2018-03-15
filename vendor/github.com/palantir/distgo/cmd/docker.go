@@ -37,7 +37,7 @@ var (
 			if dockerBuildRepositoryFlagVal != "" {
 				docker.SetDockerRepository(projectParam, dockerBuildRepositoryFlagVal)
 			}
-			return docker.BuildProducts(projectInfo, projectParam, distgo.ToProductDockerIDs(args), dockerBuildVerboseFlagVal, dockerBuildDryRunFlagVal, cmd.OutOrStdout())
+			return docker.BuildProducts(projectInfo, projectParam, distgoConfigModTime(), distgo.ToProductDockerIDs(args), dockerBuildVerboseFlagVal, dockerBuildDryRunFlagVal, cmd.OutOrStdout())
 		},
 	}
 	dockerPushSubCmd = &cobra.Command{

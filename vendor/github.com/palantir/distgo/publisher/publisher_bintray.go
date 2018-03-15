@@ -88,6 +88,7 @@ func (p *bintrayPublisher) Flags() ([]distgo.PublisherFlag, error) {
 		bintrayPublisherProductFlag,
 		bintrayPublisherPublishFlag,
 		bintrayPublisherDownloadsListFlag,
+		GroupIDFlag,
 	), nil
 }
 

@@ -58,8 +58,8 @@
 [[projects]]
   name = "github.com/palantir/distgo"
   packages = ["pkg/git"]
-  revision = "847b8f6cee844c7294af909d6a6577c9d4d77a41"
-  version = "v0.0.0"
+  revision = "dc2defa42d07f78d281c056ae5afc86464e5041e"
+  version = "v1.0.0-rc2"
 
 [[projects]]
   branch = "master"
@@ -124,6 +124,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1c7601c024fdc42de09aba105a1511e240fdf7c05aea63778b23ccb423f97956"
+  inputs-digest = "5df54af257d67ef0310ea81df2bb2097939e7ea486935ad3cfb6e294c6ceade1"
   solver-name = "gps-cdcl"
   solver-version = 1

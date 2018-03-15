@@ -46,7 +46,8 @@ func TestBuildArtifactsDefaultOutput(t *testing.T) {
 		name            string
 		projectConfig   distgo.ProjectConfig
 		setupProjectDir func(projectDir string)
-		want            func(projectDir string) string
+		wantAbsFalse    func(projectDir string) string
+		wantAbsTrue     func(projectDir string) string
 	}{
 		{
 			"if param is empty, prints main packages in build output directory",
@@ -69,6 +70,11 @@ func TestBuildArtifactsDefaultOutput(t *testing.T) {
 				require.NoError(t, err)
 			},
 			func(projectDir string) string {
+				return fmt.Sprintf(`out/build/%s/unspecified/%v/%s
+out/build/foo/unspecified/%v/foo
+`, path.Base(projectDir), osarch.Current(), path.Base(projectDir), osarch.Current())
+			},
+			func(projectDir string) string {
 				return fmt.Sprintf(`%s/out/build/%s/unspecified/%v/%s
 %s/out/build/foo/unspecified/%v/foo
 `, projectDir, path.Base(projectDir), osarch.Current(), path.Base(projectDir), projectDir, osarch.Current())
@@ -89,6 +95,10 @@ func TestBuildArtifactsDefaultOutput(t *testing.T) {
 				},
 			},
 			nil,
+			func(projectDir string) string {
+				return fmt.Sprintf(`build-output/foo/unspecified/%v/foo
+`, osarch.Current())
+			},
 			func(projectDir string) string {
 				return fmt.Sprintf(`%s/build-output/foo/unspecified/%v/foo
 `, projectDir, osarch.Current())
@@ -121,7 +131,12 @@ func TestBuildArtifactsDefaultOutput(t *testing.T) {
 		buf := &bytes.Buffer{}
 		err = artifacts.PrintBuildArtifacts(projectInfo, projectParam, nil, false, false, buf)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		assert.Equal(t, tc.want(projectDir), buf.String(), "Case %d: %s", i, tc.name)
+		assert.Equal(t, tc.wantAbsFalse(projectDir), buf.String(), "Case %d: %s", i, tc.name)
+
+		buf = &bytes.Buffer{}
+		err = artifacts.PrintBuildArtifacts(projectInfo, projectParam, nil, true, false, buf)
+		require.NoError(t, err, "Case %d: %s", i, tc.name)
+		assert.Equal(t, tc.wantAbsTrue(projectDir), buf.String(), "Case %d: %s", i, tc.name)
 	}
 }
 

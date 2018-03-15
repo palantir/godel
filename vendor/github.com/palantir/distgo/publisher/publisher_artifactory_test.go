@@ -60,8 +60,8 @@ func TestArtifactoryPublisher(t *testing.T) {
 				},
 			},
 			wantOutput: func(projectDir string) string {
-				return fmt.Sprintf(`[DRY RUN] Uploading %s/out/dist/foo/1.0.0/os-arch-bin/foo-1.0.0-%s.tgz to http://artifactory.domain.com/artifactory/testrepo/com.test.group/foo/1.0.0/foo-1.0.0-%s.tgz
-[DRY RUN] Uploading to http://artifactory.domain.com/artifactory/testrepo/com.test.group/foo/1.0.0/foo-1.0.0.pom
+				return fmt.Sprintf(`[DRY RUN] Uploading %s/out/dist/foo/1.0.0/os-arch-bin/foo-1.0.0-%s.tgz to http://artifactory.domain.com/artifactory/testrepo/com/test/group/foo/1.0.0/foo-1.0.0-%s.tgz
+[DRY RUN] Uploading to http://artifactory.domain.com/artifactory/testrepo/com/test/group/foo/1.0.0/foo-1.0.0.pom
 `, projectDir, osarch.Current().String(), osarch.Current().String())
 			},
 		},
@@ -109,9 +109,9 @@ func TestArtifactoryPublisher(t *testing.T) {
 				},
 			},
 			wantOutput: func(projectDir string) string {
-				return fmt.Sprintf(`[DRY RUN] Uploading %s/out/dist/foo/1.0.0/os-arch-bin/foo-1.0.0-darwin-amd64.tgz to http://artifactory.domain.com/artifactory/testrepo/com.test.group/foo/1.0.0/foo-1.0.0-darwin-amd64.tgz
-[DRY RUN] Uploading %s/out/dist/foo/1.0.0/os-arch-bin/foo-1.0.0-linux-amd64.tgz to http://artifactory.domain.com/artifactory/testrepo/com.test.group/foo/1.0.0/foo-1.0.0-linux-amd64.tgz
-[DRY RUN] Uploading to http://artifactory.domain.com/artifactory/testrepo/com.test.group/foo/1.0.0/foo-1.0.0.pom
+				return fmt.Sprintf(`[DRY RUN] Uploading %s/out/dist/foo/1.0.0/os-arch-bin/foo-1.0.0-darwin-amd64.tgz to http://artifactory.domain.com/artifactory/testrepo/com/test/group/foo/1.0.0/foo-1.0.0-darwin-amd64.tgz
+[DRY RUN] Uploading %s/out/dist/foo/1.0.0/os-arch-bin/foo-1.0.0-linux-amd64.tgz to http://artifactory.domain.com/artifactory/testrepo/com/test/group/foo/1.0.0/foo-1.0.0-linux-amd64.tgz
+[DRY RUN] Uploading to http://artifactory.domain.com/artifactory/testrepo/com/test/group/foo/1.0.0/foo-1.0.0.pom
 `, projectDir, projectDir)
 			},
 		},

@@ -17,6 +17,8 @@ package artifacts
 import (
 	"fmt"
 	"io"
+	"os"
+	"path"
 	"path/filepath"
 	"sort"
 
@@ -36,7 +38,10 @@ func PrintBuildArtifacts(projectInfo distgo.ProjectInfo, projectParam distgo.Pro
 	if err != nil {
 		return err
 	}
-	return printArtifacts(artifacts, absPath, stdout)
+	return printArtifacts(artifacts, &printArtifactOptions{
+		projectDir: projectInfo.ProjectDir,
+		wantAbs:    absPath,
+	}, stdout)
 }
 
 // Build returns a map from product name to build artifact paths. If requiresBuild is true, only returns the artifacts
@@ -86,7 +91,10 @@ func PrintDistArtifacts(projectInfo distgo.ProjectInfo, projectParam distgo.Proj
 	if err != nil {
 		return err
 	}
-	return printArtifacts(artifacts, absPath, stdout)
+	return printArtifacts(artifacts, &printArtifactOptions{
+		projectDir: projectInfo.ProjectDir,
+		wantAbs:    absPath,
+	}, stdout)
 }
 
 // Dist returns a map from ProductID all of the dist artifact paths for the product.
@@ -116,7 +124,7 @@ func PrintDockerArtifacts(projectInfo distgo.ProjectInfo, projectParam distgo.Pr
 	if err != nil {
 		return err
 	}
-	return printArtifacts(artifacts, false, stdout)
+	return printArtifacts(artifacts, nil, stdout)
 }
 
 // Docker returns a map from ProductID all of the tags for the Docker images for the product.
@@ -140,16 +148,28 @@ func Docker(projectInfo distgo.ProjectInfo, productParams []distgo.ProductParam)
 	return outputPaths, nil
 }
 
-func printArtifacts(artifacts map[distgo.ProductID][]string, absPath bool, stdout io.Writer) error {
+func printArtifacts(artifacts map[distgo.ProductID][]string, opts *printArtifactOptions, stdout io.Writer) error {
+	var wd string
 	var outputs []string
 	for _, productToOutputs := range artifacts {
 		for _, currPath := range productToOutputs {
-			if absPath {
-				currAbsPath, err := filepath.Abs(currPath)
-				if err != nil {
-					return errors.Wrapf(err, "failed to convert %s to absolute path", currPath)
+			if opts != nil && filepath.IsAbs(currPath) != opts.wantAbs {
+				if !filepath.IsAbs(currPath) {
+					if wd == "" {
+						gotWd, err := os.Getwd()
+						if err != nil {
+							return errors.Wrapf(err, "failed to determine working directory")
+						}
+						wd = gotWd
+					}
+					currPath = path.Join(wd, currPath)
+				} else {
+					relPath, err := filepath.Rel(opts.projectDir, currPath)
+					if err != nil {
+						return errors.Wrapf(err, "failed to convert path to relative path")
+					}
+					currPath = relPath
 				}
-				currPath = currAbsPath
 			}
 			outputs = append(outputs, currPath)
 		}
@@ -160,4 +180,9 @@ func printArtifacts(artifacts map[distgo.ProductID][]string, absPath bool, stdou
 		fmt.Fprintln(stdout, output)
 	}
 	return nil
+}
+
+type printArtifactOptions struct {
+	projectDir string
+	wantAbs    bool
 }

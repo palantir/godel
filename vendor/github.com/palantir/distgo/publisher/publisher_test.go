@@ -22,6 +22,7 @@ import (
 	"path"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/godel/pkg/osarch"
@@ -76,12 +77,13 @@ func runPublisherTests(t *testing.T, publisherImpl distgo.Publisher, dryRun bool
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
 		// run "dist" to ensure that dist outputs exist
+		preDistTime := time.Now().Truncate(time.Second).Add(-1 * time.Second)
 		output := &bytes.Buffer{}
-		err = dist.Products(projectInfo, projectParam, nil, false, output)
+		err = dist.Products(projectInfo, projectParam, nil, nil, false, output)
 		require.NoError(t, err, "Case %d: %s\nOutput: %s", i, tc.name, output.String())
 
 		output = &bytes.Buffer{}
-		err = publish.Products(projectInfo, projectParam, nil, publisherImpl, nil, dryRun, output)
+		err = publish.Products(projectInfo, projectParam, &preDistTime, nil, publisherImpl, nil, dryRun, output)
 		if tc.wantErrorRegexp == "" {
 			require.NoError(t, err, "Case %d: %s", i, tc.name)
 			assert.Equal(t, tc.wantOutput(projectDir), output.String(), "Case %d: %s", i, tc.name)

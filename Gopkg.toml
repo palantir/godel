@@ -35,7 +35,7 @@
 
 [[constraint]]
   name = "github.com/palantir/distgo"
-  version = "0.0.0"
+  version = "1.0.0-rc2"
 
 [[constraint]]
   branch = "master"

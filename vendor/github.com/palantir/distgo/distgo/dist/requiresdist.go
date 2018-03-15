@@ -27,12 +27,13 @@ import (
 // artifacts that require generation. A product is considered to require generating dist artifacts if any of the
 // following is true:
 //   * Any of the dist artifact output paths do not exist
+//   * The product's dist configuration (as specified by configModTime) is more recent than any of its dist artifacts
 //   * The product has dependencies and any of the dependent build or dist artifacts are newer (have a later
 //     modification date) than any of the dist artifacts for the provided product
 //   * The product does not define a dist configuration
 //
 // Returns nil if all of the outputs exist and are up-to-date.
-func RequiresDist(projectInfo distgo.ProjectInfo, productParam distgo.ProductParam) (*distgo.ProductParam, error) {
+func RequiresDist(projectInfo distgo.ProjectInfo, productParam distgo.ProductParam, configModTime *time.Time) (*distgo.ProductParam, error) {
 	if productParam.Dist == nil {
 		return nil, nil
 	}
@@ -43,7 +44,7 @@ func RequiresDist(projectInfo distgo.ProjectInfo, productParam distgo.ProductPar
 
 	requiresDistIDs := make(map[distgo.DistID]struct{})
 	for _, currDistID := range productTaskOutputInfo.Product.DistOutputInfos.DistIDs {
-		if !disterRequiresDist(currDistID, productTaskOutputInfo) {
+		if !disterRequiresDist(currDistID, productTaskOutputInfo, configModTime) {
 			continue
 		}
 		requiresDistIDs[currDistID] = struct{}{}
@@ -63,7 +64,7 @@ func RequiresDist(projectInfo distgo.ProjectInfo, productParam distgo.ProductPar
 	return &productParam, nil
 }
 
-func disterRequiresDist(distID distgo.DistID, productTaskOutputInfo distgo.ProductTaskOutputInfo) bool {
+func disterRequiresDist(distID distgo.DistID, productTaskOutputInfo distgo.ProductTaskOutputInfo, configModTime *time.Time) bool {
 	// determine oldest dist artifact for current Dister. If any artifact is missing, Dister needs to be run.
 	oldestDistTime := time.Now()
 	for _, currArtifactPath := range productTaskOutputInfo.ProductDistWorkDirsAndArtifactPaths()[distID] {
@@ -74,6 +75,13 @@ func disterRequiresDist(distID distgo.DistID, productTaskOutputInfo distgo.Produ
 		if fiModTime := fi.ModTime(); fiModTime.Before(oldestDistTime) {
 			oldestDistTime = fiModTime
 		}
+	}
+
+	// if the configuration modification time was not provided or was modified more recently than the oldest dist
+	// artifact, consider it out-of-date. Truncate times to second granularity for purposes of comparison. If mod time
+	// and artifact generation time are the same,
+	if configModTime == nil || !configModTime.Truncate(time.Second).Before(oldestDistTime.Truncate(time.Second)) {
+		return true
 	}
 
 	// if any dependent artifact (build or dist) is newer than the oldest dist artifact, consider dist artifact out-of-date

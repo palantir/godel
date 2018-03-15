@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -25,9 +26,9 @@ import (
 	"github.com/palantir/distgo/distgo/dist"
 )
 
-func Products(projectInfo distgo.ProjectInfo, projectParam distgo.ProjectParam, productDistIDs []distgo.ProductDistID, publisher distgo.Publisher, flagVals map[distgo.PublisherFlagName]interface{}, dryRun bool, stdout io.Writer) error {
+func Products(projectInfo distgo.ProjectInfo, projectParam distgo.ProjectParam, configModTime *time.Time, productDistIDs []distgo.ProductDistID, publisher distgo.Publisher, flagVals map[distgo.PublisherFlagName]interface{}, dryRun bool, stdout io.Writer) error {
 	// run dist for products (will only run dist for productDistIDs that require dist artifact generation)
-	if err := dist.Products(projectInfo, projectParam, productDistIDs, dryRun, stdout); err != nil {
+	if err := dist.Products(projectInfo, projectParam, configModTime, productDistIDs, dryRun, stdout); err != nil {
 		return err
 	}
 

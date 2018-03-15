@@ -79,34 +79,8 @@ type DisterParam struct {
 	// Script is the content of a script that is written to file a file and run after the initial distribution
 	// process but before the artifact generation process. The contents of this value are written to a file and executed
 	// with the project directory as the working directory. The script process inherits the environment variables of the
-	// Go process and also has the following environment variables defined:
-	//
-	//   PROJECT_DIR: the root directory of project.
-	//   VERSION: the version of the project.
-	//   PRODUCT: the name of the product.
-	//   DEP_PRODUCT_IDS: the IDs of the dependent products for the product, where each item is delimited by a colon.
-	//
-	// The following environment variables are defined if the build configuration for the product is non-nil:
-	//   BUILD_DIR: the build output directory for the product ("{{OutputDir}}/{{ID}}/{{Version}}").
-	//   BUILD_NAME: the rendered NameTemplate for the build for this project.
-	//   OS_ARCHS: the OS/Arch combinations for this product, where each item is delimited by a colon.
-	//
-	// The following environment variables are defined if the dist configuration for the product is non-nil:
-	//   DIST_DIR: the distribution output directory for the product ("{{OutputDir}}/{{ID}}/{{Version}}").
-	//   DIST_NAME: the rendered NameTemplate for the distribution.
-	//   DIST_ARTIFACTS: the dist artifacts for the product, where each item is delimited by a colon.
-	//
-	// Each dependent product adds the following set of environment variables that start with "{{ID}}_":
-	//
-	// The following environment variables are defined if the build configuration for the product is non-nil:
-	//   {{ID}}_BUILD_DIR: the build output directory for the product ("{{OutputDir}}/{{ID}}/{{Version}}").
-	//   {{ID}}_BUILD_NAME: the rendered NameTemplate for the build for this project.
-	//   {{ID}}_OS_ARCHS: the OS/Arch combinations for this product, where each item is delimited by a colon.
-	//
-	// The following environment variables are defined if the dist configuration for the product is non-nil:
-	//   {{ID}}_DIST_DIR: the distribution output directory for the product ("{{OutputDir}}/{{ID}}/{{Version}}").
-	//   {{ID}}_DIST_NAME: the rendered NameTemplate for the distribution.
-	//   {{ID}}_DIST_ARTIFACTS: the dist artifacts for the product, where each item is delimited by a colon.
+	// Go process and also has dist-related environment variables. Refer to the documentation for the
+	// distgo.DistScriptEnvVariables function for the extra environment variables.
 	Script string
 
 	// Dister is the Dister that performs the dist operation for this parameter.
@@ -184,34 +158,8 @@ type DisterConfig struct {
 	// Script is the content of a script that is written to file a file and run after the initial distribution
 	// process but before the artifact generation process. The content of this value is written to a file and executed
 	// with the project directory as the working directory. The script process inherits the environment variables of the
-	// Go process and also has the following environment variables defined:
-	//
-	//   PROJECT_DIR: the root directory of project.
-	//   VERSION: the version of the project.
-	//   PRODUCT: the name of the product.
-	//   DEP_PRODUCT_IDS: the IDs of the dependent products for the product, where each item is delimited by a colon.
-	//
-	// The following environment variables are defined if the build configuration for the product is non-nil:
-	//   BUILD_DIR: the build output directory for the product ("{{OutputDir}}/{{ID}}/{{Version}}").
-	//   BUILD_NAME: the rendered NameTemplate for the build for this project.
-	//   OS_ARCHS: the OS/Arch combinations for this product, where each item is delimited by a colon.
-	//
-	// The following environment variables are defined if the dist configuration for the product is non-nil:
-	//   DIST_DIR: the distribution output directory for the product ("{{OutputDir}}/{{ID}}/{{Version}}").
-	//   DIST_NAME: the rendered NameTemplate for the distribution.
-	//   DIST_ARTIFACTS: the dist artifacts for the product, where each item is delimited by a colon.
-	//
-	// Each dependent product adds the following set of environment variables that start with "{{ID}}_":
-	//
-	// The following environment variables are defined if the build configuration for the product is non-nil:
-	//   {{ID}}_BUILD_DIR: the build output directory for the product ("{{OutputDir}}/{{ID}}/{{Version}}").
-	//   {{ID}}_BUILD_NAME: the rendered NameTemplate for the build for this project.
-	//   {{ID}}_OS_ARCHS: the OS/Arch combinations for this product, where each item is delimited by a colon.
-	//
-	// The following environment variables are defined if the dist configuration for the product is non-nil:
-	//   {{ID}}_DIST_DIR: the distribution output directory for the product ("{{OutputDir}}/{{ID}}/{{Version}}").
-	//   {{ID}}_DIST_NAME: the rendered NameTemplate for the distribution.
-	//   {{ID}}_DIST_ARTIFACTS: the dist artifacts for the product, where each item is delimited by a colon.
+	// Go process and also has dist-related environment variables. Refer to the documentation for the
+	// distgo.DistScriptEnvVariables function for the extra environment variables.
 	Script *string `yaml:"script"`
 }
 
