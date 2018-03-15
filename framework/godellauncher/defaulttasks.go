@@ -30,20 +30,20 @@ var defaultPluginsConfig = PluginsConfig{
 		{
 			LocatorWithResolverConfig: artifactresolver.LocatorWithResolverConfig{
 				Locator: artifactresolver.LocatorConfig{
-					ID: "com.palantir.distgo:distgo-plugin:1.0.0-rc1",
+					ID: "com.palantir.distgo:distgo-plugin:1.0.0-rc2",
 				},
 			},
 		},
 		{
 			LocatorWithResolverConfig: artifactresolver.LocatorWithResolverConfig{
 				Locator: artifactresolver.LocatorConfig{
-					ID: "com.palantir.godel-format-plugin:format-plugin:1.0.0-rc1",
+					ID: "com.palantir.godel-format-plugin:format-plugin:1.0.0-rc2",
 				},
 			},
 			Assets: []artifactresolver.LocatorWithResolverConfig{
 				{
 					Locator: artifactresolver.LocatorConfig{
-						ID: "com.palantir.godel-format-asset-gofmt:gofmt-asset:1.0.0-rc1",
+						ID: "com.palantir.godel-format-asset-ptimports:ptimports-asset:1.0.0-rc3",
 					},
 				},
 			},
@@ -58,7 +58,7 @@ var defaultPluginsConfig = PluginsConfig{
 		{
 			LocatorWithResolverConfig: artifactresolver.LocatorWithResolverConfig{
 				Locator: artifactresolver.LocatorConfig{
-					ID: "com.palantir.okgo:okgo-plugin:1.0.0-rc1",
+					ID: "com.palantir.okgo:okgo-plugin:1.0.0-rc2",
 				},
 			},
 			Assets: []artifactresolver.LocatorWithResolverConfig{
@@ -127,14 +127,14 @@ var defaultPluginsConfig = PluginsConfig{
 		{
 			LocatorWithResolverConfig: artifactresolver.LocatorWithResolverConfig{
 				Locator: artifactresolver.LocatorConfig{
-					ID: "com.palantir.go-license:license-plugin:1.0.0-rc1",
+					ID: "com.palantir.go-license:license-plugin:1.0.0-rc2",
 				},
 			},
 		},
 		{
 			LocatorWithResolverConfig: artifactresolver.LocatorWithResolverConfig{
 				Locator: artifactresolver.LocatorConfig{
-					ID: "com.palantir.godel-test-plugin:test-plugin:1.0.0-rc2",
+					ID: "com.palantir.godel-test-plugin:test-plugin:1.0.0-rc3",
 				},
 			},
 		},
