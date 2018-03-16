@@ -26,6 +26,7 @@ import (
 
 	"github.com/palantir/godel/framework/artifactresolver"
 	"github.com/palantir/godel/framework/builtintasks/installupdate/layout"
+	"github.com/palantir/godel/pkg/versionedconfig"
 )
 
 const (
@@ -33,6 +34,9 @@ const (
 )
 
 type GodelConfig struct {
+	// Version of the configuration
+	versionedconfig.ConfigWithVersion `yaml:",inline"`
+
 	// TasksConfigProviders specifies the providers used to load provided task configuration.
 	TasksConfigProviders TasksConfigProvidersConfig `yaml:"tasks-config-providers"`
 
@@ -216,16 +220,39 @@ func ReadGodelConfigFromProjectDir(projectDir string) (GodelConfig, error) {
 
 // ReadGodelConfig reads the gödel configuration from the "godel.yml" file in the specified directory and returns it.
 func ReadGodelConfig(cfgDir string) (GodelConfig, error) {
-	var gödelCfg GodelConfig
-	gödelYML := path.Join(cfgDir, GodelConfigYML)
-	if _, err := os.Stat(gödelYML); err == nil {
-		bytes, err := ioutil.ReadFile(gödelYML)
+	var godelCfg GodelConfig
+	godelYML := path.Join(cfgDir, GodelConfigYML)
+	if _, err := os.Stat(godelYML); err == nil {
+		bytes, err := ioutil.ReadFile(godelYML)
 		if err != nil {
-			return GodelConfig{}, errors.Wrapf(err, "failed to read file %s", gödelYML)
+			return GodelConfig{}, errors.Wrapf(err, "failed to read file %s", godelYML)
 		}
-		if err := yaml.Unmarshal(bytes, &gödelCfg); err != nil {
+		upgradedBytes, err := UpgradeGodelConfig(bytes)
+		if err != nil {
+			return GodelConfig{}, errors.Wrapf(err, "failed to upgrade configuration")
+		}
+		if err := yaml.Unmarshal(upgradedBytes, &godelCfg); err != nil {
 			return GodelConfig{}, errors.Wrapf(err, "failed to unmarshal gödel config YAML")
 		}
 	}
-	return gödelCfg, nil
+	return godelCfg, nil
+}
+
+func UpgradeGodelConfig(cfgBytes []byte) ([]byte, error) {
+	version, err := versionedconfig.ConfigVersion(cfgBytes)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to unmarshal version")
+	}
+	switch version {
+	case "", "0":
+		// verify that configuration is valid
+		var cfg GodelConfig
+		if err := yaml.UnmarshalStrict(cfgBytes, &cfg); err != nil {
+			return nil, errors.Wrapf(err, "failed to unmarshal configuration")
+		}
+		// configuration is valid and is current version: return input bytes
+		return cfgBytes, nil
+	default:
+		return nil, errors.Errorf("unsupported version: %s", version)
+	}
 }

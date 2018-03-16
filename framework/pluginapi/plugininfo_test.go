@@ -42,14 +42,14 @@ echo $@
 
 func TestNewPluginInfo(t *testing.T) {
 	info, err := pluginapi.NewPluginInfo("group", "product", "1.0.0",
-		pluginapi.PluginInfoConfigFileName("foo.yml"),
+		pluginapi.PluginInfoUsesConfigFile(),
 	)
 	require.NoError(t, err)
 
 	assert.Equal(t, pluginapi.CurrentSchemaVersion, info.PluginSchemaVersion())
 	assert.Equal(t, "group:product:1.0.0", info.ID())
-	assert.Equal(t, "foo.yml", info.ConfigFileName())
 	assert.Nil(t, info.Tasks("", nil))
+	assert.Nil(t, info.UpgradeConfigTask("", nil))
 }
 
 func TestPluginInfoJSONMarshal(t *testing.T) {
@@ -61,33 +61,33 @@ func TestPluginInfoJSONMarshal(t *testing.T) {
 		{
 			"group", "product", "1.0.0",
 			[]pluginapi.PluginInfoParam{
-				pluginapi.PluginInfoConfigFileName("foo.yml"),
+				pluginapi.PluginInfoUsesConfigFile(),
 			},
-			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"foo.yml","tasks":null}`,
+			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"product.yml","tasks":null,"upgradeTask":null}`,
 		},
 		{
 			"group", "product", "1.0.0",
 			[]pluginapi.PluginInfoParam{
-				pluginapi.PluginInfoConfigFileName("foo.yml"),
+				pluginapi.PluginInfoUsesConfigFile(),
 				pluginapi.PluginInfoTaskInfo("foo", "does foo things"),
 			},
-			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"foo.yml","tasks":[{"name":"foo","description":"does foo things","command":null,"globalFlagOptions":null,"verifyOptions":null}]}`,
+			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"product.yml","tasks":[{"name":"foo","description":"does foo things","command":null,"globalFlagOptions":null,"verifyOptions":null}],"upgradeTask":null}`,
 		},
 		{
 			"group", "product", "1.0.0",
 			[]pluginapi.PluginInfoParam{
-				pluginapi.PluginInfoConfigFileName("foo.yml"),
+				pluginapi.PluginInfoUsesConfigFile(),
 				pluginapi.PluginInfoTaskInfo("foo", "does foo things",
 					pluginapi.TaskInfoCommand("foo"),
 					pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions()),
 				),
 			},
-			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"foo.yml","tasks":[{"name":"foo","description":"does foo things","command":["foo"],"globalFlagOptions":null,"verifyOptions":{"verifyTaskFlags":null,"ordering":null,"applyTrueArgs":null,"applyFalseArgs":null}}]}`,
+			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"product.yml","tasks":[{"name":"foo","description":"does foo things","command":["foo"],"globalFlagOptions":null,"verifyOptions":{"verifyTaskFlags":null,"ordering":null,"applyTrueArgs":null,"applyFalseArgs":null}}],"upgradeTask":null}`,
 		},
 		{
 			"group", "product", "1.0.0",
 			[]pluginapi.PluginInfoParam{
-				pluginapi.PluginInfoConfigFileName("foo.yml"),
+				pluginapi.PluginInfoUsesConfigFile(),
 				pluginapi.PluginInfoGlobalFlagOptions(
 					pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"),
 				),
@@ -96,7 +96,7 @@ func TestPluginInfoJSONMarshal(t *testing.T) {
 					pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions()),
 				),
 			},
-			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"foo.yml","tasks":[{"name":"foo","description":"does foo things","command":["foo"],"globalFlagOptions":{"debugFlag":"","projectDirFlag":"--project-dir","godelConfigFlag":"","configFlag":""},"verifyOptions":{"verifyTaskFlags":null,"ordering":null,"applyTrueArgs":null,"applyFalseArgs":null}}]}`,
+			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"product.yml","tasks":[{"name":"foo","description":"does foo things","command":["foo"],"globalFlagOptions":{"debugFlag":"","projectDirFlag":"--project-dir","godelConfigFlag":"","configFlag":""},"verifyOptions":{"verifyTaskFlags":null,"ordering":null,"applyTrueArgs":null,"applyFalseArgs":null}}],"upgradeTask":null}`,
 		},
 	} {
 		info, err := pluginapi.NewPluginInfo(tc.group, tc.product, tc.version, tc.params...)
@@ -110,12 +110,42 @@ func TestPluginInfoJSONMarshal(t *testing.T) {
 }
 
 func TestNewPluginInfoError(t *testing.T) {
-	_, err := pluginapi.NewPluginInfo("group", "product", "1.0.0",
-		pluginapi.PluginInfoTaskInfo("name", "description"),
-		pluginapi.PluginInfoTaskInfo("name", "description-2"),
-	)
-	require.Error(t, err)
-	assert.EqualError(t, err, `plugin group:product:1.0.0 specifies multiple tasks with name "name"`)
+	for i, tc := range []struct {
+		name                    string
+		group, product, version string
+		params                  []pluginapi.PluginInfoParam
+		wantError               string
+	}{
+		{
+			"plugins cannot provide multiple tasks with the same name",
+			"group", "product", "1.0.0",
+			[]pluginapi.PluginInfoParam{
+				pluginapi.PluginInfoTaskInfo("name", "description"),
+				pluginapi.PluginInfoTaskInfo("name", "description-2"),
+			},
+			`plugin group:product:1.0.0 specifies multiple tasks with name "name"`,
+		},
+		{
+			"plugin cannot provide upgrade task if it does not use configuration",
+			"group", "product", "1.0.0",
+			[]pluginapi.PluginInfoParam{
+				pluginapi.PluginInfoUpgradeConfigTaskInfo(pluginapi.UpgradeConfigTaskInfoCommand("upgrade-task")),
+			},
+			`plugin group:product:1.0.0 provides a configuration upgrade task but does not specify that it uses configuration`,
+		},
+		{
+			"plugin cannot have a name that conflicts with a reserved config file name",
+			"group", "generate", "1.0.0",
+			[]pluginapi.PluginInfoParam{
+				pluginapi.PluginInfoUsesConfigFile(),
+			},
+			`plugin group:generate:1.0.0 uses configuration file generate.yml, which is a reserved name. Use a different name if possible. If this is not possible, please file an issue for discussion.`,
+		},
+	} {
+		_, err := pluginapi.NewPluginInfo(tc.group, tc.product, tc.version, tc.params...)
+		require.Error(t, err, "Case %d: %s", i, tc.name)
+		assert.EqualError(t, err, tc.wantError, "Case %d: %s", i, tc.name)
+	}
 }
 
 func TestRunPluginFromInfo(t *testing.T) {
@@ -219,7 +249,7 @@ func TestRunPluginFromInfo(t *testing.T) {
 	} {
 		pluginInfo, err := pluginapi.NewPluginInfo("group", "echo", "1.0.0",
 			append([]pluginapi.PluginInfoParam{
-				pluginapi.PluginInfoConfigFileName("echo.yml"),
+				pluginapi.PluginInfoUsesConfigFile(),
 				pluginapi.PluginInfoTaskInfo("echo", "echoes the provided input"),
 			}, tc.params...)...,
 		)
@@ -321,7 +351,7 @@ func TestRunPluginVerify(t *testing.T) {
 	} {
 		pluginInfo, err := pluginapi.NewPluginInfo("group", "echo", "1.0.0",
 			append([]pluginapi.PluginInfoParam{
-				pluginapi.PluginInfoConfigFileName("echo.yml"),
+				pluginapi.PluginInfoUsesConfigFile(),
 				pluginapi.PluginInfoTaskInfo("echo", "echoes the provided input", tc.taskInfoParams...),
 			}, tc.pluginInfoParams...)...,
 		)

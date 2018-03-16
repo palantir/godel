@@ -51,7 +51,8 @@ func TestMarshalConfig(t *testing.T) {
 	got, err := yaml.Marshal(cfg)
 	require.NoError(t, err)
 
-	want := `tasks-config-providers:
+	want := `version: ""
+tasks-config-providers:
   resolvers: []
   providers: []
 default-tasks:

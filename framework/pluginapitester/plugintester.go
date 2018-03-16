@@ -37,13 +37,19 @@ import (
 // project directory does not contain a file named "godelw", this function creates the path. The returned "cleanup"
 // function removes the "godelw" file if it was created by this function and is suitable to defer.
 func RunPlugin(
-	pluginPath string,
-	assets []string,
+	pluginProvider PluginProvider,
+	assetProviders []AssetProvider,
 	taskName string,
 	args []string,
 	projectDir string,
 	debug bool,
 	stdout io.Writer) (cleanup func(), rErr error) {
+
+	pluginPath := pluginProvider.PluginFilePath()
+	var assets []string
+	for _, asset := range assetProviders {
+		assets = append(assets, asset.AssetFilePath())
+	}
 
 	cleanup = func() {}
 	info, err := pluginapi.InfoFromPlugin(pluginPath)

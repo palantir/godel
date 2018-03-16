@@ -73,6 +73,9 @@ func GlobalFlagOptionsParamConfigFlag(configFlag string) GlobalFlagOptionsParam 
 }
 
 func newGlobalFlagOptionsImpl(params ...GlobalFlagOptionsParam) *globalFlagOptionsImpl {
+	if len(params) == 0 {
+		return nil
+	}
 	impl := &globalFlagOptionsImpl{}
 	for _, p := range params {
 		if p == nil {
