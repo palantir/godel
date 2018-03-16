@@ -29,6 +29,7 @@ func UpdateTask(wrapperPath string) godellauncher.Task {
 	var (
 		syncFlag          bool
 		versionFlag       string
+		checksumFlag      string
 		cacheDurationFlag time.Duration
 	)
 
@@ -49,11 +50,12 @@ func UpdateTask(wrapperPath string) godellauncher.Task {
 				}
 				return installupdate.Update(projectDir, pkgSrc, cmd.OutOrStdout())
 			}
-			return installupdate.InstallVersion(projectDir, versionFlag, cacheDurationFlag, false, cmd.OutOrStdout())
+			return installupdate.InstallVersion(projectDir, versionFlag, checksumFlag, cacheDurationFlag, false, cmd.OutOrStdout())
 		},
 	}
-	cmd.Flags().BoolVar(&syncFlag, "sync", false, "use version and checksum specified in godel.properties")
+	cmd.Flags().BoolVar(&syncFlag, "sync", false, "use version and checksum specified in godel.properties (if true, all other flags are ignored)")
 	cmd.Flags().StringVar(&versionFlag, "version", "", "version to update (if blank, uses latest version)")
+	cmd.Flags().StringVar(&checksumFlag, "checksum", "", "expected checksum for package")
 	cmd.Flags().DurationVar(&cacheDurationFlag, "cache-duration", time.Hour, "duration for which cache entries should be considered valid")
 
 	return godellauncher.CobraCLITask(cmd)

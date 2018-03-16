@@ -27,6 +27,7 @@ import (
 func rootCmd() *cobra.Command {
 	var (
 		versionFlag       string
+		checksumFlag      string
 		cacheDurationFlag time.Duration
 	)
 
@@ -41,11 +42,12 @@ to the project. If a specific version of godel is desired, it can be specified u
 			if err != nil {
 				return errors.Wrapf(err, "failed to determine working directory")
 			}
-			return installupdate.InstallVersion(wd, versionFlag, cacheDurationFlag, true, cmd.OutOrStdout())
+			return installupdate.InstallVersion(wd, versionFlag, checksumFlag, cacheDurationFlag, true, cmd.OutOrStdout())
 		},
 	}
 
 	cmd.Flags().StringVar(&versionFlag, "version", "", "version to install (if unspecified, latest is used)")
+	cmd.Flags().StringVar(&checksumFlag, "checksum", "", "expected checksum for package")
 	cmd.Flags().DurationVar(&cacheDurationFlag, "cache-duration", time.Hour, "duration for which cache entries should be considered valid")
 	return cmd
 }

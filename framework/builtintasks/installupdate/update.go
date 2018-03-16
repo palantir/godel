@@ -65,7 +65,7 @@ func Update(projectDirPath string, srcPkg godelgetter.PkgSrc, stdout io.Writer) 
 
 // InstallVersion installs the specified version of gödel in the provided project directory. If targetVersion is the
 // empty string, the latest version is determined and used.
-func InstallVersion(projectDir, targetVersion string, cacheValidDuration time.Duration, newInstall bool, stdout io.Writer) error {
+func InstallVersion(projectDir, targetVersion, wantChecksum string, cacheValidDuration time.Duration, newInstall bool, stdout io.Writer) error {
 	if targetVersion == "" {
 		version, err := latestGodelVersion(cacheValidDuration)
 		if err != nil {
@@ -73,7 +73,7 @@ func InstallVersion(projectDir, targetVersion string, cacheValidDuration time.Du
 		}
 		targetVersion = version
 	}
-	pkgSrc, err := pkgSrcForVersion(targetVersion)
+	pkgSrc, err := pkgSrcForVersion(targetVersion, wantChecksum)
 	if err != nil {
 		return err
 	}
@@ -88,9 +88,9 @@ func InstallVersion(projectDir, targetVersion string, cacheValidDuration time.Du
 		return err
 	}
 
-	// update godel.properties with checksum
-	if checksum := pkgSrc.Checksum(); checksum != "" {
-		if err := setGodelPropertyKey(projectDir, propertiesChecksumKey, checksum); err != nil {
+	// update godel.properties with checksum if provided (if this point was reached, checksum was verified)
+	if wantChecksum != "" {
+		if err := setGodelPropertyKey(projectDir, propertiesChecksumKey, wantChecksum); err != nil {
 			return err
 		}
 	}
@@ -99,17 +99,16 @@ func InstallVersion(projectDir, targetVersion string, cacheValidDuration time.Du
 
 // pkgSrcForVersion returns a package source for the provided version. If the distribution for the provided version has
 // been downloaded locally, the package source uses the filesystem path. Otherwise, the package source specifies the
-// Bintray download URL.
-func pkgSrcForVersion(version string) (godelgetter.PkgSrc, error) {
+// Bintray download URL. Sets the provided checksum as the expected checksum for the package (blank means no checksum).
+func pkgSrcForVersion(version, wantChecksum string) (godelgetter.PkgSrc, error) {
 	if version == "" {
 		return nil, errors.Errorf("version for package must be specified")
 	}
-	pkgPath, checksum, err := downloadedTGZForVersion(version)
+	pkgPath, _, err := downloadedTGZForVersion(version)
 	if err != nil {
 		pkgPath = fmt.Sprintf("https://palantir.bintray.com/releases/com/palantir/godel/godel/%s/godel-%s.tgz", version, version)
-		checksum = ""
 	}
-	return godelgetter.NewPkgSrc(pkgPath, checksum), nil
+	return godelgetter.NewPkgSrc(pkgPath, wantChecksum), nil
 }
 
 // downloadedTGZForVersion returns the path and checksum for the downloaded TGZ for the specified version. Returns an
