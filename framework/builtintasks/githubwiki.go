@@ -58,5 +58,5 @@ func GitHubWikiTask() godellauncher.Task {
 		panic(errors.Wrapf(err, "failed to mark flag %s as required", repoFlag))
 	}
 
-	return godellauncher.CobraCLITask(cmd)
+	return godellauncher.CobraCLITask(cmd, nil)
 }

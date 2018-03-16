@@ -15,8 +15,6 @@
 package builtintasks
 
 import (
-	"github.com/nmiyake/pkg/dirs"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/palantir/godel/framework/builtintasks/idea"
@@ -25,56 +23,57 @@ import (
 
 func IDEATask() godellauncher.Task {
 	const intellijCmdUsage = "Create IntelliJ project files for this project"
+	var globalCfg godellauncher.GlobalConfig
 
 	ideaCmd := &cobra.Command{
 		Use:   "idea",
 		Short: intellijCmdUsage,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			projectDir, err := globalCfg.ProjectDir()
+			if err != nil {
+				return err
+			}
+
 			// This command has subcommands, but does not accept any arguments itself. If the execution has reached this
 			// point and "args" is non-empty, treat it as an unknown command (rather than just executing this command
 			// and ignoring the extra arguments). Avoids executing the wrong command on a subcommand typo.
 			if len(args) > 0 {
 				return godellauncher.UnknownCommandError(cmd, args)
 			}
-
-			wd, err := dirs.GetwdEvalSymLinks()
-			if err != nil {
-				return errors.Wrapf(err, "failed to determine working directory")
-			}
-			return idea.CreateIntelliJFiles(wd)
+			return idea.CreateIntelliJFiles(projectDir)
 		},
 	}
 	goglandSubcommand := &cobra.Command{
 		Use:   "gogland",
 		Short: "Create Gogland project files for this project",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			wd, err := dirs.GetwdEvalSymLinks()
+			projectDir, err := globalCfg.ProjectDir()
 			if err != nil {
-				return errors.Wrapf(err, "failed to determine working directory")
+				return err
 			}
-			return idea.CreateGoglandFiles(wd)
+			return idea.CreateGoglandFiles(projectDir)
 		},
 	}
 	intelliJSubcommand := &cobra.Command{
 		Use:   "intellij",
 		Short: intellijCmdUsage,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			wd, err := dirs.GetwdEvalSymLinks()
+			projectDir, err := globalCfg.ProjectDir()
 			if err != nil {
-				return errors.Wrapf(err, "failed to determine working directory")
+				return err
 			}
-			return idea.CreateGoglandFiles(wd)
+			return idea.CreateGoglandFiles(projectDir)
 		},
 	}
 	cleanSubcommand := &cobra.Command{
 		Use:   "clean",
 		Short: "Remove the IDEA project files for this project",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			wd, err := dirs.GetwdEvalSymLinks()
+			projectDir, err := globalCfg.ProjectDir()
 			if err != nil {
-				return errors.Wrapf(err, "failed to determine working directory")
+				return err
 			}
-			return idea.CleanIDEAFiles(wd)
+			return idea.CleanIDEAFiles(projectDir)
 		},
 	}
 
@@ -83,5 +82,5 @@ func IDEATask() godellauncher.Task {
 		intelliJSubcommand,
 		cleanSubcommand,
 	)
-	return godellauncher.CobraCLITask(ideaCmd)
+	return godellauncher.CobraCLITask(ideaCmd, &globalCfg)
 }

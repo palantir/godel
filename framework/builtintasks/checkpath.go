@@ -15,8 +15,6 @@
 package builtintasks
 
 import (
-	"github.com/nmiyake/pkg/dirs"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/palantir/godel/framework/builtintasks/checkpath"
@@ -24,18 +22,21 @@ import (
 )
 
 func CheckPathTask() godellauncher.Task {
-	var checkpathApply bool
+	var (
+		checkpathApply bool
+		globalCfg      godellauncher.GlobalConfig
+	)
 	cmd := &cobra.Command{
 		Use:   checkpath.CmdName,
 		Short: "Verify that the Go environment is set up properly and that the project is in the proper location",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			wd, err := dirs.GetwdEvalSymLinks()
+			projectDir, err := globalCfg.ProjectDir()
 			if err != nil {
-				return errors.Wrapf(err, "failed to determine working directory")
+				return err
 			}
-			return checkpath.VerifyProject(wd, checkpathApply, cmd.OutOrStdout())
+			return checkpath.VerifyProject(projectDir, checkpathApply, cmd.OutOrStdout())
 		},
 	}
 	cmd.Flags().BoolVar(&checkpathApply, checkpath.ApplyFlagName, false, "Apply the recommended changes")
-	return godellauncher.CobraCLITask(cmd)
+	return godellauncher.CobraCLITask(cmd, &globalCfg)
 }

@@ -15,8 +15,6 @@
 package builtintasks
 
 import (
-	"github.com/nmiyake/pkg/dirs"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/palantir/godel/framework/builtintasks/githooks"
@@ -24,15 +22,16 @@ import (
 )
 
 func GitHooksTask() godellauncher.Task {
+	var globalCfg godellauncher.GlobalConfig
 	return godellauncher.CobraCLITask(&cobra.Command{
 		Use:   "git-hooks",
 		Short: "Install git commit hooks that verify that Go files are properly formatted before commit",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			wd, err := dirs.GetwdEvalSymLinks()
+			projectDir, err := globalCfg.ProjectDir()
 			if err != nil {
-				return errors.Wrapf(err, "failed to determine working directory")
+				return err
 			}
-			return githooks.InstallGitHooks(wd)
+			return githooks.InstallGitHooks(projectDir)
 		},
-	})
+	}, &globalCfg)
 }

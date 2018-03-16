@@ -15,8 +15,6 @@
 package builtintasks
 
 import (
-	"path"
-
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -24,7 +22,8 @@ import (
 	"github.com/palantir/godel/framework/godellauncher"
 )
 
-func InfoTask(wrapperPath string) godellauncher.Task {
+func InfoTask() godellauncher.Task {
+	var globalCfg godellauncher.GlobalConfig
 	cmd := &cobra.Command{
 		Use:   "info",
 		Short: "Print information regarding gödel",
@@ -33,7 +32,11 @@ func InfoTask(wrapperPath string) godellauncher.Task {
 		Use:   "default-tasks",
 		Short: "Print configuration for default tasks",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			godelCfg, err := godellauncher.ReadGodelConfigFromProjectDir(path.Dir(wrapperPath))
+			projectDir, err := globalCfg.ProjectDir()
+			if err != nil {
+				return err
+			}
+			godelCfg, err := godellauncher.ReadGodelConfigFromProjectDir(projectDir)
 			if err != nil {
 				return err
 			}
@@ -45,5 +48,5 @@ func InfoTask(wrapperPath string) godellauncher.Task {
 			return nil
 		},
 	})
-	return godellauncher.CobraCLITask(cmd)
+	return godellauncher.CobraCLITask(cmd, &globalCfg)
 }

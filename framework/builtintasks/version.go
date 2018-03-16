@@ -33,5 +33,5 @@ func VersionTask() godellauncher.Task {
 			fmt.Fprintln(cmd.OutOrStdout(), godel.VersionOutput())
 			return nil
 		},
-	})
+	}, nil)
 }
