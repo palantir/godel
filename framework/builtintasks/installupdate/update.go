@@ -98,14 +98,15 @@ func InstallVersion(projectDir, targetVersion, wantChecksum string, cacheValidDu
 }
 
 // pkgSrcForVersion returns a package source for the provided version. If the distribution for the provided version has
-// been downloaded locally, the package source uses the filesystem path. Otherwise, the package source specifies the
-// Bintray download URL. Sets the provided checksum as the expected checksum for the package (blank means no checksum).
+// been downloaded locally (and its checksum matches the expected checksum if one is provided), the package source uses
+// the filesystem path. Otherwise, the package source specifies the Bintray download URL. Sets the provided checksum as
+// the expected checksum for the package.
 func pkgSrcForVersion(version, wantChecksum string) (godelgetter.PkgSrc, error) {
 	if version == "" {
 		return nil, errors.Errorf("version for package must be specified")
 	}
-	pkgPath, _, err := downloadedTGZForVersion(version)
-	if err != nil {
+	pkgPath, checksum, err := downloadedTGZForVersion(version)
+	if err != nil || (wantChecksum != "" && checksum != wantChecksum) {
 		pkgPath = fmt.Sprintf("https://palantir.bintray.com/releases/com/palantir/godel/godel/%s/godel-%s.tgz", version, version)
 	}
 	return godelgetter.NewPkgSrc(pkgPath, wantChecksum), nil
