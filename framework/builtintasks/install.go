@@ -15,7 +15,6 @@
 package builtintasks
 
 import (
-	"github.com/nmiyake/pkg/dirs"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
@@ -25,18 +24,19 @@ import (
 )
 
 func InstallTask() godellauncher.Task {
+	var globalCfg godellauncher.GlobalConfig
 	return godellauncher.CobraCLITask(&cobra.Command{
 		Use:   "install",
 		Short: "Install gödel from a local tgz file",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			wd, err := dirs.GetwdEvalSymLinks()
+			projectDir, err := globalCfg.ProjectDir()
 			if err != nil {
-				return errors.Wrapf(err, "failed to determine working directory")
+				return err
 			}
 			if len(args) == 0 {
 				return errors.Errorf("path to package to install must be provided as an argument")
 			}
-			return installupdate.NewInstall(wd, godelgetter.NewPkgSrc(args[0], ""), cmd.OutOrStdout())
+			return installupdate.NewInstall(projectDir, godelgetter.NewPkgSrc(args[0], ""), cmd.OutOrStdout())
 		},
-	})
+	}, &globalCfg)
 }

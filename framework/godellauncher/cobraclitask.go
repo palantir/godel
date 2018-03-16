@@ -31,12 +31,18 @@ import (
 // * Adds the provided command as a subcommand of the dummy root
 // * Executes the root command with the following "os.Args":
 //     [executable] [task] [task args...]
-func CobraCLITask(cmd *cobra.Command) Task {
+//
+// The second argument is an optional pointer. If the pointer is non-nil, then the value of the provided pointer will be
+// set to the GlobalConfig provided when the task is run.
+func CobraCLITask(cmd *cobra.Command, globalConfigPtr *GlobalConfig) Task {
 	rootCmd := CobraCmdToRootCmd(cmd)
 	return Task{
 		Name:        cmd.Use,
 		Description: cmd.Short,
 		RunImpl: func(t *Task, global GlobalConfig, stdout io.Writer) error {
+			if globalConfigPtr != nil {
+				*globalConfigPtr = global
+			}
 			rootCmd.SetOutput(stdout)
 			args := []string{global.Executable}
 			args = append(args, global.Task)

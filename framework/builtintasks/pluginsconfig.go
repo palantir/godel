@@ -33,7 +33,7 @@ func TasksConfigTask(tasksCfgInfo godellauncher.TasksConfigInfo) godellauncher.T
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printTasksCfgInfo(tasksCfgInfo, cmd.OutOrStdout())
 		},
-	})
+	}, nil)
 }
 
 func printTasksCfgInfo(tasksCfgInfo godellauncher.TasksConfigInfo, stdout io.Writer) error {

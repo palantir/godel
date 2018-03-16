@@ -14,6 +14,12 @@
 
 package godellauncher
 
+import (
+	"path"
+
+	"github.com/pkg/errors"
+)
+
 // GlobalConfig  stores the configuration provided to the initial invocation of gödel.
 type GlobalConfig struct {
 	// Path to the gödel executable
@@ -30,4 +36,13 @@ type GlobalConfig struct {
 	Task string
 	// All of the arguments following the "Task" argument that was provided to the gödel executable.
 	TaskArgs []string
+}
+
+// ProjectDir returns the project directory for the global configuration. Returns an error if the wrapper path was not
+// specified.
+func (g GlobalConfig) ProjectDir() (string, error) {
+	if g.Wrapper == "" {
+		return "", errors.Errorf("wrapper must be specified to determine project directory")
+	}
+	return path.Dir(g.Wrapper), nil
 }
