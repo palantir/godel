@@ -30,7 +30,7 @@ var defaultPluginsConfig = PluginsConfig{
 		{
 			LocatorWithResolverConfig: artifactresolver.LocatorWithResolverConfig{
 				Locator: artifactresolver.LocatorConfig{
-					ID: "com.palantir.distgo:distgo-plugin:1.0.0-rc2",
+					ID: "com.palantir.distgo:distgo-plugin:1.0.0-rc3",
 				},
 			},
 		},
