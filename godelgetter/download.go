@@ -29,7 +29,8 @@ import (
 
 // DownloadIntoDirectory downloads the provided package into the specified output directory. The output directory must
 // already exist. The download progress is written to the provided writer. Returns the path to the downloaded file.
-// Is a no-op if the path of pkgSrc and the download destination both refer to the same file (and the file exists).
+// If the path of pkgSrc and the download destination both refer to the same file (and the file exists), then if a
+// checksum is provided it is verified (otherwise it is a no-op).
 func DownloadIntoDirectory(pkgSrc PkgSrc, dstDir string, w io.Writer) (rPkg string, rErr error) {
 	if dstDirInfo, err := os.Stat(dstDir); err != nil {
 		if os.IsNotExist(err) {
@@ -42,8 +43,19 @@ func DownloadIntoDirectory(pkgSrc PkgSrc, dstDir string, w io.Writer) (rPkg stri
 
 	dstFilePath := path.Join(dstDir, pkgSrc.Name())
 	if !pkgSrc.Same(dstFilePath) {
+		// download the source package to the destination
 		if err := Download(pkgSrc, dstFilePath, w); err != nil {
 			return "", err
+		}
+	} else if wantChecksum := pkgSrc.Checksum(); wantChecksum != "" {
+		// destination file and source file are the same -- if expected checksum was provided, verify that the checksum
+		// for the existing file matches the expected checksum.
+		checksum, err := computeSHA256Checksum(dstFilePath)
+		if err != nil {
+			return "", errors.Wrapf(err, "failed to compute checksum of %s", dstFilePath)
+		}
+		if checksum != wantChecksum {
+			return "", errors.Errorf("checksum of %s does not match provided checksum: expected %s, was %s", dstFilePath, wantChecksum, checksum)
 		}
 	}
 	return dstFilePath, nil
