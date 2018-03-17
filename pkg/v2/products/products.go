@@ -42,17 +42,18 @@ func Bin(product string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	currOSArchFlag := fmt.Sprintf("--os-arch=%s-%s", runtime.GOOS, runtime.GOARCH)
-	requiresBuildOutput, err := gödelw.run("artifacts", "build", "--absolute", currOSArchFlag, "--requires-build", product)
+	productBuildID := product + "." + runtime.GOOS + "-" + runtime.GOARCH
+
+	requiresBuildOutput, err := gödelw.run("artifacts", "build", "--absolute", "--requires-build", productBuildID)
 	if err != nil {
 		return "", err
 	}
 	if requiresBuildOutput != "" {
-		if _, err := gödelw.run("build", currOSArchFlag, product); err != nil {
+		if _, err := gödelw.run("build", productBuildID); err != nil {
 			return "", err
 		}
 	}
-	binPath, err := gödelw.run("artifacts", "build", "--absolute", currOSArchFlag, product)
+	binPath, err := gödelw.run("artifacts", "build", "--absolute", productBuildID)
 	if err != nil {
 		return "", err
 	}

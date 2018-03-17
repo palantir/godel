@@ -34,7 +34,8 @@
             "importedFrom": [
                 "github.com/palantir/godel/pkg/dirchecksum_test",
                 "github.com/palantir/godel/pkg/osarch_test",
-                "github.com/palantir/godel/pkg/products_test"
+                "github.com/palantir/godel/pkg/products_test",
+                "github.com/palantir/godel/pkg/v2/products_test"
             ]
         },
         {
@@ -44,7 +45,8 @@
             "importedFrom": [
                 "github.com/palantir/godel/pkg/dirchecksum_test",
                 "github.com/palantir/godel/pkg/osarch_test",
-                "github.com/palantir/godel/pkg/products_test"
+                "github.com/palantir/godel/pkg/products_test",
+                "github.com/palantir/godel/pkg/v2/products_test"
             ]
         }
     ]
