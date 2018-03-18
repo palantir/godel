@@ -66,17 +66,6 @@ func TaskInfoCommand(command ...string) TaskInfoParam {
 	})
 }
 
-func TaskInfoGlobalFlagOptions(globalFlagOpts GlobalFlagOptions) TaskInfoParam {
-	return taskInfoParamFunc(func(impl *taskInfoImpl) {
-		impl.GlobalFlagOptionsVar = &globalFlagOptionsImpl{
-			DebugFlagVar:       globalFlagOpts.DebugFlag(),
-			ProjectDirFlagVar:  globalFlagOpts.ProjectDirFlag(),
-			GodelConfigFlagVar: globalFlagOpts.GodelConfigFlag(),
-			ConfigFlagVar:      globalFlagOpts.ConfigFlag(),
-		}
-	})
-}
-
 func TaskInfoVerifyOptions(verifyOpts VerifyOptions) TaskInfoParam {
 	return taskInfoParamFunc(func(impl *taskInfoImpl) {
 		var verifyImpls []verifyFlagImpl
@@ -96,21 +85,13 @@ func TaskInfoVerifyOptions(verifyOpts VerifyOptions) TaskInfoParam {
 	})
 }
 
-func MustNewTaskInfo(name, description string, params ...TaskInfoParam) TaskInfo {
-	ti, err := NewTaskInfo(name, description, params...)
-	if err != nil {
-		panic(err)
-	}
-	return ti
-}
-
-func NewTaskInfo(name, description string, params ...TaskInfoParam) (TaskInfo, error) {
+func newTaskInfoImpl(name, description string, params ...TaskInfoParam) (taskInfoImpl, error) {
 	for _, r := range name {
 		if unicode.IsSpace(r) {
-			return nil, errors.Errorf("task name cannot contain whitespace: %q", name)
+			return taskInfoImpl{}, errors.Errorf("task name cannot contain whitespace: %q", name)
 		}
 	}
-	impl := &taskInfoImpl{
+	impl := taskInfoImpl{
 		NameVar:        name,
 		DescriptionVar: description,
 	}
@@ -118,9 +99,9 @@ func NewTaskInfo(name, description string, params ...TaskInfoParam) (TaskInfo, e
 		if p == nil {
 			continue
 		}
-		p.apply(impl)
+		p.apply(&impl)
 	}
-	return *impl, nil
+	return impl, nil
 }
 
 func (ti taskInfoImpl) Name() string {

@@ -44,7 +44,7 @@ if [ "$1" = "%s" ]; then
 fi
 
 echo $@
-`, pluginapi.InfoCommandName, `%s`)
+`, pluginapi.PluginInfoCommandName, `%s`)
 
 func TestPlugins(t *testing.T) {
 	pluginName := fmt.Sprintf("tester-integration-%d-%d", time.Now().Unix(), rand.Int())
@@ -82,20 +82,23 @@ plugins:
 	err = os.MkdirAll(pluginDir, 0755)
 	require.NoError(t, err)
 
-	pluginInfo := pluginapi.MustNewInfo("com.palantir", pluginName, "1.0.0", "echo.yml", pluginapi.MustNewTaskInfo(
-		"echo-task",
-		"Echoes input",
-		pluginapi.TaskInfoGlobalFlagOptions(pluginapi.NewGlobalFlagOptions(
+	pluginInfo := pluginapi.MustNewPluginInfo("com.palantir", pluginName, "1.0.0",
+		pluginapi.PluginInfoConfigFileName("echo.yml"),
+		pluginapi.PluginInfoGlobalFlagOptions(
 			pluginapi.GlobalFlagOptionsParamDebugFlag("--debug"),
 			pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"),
 			pluginapi.GlobalFlagOptionsParamGodelConfigFlag("--godel-config"),
 			pluginapi.GlobalFlagOptionsParamConfigFlag("--config"),
-		)),
-		pluginapi.TaskInfoCommand("echo"),
-		pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions(
-			pluginapi.VerifyOptionsApplyFalseArgs("--verify"),
-		)),
-	))
+		),
+		pluginapi.PluginInfoTaskInfo(
+			"echo-task",
+			"Echoes input",
+			pluginapi.TaskInfoCommand("echo"),
+			pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions(
+				pluginapi.VerifyOptionsApplyFalseArgs("--verify"),
+			)),
+		),
+	)
 	pluginInfoJSON, err := json.Marshal(pluginInfo)
 	require.NoError(t, err)
 
@@ -180,20 +183,23 @@ plugins:
 	err = os.MkdirAll(assetDir, 0755)
 	require.NoError(t, err)
 
-	pluginInfo := pluginapi.MustNewInfo("com.palantir", pluginName, "1.0.0", "echo.yml", pluginapi.MustNewTaskInfo(
-		"echo-task",
-		"Echoes input",
-		pluginapi.TaskInfoGlobalFlagOptions(pluginapi.NewGlobalFlagOptions(
+	pluginInfo := pluginapi.MustNewPluginInfo("com.palantir", pluginName, "1.0.0",
+		pluginapi.PluginInfoConfigFileName("echo.yml"),
+		pluginapi.PluginInfoGlobalFlagOptions(
 			pluginapi.GlobalFlagOptionsParamDebugFlag("--debug"),
 			pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"),
 			pluginapi.GlobalFlagOptionsParamGodelConfigFlag("--godel-config"),
 			pluginapi.GlobalFlagOptionsParamConfigFlag("--config"),
-		)),
-		pluginapi.TaskInfoCommand("echo"),
-		pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions(
-			pluginapi.VerifyOptionsApplyFalseArgs("--verify"),
-		)),
-	))
+		),
+		pluginapi.PluginInfoTaskInfo(
+			"echo-task",
+			"Echoes input",
+			pluginapi.TaskInfoCommand("echo"),
+			pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions(
+				pluginapi.VerifyOptionsApplyFalseArgs("--verify"),
+			)),
+		),
+	)
 	pluginInfoJSON, err := json.Marshal(pluginInfo)
 	require.NoError(t, err)
 

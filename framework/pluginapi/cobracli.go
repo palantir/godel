@@ -24,9 +24,9 @@ import (
 
 const usage = "Prints the gödel plugin.Info struct in its JSON-serialized form"
 
-func CobraInfoCmd(info Info) *cobra.Command {
+func CobraInfoCmd(info PluginInfo) *cobra.Command {
 	return &cobra.Command{
-		Use:    InfoCommandName,
+		Use:    PluginInfoCommandName,
 		Short:  usage,
 		Hidden: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -35,7 +35,7 @@ func CobraInfoCmd(info Info) *cobra.Command {
 	}
 }
 
-func infoAction(info Info, w io.Writer) error {
+func infoAction(info PluginInfo, w io.Writer) error {
 	bytes, err := json.Marshal(info)
 	if err != nil {
 		return fmt.Errorf("failed to marshal plugin info: %v", err)

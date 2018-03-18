@@ -37,7 +37,7 @@ const (
 
 // pluginInfoWithAssets bundles a pluginapi.Info with the locators of all the assets specified for it.
 type pluginInfoWithAssets struct {
-	PluginInfo pluginapi.Info
+	PluginInfo pluginapi.PluginInfo
 	Assets     []artifactresolver.Locator
 }
 

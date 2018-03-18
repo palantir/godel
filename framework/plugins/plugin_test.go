@@ -42,7 +42,7 @@ var pluginScriptTmpl = fmt.Sprintf(`#!/usr/bin/env bash
 if [ "$1" = "%s" ]; then
     echo '{"pluginSchemaVersion":"1","id":"com.palantir:%s:1.0.0","configFileName":"tester.yml","tasks":[{"name":"fooTest","description":"","command":["foo"],"globalFlagOptions":null,"verifyOptions":null}]}'
 fi
-`, pluginapi.InfoCommandName, "%s")
+`, pluginapi.PluginInfoCommandName, "%s")
 
 func TestInfoFromResolved(t *testing.T) {
 	tmpDir, cleanup, err := dirs.TempDir("", "")
@@ -61,12 +61,12 @@ func TestInfoFromResolved(t *testing.T) {
 	})))
 	require.NoError(t, err)
 
-	wantInfo := pluginapi.MustNewInfo(
+	wantInfo := pluginapi.MustNewPluginInfo(
 		"com.palantir",
 		pluginName,
 		"1.0.0",
-		"tester.yml",
-		pluginapi.MustNewTaskInfo("fooTest", "", pluginapi.TaskInfoCommand("foo")),
+		pluginapi.PluginInfoConfigFileName("tester.yml"),
+		pluginapi.PluginInfoTaskInfo("fooTest", "", pluginapi.TaskInfoCommand("foo")),
 	)
 	assert.Equal(t, wantInfo, gotInfo)
 }
@@ -90,7 +90,7 @@ exit 1
 		Version: "1.0.0",
 	})))
 	require.Error(t, err)
-	assert.Regexp(t, regexp.QuoteMeta("command [")+".+"+regexp.QuoteMeta(fmt.Sprintf("/com.palantir-%s-1.0.0 %s] failed.\nError:\nexit status 1\nOutput:\n\n: exit status 1", pluginName, pluginapi.InfoCommandName)), err.Error())
+	assert.Regexp(t, regexp.QuoteMeta("command [")+".+"+regexp.QuoteMeta(fmt.Sprintf("/com.palantir-%s-1.0.0 %s] failed.\nError:\nexit status 1\nOutput:\n\n: exit status 1", pluginName, pluginapi.PluginInfoCommandName)), err.Error())
 }
 
 func TestResolvePlugins(t *testing.T) {
@@ -129,12 +129,12 @@ func TestResolvePlugins(t *testing.T) {
 
 	wantPlugins := map[artifactresolver.Locator]pluginInfoWithAssets{
 		loc: {
-			PluginInfo: pluginapi.MustNewInfo(
+			PluginInfo: pluginapi.MustNewPluginInfo(
 				"com.palantir",
 				loc.Product,
 				"1.0.0",
-				"tester.yml",
-				pluginapi.MustNewTaskInfo("fooTest", "", pluginapi.TaskInfoCommand("foo")),
+				pluginapi.PluginInfoConfigFileName("tester.yml"),
+				pluginapi.PluginInfoTaskInfo("fooTest", "", pluginapi.TaskInfoCommand("foo")),
 			),
 		},
 	}
@@ -185,7 +185,9 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 					Product: "foo",
 					Version: "1.0.0",
 				}: {
-					PluginInfo: pluginapi.MustNewInfo("com.palantir", "foo", "1.0.0", "foo.yml"),
+					PluginInfo: pluginapi.MustNewPluginInfo("com.palantir", "foo", "1.0.0",
+						pluginapi.PluginInfoConfigFileName("foo.yml"),
+					),
 				},
 			},
 			"",
@@ -198,8 +200,9 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 					Product: "foo",
 					Version: "1.0.0",
 				}: {
-					PluginInfo: pluginapi.MustNewInfo("com.palantir", "foo", "1.0.0", "foo.yml",
-						pluginapi.MustNewTaskInfo("foo", "", nil, nil, nil),
+					PluginInfo: pluginapi.MustNewPluginInfo("com.palantir", "foo", "1.0.0",
+						pluginapi.PluginInfoConfigFileName("foo.yml"),
+						pluginapi.PluginInfoTaskInfo("foo", ""),
 					),
 				},
 				{
@@ -207,8 +210,9 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 					Product: "foo",
 					Version: "2.0.0",
 				}: {
-					PluginInfo: pluginapi.MustNewInfo("com.palantir", "foo", "1.0.0", "foo.yml",
-						pluginapi.MustNewTaskInfo("foo", "", nil, nil, nil),
+					PluginInfo: pluginapi.MustNewPluginInfo("com.palantir", "foo", "1.0.0",
+						pluginapi.PluginInfoConfigFileName("foo.yml"),
+						pluginapi.PluginInfoTaskInfo("foo", ""),
 					),
 				},
 			},
@@ -226,8 +230,9 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 					Product: "foo",
 					Version: "1.0.0",
 				}: {
-					PluginInfo: pluginapi.MustNewInfo("com.palantir", "foo", "1.0.0", "foo.yml",
-						pluginapi.MustNewTaskInfo("foo", "", nil, nil, nil),
+					PluginInfo: pluginapi.MustNewPluginInfo("com.palantir", "foo", "1.0.0",
+						pluginapi.PluginInfoConfigFileName("foo.yml"),
+						pluginapi.PluginInfoTaskInfo("foo", ""),
 					),
 				},
 				{
@@ -235,8 +240,9 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 					Product: "bar",
 					Version: "2.0.0",
 				}: {
-					PluginInfo: pluginapi.MustNewInfo("com.palantir", "bar", "1.0.0", "foo.yml",
-						pluginapi.MustNewTaskInfo("foo", "", nil, nil),
+					PluginInfo: pluginapi.MustNewPluginInfo("com.palantir", "bar", "1.0.0",
+						pluginapi.PluginInfoConfigFileName("foo.yml"),
+						pluginapi.PluginInfoTaskInfo("foo", ""),
 					),
 				},
 			},

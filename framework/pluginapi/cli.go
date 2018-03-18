@@ -18,8 +18,8 @@ import (
 	"io"
 )
 
-func InfoCmd(osArgs []string, stdout io.Writer, info Info) bool {
-	if len(osArgs) < 2 || osArgs[1] != InfoCommandName {
+func InfoCmd(osArgs []string, stdout io.Writer, info PluginInfo) bool {
+	if len(osArgs) < 2 || osArgs[1] != PluginInfoCommandName {
 		return false
 	}
 	_ = infoAction(info, stdout)
