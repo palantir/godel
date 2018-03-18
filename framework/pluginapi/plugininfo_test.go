@@ -38,10 +38,12 @@ if [ "$1" = "%s" ]; then
 fi
 
 echo $@
-`, pluginapi.InfoCommandName, `%s`)
+`, pluginapi.PluginInfoCommandName, `%s`)
 
-func TestNewInfo(t *testing.T) {
-	info, err := pluginapi.NewInfo("group", "product", "1.0.0", "foo.yml")
+func TestNewPluginInfo(t *testing.T) {
+	info, err := pluginapi.NewPluginInfo("group", "product", "1.0.0",
+		pluginapi.PluginInfoConfigFileName("foo.yml"),
+	)
 	require.NoError(t, err)
 
 	assert.Equal(t, pluginapi.CurrentSchemaVersion, info.PluginSchemaVersion())
@@ -50,42 +52,54 @@ func TestNewInfo(t *testing.T) {
 	assert.Nil(t, info.Tasks("", nil))
 }
 
-func TestInfoJSONMarshal(t *testing.T) {
+func TestPluginInfoJSONMarshal(t *testing.T) {
 	for i, tc := range []struct {
-		group, product, version, configFileName string
-		taskInfos                               []pluginapi.TaskInfo
-		want                                    string
+		group, product, version string
+		params                  []pluginapi.PluginInfoParam
+		want                    string
 	}{
 		{
-			"group", "product", "1.0.0", "foo.yml", nil,
+			"group", "product", "1.0.0",
+			[]pluginapi.PluginInfoParam{
+				pluginapi.PluginInfoConfigFileName("foo.yml"),
+			},
 			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"foo.yml","tasks":null}`,
 		},
 		{
-			"group", "product", "1.0.0", "foo.yml",
-			[]pluginapi.TaskInfo{
-				pluginapi.MustNewTaskInfo("foo", "does foo things"),
+			"group", "product", "1.0.0",
+			[]pluginapi.PluginInfoParam{
+				pluginapi.PluginInfoConfigFileName("foo.yml"),
+				pluginapi.PluginInfoTaskInfo("foo", "does foo things"),
 			},
 			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"foo.yml","tasks":[{"name":"foo","description":"does foo things","command":null,"globalFlagOptions":null,"verifyOptions":null}]}`,
 		},
 		{
-			"group", "product", "1.0.0", "foo.yml",
-			[]pluginapi.TaskInfo{
-				pluginapi.MustNewTaskInfo("foo", "does foo things", pluginapi.TaskInfoCommand("foo"), pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions())),
+			"group", "product", "1.0.0",
+			[]pluginapi.PluginInfoParam{
+				pluginapi.PluginInfoConfigFileName("foo.yml"),
+				pluginapi.PluginInfoTaskInfo("foo", "does foo things",
+					pluginapi.TaskInfoCommand("foo"),
+					pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions()),
+				),
 			},
 			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"foo.yml","tasks":[{"name":"foo","description":"does foo things","command":["foo"],"globalFlagOptions":null,"verifyOptions":{"verifyTaskFlags":null,"ordering":null,"applyTrueArgs":null,"applyFalseArgs":null}}]}`,
 		},
 		{
-			"group", "product", "1.0.0", "foo.yml",
-			[]pluginapi.TaskInfo{
-				pluginapi.MustNewTaskInfo("foo", "does foo things",
+			"group", "product", "1.0.0",
+			[]pluginapi.PluginInfoParam{
+				pluginapi.PluginInfoConfigFileName("foo.yml"),
+				pluginapi.PluginInfoGlobalFlagOptions(
+					pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"),
+				),
+				pluginapi.PluginInfoTaskInfo("foo", "does foo things",
 					pluginapi.TaskInfoCommand("foo"),
-					pluginapi.TaskInfoGlobalFlagOptions(pluginapi.NewGlobalFlagOptions(pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"))),
 					pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions()),
-				)},
+				),
+			},
 			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"foo.yml","tasks":[{"name":"foo","description":"does foo things","command":["foo"],"globalFlagOptions":{"debugFlag":"","projectDirFlag":"--project-dir","godelConfigFlag":"","configFlag":""},"verifyOptions":{"verifyTaskFlags":null,"ordering":null,"applyTrueArgs":null,"applyFalseArgs":null}}]}`,
 		},
 	} {
-		info, err := pluginapi.NewInfo(tc.group, tc.product, tc.version, tc.configFileName, tc.taskInfos...)
+		info, err := pluginapi.NewPluginInfo(tc.group, tc.product, tc.version, tc.params...)
 		require.NoError(t, err, "Case %d", i)
 
 		bytes, err := json.Marshal(info)
@@ -95,18 +109,11 @@ func TestInfoJSONMarshal(t *testing.T) {
 	}
 }
 
-func TestNewInfoError(t *testing.T) {
-	ti1, err := pluginapi.NewTaskInfo("name", "description", nil, nil)
-	require.NoError(t, err)
-
-	ti2, err := pluginapi.NewTaskInfo("name", "description-2", nil, nil)
-	require.NoError(t, err)
-
-	tasks := []pluginapi.TaskInfo{
-		ti1,
-		ti2,
-	}
-	_, err = pluginapi.NewInfo("group", "product", "1.0.0", "foo.yml", tasks...)
+func TestNewPluginInfoError(t *testing.T) {
+	_, err := pluginapi.NewPluginInfo("group", "product", "1.0.0",
+		pluginapi.PluginInfoTaskInfo("name", "description"),
+		pluginapi.PluginInfoTaskInfo("name", "description-2"),
+	)
 	require.Error(t, err)
 	assert.EqualError(t, err, `plugin group:product:1.0.0 specifies multiple tasks with name "name"`)
 }
@@ -118,7 +125,7 @@ func TestRunPluginFromInfo(t *testing.T) {
 
 	for i, tc := range []struct {
 		name         string
-		params       pluginapi.TaskInfoParam
+		params       []pluginapi.PluginInfoParam
 		globalConfig godellauncher.GlobalConfig
 		numAssets    int
 		want         func(assetDir string) string
@@ -136,7 +143,11 @@ func TestRunPluginFromInfo(t *testing.T) {
 		},
 		{
 			"global debug flag support",
-			pluginapi.TaskInfoGlobalFlagOptions(pluginapi.NewGlobalFlagOptions(pluginapi.GlobalFlagOptionsParamDebugFlag("--debug-flag"))),
+			[]pluginapi.PluginInfoParam{
+				pluginapi.PluginInfoGlobalFlagOptions(
+					pluginapi.GlobalFlagOptionsParamDebugFlag("--debug-flag"),
+				),
+			},
 			godellauncher.GlobalConfig{
 				TaskArgs: []string{"--echo-bool-flag", "-f", "echo-str-flag-val", "echo-arg"},
 				Debug:    true,
@@ -148,12 +159,14 @@ func TestRunPluginFromInfo(t *testing.T) {
 		},
 		{
 			"all global flag support without project dir configured",
-			pluginapi.TaskInfoGlobalFlagOptions(pluginapi.NewGlobalFlagOptions(
-				pluginapi.GlobalFlagOptionsParamDebugFlag("--debug-flag"),
-				pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"),
-				pluginapi.GlobalFlagOptionsParamGodelConfigFlag("--godel-config"),
-				pluginapi.GlobalFlagOptionsParamConfigFlag("--config"),
-			)),
+			[]pluginapi.PluginInfoParam{
+				pluginapi.PluginInfoGlobalFlagOptions(
+					pluginapi.GlobalFlagOptionsParamDebugFlag("--debug-flag"),
+					pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"),
+					pluginapi.GlobalFlagOptionsParamGodelConfigFlag("--godel-config"),
+					pluginapi.GlobalFlagOptionsParamConfigFlag("--config"),
+				),
+			},
 			godellauncher.GlobalConfig{
 				TaskArgs: []string{"--echo-bool-flag", "-f", "echo-str-flag-val", "echo-arg"},
 			},
@@ -164,12 +177,14 @@ func TestRunPluginFromInfo(t *testing.T) {
 		},
 		{
 			"all global flag support with project dir configured",
-			pluginapi.TaskInfoGlobalFlagOptions(pluginapi.NewGlobalFlagOptions(
-				pluginapi.GlobalFlagOptionsParamDebugFlag("--debug-flag"),
-				pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"),
-				pluginapi.GlobalFlagOptionsParamGodelConfigFlag("--godel-config"),
-				pluginapi.GlobalFlagOptionsParamConfigFlag("--config"),
-			)),
+			[]pluginapi.PluginInfoParam{
+				pluginapi.PluginInfoGlobalFlagOptions(
+					pluginapi.GlobalFlagOptionsParamDebugFlag("--debug-flag"),
+					pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"),
+					pluginapi.GlobalFlagOptionsParamGodelConfigFlag("--godel-config"),
+					pluginapi.GlobalFlagOptionsParamConfigFlag("--config"),
+				),
+			},
 			godellauncher.GlobalConfig{
 				Wrapper:  "../../godelw",
 				TaskArgs: []string{"--echo-bool-flag", "-f", "echo-str-flag-val", "echo-arg"},
@@ -202,8 +217,12 @@ func TestRunPluginFromInfo(t *testing.T) {
 			},
 		},
 	} {
-		pluginInfo, err := pluginapi.NewInfo("group", "echo", "1.0.0", "echo.yml",
-			pluginapi.MustNewTaskInfo("echo", "echoes the provided input", tc.params))
+		pluginInfo, err := pluginapi.NewPluginInfo("group", "echo", "1.0.0",
+			append([]pluginapi.PluginInfoParam{
+				pluginapi.PluginInfoConfigFileName("echo.yml"),
+				pluginapi.PluginInfoTaskInfo("echo", "echoes the provided input"),
+			}, tc.params...)...,
+		)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
 		pluginInfoJSON, err := json.Marshal(pluginInfo)
@@ -243,13 +262,15 @@ func TestRunPluginVerify(t *testing.T) {
 	defer cleanup()
 
 	for i, tc := range []struct {
-		name         string
-		params       []pluginapi.TaskInfoParam
-		globalConfig godellauncher.GlobalConfig
-		want         string
+		name             string
+		pluginInfoParams []pluginapi.PluginInfoParam
+		taskInfoParams   []pluginapi.TaskInfoParam
+		globalConfig     godellauncher.GlobalConfig
+		want             string
 	}{
 		{
 			"verify task",
+			nil,
 			[]pluginapi.TaskInfoParam{
 				pluginapi.TaskInfoCommand("verify-subcmd"),
 				pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions(
@@ -264,6 +285,7 @@ func TestRunPluginVerify(t *testing.T) {
 		},
 		{
 			"verify task with apply=false",
+			nil,
 			[]pluginapi.TaskInfoParam{
 				pluginapi.TaskInfoCommand("verify-subcmd"),
 				pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions(
@@ -278,11 +300,13 @@ func TestRunPluginVerify(t *testing.T) {
 		},
 		{
 			"verify task with global flag options",
+			[]pluginapi.PluginInfoParam{
+				pluginapi.PluginInfoGlobalFlagOptions(
+					pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"),
+				),
+			},
 			[]pluginapi.TaskInfoParam{
 				pluginapi.TaskInfoCommand("verify-subcmd"),
-				pluginapi.TaskInfoGlobalFlagOptions(pluginapi.NewGlobalFlagOptions(
-					pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"),
-				)),
 				pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions(
 					pluginapi.VerifyOptionsApplyFalseArgs("--no-apply"),
 					pluginapi.VerifyOptionsApplyTrueArgs("--apply"),
@@ -295,8 +319,12 @@ func TestRunPluginVerify(t *testing.T) {
 			"Running echo...\n--project-dir . verify-subcmd --apply\n",
 		},
 	} {
-		pluginInfo, err := pluginapi.NewInfo("group", "echo", "1.0.0", "echo.yml",
-			pluginapi.MustNewTaskInfo("echo", "echoes the provided input", tc.params...))
+		pluginInfo, err := pluginapi.NewPluginInfo("group", "echo", "1.0.0",
+			append([]pluginapi.PluginInfoParam{
+				pluginapi.PluginInfoConfigFileName("echo.yml"),
+				pluginapi.PluginInfoTaskInfo("echo", "echoes the provided input", tc.taskInfoParams...),
+			}, tc.pluginInfoParams...)...,
+		)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
 		pluginInfoJSON, err := json.Marshal(pluginInfo)

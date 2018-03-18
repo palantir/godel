@@ -72,13 +72,13 @@ func GlobalFlagOptionsParamConfigFlag(configFlag string) GlobalFlagOptionsParam 
 	})
 }
 
-func NewGlobalFlagOptions(params ...GlobalFlagOptionsParam) GlobalFlagOptions {
-	impl := globalFlagOptionsImpl{}
+func newGlobalFlagOptionsImpl(params ...GlobalFlagOptionsParam) *globalFlagOptionsImpl {
+	impl := &globalFlagOptionsImpl{}
 	for _, p := range params {
 		if p == nil {
 			continue
 		}
-		p.apply(&impl)
+		p.apply(impl)
 	}
 	return impl
 }
