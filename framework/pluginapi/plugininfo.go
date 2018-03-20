@@ -22,6 +22,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/palantir/godel/framework/godellauncher"
+	"github.com/palantir/godel/framework/internal/legacyplugins"
 )
 
 const (
@@ -35,10 +36,14 @@ type PluginInfo interface {
 	PluginSchemaVersion() string
 	// ID returns the identifier for a plugin and is a string of the form "group:product:version".
 	ID() string
-	// ConfigFileName returns the name of the configuration file used by the plugin.
+	// ConfigFileName returns the name of the configuration file used by the plugin. Empty string means that no
+	// configuration file is used.
 	ConfigFileName() string
 	// Tasks returns the tasks provided by the plugin. Requires the path to the plugin executable and assets as input.
 	Tasks(pluginExecPath string, assets []string) []godellauncher.Task
+	// UpgradeConfigTask returns the task that upgrades the configuration for this plugin. Returns nil if the plugin
+	// does not support upgrading configuration.
+	UpgradeConfigTask(pluginExecPath string, assets []string) *godellauncher.UpgradeConfigTask
 
 	// private function on interface to keep implementation private to package.
 	private()
@@ -70,6 +75,10 @@ func NewPluginInfo(group, product, version string, params ...PluginInfoParam) (P
 	for i := range builder.tasks {
 		builder.tasks[i].GlobalFlagOptionsVar = builder.globalFlagOpts
 	}
+	if builder.upgradeConfigTask != nil {
+		builder.upgradeConfigTask.PluginID = fmt.Sprintf("%s:%s", group, product)
+		builder.upgradeConfigTask.GlobalFlagOptionsVar = builder.globalFlagOpts
+	}
 
 	taskNameMap := make(map[string]struct{})
 	for _, task := range builder.tasks {
@@ -79,18 +88,33 @@ func NewPluginInfo(group, product, version string, params ...PluginInfoParam) (P
 		taskNameMap[task.Name()] = struct{}{}
 	}
 
+	var configFileName string
+	if builder.usesConfigFile {
+		configFileName = product + ".yml"
+	}
+
+	if builder.upgradeConfigTask != nil && !builder.usesConfigFile {
+		return nil, errors.Errorf(`plugin %s provides a configuration upgrade task but does not specify that it uses configuration`, id)
+	}
+
+	if _, ok := legacyplugins.ReservedConfigFileNames()[configFileName]; ok {
+		return nil, errors.Errorf(`plugin %s uses configuration file %s, which is a reserved name. Use a different name if possible. If this is not possible, please file an issue for discussion.`, id, configFileName)
+	}
+
 	return pluginInfoImpl{
 		PluginSchemaVersionVar: CurrentSchemaVersion,
-		IDVar:             id,
-		ConfigFileNameVar: builder.configFileName,
-		TasksVar:          builder.tasks,
+		IDVar:                id,
+		ConfigFileNameVar:    configFileName,
+		TasksVar:             builder.tasks,
+		UpgradeConfigTaskVar: builder.upgradeConfigTask,
 	}, nil
 }
 
 type pluginInfoBuilder struct {
-	configFileName string
-	tasks          []taskInfoImpl
-	globalFlagOpts *globalFlagOptionsImpl
+	usesConfigFile    bool
+	tasks             []taskInfoImpl
+	globalFlagOpts    *globalFlagOptionsImpl
+	upgradeConfigTask *upgradeConfigTaskInfoImpl
 }
 
 type PluginInfoParam interface {
@@ -103,9 +127,9 @@ func (f pluginInfoParamFunc) apply(impl *pluginInfoBuilder) error {
 	return f(impl)
 }
 
-func PluginInfoConfigFileName(configFileName string) PluginInfoParam {
+func PluginInfoUsesConfigFile() PluginInfoParam {
 	return pluginInfoParamFunc(func(impl *pluginInfoBuilder) error {
-		impl.configFileName = configFileName
+		impl.usesConfigFile = true
 		return nil
 	})
 }
@@ -123,7 +147,20 @@ func PluginInfoTaskInfo(name, description string, params ...TaskInfoParam) Plugi
 
 func PluginInfoGlobalFlagOptions(params ...GlobalFlagOptionsParam) PluginInfoParam {
 	return pluginInfoParamFunc(func(impl *pluginInfoBuilder) error {
+		if len(params) == 0 {
+			return errors.Errorf("at least one param must be provided for global flag options configuration")
+		}
 		impl.globalFlagOpts = newGlobalFlagOptionsImpl(params...)
+		return nil
+	})
+}
+
+func PluginInfoUpgradeConfigTaskInfo(params ...UpgradeConfigTaskInfoParam) PluginInfoParam {
+	return pluginInfoParamFunc(func(impl *pluginInfoBuilder) error {
+		if len(params) == 0 {
+			return errors.Errorf("at least one param must be provided for upgrade configuration")
+		}
+		impl.upgradeConfigTask = newUpgradeConfigTaskInfoImpl(params...)
 		return nil
 	})
 }
@@ -138,6 +175,8 @@ type pluginInfoImpl struct {
 	ConfigFileNameVar string `json:"configFileName"`
 	// The tasks provided by the plugin.
 	TasksVar []taskInfoImpl `json:"tasks"`
+	// The configuration upgrade task provided by the plugin.
+	UpgradeConfigTaskVar *upgradeConfigTaskInfoImpl `json:"upgradeTask"`
 }
 
 func (infoImpl pluginInfoImpl) PluginSchemaVersion() string {
@@ -158,6 +197,14 @@ func (infoImpl pluginInfoImpl) Tasks(pluginExecPath string, assets []string) []g
 		tasks = append(tasks, ti.toTask(pluginExecPath, infoImpl.ConfigFileNameVar, assets))
 	}
 	return tasks
+}
+
+func (infoImpl pluginInfoImpl) UpgradeConfigTask(pluginExecPath string, assets []string) *godellauncher.UpgradeConfigTask {
+	if infoImpl.UpgradeConfigTaskVar == nil {
+		return nil
+	}
+	taskVar := infoImpl.UpgradeConfigTaskVar.toTask(pluginExecPath, infoImpl.ConfigFileNameVar, assets)
+	return &taskVar
 }
 
 func (infoImpl pluginInfoImpl) private() {}

@@ -83,7 +83,7 @@ plugins:
 	require.NoError(t, err)
 
 	pluginInfo := pluginapi.MustNewPluginInfo("com.palantir", pluginName, "1.0.0",
-		pluginapi.PluginInfoConfigFileName("echo.yml"),
+		pluginapi.PluginInfoUsesConfigFile(),
 		pluginapi.PluginInfoGlobalFlagOptions(
 			pluginapi.GlobalFlagOptionsParamDebugFlag("--debug"),
 			pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"),
@@ -121,21 +121,21 @@ plugins:
 	assert.Regexp(t, wantOutput, gotOutput)
 
 	gotOutput = execCommand(t, testProjectDir, "./godelw", "echo-task", "foo", "--bar", "baz")
-	wantOutput = fmt.Sprintf("--project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/echo.yml echo foo --bar baz\n", testProjectDir, testProjectDir, testProjectDir)
+	wantOutput = fmt.Sprintf("--project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml echo foo --bar baz\n", testProjectDir, testProjectDir, testProjectDir, pluginName)
 	assert.Equal(t, wantOutput, gotOutput)
 
 	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-check", "--skip-license", "--skip-test")
 	wantOutput = fmt.Sprintf(`Running format...
 Running echo-task...
---project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/echo.yml echo
-`, testProjectDir, testProjectDir, testProjectDir)
+--project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml echo
+`, testProjectDir, testProjectDir, testProjectDir, pluginName)
 	assert.Equal(t, wantOutput, gotOutput)
 
 	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-check", "--skip-license", "--skip-test", "--apply=false")
 	wantOutput = fmt.Sprintf(`Running format...
 Running echo-task...
---project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/echo.yml echo --verify
-`, testProjectDir, testProjectDir, testProjectDir)
+--project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml echo --verify
+`, testProjectDir, testProjectDir, testProjectDir, pluginName)
 	assert.Equal(t, wantOutput, gotOutput)
 }
 
@@ -184,7 +184,7 @@ plugins:
 	require.NoError(t, err)
 
 	pluginInfo := pluginapi.MustNewPluginInfo("com.palantir", pluginName, "1.0.0",
-		pluginapi.PluginInfoConfigFileName("echo.yml"),
+		pluginapi.PluginInfoUsesConfigFile(),
 		pluginapi.PluginInfoGlobalFlagOptions(
 			pluginapi.GlobalFlagOptionsParamDebugFlag("--debug"),
 			pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"),
@@ -238,20 +238,20 @@ plugins:
 	assetPath := path.Join(assetsDir, "com.palantir-"+assetName+"-1.0.0")
 
 	gotOutput = execCommand(t, testProjectDir, "./godelw", "echo-task", "foo", "--bar", "baz")
-	wantOutput = fmt.Sprintf("--project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/echo.yml --assets %s echo foo --bar baz\n", testProjectDir, testProjectDir, testProjectDir, assetPath)
+	wantOutput = fmt.Sprintf("--project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml --assets %s echo foo --bar baz\n", testProjectDir, testProjectDir, testProjectDir, pluginName, assetPath)
 	assert.Equal(t, wantOutput, gotOutput)
 
 	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-check", "--skip-license", "--skip-test")
 	wantOutput = fmt.Sprintf(`Running format...
 Running echo-task...
---project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/echo.yml --assets %s echo
-`, testProjectDir, testProjectDir, testProjectDir, assetPath)
+--project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml --assets %s echo
+`, testProjectDir, testProjectDir, testProjectDir, pluginName, assetPath)
 	assert.Equal(t, wantOutput, gotOutput)
 
 	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-check", "--skip-license", "--skip-test", "--apply=false")
 	wantOutput = fmt.Sprintf(`Running format...
 Running echo-task...
---project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/echo.yml --assets %s echo --verify
-`, testProjectDir, testProjectDir, testProjectDir, assetPath)
+--project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml --assets %s echo --verify
+`, testProjectDir, testProjectDir, testProjectDir, pluginName, assetPath)
 	assert.Equal(t, wantOutput, gotOutput)
 }

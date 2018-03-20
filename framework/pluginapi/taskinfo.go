@@ -147,7 +147,7 @@ func (ti taskInfoImpl) toTask(pluginExecPath, cfgFileName string, assets []strin
 		Verify:         verifyOpts,
 		GlobalFlagOpts: globalFlagOpts,
 		RunImpl: func(t *godellauncher.Task, global godellauncher.GlobalConfig, stdout io.Writer) error {
-			cmdArgs, err := ti.globalFlagArgs(t, global)
+			cmdArgs, err := globalFlagArgs(t.GlobalFlagOpts, t.ConfigFile, global)
 			if err != nil {
 				return err
 			}
@@ -174,10 +174,10 @@ func (ti taskInfoImpl) toTask(pluginExecPath, cfgFileName string, assets []strin
 	}
 }
 
-func (ti taskInfoImpl) globalFlagArgs(t *godellauncher.Task, global godellauncher.GlobalConfig) ([]string, error) {
+func globalFlagArgs(globalFlagOpts godellauncher.GlobalFlagOptions, configFileName string, global godellauncher.GlobalConfig) ([]string, error) {
 	var args []string
-	if global.Debug && t.GlobalFlagOpts.DebugFlag != "" {
-		args = append(args, t.GlobalFlagOpts.DebugFlag)
+	if global.Debug && globalFlagOpts.DebugFlag != "" {
+		args = append(args, globalFlagOpts.DebugFlag)
 	}
 
 	// the rest of the arguments depend on "--wrapper" being specified in the global configuration
@@ -186,12 +186,12 @@ func (ti taskInfoImpl) globalFlagArgs(t *godellauncher.Task, global godellaunche
 	}
 
 	projectDir := path.Dir(global.Wrapper)
-	if t.GlobalFlagOpts.ProjectDirFlag != "" {
-		args = append(args, t.GlobalFlagOpts.ProjectDirFlag, projectDir)
+	if globalFlagOpts.ProjectDirFlag != "" {
+		args = append(args, globalFlagOpts.ProjectDirFlag, projectDir)
 	}
 
 	// if config dir flags were not specified, nothing more to do
-	if t.GlobalFlagOpts.GodelConfigFlag == "" && (t.GlobalFlagOpts.ConfigFlag == "" || t.ConfigFile == "") {
+	if globalFlagOpts.GodelConfigFlag == "" && (globalFlagOpts.ConfigFlag == "" || configFileName == "") {
 		return args, nil
 	}
 
@@ -200,12 +200,12 @@ func (ti taskInfoImpl) globalFlagArgs(t *godellauncher.Task, global godellaunche
 		return nil, errors.Wrapf(err, "failed to determine config directory path")
 	}
 
-	if t.GlobalFlagOpts.GodelConfigFlag != "" {
-		args = append(args, t.GlobalFlagOpts.GodelConfigFlag, path.Join(cfgDir, godellauncher.GodelConfigYML))
+	if globalFlagOpts.GodelConfigFlag != "" {
+		args = append(args, globalFlagOpts.GodelConfigFlag, path.Join(cfgDir, godellauncher.GodelConfigYML))
 	}
 
-	if t.GlobalFlagOpts.ConfigFlag != "" && t.ConfigFile != "" {
-		args = append(args, t.GlobalFlagOpts.ConfigFlag, path.Join(cfgDir, t.ConfigFile))
+	if globalFlagOpts.ConfigFlag != "" && configFileName != "" {
+		args = append(args, globalFlagOpts.ConfigFlag, path.Join(cfgDir, configFileName))
 	}
 
 	return args, nil

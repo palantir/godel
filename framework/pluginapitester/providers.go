@@ -12,13 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package pluginapitester provides functions that simulate invoking a plugin from gödel. Can be used to test plugin
-// implementations in plugin projects.
 package pluginapitester
 
 import (
 	"bytes"
-	"io"
 
 	"github.com/pkg/errors"
 
@@ -28,28 +25,46 @@ import (
 	"github.com/palantir/godel/framework/plugins"
 )
 
-// RunAsset resolves the plugin with the provided locator and then runs it with the specified assets using RunPlugin.
-// Can be used to test assets for which the plugin is published separately.
-func RunAsset(
-	pluginLocator artifactresolver.LocatorWithResolverParam,
-	assetPaths []string,
-	taskName string,
-	args []string,
-	projectDir string,
-	debug bool,
-	stdout io.Writer) (cleanup func(), rErr error) {
+type PluginProvider interface {
+	PluginFilePath() string
+}
 
-	pluginPath, err := resolvePlugin(pluginLocator)
-	if err != nil {
-		return func() {}, errors.Wrapf(err, "failed to resolve plugin")
+type filePluginProvider struct {
+	pluginPath string
+}
+
+func (p *filePluginProvider) PluginFilePath() string {
+	return p.pluginPath
+}
+
+func NewPluginProvider(pluginPath string) PluginProvider {
+	return &filePluginProvider{
+		pluginPath: pluginPath,
 	}
-	return RunPlugin(pluginPath, assetPaths, taskName, args, projectDir, debug, stdout)
+}
+
+func NewPluginProviderFromLocator(pluginLocator, pluginResolver string) (PluginProvider, error) {
+	lwrConfig := artifactresolver.LocatorWithResolverConfig{
+		Locator: artifactresolver.LocatorConfig{
+			ID: pluginLocator,
+		},
+		Resolver: pluginResolver,
+	}
+	lwrParam, err := lwrConfig.ToParam()
+	if err != nil {
+		return nil, err
+	}
+	pluginPath, err := resolvePlugin(lwrParam)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to resolve plugin")
+	}
+	return NewPluginProvider(pluginPath), nil
 }
 
 // resolvePlugin resolves the plugin with the provided locator and returns the path to the resolved plugin.
 func resolvePlugin(pluginLocator artifactresolver.LocatorWithResolverParam) (string, error) {
 	buf := &bytes.Buffer{}
-	if _, err := plugins.LoadPluginsTasks(godellauncher.PluginsParam{
+	if _, _, err := plugins.LoadPluginsTasks(godellauncher.PluginsParam{
 		Plugins: []godellauncher.SinglePluginParam{
 			{
 				LocatorWithResolverParam: pluginLocator,
@@ -64,4 +79,22 @@ func resolvePlugin(pluginLocator artifactresolver.LocatorWithResolverParam) (str
 		return "", errors.Wrapf(err, "failed to determine plugin directory")
 	}
 	return pathsinternal.PluginPath(pluginsDir, pluginLocator.LocatorWithChecksums.Locator), nil
+}
+
+type AssetProvider interface {
+	AssetFilePath() string
+}
+
+type fileAssetProvider struct {
+	asssetPath string
+}
+
+func (p *fileAssetProvider) AssetFilePath() string {
+	return p.asssetPath
+}
+
+func NewAssetProvider(assetPath string) AssetProvider {
+	return &fileAssetProvider{
+		asssetPath: assetPath,
+	}
 }

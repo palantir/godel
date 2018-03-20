@@ -50,18 +50,18 @@ type pluginInfoWithAssets struct {
 // * Creates runnable godellauncher.Task tasks for all of the plugins.
 //
 // Returns all of the tasks provided by the plugins in the provided parameters.
-func LoadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer) ([]godellauncher.Task, error) {
+func LoadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer) ([]godellauncher.Task, []godellauncher.UpgradeConfigTask, error) {
 	pluginsDir, assetsDir, downloadsDir, err := pathsinternal.ResourceDirs()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	plugins, err := resolvePlugins(pluginsDir, assetsDir, downloadsDir, osarch.Current(), pluginsParam, stdout)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if err := verifyPluginCompatibility(plugins); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var sortedPluginLocators []artifactresolver.Locator
@@ -71,6 +71,7 @@ func LoadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer)
 	sortLocators(sortedPluginLocators)
 
 	var tasks []godellauncher.Task
+	var upgradeConfigTasks []godellauncher.UpgradeConfigTask
 	for _, pluginLoc := range sortedPluginLocators {
 		pluginExecPath := pathsinternal.PluginPath(pluginsDir, pluginLoc)
 		pluginInfoWithAssets := plugins[pluginLoc]
@@ -80,8 +81,13 @@ func LoadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer)
 			assetPaths = append(assetPaths, pathsinternal.PluginPath(assetsDir, assetLoc))
 		}
 		tasks = append(tasks, pluginInfoWithAssets.PluginInfo.Tasks(pluginExecPath, assetPaths)...)
+
+		upgradeConfigTask := pluginInfoWithAssets.PluginInfo.UpgradeConfigTask(pluginExecPath, assetPaths)
+		if upgradeConfigTask != nil {
+			upgradeConfigTasks = append(upgradeConfigTasks, *upgradeConfigTask)
+		}
 	}
-	return tasks, nil
+	return tasks, upgradeConfigTasks, nil
 }
 
 // resolvePlugins resolves all of the plugins defined in the provided params for the specified osArch using the provided
@@ -257,9 +263,10 @@ func resolveAndVerify(
 	return currLocator, true
 }
 
-// Verifies that the plugins in the provided map are compatible with one another. Specifically, ensures that there is at
-// most 1 version of a given plugin (a locator with a given {group, product} pair) and that there are no conflicts
-// between tasks provided by the plugins.
+// Verifies that the plugins in the provided map are compatible with one another. Specifically, ensures that:
+//   * There is at most 1 version of a given plugin (a locator with a given {group, product} pair)
+//   * There are no conflicts between tasks provided by the plugins
+//   * There are no 2 plugins that use a configuration file that have the same plugin name
 func verifyPluginCompatibility(plugins map[artifactresolver.Locator]pluginInfoWithAssets) error {
 	// map from a plugin locator to the locators to all of the plugins that they conflict with and the error that
 	// describes the conflict.
@@ -308,6 +315,17 @@ func verifySinglePluginCompatibility(plugin artifactresolver.Locator, plugins ma
 		if otherPlugin.Group == plugin.Group && otherPlugin.Product == plugin.Product {
 			errs[otherPlugin] = fmt.Errorf("different version of the same plugin")
 			continue
+		}
+
+		if plugin.Product == otherPlugin.Product {
+			// if product names are the same, verify that they do not both use configuration (if they do, the
+			// configuration files will conflict)
+			currPluginUsesConfig := plugins[plugin].PluginInfo.ConfigFileName() != ""
+			otherPluginUsesConfig := otherPluginInfo.PluginInfo.ConfigFileName() != ""
+			if currPluginUsesConfig && otherPluginUsesConfig {
+				errs[otherPlugin] = fmt.Errorf("plugins have the same product name and both use configuration (this not currently supported -- if this situation is encountered, please file an issue to flag it)")
+				continue
+			}
 		}
 
 		currPluginInfo := plugins[plugin]

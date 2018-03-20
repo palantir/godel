@@ -40,9 +40,9 @@ import (
 var pluginScriptTmpl = fmt.Sprintf(`#!/usr/bin/env bash
 
 if [ "$1" = "%s" ]; then
-    echo '{"pluginSchemaVersion":"1","id":"com.palantir:%s:1.0.0","configFileName":"tester.yml","tasks":[{"name":"fooTest","description":"","command":["foo"],"globalFlagOptions":null,"verifyOptions":null}]}'
+    echo '{"pluginSchemaVersion":"1","id":"com.palantir:%s:1.0.0","configFileName":"%s.yml","tasks":[{"name":"fooTest","description":"","command":["foo"],"globalFlagOptions":null,"verifyOptions":null}],"upgradeTask":null}'
 fi
-`, pluginapi.PluginInfoCommandName, "%s")
+`, pluginapi.PluginInfoCommandName, "%s", "%s")
 
 func TestInfoFromResolved(t *testing.T) {
 	tmpDir, cleanup, err := dirs.TempDir("", "")
@@ -51,7 +51,7 @@ func TestInfoFromResolved(t *testing.T) {
 
 	pluginName := newPluginName()
 	pluginFile := path.Join(tmpDir, fmt.Sprintf("com.palantir-%s-1.0.0", pluginName))
-	err = ioutil.WriteFile(pluginFile, []byte(fmt.Sprintf(pluginScriptTmpl, pluginName)), 0755)
+	err = ioutil.WriteFile(pluginFile, []byte(fmt.Sprintf(pluginScriptTmpl, pluginName, pluginName)), 0755)
 	require.NoError(t, err)
 
 	gotInfo, err := pluginapi.InfoFromPlugin(path.Join(tmpDir, pathsinternal.PluginFileName(artifactresolver.Locator{
@@ -65,7 +65,7 @@ func TestInfoFromResolved(t *testing.T) {
 		"com.palantir",
 		pluginName,
 		"1.0.0",
-		pluginapi.PluginInfoConfigFileName("tester.yml"),
+		pluginapi.PluginInfoUsesConfigFile(),
 		pluginapi.PluginInfoTaskInfo("fooTest", "", pluginapi.TaskInfoCommand("foo")),
 	)
 	assert.Equal(t, wantInfo, gotInfo)
@@ -133,7 +133,7 @@ func TestResolvePlugins(t *testing.T) {
 				"com.palantir",
 				loc.Product,
 				"1.0.0",
-				pluginapi.PluginInfoConfigFileName("tester.yml"),
+				pluginapi.PluginInfoUsesConfigFile(),
 				pluginapi.PluginInfoTaskInfo("fooTest", "", pluginapi.TaskInfoCommand("foo")),
 			),
 		},
@@ -148,7 +148,7 @@ func createTestPlugin(t *testing.T, tmpDir string) (artifactresolver.Locator, ar
 	require.NoError(t, err)
 
 	testProductPath := path.Join(testProductDir, pluginName)
-	err = ioutil.WriteFile(testProductPath, []byte(fmt.Sprintf(pluginScriptTmpl, pluginName)), 0755)
+	err = ioutil.WriteFile(testProductPath, []byte(fmt.Sprintf(pluginScriptTmpl, pluginName, pluginName)), 0755)
 	require.NoError(t, err)
 
 	testProductTGZPath := path.Join(testProductDir, pluginName+"-darwin-amd64-1.0.0.tgz")
@@ -186,7 +186,7 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 					Version: "1.0.0",
 				}: {
 					PluginInfo: pluginapi.MustNewPluginInfo("com.palantir", "foo", "1.0.0",
-						pluginapi.PluginInfoConfigFileName("foo.yml"),
+						pluginapi.PluginInfoUsesConfigFile(),
 					),
 				},
 			},
@@ -201,7 +201,7 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 					Version: "1.0.0",
 				}: {
 					PluginInfo: pluginapi.MustNewPluginInfo("com.palantir", "foo", "1.0.0",
-						pluginapi.PluginInfoConfigFileName("foo.yml"),
+						pluginapi.PluginInfoUsesConfigFile(),
 						pluginapi.PluginInfoTaskInfo("foo", ""),
 					),
 				},
@@ -211,7 +211,7 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 					Version: "2.0.0",
 				}: {
 					PluginInfo: pluginapi.MustNewPluginInfo("com.palantir", "foo", "1.0.0",
-						pluginapi.PluginInfoConfigFileName("foo.yml"),
+						pluginapi.PluginInfoUsesConfigFile(),
 						pluginapi.PluginInfoTaskInfo("foo", ""),
 					),
 				},
@@ -231,7 +231,7 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 					Version: "1.0.0",
 				}: {
 					PluginInfo: pluginapi.MustNewPluginInfo("com.palantir", "foo", "1.0.0",
-						pluginapi.PluginInfoConfigFileName("foo.yml"),
+						pluginapi.PluginInfoUsesConfigFile(),
 						pluginapi.PluginInfoTaskInfo("foo", ""),
 					),
 				},
@@ -240,8 +240,8 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 					Product: "bar",
 					Version: "2.0.0",
 				}: {
-					PluginInfo: pluginapi.MustNewPluginInfo("com.palantir", "bar", "1.0.0",
-						pluginapi.PluginInfoConfigFileName("foo.yml"),
+					PluginInfo: pluginapi.MustNewPluginInfo("com.palantir", "bar", ".0.0",
+						pluginapi.PluginInfoUsesConfigFile(),
 						pluginapi.PluginInfoTaskInfo("foo", ""),
 					),
 				},
@@ -251,6 +251,36 @@ func TestVerifyPluginCompatibility(t *testing.T) {
         provides conflicting tasks: [foo]
     com.palantir:foo:1.0.0:
         provides conflicting tasks: [foo]`,
+		},
+		{
+			"verify catches plugins with same product name that both use config files",
+			map[artifactresolver.Locator]pluginInfoWithAssets{
+				{
+					Group:   "com.palantir",
+					Product: "foo",
+					Version: "1.0.0",
+				}: {
+					PluginInfo: pluginapi.MustNewPluginInfo("com.palantir", "foo", "1.0.0",
+						pluginapi.PluginInfoUsesConfigFile(),
+						pluginapi.PluginInfoTaskInfo("foo", ""),
+					),
+				},
+				{
+					Group:   "com.zcorp",
+					Product: "foo",
+					Version: "2.0.0",
+				}: {
+					PluginInfo: pluginapi.MustNewPluginInfo("com.zcorp", "foo", "2.0.0",
+						pluginapi.PluginInfoUsesConfigFile(),
+						pluginapi.PluginInfoTaskInfo("bar", ""),
+					),
+				},
+			},
+			`2 plugins had compatibility issues:
+    com.palantir:foo:1.0.0:
+        plugins have the same product name and both use configuration (this not currently supported -- if this situation is encountered, please file an issue to flag it)
+    com.zcorp:foo:2.0.0:
+        plugins have the same product name and both use configuration (this not currently supported -- if this situation is encountered, please file an issue to flag it)`,
 		},
 	} {
 		got := verifyPluginCompatibility(tc.input)
