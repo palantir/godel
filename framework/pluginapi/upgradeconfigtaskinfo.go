@@ -122,6 +122,10 @@ func (ti upgradeConfigTaskInfoImpl) toTask(pluginExecPath, cfgFileName string, a
 					output = strings.TrimPrefix(output, "Error: ")
 					output = strings.TrimSuffix(output, "\n")
 				}
+				if _, ok := err.(*exec.ExitError); ok {
+					// if error was an exit error, don't bother wrapping because it's probably just "exit 1"
+					return nil, errors.Errorf(output)
+				}
 				return nil, errors.Wrapf(err, output)
 			}
 

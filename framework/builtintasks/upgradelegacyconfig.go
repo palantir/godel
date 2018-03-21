@@ -90,7 +90,7 @@ func UpgradeLegacyConfigTask(upgradeTasks []godellauncher.UpgradeConfigTask) god
 						continue
 					}
 					if err := upgradeLegacyConfig(upgradeTask, cfgDirPath, global, dryRunFlagVal, printContentFlagVal, stdout); err != nil {
-						failedUpgrades = append(failedUpgrades, fmt.Sprintf("%s: %v", path.Join(cfgDirPath, upgradeTask.ConfigFile), err))
+						failedUpgrades = append(failedUpgrades, upgradeError(projectDir, path.Join(cfgDirPath, upgradeTask.ConfigFile), err))
 						continue
 					}
 				}

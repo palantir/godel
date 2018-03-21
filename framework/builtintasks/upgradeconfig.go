@@ -75,7 +75,7 @@ func UpgradeConfigTask(upgradeTasks []godellauncher.UpgradeConfigTask) godellaun
 				for _, upgradeTask := range upgradeTasks {
 					changed, upgradedCfgBytes, err := upgradeConfigFile(upgradeTask, global, configDirPath, dryRunFlagVal, stdout)
 					if err != nil {
-						failedUpgrades = append(failedUpgrades, fmt.Sprintf("%s: %v", path.Join(configDirPath, upgradeTask.ConfigFile), err))
+						failedUpgrades = append(failedUpgrades, upgradeError(projectDir, path.Join(configDirPath, upgradeTask.ConfigFile), err))
 						continue
 					}
 					if !changed {
@@ -176,4 +176,14 @@ func backupConfigFile(cfgFilePath string, dryRun bool, stdout io.Writer) error {
 		}
 	}
 	return nil
+}
+
+func upgradeError(projectDir, configFilePath string, upgradeErr error) string {
+	// convert path to relative path if it is absolute. No-op if conversion to absolute path fails.
+	if filepath.IsAbs(configFilePath) {
+		if relPath, err := filepath.Rel(projectDir, configFilePath); err == nil {
+			configFilePath = relPath
+		}
+	}
+	return fmt.Sprintf("%s: %v", configFilePath, upgradeErr)
 }
