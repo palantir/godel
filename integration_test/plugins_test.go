@@ -25,7 +25,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nmiyake/archiver"
+	"github.com/mholt/archiver"
 	"github.com/palantir/pkg/specdir"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -107,7 +107,7 @@ plugins:
 	require.NoError(t, err)
 
 	pluginTGZPath := path.Join(pluginDir, fmt.Sprintf("%s-%s-1.0.0.tgz", pluginName, osarch.Current()))
-	err = archiver.TarGz(pluginTGZPath, []string{pluginScript})
+	err = archiver.TarGz.Make(pluginTGZPath, []string{pluginScript})
 	require.NoError(t, err)
 
 	cfgBytes, err := yaml.Marshal(cfg)
@@ -208,7 +208,7 @@ plugins:
 	require.NoError(t, err)
 
 	pluginTGZPath := path.Join(pluginDir, fmt.Sprintf("%s-%s-1.0.0.tgz", pluginName, osarch.Current()))
-	err = archiver.TarGz(pluginTGZPath, []string{pluginScript})
+	err = archiver.TarGz.Make(pluginTGZPath, []string{pluginScript})
 	require.NoError(t, err)
 
 	assetFile := path.Join(assetDir, assetName+"-1.0.0")
@@ -216,7 +216,7 @@ plugins:
 	require.NoError(t, err)
 
 	assetTGZPath := path.Join(assetDir, fmt.Sprintf("%s-%s-1.0.0.tgz", assetName, osarch.Current()))
-	err = archiver.TarGz(assetTGZPath, []string{assetFile})
+	err = archiver.TarGz.Make(assetTGZPath, []string{assetFile})
 	require.NoError(t, err)
 
 	cfgBytes, err := yaml.Marshal(cfg)

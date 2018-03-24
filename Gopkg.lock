@@ -38,10 +38,10 @@
   version = "v0.0.2"
 
 [[projects]]
-  name = "github.com/nmiyake/archiver"
+  name = "github.com/mholt/archiver"
   packages = ["."]
-  revision = "a075791974ee7d363104fde72b5e009515cc0def"
-  version = "v1.1.1"
+  revision = "cdc68dd1f170b8dfc1a0d2231b5bb0967ed67006"
+  version = "v2.0"
 
 [[projects]]
   branch = "develop"
@@ -104,6 +104,12 @@
   revision = "bcacb06fecaeec8dc42af03c87c6949f4a05c74c"
 
 [[projects]]
+  name = "github.com/ulikunitz/xz"
+  packages = [".","internal/hash","internal/xlog","lzma"]
+  revision = "0c6b41e72360850ca4f98dc341fd999726ea007f"
+  version = "v0.5.4"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
@@ -124,6 +130,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5df54af257d67ef0310ea81df2bb2097939e7ea486935ad3cfb6e294c6ceade1"
+  inputs-digest = "0c6ccaefb4e22ecb19a2e6bd1b707dd68acccf3554fdea84375a7471759d70a7"
   solver-name = "gps-cdcl"
   solver-version = 1
