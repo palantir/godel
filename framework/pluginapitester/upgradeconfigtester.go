@@ -158,7 +158,7 @@ func RunUpgradeConfigTest(t *testing.T,
 				wantContent := tc.WantFiles[k]
 				bytes, err := ioutil.ReadFile(path.Join(projectDir, k))
 				require.NoError(t, err, "Case %d: %s", i, tc.Name)
-				assert.Equal(t, wantContent, string(bytes), "Case %d: %s\nContent of file %s did not match expectation", i, tc.Name, k)
+				assert.Equal(t, wantContent, string(bytes), "Case %d: %s\nContent of file %s did not match expectation.\nActual:\n%s", i, tc.Name, k, string(bytes))
 			}
 		}()
 	}
