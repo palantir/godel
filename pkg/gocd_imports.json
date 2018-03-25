@@ -29,7 +29,8 @@
             "numGoFiles": 17,
             "numImportedGoFiles": 0,
             "importedFrom": [
-                "github.com/palantir/godel/pkg/versionedconfig"
+                "github.com/palantir/godel/pkg/versionedconfig",
+                "github.com/palantir/godel/pkg/versionedconfig_test"
             ]
         }
     ],
