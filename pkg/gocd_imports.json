@@ -51,7 +51,8 @@
                 "github.com/palantir/godel/pkg/dirchecksum_test",
                 "github.com/palantir/godel/pkg/osarch_test",
                 "github.com/palantir/godel/pkg/products_test",
-                "github.com/palantir/godel/pkg/v2/products_test"
+                "github.com/palantir/godel/pkg/v2/products_test",
+                "github.com/palantir/godel/pkg/versionedconfig_test"
             ]
         },
         {
@@ -62,7 +63,8 @@
                 "github.com/palantir/godel/pkg/dirchecksum_test",
                 "github.com/palantir/godel/pkg/osarch_test",
                 "github.com/palantir/godel/pkg/products_test",
-                "github.com/palantir/godel/pkg/v2/products_test"
+                "github.com/palantir/godel/pkg/v2/products_test",
+                "github.com/palantir/godel/pkg/versionedconfig_test"
             ]
         }
     ]
