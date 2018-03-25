@@ -15,6 +15,8 @@
 package versionedconfig
 
 import (
+	"bytes"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -30,4 +32,17 @@ func IsLegacyConfig(cfgBytes []byte) bool {
 		return false
 	}
 	return cfg.Legacy
+}
+
+const legacyPrefix = `legacy-config: true
+`
+
+// TrimLegacyPrefix trims the "legacy-config: true" YAML key/value if it is the first line in the provided bytes. If the
+// provided bytes do not start with this line, the input is returned directly. Returns true if the prefix is trimmed,
+// false otherwise.
+func TrimLegacyPrefix(in []byte) ([]byte, bool) {
+	if bytes.HasPrefix(in, []byte(legacyPrefix)) {
+		return bytes.TrimPrefix(in, []byte(legacyPrefix)), true
+	}
+	return in, false
 }
