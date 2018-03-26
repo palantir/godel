@@ -20,7 +20,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// GlobalConfig  stores the configuration provided to the initial invocation of gödel.
+// GlobalConfig stores the configuration provided to the initial invocation of gödel.
 type GlobalConfig struct {
 	// Path to the gödel executable
 	Executable string

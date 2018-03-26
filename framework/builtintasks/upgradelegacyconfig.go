@@ -21,7 +21,9 @@ import (
 	"os"
 	"path"
 	"sort"
+	"strings"
 
+	"github.com/palantir/pkg/matcher"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -71,6 +73,14 @@ func UpgradeLegacyConfigTask(upgradeTasks []godellauncher.UpgradeConfigTask) god
 					return err
 				}
 
+				// record all of the original YML files in the directory
+				originalYMLFiles, err := dirYMLFiles(cfgDirPath)
+				if err != nil {
+					return err
+				}
+				// track all of the upgraded YML files
+				upgradedYMLFiles := make(map[string]struct{})
+
 				upgradeTasksMap := make(map[string]godellauncher.UpgradeConfigTask)
 				for _, upgradeTask := range upgradeTasks {
 					upgradeTasksMap[upgradeTask.ID] = upgradeTask
@@ -83,16 +93,37 @@ func UpgradeLegacyConfigTask(upgradeTasks []godellauncher.UpgradeConfigTask) god
 				sort.Strings(legacyConfigUpgraderKeys)
 
 				var failedUpgrades []string
+				// perform hard-coded one-time upgraders
+				for _, currUpgrader := range hardCodedLegacyUpgraders {
+					if err := currUpgrader.upgradeConfig(cfgDirPath, dryRunFlagVal, printContentFlagVal, stdout); err != nil {
+						failedUpgrades = append(failedUpgrades, upgradeError(projectDir, path.Join(cfgDirPath, currUpgrader.configFileName()), err))
+					}
+					upgradedYMLFiles[currUpgrader.configFileName()] = struct{}{}
+				}
 				for _, k := range legacyConfigUpgraderKeys {
 					upgradeTask, ok := upgradeTasksMap[k]
 					if !ok {
 						// legacy task does not have an upgrader: continue
 						continue
 					}
+					upgradedYMLFiles[upgradeTask.ConfigFile] = struct{}{}
 					if err := upgradeLegacyConfig(upgradeTask, cfgDirPath, global, dryRunFlagVal, printContentFlagVal, stdout); err != nil {
 						failedUpgrades = append(failedUpgrades, upgradeError(projectDir, path.Join(cfgDirPath, upgradeTask.ConfigFile), err))
 						continue
 					}
+				}
+
+				var unknownYMLFiles []string
+				for _, k := range originalYMLFiles {
+					if _, ok := upgradedYMLFiles[k]; ok {
+						continue
+					}
+					unknownYMLFiles = append(unknownYMLFiles, k)
+				}
+				if len(unknownYMLFiles) > 0 {
+					// if unknown files were present, print warning
+					dryRunPrintln(stdout, dryRunFlagVal, fmt.Sprintf(`WARNING: the following configuration files had no known upgraders for legacy configuration: %v
+If these configuration files are plugins, add the plugin to the configuration and re-run the upgrade task.`, unknownYMLFiles))
 				}
 
 				if len(failedUpgrades) == 0 {
@@ -112,13 +143,149 @@ func UpgradeLegacyConfigTask(upgradeTasks []godellauncher.UpgradeConfigTask) god
 	}
 }
 
+var hardCodedLegacyUpgraders = []hardCodedLegacyUpgrader{
+	&hardCodedLegacyUpgraderImpl{
+		fileName: "exclude.yml",
+		upgradeConfigFn: func(configDirPath string, dryRun, printContent bool, stdout io.Writer) error {
+			// godel.yml itself is compatible. Only work to be performed is if "exclude.yml" exists and contains entries that
+			// differ from godel.yml.
+			legacyExcludeFilePath := path.Join(configDirPath, "exclude.yml")
+			if _, err := os.Stat(legacyExcludeFilePath); os.IsNotExist(err) {
+				// if legacy file does not exist, there is no upgrade to be performed
+				return nil
+			}
+			legacyConfigBytes, err := ioutil.ReadFile(legacyExcludeFilePath)
+			if err != nil {
+				return errors.Wrapf(err, "failed to read legacy configuration file")
+			}
+			var excludeCfg matcher.NamesPathsCfg
+			if err := yaml.UnmarshalStrict(legacyConfigBytes, &excludeCfg); err != nil {
+				return errors.Wrapf(err, "failed to unmarshal legacy exclude configuration")
+			}
+
+			currentGodelConfig, err := readGodelConfig(path.Join(configDirPath, "godel.yml"))
+			if err != nil {
+				return errors.Wrapf(err, "failed to read godel configuration")
+			}
+
+			existingNames := make(map[string]struct{})
+			for _, name := range currentGodelConfig.Exclude.Names {
+				existingNames[name] = struct{}{}
+			}
+			existingPaths := make(map[string]struct{})
+			for _, path := range currentGodelConfig.Exclude.Paths {
+				existingPaths[path] = struct{}{}
+			}
+
+			modified := false
+			for _, legacyName := range excludeCfg.Names {
+				if _, ok := existingNames[legacyName]; ok {
+					continue
+				}
+				currentGodelConfig.Exclude.Names = append(currentGodelConfig.Exclude.Names, legacyName)
+				modified = true
+			}
+			for _, legacyPath := range excludeCfg.Paths {
+				if _, ok := existingPaths[legacyPath]; ok {
+					continue
+				}
+				currentGodelConfig.Exclude.Names = append(currentGodelConfig.Exclude.Paths, legacyPath)
+				modified = true
+			}
+
+			// back up old configuration by moving it
+			if err := backupConfigFile(legacyExcludeFilePath, dryRun, stdout); err != nil {
+				return errors.Wrapf(err, "failed to back up legacy configuration file")
+			}
+
+			if !modified {
+				// exclude.yml did not provide any new excludes: no need to write
+				return nil
+			}
+
+			upgradedCfgBytes, err := yaml.Marshal(currentGodelConfig)
+			if err != nil {
+				return errors.Wrapf(err, "failed to marshal upgraded godel configuration")
+			}
+
+			if !dryRun {
+				// write migrated configuration
+				if err := ioutil.WriteFile(path.Join(configDirPath, "godel.yml"), upgradedCfgBytes, 0644); err != nil {
+					return errors.Wrapf(err, "failed to write upgraded configuration")
+				}
+			}
+			printUpgradedConfig("godel.yml", upgradedCfgBytes, dryRun, printContent, stdout)
+			return nil
+		},
+	},
+	&hardCodedLegacyUpgraderImpl{
+		fileName: "imports.yml",
+		upgradeConfigFn: func(configDirPath string, dryRun, printContent bool, stdout io.Writer) error {
+			legacyConfigFilePath := path.Join(configDirPath, "imports.yml")
+			if _, err := os.Stat(legacyConfigFilePath); os.IsNotExist(err) {
+				// if legacy file does not exist, there is no upgrade to be performed
+				return nil
+			}
+			legacyConfigBytes, err := ioutil.ReadFile(legacyConfigFilePath)
+			if err != nil {
+				return errors.Wrapf(err, "failed to read legacy configuration file")
+			}
+
+			// back up old configuration by moving it
+			if err := backupConfigFile(legacyConfigFilePath, dryRun, stdout); err != nil {
+				return errors.Wrapf(err, "failed to back up legacy configuration file")
+			}
+
+			if string(legacyConfigBytes) != "" {
+				// if legacy file had content, warn that the functionality is no longer supported
+				dryRunPrintln(stdout, dryRun, `WARNING: the functionality provided by "imports.yml" is no longer supported: the file has been backed up without being upgraded or migrated`)
+			}
+			return nil
+		},
+	},
+}
+
+func dirYMLFiles(inputDir string) ([]string, error) {
+	fis, err := ioutil.ReadDir(inputDir)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to read input directory")
+	}
+	var ymlFiles []string
+	for _, fi := range fis {
+		if fi.IsDir() {
+			continue
+		}
+		if strings.HasSuffix(fi.Name(), ".yml") {
+			ymlFiles = append(ymlFiles, fi.Name())
+		}
+	}
+	return ymlFiles, nil
+}
+
+type hardCodedLegacyUpgrader interface {
+	configFileName() string
+	upgradeConfig(configDirPath string, dryRun, printContent bool, stdout io.Writer) error
+}
+
+type hardCodedLegacyUpgraderImpl struct {
+	fileName        string
+	upgradeConfigFn func(configDirPath string, dryRun, printContent bool, stdout io.Writer) error
+}
+
+func (u *hardCodedLegacyUpgraderImpl) configFileName() string {
+	return u.fileName
+}
+
+func (u *hardCodedLegacyUpgraderImpl) upgradeConfig(configDirPath string, dryRun, printContent bool, stdout io.Writer) error {
+	return u.upgradeConfigFn(configDirPath, dryRun, printContent, stdout)
+}
+
 func upgradeLegacyConfig(upgradeTask godellauncher.UpgradeConfigTask, configDirPath string, global godellauncher.GlobalConfig, dryRun, printContent bool, stdout io.Writer) error {
 	legacyConfigFilePath := path.Join(configDirPath, legacyplugins.LegacyConfigUpgraders[upgradeTask.ID].LegacyConfigFileName)
 	if _, err := os.Stat(legacyConfigFilePath); os.IsNotExist(err) {
 		// if legacy file does not exist, there is no upgrade to be performed
 		return nil
 	}
-
 	legacyConfigBytes, err := ioutil.ReadFile(legacyConfigFilePath)
 	if err != nil {
 		return errors.Wrapf(err, "failed to read legacy configuration file")
@@ -157,6 +324,5 @@ func upgradeLegacyConfig(upgradeTask godellauncher.UpgradeConfigTask, configDirP
 		}
 	}
 	printUpgradedConfig(upgradeTask.ConfigFile, upgradedCfgBytes, dryRun, printContent, stdout)
-
 	return nil
 }

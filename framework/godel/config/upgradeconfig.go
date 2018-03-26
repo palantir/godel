@@ -45,22 +45,3 @@ func UpgradeConfig(cfgBytes []byte) ([]byte, error) {
 		return nil, errors.Errorf("unsupported version: %s", version)
 	}
 }
-
-//func UpgradeGodelConfig(cfgBytes []byte) ([]byte, error) {
-//	version, err := versionedconfig.ConfigVersion(cfgBytes)
-//	if err != nil {
-//		return nil, errors.Wrapf(err, "failed to unmarshal version")
-//	}
-//	switch version {
-//	case "", "0":
-//		// verify that configuration is valid
-//		var cfg GodelConfig
-//		if err := yaml.UnmarshalStrict(cfgBytes, &cfg); err != nil {
-//			return nil, errors.Wrapf(err, "failed to unmarshal configuration")
-//		}
-//		// configuration is valid and is current version: return input bytes
-//		return cfgBytes, nil
-//	default:
-//		return nil, errors.Errorf("unsupported version: %s", version)
-//	}
-//}
