@@ -63,12 +63,15 @@ func ReadGodelConfigFromProjectDir(projectDir string) (config.GodelConfig, error
 	if err != nil {
 		return config.GodelConfig{}, err
 	}
+	return readGodelConfig(path.Join(cfgDir, godellauncher.GodelConfigYML))
+}
+
+func readGodelConfig(cfgFile string) (config.GodelConfig, error) {
 	var godelCfg config.GodelConfig
-	godelYML := path.Join(cfgDir, godellauncher.GodelConfigYML)
-	if _, err := os.Stat(godelYML); err == nil {
-		bytes, err := ioutil.ReadFile(godelYML)
+	if _, err := os.Stat(cfgFile); err == nil {
+		bytes, err := ioutil.ReadFile(cfgFile)
 		if err != nil {
-			return config.GodelConfig{}, errors.Wrapf(err, "failed to read file %s", godelYML)
+			return config.GodelConfig{}, errors.Wrapf(err, "failed to read file %s", cfgFile)
 		}
 		upgradedBytes, err := config.UpgradeConfig(bytes)
 		if err != nil {
