@@ -12,24 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package godellauncher
+package artifactresolver
 
 import (
-	"io"
+	"fmt"
+
+	"github.com/palantir/godel/pkg/osarch"
 )
 
-func BuiltinUpgradeConfigTasks() []UpgradeConfigTask {
-	return []UpgradeConfigTask{
-		upgradeGodelConfigTask(),
-	}
+type LocatorWithResolverParam struct {
+	LocatorWithChecksums LocatorParam
+	Resolver             Resolver
 }
 
-func upgradeGodelConfigTask() UpgradeConfigTask {
-	return UpgradeConfigTask{
-		ID:         "com.palantir.godel:godel",
-		ConfigFile: "godel.yml",
-		RunImpl: func(t *UpgradeConfigTask, global GlobalConfig, configBytes []byte, stdout io.Writer) ([]byte, error) {
-			return UpgradeGodelConfig(configBytes)
-		},
-	}
+type LocatorParam struct {
+	Locator
+	Checksums map[osarch.OSArch]string
+}
+
+type Locator struct {
+	Group   string
+	Product string
+	Version string
+}
+
+func (l Locator) String() string {
+	return fmt.Sprintf("%s:%s:%s", l.Group, l.Product, l.Version)
 }

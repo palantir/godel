@@ -20,6 +20,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/palantir/godel/framework/artifactresolver"
+	"github.com/palantir/godel/framework/godel/config"
 	"github.com/palantir/godel/framework/godellauncher"
 	"github.com/palantir/godel/framework/internal/pathsinternal"
 	"github.com/palantir/godel/framework/plugins"
@@ -44,10 +45,10 @@ func NewPluginProvider(pluginPath string) PluginProvider {
 }
 
 func NewPluginProviderFromLocator(pluginLocator, pluginResolver string) (PluginProvider, error) {
-	lwrConfig := artifactresolver.LocatorWithResolverConfig{
-		Locator: artifactresolver.LocatorConfig{
+	lwrConfig := config.LocatorWithResolverConfig{
+		Locator: config.ToLocatorConfig(config.LocatorConfig{
 			ID: pluginLocator,
-		},
+		}),
 		Resolver: pluginResolver,
 	}
 	lwrParam, err := lwrConfig.ToParam()

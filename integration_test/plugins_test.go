@@ -31,6 +31,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
 
+	"github.com/palantir/godel/framework/builtintasks"
 	"github.com/palantir/godel/framework/builtintasks/installupdate/layout"
 	"github.com/palantir/godel/framework/godellauncher"
 	"github.com/palantir/godel/framework/pluginapi"
@@ -61,10 +62,7 @@ func main() {
 	err := ioutil.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
-	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
-	require.NoError(t, err)
-
-	cfg, err := godellauncher.ReadGodelConfig(cfgDir)
+	cfg, err := builtintasks.ReadGodelConfigFromProjectDir(testProjectDir)
 	require.NoError(t, err)
 
 	cfgContent := fmt.Sprintf(`
@@ -112,6 +110,8 @@ plugins:
 
 	cfgBytes, err := yaml.Marshal(cfg)
 	require.NoError(t, err)
+	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
+	require.NoError(t, err)
 	err = ioutil.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
 	require.NoError(t, err)
 
@@ -155,10 +155,7 @@ func main() {
 	err := ioutil.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
-	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
-	require.NoError(t, err)
-
-	cfg, err := godellauncher.ReadGodelConfig(cfgDir)
+	cfg, err := builtintasks.ReadGodelConfigFromProjectDir(testProjectDir)
 	require.NoError(t, err)
 
 	cfgContent := fmt.Sprintf(`
@@ -220,6 +217,8 @@ plugins:
 	require.NoError(t, err)
 
 	cfgBytes, err := yaml.Marshal(cfg)
+	require.NoError(t, err)
+	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
 	require.NoError(t, err)
 	err = ioutil.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
 	require.NoError(t, err)

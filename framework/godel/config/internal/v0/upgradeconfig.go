@@ -12,24 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package builtintasks
+// Copyright (c) 2016 Palantir Technologies Inc. All rights reserved.
+// Use of this source code is governed by the Apache License, Version 2.0
+// that can be found in the LICENSE file.
+
+package v0
 
 import (
-	"github.com/palantir/godel/framework/godel/config"
-	"github.com/palantir/godel/framework/godellauncher"
+	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
 )
 
-func Tasks(tasksCfgInfo config.TasksConfigInfo) []godellauncher.Task {
-	return []godellauncher.Task{
-		VersionTask(),
-		InstallTask(),
-		UpdateTask(),
-		InfoTask(),
-		CheckPathTask(),
-		GitHooksTask(),
-		GitHubWikiTask(),
-		IDEATask(),
-		PackagesTask(),
-		TasksConfigTask(tasksCfgInfo),
+func UpgradeConfig(cfgBytes []byte) ([]byte, error) {
+	var cfg GodelConfig
+	if err := yaml.UnmarshalStrict(cfgBytes, &cfg); err != nil {
+		return nil, errors.Wrapf(err, "failed to unmarshal godel v0 configuration")
 	}
+	return cfgBytes, nil
 }
