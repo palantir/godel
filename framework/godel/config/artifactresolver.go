@@ -12,41 +12,50 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package artifactresolver
+package config
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
 
+	"github.com/palantir/godel/framework/artifactresolver"
+	"github.com/palantir/godel/framework/godel/config/internal/v0"
 	"github.com/palantir/godel/pkg/osarch"
 )
 
-type LocatorWithResolverParam struct {
-	LocatorWithChecksums LocatorParam
-	Resolver             Resolver
+type LocatorWithResolverConfig v0.LocatorWithResolverConfig
+
+func ToLocatorWithResolverConfig(in LocatorWithResolverConfig) v0.LocatorWithResolverConfig {
+	return v0.LocatorWithResolverConfig(in)
 }
 
-type LocatorWithResolverConfig struct {
-	Locator  LocatorConfig `yaml:"locator"`
-	Resolver string        `yaml:"resolver"`
-}
-
-func (c *LocatorWithResolverConfig) ToParam() (LocatorWithResolverParam, error) {
-	locator, err := c.Locator.ToParam()
-	if err != nil {
-		return LocatorWithResolverParam{}, errors.Wrapf(err, "invalid locator")
+func ToLocatorWithResolverConfigs(in []LocatorWithResolverConfig) []v0.LocatorWithResolverConfig {
+	if in == nil {
+		return nil
 	}
-	var resolver Resolver
+	out := make([]v0.LocatorWithResolverConfig, len(in))
+	for i, v := range in {
+		out[i] = ToLocatorWithResolverConfig(v)
+	}
+	return out
+}
+
+func (c *LocatorWithResolverConfig) ToParam() (artifactresolver.LocatorWithResolverParam, error) {
+	locatorCfg := LocatorConfig(c.Locator)
+	locator, err := locatorCfg.ToParam()
+	if err != nil {
+		return artifactresolver.LocatorWithResolverParam{}, errors.Wrapf(err, "invalid locator")
+	}
+	var resolver artifactresolver.Resolver
 	if c.Resolver != "" {
-		resolverVal, err := NewTemplateResolver(c.Resolver)
+		resolverVal, err := artifactresolver.NewTemplateResolver(c.Resolver)
 		if err != nil {
-			return LocatorWithResolverParam{}, errors.Wrapf(err, "invalid resolver")
+			return artifactresolver.LocatorWithResolverParam{}, errors.Wrapf(err, "invalid resolver")
 		}
 		resolver = resolverVal
 	}
-	return LocatorWithResolverParam{
+	return artifactresolver.LocatorWithResolverParam{
 		LocatorWithChecksums: locator,
 		Resolver:             resolver,
 	}, nil
@@ -55,39 +64,33 @@ func (c *LocatorWithResolverConfig) ToParam() (LocatorWithResolverParam, error) 
 // ConfigProviderLocatorWithResolverConfig is the configuration for a locator with resolver for a configuration
 // provider. It differs from a LocatorWithResolverConfig in that the locator is a ConfigProviderLocatorConfig rather
 // than a LocatorConfig.
-type ConfigProviderLocatorWithResolverConfig struct {
-	Locator  ConfigProviderLocatorConfig `yaml:"locator"`
-	Resolver string                      `yaml:"resolver"`
-}
+type ConfigProviderLocatorWithResolverConfig v0.ConfigProviderLocatorWithResolverConfig
 
 // ToParam converts the configuration into a LocatorWithResolverParam. Any checksums that exist are put in a map where
 // the key is the current OS/Arch.
-func (c *ConfigProviderLocatorWithResolverConfig) ToParam() (LocatorWithResolverParam, error) {
-	locatorCfg, err := c.Locator.ToLocatorConfig()
+func (c *ConfigProviderLocatorWithResolverConfig) ToParam() (artifactresolver.LocatorWithResolverParam, error) {
+	providerLocatorCfg := ConfigProviderLocatorConfig(c.Locator)
+	locatorCfg, err := providerLocatorCfg.ToLocatorConfig()
 	if err != nil {
-		return LocatorWithResolverParam{}, err
+		return artifactresolver.LocatorWithResolverParam{}, err
 	}
 	cfg := LocatorWithResolverConfig{
-		Locator:  locatorCfg,
+		Locator:  v0.LocatorConfig(locatorCfg),
 		Resolver: c.Resolver,
 	}
 	return cfg.ToParam()
 }
 
-type LocatorParam struct {
-	Locator
-	Checksums map[osarch.OSArch]string
+type LocatorConfig v0.LocatorConfig
+
+func ToLocatorConfig(in LocatorConfig) v0.LocatorConfig {
+	return v0.LocatorConfig(in)
 }
 
-type LocatorConfig struct {
-	ID        string            `yaml:"id"`
-	Checksums map[string]string `yaml:"checksums"`
-}
-
-func (c *LocatorConfig) ToParam() (LocatorParam, error) {
+func (c *LocatorConfig) ToParam() (artifactresolver.LocatorParam, error) {
 	parts := strings.Split(c.ID, ":")
 	if len(parts) != 3 {
-		return LocatorParam{}, errors.Errorf("locator ID must consist of 3 colon-delimited components ([group]:[product]:[version]), but had %d: %q", len(parts), c.ID)
+		return artifactresolver.LocatorParam{}, errors.Errorf("locator ID must consist of 3 colon-delimited components ([group]:[product]:[version]), but had %d: %q", len(parts), c.ID)
 	}
 	var checksums map[osarch.OSArch]string
 	if c.Checksums != nil {
@@ -95,13 +98,13 @@ func (c *LocatorConfig) ToParam() (LocatorParam, error) {
 		for k, v := range c.Checksums {
 			osArchKey, err := osarch.New(k)
 			if err != nil {
-				return LocatorParam{}, errors.Wrapf(err, "invalid OSArch specified in checksum key for %s", c.ID)
+				return artifactresolver.LocatorParam{}, errors.Wrapf(err, "invalid OSArch specified in checksum key for %s", c.ID)
 			}
 			checksums[osArchKey] = v
 		}
 	}
-	param := LocatorParam{
-		Locator: Locator{
+	param := artifactresolver.LocatorParam{
+		Locator: artifactresolver.Locator{
 			Group:   parts[0],
 			Product: parts[1],
 			Version: parts[2],
@@ -116,10 +119,7 @@ var configProviderOSArch = osarch.Current()
 
 // ConfigProviderLocatorConfig is the configuration for a locator for a configuration provider. It differs from a
 // LocatorConfig in that only a single checksum can be specified.
-type ConfigProviderLocatorConfig struct {
-	ID       string `yaml:"id"`
-	Checksum string `yaml:"checksum"`
-}
+type ConfigProviderLocatorConfig v0.ConfigProviderLocatorConfig
 
 // ToLocatorConfig translates the ConfigProviderLocatorConfig into a LocatorConfig where the checksum (if any exists) is
 // keyed as the current OS/Arch.
@@ -134,14 +134,4 @@ func (c *ConfigProviderLocatorConfig) ToLocatorConfig() (LocatorConfig, error) {
 		ID:        c.ID,
 		Checksums: checksums,
 	}, nil
-}
-
-type Locator struct {
-	Group   string
-	Product string
-	Version string
-}
-
-func (l Locator) String() string {
-	return fmt.Sprintf("%s:%s:%s", l.Group, l.Product, l.Version)
 }

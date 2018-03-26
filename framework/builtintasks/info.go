@@ -15,10 +15,15 @@
 package builtintasks
 
 import (
+	"io/ioutil"
+	"os"
+	"path"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 
+	"github.com/palantir/godel/framework/godel/config"
 	"github.com/palantir/godel/framework/godellauncher"
 )
 
@@ -36,17 +41,42 @@ func InfoTask() godellauncher.Task {
 			if err != nil {
 				return err
 			}
-			godelCfg, err := godellauncher.ReadGodelConfigFromProjectDir(projectDir)
+			godelCfg, err := ReadGodelConfigFromProjectDir(projectDir)
 			if err != nil {
 				return err
 			}
-			bytes, err := yaml.Marshal(godellauncher.DefaultTasksPluginsConfig(godelCfg.DefaultTasks))
+			bytes, err := yaml.Marshal(godelCfg.DefaultTasks)
 			if err != nil {
-				return errors.Wrapf(err, "failed to marshal default task config to JSON")
+				return errors.Wrapf(err, "failed to marshal default task configuration")
 			}
 			cmd.Print(string(bytes))
 			return nil
 		},
 	})
 	return godellauncher.CobraCLITask(cmd, &globalCfg)
+}
+
+// ReadGodelConfigFromProjectDir reads the gödel configuration from the "godel.yml" file in the configuration file for
+// the gödel project with the specified project directory and returns it.
+func ReadGodelConfigFromProjectDir(projectDir string) (config.GodelConfig, error) {
+	cfgDir, err := godellauncher.ConfigDirPath(projectDir)
+	if err != nil {
+		return config.GodelConfig{}, err
+	}
+	var godelCfg config.GodelConfig
+	godelYML := path.Join(cfgDir, godellauncher.GodelConfigYML)
+	if _, err := os.Stat(godelYML); err == nil {
+		bytes, err := ioutil.ReadFile(godelYML)
+		if err != nil {
+			return config.GodelConfig{}, errors.Wrapf(err, "failed to read file %s", godelYML)
+		}
+		upgradedBytes, err := config.UpgradeConfig(bytes)
+		if err != nil {
+			return config.GodelConfig{}, errors.Wrapf(err, "failed to upgrade configuration")
+		}
+		if err := yaml.Unmarshal(upgradedBytes, &godelCfg); err != nil {
+			return config.GodelConfig{}, errors.Wrapf(err, "failed to unmarshal gödel config YAML")
+		}
+	}
+	return godelCfg, nil
 }

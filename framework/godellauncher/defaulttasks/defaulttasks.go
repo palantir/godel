@@ -12,186 +12,181 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package godellauncher
+package defaulttasks
 
 import (
 	"strings"
 
-	"github.com/palantir/godel/framework/artifactresolver"
+	"github.com/palantir/godel/framework/godel/config"
 )
 
 const defaultResolver = "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
 
-var defaultPluginsConfig = PluginsConfig{
+var defaultPluginsConfig = config.PluginsConfig{
 	DefaultResolvers: []string{
 		defaultResolver,
 	},
-	Plugins: []SinglePluginConfig{
+	Plugins: config.ToSinglePluginConfigs([]config.SinglePluginConfig{
 		{
-			LocatorWithResolverConfig: artifactresolver.LocatorWithResolverConfig{
-				Locator: artifactresolver.LocatorConfig{
+			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
+				Locator: config.ToLocatorConfig(config.LocatorConfig{
 					ID: "com.palantir.distgo:distgo-plugin:1.0.0-rc3",
-				},
-			},
+				}),
+			}),
 		},
 		{
-			LocatorWithResolverConfig: artifactresolver.LocatorWithResolverConfig{
-				Locator: artifactresolver.LocatorConfig{
+			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
+				Locator: config.ToLocatorConfig(config.LocatorConfig{
 					ID: "com.palantir.godel-format-plugin:format-plugin:1.0.0-rc2",
-				},
-			},
-			Assets: []artifactresolver.LocatorWithResolverConfig{
+				}),
+			}),
+			Assets: config.ToLocatorWithResolverConfigs([]config.LocatorWithResolverConfig{
 				{
-					Locator: artifactresolver.LocatorConfig{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
 						ID: "com.palantir.godel-format-asset-ptimports:ptimports-asset:1.0.0-rc3",
-					},
+					}),
 				},
-			},
+			}),
 		},
 		{
-			LocatorWithResolverConfig: artifactresolver.LocatorWithResolverConfig{
-				Locator: artifactresolver.LocatorConfig{
+			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
+				Locator: config.ToLocatorConfig(config.LocatorConfig{
 					ID: "com.palantir.godel-goland-plugin:goland-plugin:1.0.0-rc1",
-				},
-			},
+				}),
+			}),
 		},
 		{
-			LocatorWithResolverConfig: artifactresolver.LocatorWithResolverConfig{
-				Locator: artifactresolver.LocatorConfig{
+			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
+				Locator: config.ToLocatorConfig(config.LocatorConfig{
 					ID: "com.palantir.okgo:okgo-plugin:1.0.0-rc2",
-				},
-			},
-			Assets: []artifactresolver.LocatorWithResolverConfig{
+				}),
+			}),
+			Assets: config.ToLocatorWithResolverConfigs([]config.LocatorWithResolverConfig{
 				{
-					Locator: artifactresolver.LocatorConfig{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
 						ID: "com.palantir.godel-okgo-asset-compiles:compiles-asset:1.0.0-rc2",
-					},
+					}),
 				},
 				{
-					Locator: artifactresolver.LocatorConfig{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
 						ID: "com.palantir.godel-okgo-asset-deadcode:deadcode-asset:1.0.0-rc1",
-					},
+					}),
 				},
 				{
-					Locator: artifactresolver.LocatorConfig{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
 						ID: "com.palantir.godel-okgo-asset-errcheck:errcheck-asset:1.0.0-rc1",
-					},
+					}),
 				},
 				{
-					Locator: artifactresolver.LocatorConfig{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
 						ID: "com.palantir.godel-okgo-asset-extimport:extimport-asset:1.0.0-rc1",
-					},
+					}),
 				},
 				{
-					Locator: artifactresolver.LocatorConfig{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
 						ID: "com.palantir.godel-okgo-asset-golint:golint-asset:1.0.0-rc2",
-					},
+					}),
 				},
 				{
-					Locator: artifactresolver.LocatorConfig{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
 						ID: "com.palantir.godel-okgo-asset-govet:govet-asset:1.0.0-rc2",
-					},
+					}),
 				},
 				{
-					Locator: artifactresolver.LocatorConfig{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
 						ID: "com.palantir.godel-okgo-asset-importalias:importalias-asset:1.0.0-rc1",
-					},
+					}),
 				},
 				{
-					Locator: artifactresolver.LocatorConfig{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
 						ID: "com.palantir.godel-okgo-asset-ineffassign:ineffassign-asset:1.0.0-rc1",
-					},
+					}),
 				},
 				{
-					Locator: artifactresolver.LocatorConfig{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
 						ID: "com.palantir.godel-okgo-asset-novendor:novendor-asset:1.0.0-rc1",
-					},
+					}),
 				},
 				{
-					Locator: artifactresolver.LocatorConfig{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
 						ID: "com.palantir.godel-okgo-asset-outparamcheck:outparamcheck-asset:1.0.0-rc1",
-					},
+					}),
 				},
 				{
-					Locator: artifactresolver.LocatorConfig{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
 						ID: "com.palantir.godel-okgo-asset-unconvert:unconvert-asset:1.0.0-rc2",
-					},
+					}),
 				},
 				{
-					Locator: artifactresolver.LocatorConfig{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
 						ID: "com.palantir.godel-okgo-asset-varcheck:varcheck-asset:1.0.0-rc1",
-					},
+					}),
 				},
-			},
+			}),
 		},
 		{
-			LocatorWithResolverConfig: artifactresolver.LocatorWithResolverConfig{
-				Locator: artifactresolver.LocatorConfig{
+			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
+				Locator: config.ToLocatorConfig(config.LocatorConfig{
 					ID: "com.palantir.go-license:license-plugin:1.0.0-rc2",
-				},
-			},
+				}),
+			}),
 		},
 		{
-			LocatorWithResolverConfig: artifactresolver.LocatorWithResolverConfig{
-				Locator: artifactresolver.LocatorConfig{
+			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
+				Locator: config.ToLocatorConfig(config.LocatorConfig{
 					ID: "com.palantir.godel-test-plugin:test-plugin:1.0.0-rc3",
-				},
-			},
+				}),
+			}),
 		},
-	},
+	}),
 }
 
-type TasksConfigInfo struct {
-	// BuiltinPluginsConfig is the configuration for built-in plugins that is built as part of gödel.
-	BuiltinPluginsConfig PluginsConfig
-	// TasksConfig is the fully resolved user-provided tasks configuration.
-	TasksConfig TasksConfig
-	// DefaultTasksPluginsConfig is the plugin configuration used to load the default tasks. It is a result of combining
-	// the BuiltinPluginsConfig with the DefaultTasks config of TasksConfig.
-	DefaultTasksPluginsConfig PluginsConfig
-}
-
-func BuiltinDefaultPluginsConfig() PluginsConfig {
+func BuiltinPluginsConfig() config.PluginsConfig {
 	return defaultPluginsConfig
 }
 
-func DefaultTasksPluginsConfig(config DefaultTasksConfig) PluginsConfig {
+func PluginsConfig(cfg config.DefaultTasksConfig) config.PluginsConfig {
 	// start with configuration that uses default resolver
-	pluginsCfg := PluginsConfig{
+	pluginsCfg := config.PluginsConfig{
 		DefaultResolvers: defaultPluginsConfig.DefaultResolvers,
 	}
 	// append default resolvers provided by the configuration
-	pluginsCfg.DefaultResolvers = append(pluginsCfg.DefaultResolvers, config.DefaultResolvers...)
+	pluginsCfg.DefaultResolvers = append(pluginsCfg.DefaultResolvers, cfg.DefaultResolvers...)
 
 	for _, currPlugin := range defaultPluginsConfig.Plugins {
 		currKey := locatorIDWithoutVersion(currPlugin.Locator.ID)
 
-		cfgParam, ok := config.Tasks[currKey]
+		var assets []config.LocatorWithResolverConfig
+		for _, asset := range currPlugin.Assets {
+			assets = append(assets, config.LocatorWithResolverConfig(asset))
+		}
+		taskCfgV0, ok := cfg.Tasks[currKey]
 		if !ok {
 			// if custom configuration is not specified, use default and continue
 			pluginsCfg.Plugins = append(pluginsCfg.Plugins, currPlugin)
 			continue
 		}
+		taskCfg := config.SingleDefaultTaskConfig(taskCfgV0)
 
 		// custom configuration was non-empty: start it with default LocatorWithResolver configuration
-		currCfg := SinglePluginConfig{
+		currCfg := config.SinglePluginConfig{
 			LocatorWithResolverConfig: currPlugin.LocatorWithResolverConfig,
 		}
-		if cfgParam.Locator.ID != "" {
-			currCfg.Locator = cfgParam.Locator
+		if taskCfg.Locator.ID != "" {
+			currCfg.Locator = taskCfg.Locator
 		}
-		if cfgParam.Resolver != "" {
-			currCfg.Resolver = cfgParam.Resolver
+		if taskCfg.Resolver != "" {
+			currCfg.Resolver = taskCfg.Resolver
 		}
 
-		currCfg.Assets = append(currCfg.Assets, assetConfigFromDefault(currPlugin.Assets, cfgParam)...)
-		currCfg.Assets = append(currCfg.Assets, cfgParam.Assets...)
-		pluginsCfg.Plugins = append(pluginsCfg.Plugins, currCfg)
+		currCfg.Assets = append(currCfg.Assets, config.ToLocatorWithResolverConfigs(assetConfigFromDefault(assets, taskCfg))...)
+		currCfg.Assets = append(currCfg.Assets, taskCfg.Assets...)
+		pluginsCfg.Plugins = append(pluginsCfg.Plugins, config.ToSinglePluginConfig(currCfg))
 	}
 	return pluginsCfg
 }
 
-func assetConfigFromDefault(baseCfg []artifactresolver.LocatorWithResolverConfig, cfg SingleDefaultTaskConfig) []artifactresolver.LocatorWithResolverConfig {
+func assetConfigFromDefault(baseCfg []config.LocatorWithResolverConfig, cfg config.SingleDefaultTaskConfig) []config.LocatorWithResolverConfig {
 	if cfg.ExcludeAllDefaultAssets {
 		return nil
 	}
@@ -199,7 +194,7 @@ func assetConfigFromDefault(baseCfg []artifactresolver.LocatorWithResolverConfig
 	for _, currExclude := range cfg.DefaultAssetsToExclude {
 		exclude[currExclude] = struct{}{}
 	}
-	var out []artifactresolver.LocatorWithResolverConfig
+	var out []config.LocatorWithResolverConfig
 	for _, asset := range baseCfg {
 		if _, ok := exclude[locatorIDWithoutVersion(asset.Locator.ID)]; ok {
 			continue

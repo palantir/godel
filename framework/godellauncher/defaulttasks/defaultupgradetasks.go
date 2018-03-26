@@ -12,24 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package builtintasks
+package defaulttasks
 
 import (
+	"io"
+
 	"github.com/palantir/godel/framework/godel/config"
 	"github.com/palantir/godel/framework/godellauncher"
 )
 
-func Tasks(tasksCfgInfo config.TasksConfigInfo) []godellauncher.Task {
-	return []godellauncher.Task{
-		VersionTask(),
-		InstallTask(),
-		UpdateTask(),
-		InfoTask(),
-		CheckPathTask(),
-		GitHooksTask(),
-		GitHubWikiTask(),
-		IDEATask(),
-		PackagesTask(),
-		TasksConfigTask(tasksCfgInfo),
+func BuiltinUpgradeConfigTasks() []godellauncher.UpgradeConfigTask {
+	return []godellauncher.UpgradeConfigTask{
+		upgradeGodelConfigTask(),
+	}
+}
+
+func upgradeGodelConfigTask() godellauncher.UpgradeConfigTask {
+	return godellauncher.UpgradeConfigTask{
+		ID:         "com.palantir.godel:godel",
+		ConfigFile: "godel.yml",
+		RunImpl: func(t *godellauncher.UpgradeConfigTask, global godellauncher.GlobalConfig, configBytes []byte, stdout io.Writer) ([]byte, error) {
+			return config.UpgradeConfig(configBytes)
+		},
 	}
 }

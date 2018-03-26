@@ -26,7 +26,9 @@ import (
 
 	"github.com/palantir/godel/framework/builtintasks"
 	"github.com/palantir/godel/framework/godel"
+	"github.com/palantir/godel/framework/godel/config"
 	"github.com/palantir/godel/framework/godellauncher"
+	"github.com/palantir/godel/framework/godellauncher/defaulttasks"
 	"github.com/palantir/godel/framework/plugins"
 )
 
@@ -41,8 +43,8 @@ func runGodelApp(osArgs []string) int {
 	os.Args = osArgs
 
 	global, err := godellauncher.ParseAppArgs(os.Args)
-	tasksCfgInfo := godellauncher.TasksConfigInfo{
-		BuiltinPluginsConfig: godellauncher.BuiltinDefaultPluginsConfig(),
+	tasksCfgInfo := config.TasksConfigInfo{
+		BuiltinPluginsConfig: defaulttasks.BuiltinPluginsConfig(),
 	}
 	if err != nil {
 		// match invalid flag output with that provided by Cobra CLI
@@ -52,12 +54,13 @@ func runGodelApp(osArgs []string) int {
 	var allUpgradeConfigTasks []godellauncher.UpgradeConfigTask
 	var defaultTasks, pluginTasks []godellauncher.Task
 	if global.Wrapper != "" {
-		godelCfg, err := godellauncher.ReadGodelConfigFromProjectDir(path.Dir(global.Wrapper))
+		godelCfg, err := builtintasks.ReadGodelConfigFromProjectDir(path.Dir(global.Wrapper))
 		if err != nil {
 			printErrAndExit(err, global.Debug)
 		}
 
-		configProvidersParam, err := godelCfg.TasksConfigProviders.ToParam()
+		taskCfgProviders := config.TasksConfigProvidersConfig(godelCfg.TasksConfigProviders)
+		configProvidersParam, err := taskCfgProviders.ToParam()
 		if err != nil {
 			printErrAndExit(err, global.Debug)
 		}
@@ -66,11 +69,12 @@ func runGodelApp(osArgs []string) int {
 			printErrAndExit(err, global.Debug)
 		}
 		// combine base configuration with resolved configurations
-		godelCfg.TasksConfig.Combine(providedConfigs...)
-		tasksCfgInfo.TasksConfig = godelCfg.TasksConfig
+		tasksConfig := config.TasksConfig(godelCfg.TasksConfig)
+		tasksConfig.Combine(providedConfigs...)
+		tasksCfgInfo.TasksConfig = config.TasksConfig(godelCfg.TasksConfig)
 
 		// add default tasks
-		defaultTasksCfg := godellauncher.DefaultTasksPluginsConfig(godelCfg.DefaultTasks)
+		defaultTasksCfg := defaulttasks.PluginsConfig(config.DefaultTasksConfig(godelCfg.DefaultTasks))
 		defaultTasksParam, err := defaultTasksCfg.ToParam()
 		if err != nil {
 			printErrAndExit(err, global.Debug)
@@ -85,7 +89,8 @@ func runGodelApp(osArgs []string) int {
 		}
 
 		// add tasks provided by plugins
-		pluginsParam, err := godelCfg.Plugins.ToParam()
+		pluginsCfg := config.PluginsConfig(godelCfg.Plugins)
+		pluginsParam, err := pluginsCfg.ToParam()
 		if err != nil {
 			printErrAndExit(err, global.Debug)
 		}
@@ -96,7 +101,7 @@ func runGodelApp(osArgs []string) int {
 
 		if len(defaultTasksCfg.Plugins) != 0 && len(godelCfg.Plugins.Plugins) != 0 {
 			// verify that there are no conflicts
-			combinedCfg := godelCfg.Plugins
+			combinedCfg := config.PluginsConfig(godelCfg.Plugins)
 			combinedCfg.DefaultResolvers = append(combinedCfg.DefaultResolvers, godelCfg.Plugins.DefaultResolvers...)
 			combinedCfg.Plugins = append(combinedCfg.Plugins, godelCfg.Plugins.Plugins...)
 			combinedParam, err := combinedCfg.ToParam()
@@ -109,7 +114,7 @@ func runGodelApp(osArgs []string) int {
 		}
 
 		// add all upgrade tasks
-		allUpgradeConfigTasks = append(allUpgradeConfigTasks, godellauncher.BuiltinUpgradeConfigTasks()...)
+		allUpgradeConfigTasks = append(allUpgradeConfigTasks, defaulttasks.BuiltinUpgradeConfigTasks()...)
 		allUpgradeConfigTasks = append(allUpgradeConfigTasks, defaultUpgradeConfigTasks...)
 		allUpgradeConfigTasks = append(allUpgradeConfigTasks, pluginUpgradeConfigTasks...)
 	}
@@ -128,7 +133,7 @@ func runGodelApp(osArgs []string) int {
 	return 0
 }
 
-func createTasks(defaultTasks, pluginTasks []godellauncher.Task, upgradeConfigTasks []godellauncher.UpgradeConfigTask, tasksCfgInfo godellauncher.TasksConfigInfo) []godellauncher.Task {
+func createTasks(defaultTasks, pluginTasks []godellauncher.Task, upgradeConfigTasks []godellauncher.UpgradeConfigTask, tasksCfgInfo config.TasksConfigInfo) []godellauncher.Task {
 	var allTasks []godellauncher.Task
 	allTasks = append(allTasks, builtintasks.Tasks(tasksCfgInfo)...)
 	allTasks = append(allTasks, defaultTasks...)

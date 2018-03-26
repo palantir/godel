@@ -23,10 +23,11 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 
+	"github.com/palantir/godel/framework/godel/config"
 	"github.com/palantir/godel/framework/godellauncher"
 )
 
-func TasksConfigTask(tasksCfgInfo godellauncher.TasksConfigInfo) godellauncher.Task {
+func TasksConfigTask(tasksCfgInfo config.TasksConfigInfo) godellauncher.Task {
 	return godellauncher.CobraCLITask(&cobra.Command{
 		Use:   "tasks-config",
 		Short: "Prints the full YAML configuration used to load tasks and assets",
@@ -36,7 +37,7 @@ func TasksConfigTask(tasksCfgInfo godellauncher.TasksConfigInfo) godellauncher.T
 	}, nil)
 }
 
-func printTasksCfgInfo(tasksCfgInfo godellauncher.TasksConfigInfo, stdout io.Writer) error {
+func printTasksCfgInfo(tasksCfgInfo config.TasksConfigInfo, stdout io.Writer) error {
 	if err := printWithHeader("Built-in plugin configuration", tasksCfgInfo.BuiltinPluginsConfig, stdout); err != nil {
 		return err
 	}

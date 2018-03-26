@@ -28,6 +28,7 @@ import (
 
 	"github.com/palantir/godel/framework/artifactresolver"
 	"github.com/palantir/godel/framework/builtintasks/installupdate/layout"
+	"github.com/palantir/godel/framework/godel/config"
 	"github.com/palantir/godel/framework/godellauncher"
 	"github.com/palantir/godel/framework/internal/pathsinternal"
 	"github.com/palantir/godel/pkg/osarch"
@@ -41,7 +42,7 @@ import (
 // * Unmarshals all of the resolved configurations into godellauncher.TasksConfig structs.
 //
 // Returns all of the unmarshaled configurations.
-func LoadProvidedConfigurations(taskConfigProvidersParam godellauncher.TasksConfigProvidersParam, stdout io.Writer) ([]godellauncher.TasksConfig, error) {
+func LoadProvidedConfigurations(taskConfigProvidersParam godellauncher.TasksConfigProvidersParam, stdout io.Writer) ([]config.TasksConfig, error) {
 	gödelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create gödel home directory")
@@ -67,8 +68,8 @@ func LoadProvidedConfigurations(taskConfigProvidersParam godellauncher.TasksConf
 //   matches the specified checksum
 // * Unmarshal the downloaded YML as godellauncher.TasksConfig
 //   * If the unmarshal fails, return an error
-func resolveConfigProviders(configsDir, downloadsDir string, taskConfigProvidersParam godellauncher.TasksConfigProvidersParam, stdout io.Writer) ([]godellauncher.TasksConfig, error) {
-	var configs []godellauncher.TasksConfig
+func resolveConfigProviders(configsDir, downloadsDir string, taskConfigProvidersParam godellauncher.TasksConfigProvidersParam, stdout io.Writer) ([]config.TasksConfig, error) {
+	var configs []config.TasksConfig
 	providerErrors := make(map[artifactresolver.Locator]error)
 	for _, currProvider := range taskConfigProvidersParam.ConfigProviders {
 		currProviderLocator, ok := resolveAndVerifyConfigProvider(
@@ -164,17 +165,17 @@ func resolveAndVerifyConfigProvider(
 	return currLocator, true
 }
 
-func readConfigFromProvider(locator artifactresolver.Locator, configsDir string) (godellauncher.TasksConfig, error) {
+func readConfigFromProvider(locator artifactresolver.Locator, configsDir string) (config.TasksConfig, error) {
 	cfgPath := path.Join(configsDir, pathsinternal.ConfigProviderFileName(locator))
 
 	cfgBytes, err := ioutil.ReadFile(cfgPath)
 	if err != nil {
-		return godellauncher.TasksConfig{}, errors.Wrapf(err, "failed to read %s", cfgPath)
+		return config.TasksConfig{}, errors.Wrapf(err, "failed to read %s", cfgPath)
 	}
 
-	var tasksCfg godellauncher.TasksConfig
+	var tasksCfg config.TasksConfig
 	if err := yaml.Unmarshal(cfgBytes, &tasksCfg); err != nil {
-		return godellauncher.TasksConfig{}, errors.Wrapf(err, "failed to unmarshal %q as godellauncher.GodelConfig", string(cfgBytes))
+		return config.TasksConfig{}, errors.Wrapf(err, "failed to unmarshal %q as godellauncher.GodelConfig", string(cfgBytes))
 	}
 	return tasksCfg, nil
 }
