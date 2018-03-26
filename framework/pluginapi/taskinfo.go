@@ -66,8 +66,9 @@ func TaskInfoCommand(command ...string) TaskInfoParam {
 	})
 }
 
-func TaskInfoVerifyOptions(verifyOpts VerifyOptions) TaskInfoParam {
+func TaskInfoVerifyOptions(params ...VerifyOptionsParam) TaskInfoParam {
 	return taskInfoParamFunc(func(impl *taskInfoImpl) {
+		verifyOpts := newVerifyOptionsImpl(params...)
 		var verifyImpls []verifyFlagImpl
 		for _, v := range verifyOpts.VerifyTaskFlags() {
 			verifyImpls = append(verifyImpls, verifyFlagImpl{
