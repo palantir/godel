@@ -28,7 +28,7 @@ import (
 
 	"github.com/palantir/godel/framework/builtintasks"
 	"github.com/palantir/godel/framework/godellauncher"
-	"github.com/palantir/godel/framework/pluginapi"
+	"github.com/palantir/godel/framework/pluginapi/v2/pluginapi"
 )
 
 var echoPluginTmpl = fmt.Sprintf(`#!/bin/sh
@@ -41,13 +41,15 @@ echo $@
 `, pluginapi.PluginInfoCommandName, `%s`)
 
 func TestNewPluginInfo(t *testing.T) {
-	info, err := pluginapi.NewPluginInfo("group", "product", "1.0.0",
+	info, err := pluginapi.NewPluginInfo("group", "product-plugin", "1.0.0",
 		pluginapi.PluginInfoUsesConfigFile(),
 	)
 	require.NoError(t, err)
 
 	assert.Equal(t, pluginapi.CurrentSchemaVersion, info.PluginSchemaVersion())
-	assert.Equal(t, "group:product:1.0.0", info.ID())
+	assert.Equal(t, "group", info.Group())
+	assert.Equal(t, "product-plugin", info.Product())
+	assert.Equal(t, "1.0.0", info.Version())
 	assert.Nil(t, info.Tasks("", nil))
 	assert.Nil(t, info.UpgradeConfigTask("", nil))
 }
@@ -59,22 +61,22 @@ func TestPluginInfoJSONMarshal(t *testing.T) {
 		want                    string
 	}{
 		{
-			"group", "product", "1.0.0",
+			"group", "product-plugin", "1.0.0",
 			[]pluginapi.PluginInfoParam{
 				pluginapi.PluginInfoUsesConfigFile(),
 			},
-			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"product.yml","tasks":null,"upgradeTask":null}`,
+			`{"pluginSchemaVersion":"2","group":"group","product":"product-plugin","version":"1.0.0","usesConfig":true,"tasks":null,"upgradeTask":null}`,
 		},
 		{
-			"group", "product", "1.0.0",
+			"group", "product-plugin", "1.0.0",
 			[]pluginapi.PluginInfoParam{
 				pluginapi.PluginInfoUsesConfigFile(),
 				pluginapi.PluginInfoTaskInfo("foo", "does foo things"),
 			},
-			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"product.yml","tasks":[{"name":"foo","description":"does foo things","command":null,"globalFlagOptions":null,"verifyOptions":null}],"upgradeTask":null}`,
+			`{"pluginSchemaVersion":"2","group":"group","product":"product-plugin","version":"1.0.0","usesConfig":true,"tasks":[{"name":"foo","description":"does foo things","command":null,"globalFlagOptions":null,"verifyOptions":null}],"upgradeTask":null}`,
 		},
 		{
-			"group", "product", "1.0.0",
+			"group", "product-plugin", "1.0.0",
 			[]pluginapi.PluginInfoParam{
 				pluginapi.PluginInfoUsesConfigFile(),
 				pluginapi.PluginInfoTaskInfo("foo", "does foo things",
@@ -82,10 +84,10 @@ func TestPluginInfoJSONMarshal(t *testing.T) {
 					pluginapi.TaskInfoVerifyOptions(),
 				),
 			},
-			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"product.yml","tasks":[{"name":"foo","description":"does foo things","command":["foo"],"globalFlagOptions":null,"verifyOptions":{"verifyTaskFlags":null,"ordering":null,"applyTrueArgs":null,"applyFalseArgs":null}}],"upgradeTask":null}`,
+			`{"pluginSchemaVersion":"2","group":"group","product":"product-plugin","version":"1.0.0","usesConfig":true,"tasks":[{"name":"foo","description":"does foo things","command":["foo"],"globalFlagOptions":null,"verifyOptions":{"verifyTaskFlags":null,"ordering":null,"applyTrueArgs":null,"applyFalseArgs":null}}],"upgradeTask":null}`,
 		},
 		{
-			"group", "product", "1.0.0",
+			"group", "product-plugin", "1.0.0",
 			[]pluginapi.PluginInfoParam{
 				pluginapi.PluginInfoUsesConfigFile(),
 				pluginapi.PluginInfoGlobalFlagOptions(
@@ -96,7 +98,7 @@ func TestPluginInfoJSONMarshal(t *testing.T) {
 					pluginapi.TaskInfoVerifyOptions(),
 				),
 			},
-			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"product.yml","tasks":[{"name":"foo","description":"does foo things","command":["foo"],"globalFlagOptions":{"debugFlag":"","projectDirFlag":"--project-dir","godelConfigFlag":"","configFlag":""},"verifyOptions":{"verifyTaskFlags":null,"ordering":null,"applyTrueArgs":null,"applyFalseArgs":null}}],"upgradeTask":null}`,
+			`{"pluginSchemaVersion":"2","group":"group","product":"product-plugin","version":"1.0.0","usesConfig":true,"tasks":[{"name":"foo","description":"does foo things","command":["foo"],"globalFlagOptions":{"debugFlag":"","projectDirFlag":"--project-dir","godelConfigFlag":"","configFlag":""},"verifyOptions":{"verifyTaskFlags":null,"ordering":null,"applyTrueArgs":null,"applyFalseArgs":null}}],"upgradeTask":null}`,
 		},
 	} {
 		info, err := pluginapi.NewPluginInfo(tc.group, tc.product, tc.version, tc.params...)
@@ -105,7 +107,7 @@ func TestPluginInfoJSONMarshal(t *testing.T) {
 		bytes, err := json.Marshal(info)
 		require.NoError(t, err, "Case %d", i)
 
-		assert.Equal(t, tc.want, string(bytes), "Case %d", i)
+		assert.Equal(t, tc.want, string(bytes), "Case %d\nGot:\n%s", i, string(bytes))
 	}
 }
 
@@ -118,28 +120,20 @@ func TestNewPluginInfoError(t *testing.T) {
 	}{
 		{
 			"plugins cannot provide multiple tasks with the same name",
-			"group", "product", "1.0.0",
+			"group", "product-plugin", "1.0.0",
 			[]pluginapi.PluginInfoParam{
 				pluginapi.PluginInfoTaskInfo("name", "description"),
 				pluginapi.PluginInfoTaskInfo("name", "description-2"),
 			},
-			`plugin group:product:1.0.0 specifies multiple tasks with name "name"`,
+			`plugin group:product-plugin:1.0.0 specifies multiple tasks with name "name"`,
 		},
 		{
 			"plugin cannot provide upgrade task if it does not use configuration",
-			"group", "product", "1.0.0",
+			"group", "product-plugin", "1.0.0",
 			[]pluginapi.PluginInfoParam{
 				pluginapi.PluginInfoUpgradeConfigTaskInfo(pluginapi.UpgradeConfigTaskInfoCommand("upgrade-task")),
 			},
-			`plugin group:product:1.0.0 provides a configuration upgrade task but does not specify that it uses configuration`,
-		},
-		{
-			"plugin cannot have a name that conflicts with a reserved config file name",
-			"group", "generate", "1.0.0",
-			[]pluginapi.PluginInfoParam{
-				pluginapi.PluginInfoUsesConfigFile(),
-			},
-			`plugin group:generate:1.0.0 uses configuration file generate.yml, which is a reserved name. Use a different name if possible. If this is not possible, please file an issue for discussion.`,
+			`plugin group:product-plugin:1.0.0 provides a configuration upgrade task but does not specify that it uses configuration`,
 		},
 	} {
 		_, err := pluginapi.NewPluginInfo(tc.group, tc.product, tc.version, tc.params...)
@@ -221,7 +215,7 @@ func TestRunPluginFromInfo(t *testing.T) {
 			},
 			0,
 			func(assetDir string) string {
-				return "--project-dir ../.. --godel-config ../../godel/config/godel.yml --config ../../godel/config/echo.yml --echo-bool-flag -f echo-str-flag-val echo-arg\n"
+				return "--project-dir ../.. --godel-config ../../godel/config/godel.yml --config ../../godel/config/echo-plugin.yml --echo-bool-flag -f echo-str-flag-val echo-arg\n"
 			},
 		},
 		{
@@ -247,7 +241,7 @@ func TestRunPluginFromInfo(t *testing.T) {
 			},
 		},
 	} {
-		pluginInfo, err := pluginapi.NewPluginInfo("group", "echo", "1.0.0",
+		pluginInfo, err := pluginapi.NewPluginInfo("group", "echo-plugin", "1.0.0",
 			append([]pluginapi.PluginInfoParam{
 				pluginapi.PluginInfoUsesConfigFile(),
 				pluginapi.PluginInfoTaskInfo("echo", "echoes the provided input"),
@@ -349,7 +343,7 @@ func TestRunPluginVerify(t *testing.T) {
 			"Running echo...\n--project-dir . verify-subcmd --apply\n",
 		},
 	} {
-		pluginInfo, err := pluginapi.NewPluginInfo("group", "echo", "1.0.0",
+		pluginInfo, err := pluginapi.NewPluginInfo("group", "echo-plugin", "1.0.0",
 			append([]pluginapi.PluginInfoParam{
 				pluginapi.PluginInfoUsesConfigFile(),
 				pluginapi.PluginInfoTaskInfo("echo", "echoes the provided input", tc.taskInfoParams...),

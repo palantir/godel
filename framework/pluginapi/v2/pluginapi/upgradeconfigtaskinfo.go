@@ -32,6 +32,9 @@ import (
 type UpgradeConfigTaskInfo interface {
 	Command() []string
 	GlobalFlagOptions() GlobalFlagOptions
+	// LegacyConfigFile returns the name of the legacy configuration file (the name of the configuration file used in
+	// version 1 of gödel). Blank if this plugin does not have a legacy file or does not support upgrading legacy files.
+	LegacyConfigFile() string
 	toTask(pluginExecPath, cfgFileName string, assets []string) godellauncher.UpgradeConfigTask
 }
 
@@ -51,13 +54,22 @@ func UpgradeConfigTaskInfoCommand(command ...string) UpgradeConfigTaskInfoParam 
 	})
 }
 
+func LegacyConfigFile(legacyConfigFile string) UpgradeConfigTaskInfoParam {
+	return upgradeConfigTaskInfoParamFunc(func(impl *upgradeConfigTaskInfoImpl) {
+		impl.LegacyConfigFile = legacyConfigFile
+	})
+}
+
 // upgradeConfigTaskInfoImpl is a concrete implementation of UpgradeConfigTaskInfo. Note that the functions are defined
 // on non-pointer receivers to reduce bugs in calling functions in closures.
 type upgradeConfigTaskInfoImpl struct {
-	// PluginID is the identifier for the plugin of the form "groupID:productID" ("com.palantir.format-plugin:format-plugin")
-	PluginID string `json:"pluginId"`
+	// GroupID is the group ID of the plugin.
+	GroupID string `json:"groupId"`
+	// ProductID is the product ID of the plugin.
+	ProductID string `json:"productId"`
 	// CommandVar stores the commands to invoke to run the "upgrade-config" task
 	CommandVar           []string               `json:"command"`
+	LegacyConfigFile     string                 `json:"legacyConfigFile"`
 	GlobalFlagOptionsVar *globalFlagOptionsImpl `json:"globalFlagOptions"`
 }
 
@@ -92,9 +104,10 @@ func (ti upgradeConfigTaskInfoImpl) toTask(pluginExecPath, cfgFileName string, a
 		globalFlagOpts = ti.GlobalFlagOptionsVar.toGodelGlobalFlagOptions()
 	}
 	return godellauncher.UpgradeConfigTask{
-		ID:             ti.PluginID,
-		ConfigFile:     cfgFileName,
-		GlobalFlagOpts: globalFlagOpts,
+		ID:               ti.GroupID + ":" + ti.ProductID,
+		ConfigFile:       cfgFileName,
+		LegacyConfigFile: ti.LegacyConfigFile,
+		GlobalFlagOpts:   globalFlagOpts,
 		RunImpl: func(t *godellauncher.UpgradeConfigTask, global godellauncher.GlobalConfig, configBytes []byte, stdout io.Writer) ([]byte, error) {
 			cmdArgs, err := globalFlagArgs(t.GlobalFlagOpts, t.ConfigFile, global)
 			if err != nil {

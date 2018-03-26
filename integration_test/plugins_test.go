@@ -34,7 +34,7 @@ import (
 	"github.com/palantir/godel/framework/builtintasks"
 	"github.com/palantir/godel/framework/builtintasks/installupdate/layout"
 	"github.com/palantir/godel/framework/godellauncher"
-	"github.com/palantir/godel/framework/pluginapi"
+	"github.com/palantir/godel/framework/pluginapi/v2/pluginapi"
 	"github.com/palantir/godel/pkg/osarch"
 )
 
@@ -48,7 +48,7 @@ echo $@
 `, pluginapi.PluginInfoCommandName, `%s`)
 
 func TestPlugins(t *testing.T) {
-	pluginName := fmt.Sprintf("tester-integration-%d-%d", time.Now().Unix(), rand.Int())
+	pluginName := fmt.Sprintf("tester-integration-%d-%d-plugin", time.Now().Unix(), rand.Int())
 
 	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
 	src := `package main
@@ -140,7 +140,7 @@ Running echo-task...
 }
 
 func TestPluginsWithAssets(t *testing.T) {
-	pluginName := fmt.Sprintf("tester-integration-%d-%d", time.Now().Unix(), rand.Int())
+	pluginName := fmt.Sprintf("tester-integration-%d-%d-plugin", time.Now().Unix(), rand.Int())
 	assetName := pluginName + "-asset"
 
 	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)

@@ -29,7 +29,6 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/palantir/godel/framework/godellauncher"
-	"github.com/palantir/godel/framework/internal/legacyplugins"
 )
 
 func UpgradeLegacyConfigTask(upgradeTasks []godellauncher.UpgradeConfigTask) godellauncher.Task {
@@ -86,11 +85,14 @@ func UpgradeLegacyConfigTask(upgradeTasks []godellauncher.UpgradeConfigTask) god
 					upgradeTasksMap[upgradeTask.ID] = upgradeTask
 				}
 
-				var legacyConfigUpgraderKeys []string
-				for k := range legacyplugins.LegacyConfigUpgraders {
-					legacyConfigUpgraderKeys = append(legacyConfigUpgraderKeys, k)
+				var legacyConfigUpgraderIDs []string
+				for _, upgradeTask := range upgradeTasks {
+					if upgradeTask.LegacyConfigFile == "" {
+						continue
+					}
+					legacyConfigUpgraderIDs = append(legacyConfigUpgraderIDs, upgradeTask.ID)
 				}
-				sort.Strings(legacyConfigUpgraderKeys)
+				sort.Strings(legacyConfigUpgraderIDs)
 
 				var failedUpgrades []string
 				// perform hard-coded one-time upgraders
@@ -100,7 +102,7 @@ func UpgradeLegacyConfigTask(upgradeTasks []godellauncher.UpgradeConfigTask) god
 					}
 					upgradedYMLFiles[currUpgrader.configFileName()] = struct{}{}
 				}
-				for _, k := range legacyConfigUpgraderKeys {
+				for _, k := range legacyConfigUpgraderIDs {
 					upgradeTask, ok := upgradeTasksMap[k]
 					if !ok {
 						// legacy task does not have an upgrader: continue
@@ -281,7 +283,7 @@ func (u *hardCodedLegacyUpgraderImpl) upgradeConfig(configDirPath string, dryRun
 }
 
 func upgradeLegacyConfig(upgradeTask godellauncher.UpgradeConfigTask, configDirPath string, global godellauncher.GlobalConfig, dryRun, printContent bool, stdout io.Writer) error {
-	legacyConfigFilePath := path.Join(configDirPath, legacyplugins.LegacyConfigUpgraders[upgradeTask.ID].LegacyConfigFileName)
+	legacyConfigFilePath := path.Join(configDirPath, upgradeTask.LegacyConfigFile)
 	if _, err := os.Stat(legacyConfigFilePath); os.IsNotExist(err) {
 		// if legacy file does not exist, there is no upgrade to be performed
 		return nil
