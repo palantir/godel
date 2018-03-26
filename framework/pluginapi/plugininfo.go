@@ -22,7 +22,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/palantir/godel/framework/godellauncher"
-	"github.com/palantir/godel/framework/internal/legacyplugins"
 )
 
 const (
@@ -41,9 +40,6 @@ type PluginInfo interface {
 	ConfigFileName() string
 	// Tasks returns the tasks provided by the plugin. Requires the path to the plugin executable and assets as input.
 	Tasks(pluginExecPath string, assets []string) []godellauncher.Task
-	// UpgradeConfigTask returns the task that upgrades the configuration for this plugin. Returns nil if the plugin
-	// does not support upgrading configuration.
-	UpgradeConfigTask(pluginExecPath string, assets []string) *godellauncher.UpgradeConfigTask
 
 	// private function on interface to keep implementation private to package.
 	private()
@@ -75,10 +71,6 @@ func NewPluginInfo(group, product, version string, params ...PluginInfoParam) (P
 	for i := range builder.tasks {
 		builder.tasks[i].GlobalFlagOptionsVar = builder.globalFlagOpts
 	}
-	if builder.upgradeConfigTask != nil {
-		builder.upgradeConfigTask.PluginID = fmt.Sprintf("%s:%s", group, product)
-		builder.upgradeConfigTask.GlobalFlagOptionsVar = builder.globalFlagOpts
-	}
 
 	taskNameMap := make(map[string]struct{})
 	for _, task := range builder.tasks {
@@ -93,28 +85,18 @@ func NewPluginInfo(group, product, version string, params ...PluginInfoParam) (P
 		configFileName = product + ".yml"
 	}
 
-	if builder.upgradeConfigTask != nil && !builder.usesConfigFile {
-		return nil, errors.Errorf(`plugin %s provides a configuration upgrade task but does not specify that it uses configuration`, id)
-	}
-
-	if _, ok := legacyplugins.ReservedConfigFileNames()[configFileName]; ok {
-		return nil, errors.Errorf(`plugin %s uses configuration file %s, which is a reserved name. Use a different name if possible. If this is not possible, please file an issue for discussion.`, id, configFileName)
-	}
-
 	return pluginInfoImpl{
 		PluginSchemaVersionVar: CurrentSchemaVersion,
-		IDVar:                id,
-		ConfigFileNameVar:    configFileName,
-		TasksVar:             builder.tasks,
-		UpgradeConfigTaskVar: builder.upgradeConfigTask,
+		IDVar:             id,
+		ConfigFileNameVar: configFileName,
+		TasksVar:          builder.tasks,
 	}, nil
 }
 
 type pluginInfoBuilder struct {
-	usesConfigFile    bool
-	tasks             []taskInfoImpl
-	globalFlagOpts    *globalFlagOptionsImpl
-	upgradeConfigTask *upgradeConfigTaskInfoImpl
+	usesConfigFile bool
+	tasks          []taskInfoImpl
+	globalFlagOpts *globalFlagOptionsImpl
 }
 
 type PluginInfoParam interface {
@@ -155,16 +137,6 @@ func PluginInfoGlobalFlagOptions(params ...GlobalFlagOptionsParam) PluginInfoPar
 	})
 }
 
-func PluginInfoUpgradeConfigTaskInfo(params ...UpgradeConfigTaskInfoParam) PluginInfoParam {
-	return pluginInfoParamFunc(func(impl *pluginInfoBuilder) error {
-		if len(params) == 0 {
-			return errors.Errorf("at least one param must be provided for upgrade configuration")
-		}
-		impl.upgradeConfigTask = newUpgradeConfigTaskInfoImpl(params...)
-		return nil
-	})
-}
-
 // pluginInfoImpl is a concrete implementation of Info. Note that the functions are defined on non-pointer receivers to reduce
 // bugs in calling functions in closures.
 type pluginInfoImpl struct {
@@ -175,8 +147,6 @@ type pluginInfoImpl struct {
 	ConfigFileNameVar string `json:"configFileName"`
 	// The tasks provided by the plugin.
 	TasksVar []taskInfoImpl `json:"tasks"`
-	// The configuration upgrade task provided by the plugin.
-	UpgradeConfigTaskVar *upgradeConfigTaskInfoImpl `json:"upgradeTask"`
 }
 
 func (infoImpl pluginInfoImpl) PluginSchemaVersion() string {
@@ -199,14 +169,6 @@ func (infoImpl pluginInfoImpl) Tasks(pluginExecPath string, assets []string) []g
 	return tasks
 }
 
-func (infoImpl pluginInfoImpl) UpgradeConfigTask(pluginExecPath string, assets []string) *godellauncher.UpgradeConfigTask {
-	if infoImpl.UpgradeConfigTaskVar == nil {
-		return nil
-	}
-	taskVar := infoImpl.UpgradeConfigTaskVar.toTask(pluginExecPath, infoImpl.ConfigFileNameVar, assets)
-	return &taskVar
-}
-
 func (infoImpl pluginInfoImpl) private() {}
 
 // InfoFromPlugin returns the Info for the plugin at the specified path. Does so by invoking the InfoCommand on the
@@ -218,9 +180,17 @@ func InfoFromPlugin(pluginPath string) (PluginInfo, error) {
 		return nil, errors.Wrapf(err, "command %v failed.\nError:\n%v\nOutput:\n%s\n", cmd.Args, err, string(bytes))
 	}
 
+	info, err := InfoFromBytes(bytes)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to unmarshal plugin information for plugin %s", pluginPath)
+	}
+	return info, nil
+}
+
+func InfoFromBytes(infoBytes []byte) (PluginInfo, error) {
 	var info pluginInfoImpl
-	if err := json.Unmarshal(bytes, &info); err != nil {
-		return nil, errors.Wrapf(err, "failed to unmarshal plugin information for plugin %s from output %q", pluginPath, string(bytes))
+	if err := json.Unmarshal(infoBytes, &info); err != nil {
+		return nil, errors.Wrapf(err, "failed to unmarshal plugin information from output %q", string(infoBytes))
 	}
 	return info, nil
 }

@@ -34,7 +34,7 @@ import (
 
 	"github.com/palantir/godel/framework/builtintasks"
 	"github.com/palantir/godel/framework/godellauncher"
-	"github.com/palantir/godel/framework/pluginapi"
+	"github.com/palantir/godel/framework/pluginapi/v2/pluginapi"
 )
 
 // RunUpgradeConfig runs the "upgrade-config" task with the provided plugin and assets loaded. The plugin is loaded in

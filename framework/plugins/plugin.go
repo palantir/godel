@@ -27,7 +27,7 @@ import (
 	"github.com/palantir/godel/framework/artifactresolver"
 	"github.com/palantir/godel/framework/godellauncher"
 	"github.com/palantir/godel/framework/internal/pathsinternal"
-	"github.com/palantir/godel/framework/pluginapi"
+	"github.com/palantir/godel/framework/pluginapi/v2/pluginapi"
 	"github.com/palantir/godel/pkg/osarch"
 )
 
@@ -320,9 +320,7 @@ func verifySinglePluginCompatibility(plugin artifactresolver.Locator, plugins ma
 		if plugin.Product == otherPlugin.Product {
 			// if product names are the same, verify that they do not both use configuration (if they do, the
 			// configuration files will conflict)
-			currPluginUsesConfig := plugins[plugin].PluginInfo.ConfigFileName() != ""
-			otherPluginUsesConfig := otherPluginInfo.PluginInfo.ConfigFileName() != ""
-			if currPluginUsesConfig && otherPluginUsesConfig {
+			if plugins[plugin].PluginInfo.UsesConfig() && otherPluginInfo.PluginInfo.UsesConfig() {
 				errs[otherPlugin] = fmt.Errorf("plugins have the same product name and both use configuration (this not currently supported -- if this situation is encountered, please file an issue to flag it)")
 				continue
 			}

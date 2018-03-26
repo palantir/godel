@@ -23,8 +23,11 @@ type UpgradeConfigTask struct {
 	// "com.palantir.format-plugin:format-plugin", etc.).
 	ID string
 
-	// The name of the configuration file for the task ("godel.yml", "okgo-plugin.yml" etc.).
+	// The name of the configuration file for the task ("godel.yml", "check-plugin.yml" etc.).
 	ConfigFile string
+
+	// The name of the legacy configuration file for the task. Blank if none exists.
+	LegacyConfigFile string
 
 	// Configures the manner in which the global flags are processed.
 	GlobalFlagOpts GlobalFlagOptions
