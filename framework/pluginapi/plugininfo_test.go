@@ -79,7 +79,7 @@ func TestPluginInfoJSONMarshal(t *testing.T) {
 				pluginapi.PluginInfoUsesConfigFile(),
 				pluginapi.PluginInfoTaskInfo("foo", "does foo things",
 					pluginapi.TaskInfoCommand("foo"),
-					pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions()),
+					pluginapi.TaskInfoVerifyOptions(),
 				),
 			},
 			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"product.yml","tasks":[{"name":"foo","description":"does foo things","command":["foo"],"globalFlagOptions":null,"verifyOptions":{"verifyTaskFlags":null,"ordering":null,"applyTrueArgs":null,"applyFalseArgs":null}}],"upgradeTask":null}`,
@@ -93,7 +93,7 @@ func TestPluginInfoJSONMarshal(t *testing.T) {
 				),
 				pluginapi.PluginInfoTaskInfo("foo", "does foo things",
 					pluginapi.TaskInfoCommand("foo"),
-					pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions()),
+					pluginapi.TaskInfoVerifyOptions(),
 				),
 			},
 			`{"pluginSchemaVersion":"1","id":"group:product:1.0.0","configFileName":"product.yml","tasks":[{"name":"foo","description":"does foo things","command":["foo"],"globalFlagOptions":{"debugFlag":"","projectDirFlag":"--project-dir","godelConfigFlag":"","configFlag":""},"verifyOptions":{"verifyTaskFlags":null,"ordering":null,"applyTrueArgs":null,"applyFalseArgs":null}}],"upgradeTask":null}`,
@@ -303,10 +303,10 @@ func TestRunPluginVerify(t *testing.T) {
 			nil,
 			[]pluginapi.TaskInfoParam{
 				pluginapi.TaskInfoCommand("verify-subcmd"),
-				pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions(
+				pluginapi.TaskInfoVerifyOptions(
 					pluginapi.VerifyOptionsApplyFalseArgs("--no-apply"),
 					pluginapi.VerifyOptionsApplyTrueArgs("--apply"),
-				)),
+				),
 			},
 			godellauncher.GlobalConfig{
 				TaskArgs: []string{"verify"},
@@ -318,10 +318,10 @@ func TestRunPluginVerify(t *testing.T) {
 			nil,
 			[]pluginapi.TaskInfoParam{
 				pluginapi.TaskInfoCommand("verify-subcmd"),
-				pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions(
+				pluginapi.TaskInfoVerifyOptions(
 					pluginapi.VerifyOptionsApplyFalseArgs("--no-apply"),
 					pluginapi.VerifyOptionsApplyTrueArgs("--apply"),
-				)),
+				),
 			},
 			godellauncher.GlobalConfig{
 				TaskArgs: []string{"verify", "--apply=false"},
@@ -337,10 +337,10 @@ func TestRunPluginVerify(t *testing.T) {
 			},
 			[]pluginapi.TaskInfoParam{
 				pluginapi.TaskInfoCommand("verify-subcmd"),
-				pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions(
+				pluginapi.TaskInfoVerifyOptions(
 					pluginapi.VerifyOptionsApplyFalseArgs("--no-apply"),
 					pluginapi.VerifyOptionsApplyTrueArgs("--apply"),
-				)),
+				),
 			},
 			godellauncher.GlobalConfig{
 				TaskArgs: []string{"verify"},

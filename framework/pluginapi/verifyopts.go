@@ -79,7 +79,7 @@ func VerifyOptionsApplyFalseArgs(args ...string) VerifyOptionsParam {
 	})
 }
 
-func NewVerifyOptions(params ...VerifyOptionsParam) VerifyOptions {
+func newVerifyOptionsImpl(params ...VerifyOptionsParam) verifyOptionsImpl {
 	vOpts := verifyOptionsImpl{}
 	for _, p := range params {
 		if p == nil {

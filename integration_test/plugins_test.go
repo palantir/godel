@@ -92,9 +92,9 @@ plugins:
 			"echo-task",
 			"Echoes input",
 			pluginapi.TaskInfoCommand("echo"),
-			pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions(
+			pluginapi.TaskInfoVerifyOptions(
 				pluginapi.VerifyOptionsApplyFalseArgs("--verify"),
-			)),
+			),
 		),
 	)
 	pluginInfoJSON, err := json.Marshal(pluginInfo)
@@ -192,9 +192,9 @@ plugins:
 			"echo-task",
 			"Echoes input",
 			pluginapi.TaskInfoCommand("echo"),
-			pluginapi.TaskInfoVerifyOptions(pluginapi.NewVerifyOptions(
+			pluginapi.TaskInfoVerifyOptions(
 				pluginapi.VerifyOptionsApplyFalseArgs("--verify"),
-			)),
+			),
 		),
 	)
 	pluginInfoJSON, err := json.Marshal(pluginInfo)
