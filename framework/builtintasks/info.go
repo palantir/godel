@@ -15,10 +15,6 @@
 package builtintasks
 
 import (
-	"io/ioutil"
-	"os"
-	"path"
-
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -41,7 +37,7 @@ func InfoTask() godellauncher.Task {
 			if err != nil {
 				return err
 			}
-			godelCfg, err := ReadGodelConfigFromProjectDir(projectDir)
+			godelCfg, err := config.ReadGodelConfigFromProjectDir(projectDir)
 			if err != nil {
 				return err
 			}
@@ -54,32 +50,4 @@ func InfoTask() godellauncher.Task {
 		},
 	})
 	return godellauncher.CobraCLITask(cmd, &globalCfg)
-}
-
-// ReadGodelConfigFromProjectDir reads the gödel configuration from the "godel.yml" file in the configuration file for
-// the gödel project with the specified project directory and returns it.
-func ReadGodelConfigFromProjectDir(projectDir string) (config.GodelConfig, error) {
-	cfgDir, err := godellauncher.ConfigDirPath(projectDir)
-	if err != nil {
-		return config.GodelConfig{}, err
-	}
-	return readGodelConfig(path.Join(cfgDir, godellauncher.GodelConfigYML))
-}
-
-func readGodelConfig(cfgFile string) (config.GodelConfig, error) {
-	var godelCfg config.GodelConfig
-	if _, err := os.Stat(cfgFile); err == nil {
-		bytes, err := ioutil.ReadFile(cfgFile)
-		if err != nil {
-			return config.GodelConfig{}, errors.Wrapf(err, "failed to read file %s", cfgFile)
-		}
-		upgradedBytes, err := config.UpgradeConfig(bytes)
-		if err != nil {
-			return config.GodelConfig{}, errors.Wrapf(err, "failed to upgrade configuration")
-		}
-		if err := yaml.Unmarshal(upgradedBytes, &godelCfg); err != nil {
-			return config.GodelConfig{}, errors.Wrapf(err, "failed to unmarshal gödel config YAML")
-		}
-	}
-	return godelCfg, nil
 }

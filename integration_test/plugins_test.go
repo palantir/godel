@@ -31,8 +31,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
 
-	"github.com/palantir/godel/framework/builtintasks"
 	"github.com/palantir/godel/framework/builtintasks/installupdate/layout"
+	"github.com/palantir/godel/framework/godel/config"
 	"github.com/palantir/godel/framework/godellauncher"
 	"github.com/palantir/godel/framework/pluginapi/v2/pluginapi"
 	"github.com/palantir/godel/pkg/osarch"
@@ -62,7 +62,7 @@ func main() {
 	err := ioutil.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
-	cfg, err := builtintasks.ReadGodelConfigFromProjectDir(testProjectDir)
+	cfg, err := config.ReadGodelConfigFromProjectDir(testProjectDir)
 	require.NoError(t, err)
 
 	cfgContent := fmt.Sprintf(`
@@ -155,7 +155,7 @@ func main() {
 	err := ioutil.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
-	cfg, err := builtintasks.ReadGodelConfigFromProjectDir(testProjectDir)
+	cfg, err := config.ReadGodelConfigFromProjectDir(testProjectDir)
 	require.NoError(t, err)
 
 	cfgContent := fmt.Sprintf(`

@@ -54,7 +54,7 @@ func runGodelApp(osArgs []string) int {
 	var allUpgradeConfigTasks []godellauncher.UpgradeConfigTask
 	var defaultTasks, pluginTasks []godellauncher.Task
 	if global.Wrapper != "" {
-		godelCfg, err := builtintasks.ReadGodelConfigFromProjectDir(path.Dir(global.Wrapper))
+		godelCfg, err := config.ReadGodelConfigFromProjectDir(path.Dir(global.Wrapper))
 		if err != nil {
 			printErrAndExit(err, global.Debug)
 		}
