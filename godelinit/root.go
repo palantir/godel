@@ -15,9 +15,10 @@
 package main
 
 import (
+	"os"
+	"path"
 	"time"
 
-	"github.com/nmiyake/pkg/dirs"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
@@ -26,9 +27,10 @@ import (
 
 func rootCmd() *cobra.Command {
 	var (
-		versionFlag       string
-		checksumFlag      string
-		cacheDurationFlag time.Duration
+		versionFlag           string
+		checksumFlag          string
+		cacheDurationFlag     time.Duration
+		skipUpgradeConfigFlag bool
 	)
 
 	cmd := &cobra.Command{
@@ -38,16 +40,59 @@ func rootCmd() *cobra.Command {
 The default behavior adds the newest release of godel on GitHub (https://github.com/palantir/godel/releases)
 to the project. If a specific version of godel is desired, it can be specified using the '--version' flag.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			wd, err := dirs.GetwdEvalSymLinks()
+			projectDir, err := os.Getwd()
 			if err != nil {
 				return errors.Wrapf(err, "failed to determine working directory")
 			}
-			return installupdate.InstallVersion(wd, versionFlag, checksumFlag, cacheDurationFlag, true, cmd.OutOrStdout())
+
+			// if current directory does not contain "godelw" wrapper, don't bother trying to upgrade configuration
+			if _, err := os.Stat(path.Join(projectDir, "godelw")); err != nil {
+				skipUpgradeConfigFlag = true
+			}
+
+			// determine version before install
+			var godelVersionBeforeUpdate installupdate.Version
+			if !skipUpgradeConfigFlag {
+				versionBeforeUpdateVar, err := installupdate.GodelVersion(projectDir)
+				if err != nil {
+					return errors.Wrapf(err, "failed to determine version before update")
+				}
+				godelVersionBeforeUpdate = versionBeforeUpdateVar
+			}
+
+			// perform install
+			if err := installupdate.InstallVersion(projectDir, versionFlag, checksumFlag, cacheDurationFlag, true, cmd.OutOrStdout()); err != nil {
+				return err
+			}
+
+			// run configuration upgrade if needed
+			if !skipUpgradeConfigFlag {
+				godelVersionAfterUpdate, err := installupdate.GodelVersion(projectDir)
+				if err != nil {
+					return errors.Wrapf(err, "failed to determine version after update")
+				}
+
+				if godelVersionBeforeUpdate.MajorVersionNum() <= 1 && godelVersionAfterUpdate.MajorVersionNum() >= 2 {
+					// if going from <=1 to >=2, run "upgrade-legacy-config" task to upgrade configuration
+					if err := installupdate.RunUpgradeLegacyConfig(projectDir, cmd.OutOrStdout(), cmd.OutOrStderr()); err != nil {
+						return err
+					}
+				} else if godelVersionBeforeUpdate.MajorVersionNum() >= 2 {
+					// if previous version is >=2 and new version is >= previous version, run "upgrade-config"
+					if cmp, ok := godelVersionAfterUpdate.CompareTo(godelVersionBeforeUpdate); !ok || cmp >= 0 {
+						if err := installupdate.RunUpgradeConfig(projectDir, cmd.OutOrStdout(), cmd.OutOrStderr()); err != nil {
+							return err
+						}
+					}
+				}
+			}
+			return nil
 		},
 	}
 
 	cmd.Flags().StringVar(&versionFlag, "version", "", "version to install (if unspecified, latest is used)")
 	cmd.Flags().StringVar(&checksumFlag, "checksum", "", "expected checksum for package")
 	cmd.Flags().DurationVar(&cacheDurationFlag, "cache-duration", time.Hour, "duration for which cache entries should be considered valid")
+	cmd.Flags().BoolVar(&skipUpgradeConfigFlag, "skip-upgrade-config", false, "skips running configuration upgrade tasks after running update")
 	return cmd
 }
