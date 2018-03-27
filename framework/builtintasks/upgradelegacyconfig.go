@@ -79,54 +79,55 @@ func UpgradeLegacyConfigTask(upgradeTasks []godellauncher.UpgradeConfigTask) god
 					return err
 				}
 				// track all of the upgraded YML files
-				upgradedYMLFiles := make(map[string]struct{})
+				knownConfigFiles := make(map[string]struct{})
 
 				upgradeTasksMap := make(map[string]godellauncher.UpgradeConfigTask)
 				for _, upgradeTask := range upgradeTasks {
 					upgradeTasksMap[upgradeTask.ID] = upgradeTask
 				}
 
+				var failedUpgrades []string
+				// perform hard-coded one-time upgrades
+				for _, currUpgrader := range hardCodedLegacyUpgraders {
+					if err := currUpgrader.upgradeConfig(cfgDirPath, dryRunFlagVal, printContentFlagVal, stdout); err != nil {
+						failedUpgrades = append(failedUpgrades, upgradeError(projectDir, path.Join(cfgDirPath, currUpgrader.configFileName()), err))
+					}
+					knownConfigFiles[currUpgrader.configFileName()] = struct{}{}
+				}
+
 				var legacyConfigUpgraderIDs []string
 				for _, upgradeTask := range upgradeTasks {
+					// consider current configuration file for the plugin as known (don't warn if these files already
+					// existed in config directory but were not processed by a legacy config upgrader).
+					knownConfigFiles[upgradeTask.ConfigFile] = struct{}{}
 					if upgradeTask.LegacyConfigFile == "" {
 						continue
 					}
 					legacyConfigUpgraderIDs = append(legacyConfigUpgraderIDs, upgradeTask.ID)
 				}
 				sort.Strings(legacyConfigUpgraderIDs)
-
-				var failedUpgrades []string
-				// perform hard-coded one-time upgraders
-				for _, currUpgrader := range hardCodedLegacyUpgraders {
-					if err := currUpgrader.upgradeConfig(cfgDirPath, dryRunFlagVal, printContentFlagVal, stdout); err != nil {
-						failedUpgrades = append(failedUpgrades, upgradeError(projectDir, path.Join(cfgDirPath, currUpgrader.configFileName()), err))
-					}
-					upgradedYMLFiles[currUpgrader.configFileName()] = struct{}{}
-				}
 				for _, k := range legacyConfigUpgraderIDs {
 					upgradeTask, ok := upgradeTasksMap[k]
 					if !ok {
 						// legacy task does not have an upgrader: continue
 						continue
 					}
-					upgradedYMLFiles[upgradeTask.ConfigFile] = struct{}{}
+					knownConfigFiles[upgradeTask.LegacyConfigFile] = struct{}{}
 					if err := upgradeLegacyConfig(upgradeTask, cfgDirPath, global, dryRunFlagVal, printContentFlagVal, stdout); err != nil {
 						failedUpgrades = append(failedUpgrades, upgradeError(projectDir, path.Join(cfgDirPath, upgradeTask.ConfigFile), err))
 						continue
 					}
 				}
 
-				var unknownYMLFiles []string
+				var unhandledYMLFiles []string
 				for _, k := range originalYMLFiles {
-					if _, ok := upgradedYMLFiles[k]; ok {
+					if _, ok := knownConfigFiles[k]; ok {
 						continue
 					}
-					unknownYMLFiles = append(unknownYMLFiles, k)
+					unhandledYMLFiles = append(unhandledYMLFiles, k)
 				}
-				if len(unknownYMLFiles) > 0 {
-					// if unknown files were present, print warning
-					dryRunPrintln(stdout, dryRunFlagVal, fmt.Sprintf(`WARNING: the following configuration files had no known upgraders for legacy configuration: %v
-If these configuration files are plugins, add the plugin to the configuration and re-run the upgrade task.`, unknownYMLFiles))
+				if err := processUnhandledYMLFiles(cfgDirPath, unhandledYMLFiles, dryRunFlagVal, stdout); err != nil {
+					return err
 				}
 
 				if len(failedUpgrades) == 0 {
@@ -221,31 +222,6 @@ var hardCodedLegacyUpgraders = []hardCodedLegacyUpgrader{
 			return nil
 		},
 	},
-	&hardCodedLegacyUpgraderImpl{
-		fileName: "imports.yml",
-		upgradeConfigFn: func(configDirPath string, dryRun, printContent bool, stdout io.Writer) error {
-			legacyConfigFilePath := path.Join(configDirPath, "imports.yml")
-			if _, err := os.Stat(legacyConfigFilePath); os.IsNotExist(err) {
-				// if legacy file does not exist, there is no upgrade to be performed
-				return nil
-			}
-			legacyConfigBytes, err := ioutil.ReadFile(legacyConfigFilePath)
-			if err != nil {
-				return errors.Wrapf(err, "failed to read legacy configuration file")
-			}
-
-			// back up old configuration by moving it
-			if err := backupConfigFile(legacyConfigFilePath, dryRun, stdout); err != nil {
-				return errors.Wrapf(err, "failed to back up legacy configuration file")
-			}
-
-			if string(legacyConfigBytes) != "" {
-				// if legacy file had content, warn that the functionality is no longer supported
-				dryRunPrintln(stdout, dryRun, `WARNING: the functionality provided by "imports.yml" is no longer supported: the file has been backed up without being upgraded or migrated`)
-			}
-			return nil
-		},
-	},
 }
 
 func dirYMLFiles(inputDir string) ([]string, error) {
@@ -310,9 +286,15 @@ func upgradeLegacyConfig(upgradeTask godellauncher.UpgradeConfigTask, configDirP
 		return errors.Wrapf(err, "failed to upgrade configuration")
 	}
 
-	// back up old configuration by moving it
+	// back up old configuration
 	if err := backupConfigFile(legacyConfigFilePath, dryRun, stdout); err != nil {
 		return errors.Wrapf(err, "failed to back up legacy configuration file")
+	}
+
+	// back up destination file if it already exists
+	dstFilePath := path.Join(configDirPath, upgradeTask.ConfigFile)
+	if err := backupConfigFile(dstFilePath, dryRun, stdout); err != nil {
+		return errors.Wrapf(err, "failed to back up existing configuration file")
 	}
 
 	// upgraded configuration is empty: no need to write
@@ -322,10 +304,42 @@ func upgradeLegacyConfig(upgradeTask godellauncher.UpgradeConfigTask, configDirP
 
 	if !dryRun {
 		// write migrated configuration
-		if err := ioutil.WriteFile(path.Join(configDirPath, upgradeTask.ConfigFile), upgradedCfgBytes, 0644); err != nil {
+		if err := ioutil.WriteFile(dstFilePath, upgradedCfgBytes, 0644); err != nil {
 			return errors.Wrapf(err, "failed to write upgraded configuration")
 		}
 	}
 	printUpgradedConfig(upgradeTask.ConfigFile, upgradedCfgBytes, dryRun, printContent, stdout)
+	return nil
+}
+
+func processUnhandledYMLFiles(configDir string, unknownYMLFiles []string, dryRun bool, stdout io.Writer) error {
+	if len(unknownYMLFiles) == 0 {
+		return nil
+	}
+
+	var unknownNonEmptyFiles []string
+	for _, currUnknownFile := range unknownYMLFiles {
+		currPath := path.Join(configDir, currUnknownFile)
+		bytes, err := ioutil.ReadFile(currPath)
+		if err != nil {
+			return errors.Wrapf(err, "failed to read configuration file")
+		}
+		// if unknown file is empty, just back it up
+		if string(bytes) == "" {
+			if err := backupConfigFile(currPath, dryRun, stdout); err != nil {
+				return err
+			}
+			continue
+		}
+		unknownNonEmptyFiles = append(unknownNonEmptyFiles, currUnknownFile)
+	}
+
+	if len(unknownNonEmptyFiles) == 0 {
+		return nil
+	}
+
+	// if non-empty unknown files were present, print warning
+	dryRunPrintln(stdout, dryRun, fmt.Sprintf(`WARNING: The following configuration file(s) were non-empty and had no known upgraders for legacy configuration: %v`, unknownNonEmptyFiles))
+	dryRunPrintln(stdout, dryRun, fmt.Sprintf(`         If these configuration file(s) are for plugins, add the plugins to the configuration and re-run the upgrade-legacy-config task.`))
 	return nil
 }
