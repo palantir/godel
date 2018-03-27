@@ -340,6 +340,6 @@ func processUnhandledYMLFiles(configDir string, unknownYMLFiles []string, dryRun
 
 	// if non-empty unknown files were present, print warning
 	dryRunPrintln(stdout, dryRun, fmt.Sprintf(`WARNING: The following configuration file(s) were non-empty and had no known upgraders for legacy configuration: %v`, unknownNonEmptyFiles))
-	dryRunPrintln(stdout, dryRun, fmt.Sprintf(`         If these configuration file(s) are for plugins, add the plugins to the configuration and re-run the upgrade-legacy-config task.`))
+	dryRunPrintln(stdout, dryRun, fmt.Sprintf(`         If these configuration file(s) are for plugins, add the plugins to the configuration and rerun the upgrade-legacy-config task.`))
 	return nil
 }
