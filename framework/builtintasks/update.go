@@ -30,6 +30,7 @@ func UpdateTask(wrapperPath string) godellauncher.Task {
 		syncFlag          bool
 		versionFlag       string
 		cacheDurationFlag time.Duration
+		skipUpgradeConfig bool
 	)
 
 	cmd := &cobra.Command{
@@ -41,20 +42,49 @@ func UpdateTask(wrapperPath string) godellauncher.Task {
 			}
 			projectDir := path.Dir(wrapperPath)
 
+			var majorVersionBeforeUpdate int
+			if !skipUpgradeConfig {
+				majorVersionBeforeUpdateVar, err := installupdate.MajorVersion(projectDir)
+				if err != nil {
+					return errors.Wrapf(err, "failed to determine version before update")
+				}
+				majorVersionBeforeUpdate = majorVersionBeforeUpdateVar
+			}
+
 			if syncFlag {
 				// if sync flag is true, update version to what is specified in gödel.yml
 				pkgSrc, err := installupdate.GodelPropsDistPkgInfo(projectDir)
 				if err != nil {
 					return err
 				}
-				return installupdate.Update(projectDir, pkgSrc, cmd.OutOrStdout())
+				if err := installupdate.Update(projectDir, pkgSrc, cmd.OutOrStdout()); err != nil {
+					return err
+				}
+			} else {
+				if err := installupdate.InstallVersion(projectDir, versionFlag, cacheDurationFlag, false, cmd.OutOrStdout()); err != nil {
+					return err
+				}
 			}
-			return installupdate.InstallVersion(projectDir, versionFlag, cacheDurationFlag, false, cmd.OutOrStdout())
+
+			// run "upgrade-legacy-config" after upgrade
+			if !skipUpgradeConfig && majorVersionBeforeUpdate == 1 {
+				majorVersionAfterUpdate, err := installupdate.MajorVersion(projectDir)
+				if err != nil {
+					return errors.Wrapf(err, "failed to determine version after update")
+				}
+				if majorVersionAfterUpdate >= 2 {
+					if err := installupdate.RunUpgradeLegacyConfig(projectDir); err != nil {
+						return err
+					}
+				}
+			}
+			return nil
 		},
 	}
 	cmd.Flags().BoolVar(&syncFlag, "sync", true, "use version and checksum specified in godel.properties")
 	cmd.Flags().StringVar(&versionFlag, "version", "", "version to update (if blank, uses latest version)")
 	cmd.Flags().DurationVar(&cacheDurationFlag, "cache-duration", time.Hour, "duration for which cache entries should be considered valid")
+	cmd.Flags().BoolVar(&skipUpgradeConfig, "skip-upgrade-config", false, "skips running configuration upgrade tasks after running update")
 
 	return godellauncher.CobraCLITask(cmd)
 }
