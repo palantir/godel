@@ -74,7 +74,10 @@ func runGodelApp(osArgs []string) int {
 		tasksCfgInfo.TasksConfig = config.TasksConfig(godelCfg.TasksConfig)
 
 		// add default tasks
-		defaultTasksCfg := defaulttasks.PluginsConfig(config.DefaultTasksConfig(godelCfg.DefaultTasks))
+		defaultTasksCfg, err := defaulttasks.PluginsConfig(config.DefaultTasksConfig(godelCfg.DefaultTasks))
+		if err != nil {
+			printErrAndExit(err, global.Debug)
+		}
 		defaultTasksParam, err := defaultTasksCfg.ToParam()
 		if err != nil {
 			printErrAndExit(err, global.Debug)
