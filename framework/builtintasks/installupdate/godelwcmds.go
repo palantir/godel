@@ -23,20 +23,20 @@ import (
 	"github.com/pkg/errors"
 )
 
-// RunUpgradeConfig runs the "upgrade--config" task by invoking "{{projectDir}}/godelw upgrade-config".
+// RunUpgradeConfig runs the "upgrade-config" task by invoking "{{projectDir}}/godelw upgrade-config".
 func RunUpgradeConfig(projectDir string, stdout, stderr io.Writer) error {
-	godelw := path.Join(projectDir, "godelw")
-	cmd := exec.Command(godelw, "upgrade-config")
-	cmd.Stdout = stdout
-	cmd.Stderr = stderr
-	return cmd.Run()
+	return runUpgradeConfig(projectDir, nil, stdout, stderr)
 }
 
-// RunUpgradeLegacyConfig runs the "upgrade-legacy-config" task by invoking
-// "{{projectDir}}/godelw upgrade-legacy-config".
+// RunUpgradeLegacyConfig runs the "upgrade-config" task in legacy mode by invoking
+// "{{projectDir}}/godelw upgrade-config --legacy".
 func RunUpgradeLegacyConfig(projectDir string, stdout, stderr io.Writer) error {
+	return runUpgradeConfig(projectDir, []string{"--legacy"}, stdout, stderr)
+}
+
+func runUpgradeConfig(projectDir string, args []string, stdout, stderr io.Writer) error {
 	godelw := path.Join(projectDir, "godelw")
-	cmd := exec.Command(godelw, "upgrade-legacy-config")
+	cmd := exec.Command(godelw, append([]string{"upgrade-config"}, args...)...)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 	return cmd.Run()

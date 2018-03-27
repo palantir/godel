@@ -73,7 +73,7 @@ to the project. If a specific version of godel is desired, it can be specified u
 				}
 
 				if godelVersionBeforeUpdate.MajorVersionNum() <= 1 && godelVersionAfterUpdate.MajorVersionNum() >= 2 {
-					// if going from <=1 to >=2, run "upgrade-legacy-config" task to upgrade configuration
+					// if going from <=1 to >=2, run "upgrade-config --legacy" task to upgrade configuration
 					if err := installupdate.RunUpgradeLegacyConfig(projectDir, cmd.OutOrStdout(), cmd.OutOrStderr()); err != nil {
 						return err
 					}
