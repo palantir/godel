@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/palantir/godel/framework/godel/config"
 )
@@ -57,13 +58,15 @@ func TestDefaultTasksPluginsConfig(t *testing.T) {
 	defaultPluginsConfig = testDefaultPluginsConfig()
 
 	for i, tc := range []struct {
-		name string
-		in   config.DefaultTasksConfig
-		want config.PluginsConfig
+		name      string
+		in        config.DefaultTasksConfig
+		wantError string
+		want      config.PluginsConfig
 	}{
 		{
 			"empty task param results in default configuration",
 			config.DefaultTasksConfig{},
+			"",
 			config.PluginsConfig{
 				DefaultResolvers: []string{
 					defaultResolver,
@@ -102,6 +105,7 @@ func TestDefaultTasksPluginsConfig(t *testing.T) {
 					},
 				}),
 			},
+			"",
 			config.PluginsConfig{
 				DefaultResolvers: []string{
 					defaultResolver,
@@ -143,6 +147,7 @@ func TestDefaultTasksPluginsConfig(t *testing.T) {
 					},
 				}),
 			},
+			"",
 			config.PluginsConfig{
 				DefaultResolvers: []string{
 					defaultResolver,
@@ -186,6 +191,7 @@ func TestDefaultTasksPluginsConfig(t *testing.T) {
 					},
 				}),
 			},
+			"",
 			config.PluginsConfig{
 				DefaultResolvers: []string{
 					defaultResolver,
@@ -229,6 +235,7 @@ func TestDefaultTasksPluginsConfig(t *testing.T) {
 					},
 				}),
 			},
+			"",
 			config.PluginsConfig{
 				DefaultResolvers: []string{
 					defaultResolver,
@@ -277,6 +284,7 @@ func TestDefaultTasksPluginsConfig(t *testing.T) {
 					},
 				}),
 			},
+			"",
 			config.PluginsConfig{
 				DefaultResolvers: []string{
 					defaultResolver,
@@ -317,6 +325,7 @@ func TestDefaultTasksPluginsConfig(t *testing.T) {
 					},
 				}),
 			},
+			"",
 			config.PluginsConfig{
 				DefaultResolvers: []string{
 					defaultResolver,
@@ -344,8 +353,29 @@ func TestDefaultTasksPluginsConfig(t *testing.T) {
 				}),
 			},
 		},
+		{
+			"specifying invalid key results in error",
+			config.DefaultTasksConfig{
+				Tasks: config.ToTasks(map[string]config.SingleDefaultTaskConfig{
+					"com.palantir.test:test": {
+						LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
+							Locator: config.ToLocatorConfig(config.LocatorConfig{
+								ID: "com.palantir.godel:override:1.2.3",
+							}),
+						}),
+					},
+				}),
+			},
+			`default-task key(s) specified but are not valid: [com.palantir.test:test]. Valid values: [com.palantir.test:test-plugin]`,
+			config.PluginsConfig{},
+		},
 	} {
-		got := PluginsConfig(tc.in)
-		assert.Equal(t, tc.want, got, "Case %d: %s", i, tc.name)
+		got, err := PluginsConfig(tc.in)
+		if tc.wantError == "" {
+			require.NoError(t, err)
+			assert.Equal(t, tc.want, got, "Case %d: %s", i, tc.name)
+		} else {
+			assert.EqualError(t, err, tc.wantError, "Case %d: %s", i, tc.name)
+		}
 	}
 }
