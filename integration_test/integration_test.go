@@ -160,7 +160,7 @@ products:
     build:
       main-pkg: ./bar
 `
-	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "dist.yml"), []byte(distYml), 0644)
+	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "dist-plugin.yml"), []byte(distYml), 0644)
 	require.NoError(t, err)
 
 	src := `package main

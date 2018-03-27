@@ -65,7 +65,7 @@ func TestFoo(t *testing.T) {
 	_, err := gofiles.Write(testProjectDir, specs)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "license.yml"), []byte(licenseYML), 0644)
+	err = ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "license-plugin.yml"), []byte(licenseYML), 0644)
 	require.NoError(t, err)
 
 	for i, currCase := range []struct {
@@ -158,7 +158,7 @@ func TestFoo(t *testing.T) {
 }
 `, time.Now().Year())
 	)
-	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "license.yml"), []byte(licenseYML), 0644)
+	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "license-plugin.yml"), []byte(licenseYML), 0644)
 	require.NoError(t, err)
 
 	for i, currCase := range []struct {
@@ -251,7 +251,7 @@ func TestFooIntegration(t *testing.T) {}
 	files, err := gofiles.Write(testProjectDir, specs)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "test.yml"), []byte(`tags:
+	err = ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "test-plugin.yml"), []byte(`tags:
   integration:
     names:
       - "integration_tests"
