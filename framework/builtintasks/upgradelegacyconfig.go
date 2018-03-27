@@ -28,6 +28,7 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 
+	"github.com/palantir/godel/framework/godel/config"
 	"github.com/palantir/godel/framework/godellauncher"
 )
 
@@ -165,7 +166,7 @@ var hardCodedLegacyUpgraders = []hardCodedLegacyUpgrader{
 				return errors.Wrapf(err, "failed to unmarshal legacy exclude configuration")
 			}
 
-			currentGodelConfig, err := readGodelConfig(path.Join(configDirPath, "godel.yml"))
+			currentGodelConfig, err := config.ReadGodelConfigFromFile(path.Join(configDirPath, "godel.yml"))
 			if err != nil {
 				return errors.Wrapf(err, "failed to read godel configuration")
 			}
