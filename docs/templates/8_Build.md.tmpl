@@ -19,43 +19,42 @@ of the product by invoking it with a `-version` flag.
 
 Start by running `./godelw build` in the project to observe the default behavior:
 
-```
-➜ ./godelw build
-Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/unspecified/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.222s)
-```
+```START_TUTORIAL_CODE
+./godelw build
+```END_TUTORIAL_CODE
 
 The default build settings builds all `main` packages for the executing platform. As stated by the output, this command
 built an executable for the OS/architecture of the host system in the `out/build` directory of the project. The
 executable is fully built and can be run:
 
-```
-➜ ./out/build/echgo2/unspecified/linux-amd64/echgo2 foo
-foo
-```
+```START_TUTORIAL_CODE
+./out/build/echgo2/unspecified/linux-amd64/echgo2 foo
+```END_TUTORIAL_CODE
 
 The output of the `build` command can be removed by running `./godelw clean`. The output directory can be specified
 using the `output-dir` key, but we will keep it as `out/build` for this product. We do not want to track build artifacts
 in git, so run the following to add `/out/` to the `.gitignore` file and commit it:
 
-```
-➜ echo '/out/' >> .gitignore
-➜ git add .gitignore
-➜ git commit -m "Update .gitignore to ignore out directory"
-[master ed91bb6] Update .gitignore to ignore out directory
- 1 file changed, 1 insertion(+)
-```
+```START_TUTORIAL_CODE
+echo '/out/' >> .gitignore
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git add .gitignore
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git commit -m "Update .gitignore to ignore out directory"
+```END_TUTORIAL_CODE
 
 The first step of customizing the build parameters for the product is to explicitly define the products in the project.
 Builds operate on the concepts of products, where a product is a Go `main` package. A single project may have multiple
 products. Define the `echgo2` product for this project as follows:
 
-```
-➜ echo 'products:
+```START_TUTORIAL_CODE
+echo 'products:
   echgo2:
     build:
       main-pkg: .' > godel/config/dist-plugin.yml
-```
+```END_TUTORIAL_CODE
 
 The `main-pkg` key specifies that the main package for the product is located at `.` (relative to the root directory of
 the project).
@@ -67,8 +66,8 @@ The `os-archs` parameter can be used to define the exact OS/architecture pairs f
 the following command to update the configuration to specify that `echgo2` should be built for `darwin-amd64` and
 `linux-amd64`:
 
-```
-➜ echo 'products:
+```START_TUTORIAL_CODE
+echo 'products:
   echgo2:
     build:
       main-pkg: .
@@ -77,7 +76,7 @@ the following command to update the configuration to specify that `echgo2` shoul
           arch: amd64
         - os: linux
           arch: amd64' > godel/config/dist-plugin.yml
-```
+```END_TUTORIAL_CODE
 
 `os-archs` is a list of OS and architectures for which the product should be built. For a list of available
 OS/architecture combinations, refer to the [Go documentation](https://golang.org/doc/install/source#environment) or run
@@ -85,13 +84,9 @@ OS/architecture combinations, refer to the [Go documentation](https://golang.org
 
 Run `./godelw build` with the updated configuration:
 
-```
-➜ ./godelw build
-Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/unspecified/linux-amd64/echgo2
-Building echgo2 for darwin-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/unspecified/darwin-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.080s)
-Finished building echgo2 for darwin-amd64 (2.587s)
-```
+```START_TUTORIAL_CODE
+./godelw build
+```END_TUTORIAL_CODE
 
 As indicated by the output, the product has now been built for both `darwin-amd64` and `linux-amd64`.
 
@@ -113,8 +108,8 @@ at build time. The project version is based on the output of `git describe`.
 
 Update `main.go` to add support for printing a version variable:
 
-```
-➜ SRC='package main
+```START_TUTORIAL_CODE
+SRC='package main
 
 import (
 	"flag"
@@ -136,20 +131,19 @@ func main() {
 	echoer := echo.NewEchoer()
 	fmt.Println(echoer.Echo(strings.Join(flag.Args(), " ")))
 }' && SRC=${SRC//PROJECT_PATH/$PROJECT_PATH} && echo "$SRC" > main.go
-```
+```END_TUTORIAL_CODE
 
 Running this program with `-version` outputs the value `none`:
 
-```
-➜ go run main.go -version
-echgo2 version: none
-```
+```START_TUTORIAL_CODE
+go run main.go -version
+```END_TUTORIAL_CODE
 
 The desired behavior is to set the `version` variable to be the version of the program when it is built. Configure this
 by updating the build configuration as follows:
 
-```
-➜ echo 'products:
+```START_TUTORIAL_CODE
+echo 'products:
   echgo2:
     build:
       main-pkg: .
@@ -159,19 +153,16 @@ by updating the build configuration as follows:
           arch: amd64
         - os: linux
           arch: amd64' > godel/config/dist-plugin.yml
-```
+```END_TUTORIAL_CODE
 
 Run `./godelw build` and invoke the build executable to see that the version variable has been set:
 
-```
-➜ ./godelw build
-Building echgo2 for darwin-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/unspecified/darwin-amd64/echgo2
-Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/unspecified/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.285s)
-Finished building echgo2 for darwin-amd64 (0.453s)
-➜ ./out/build/echgo2/unspecified/linux-amd64/echgo2 -version
-echgo2 version: unspecified
-```
+```START_TUTORIAL_CODE
+./godelw build
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+./out/build/echgo2/unspecified/linux-amd64/echgo2 -version
+```END_TUTORIAL_CODE
 
 The fact that the output is now "unspecified" (rather than "none" as specified in the source code) demonstrates that the
 version was set by the build. The version is "unspecified" because there are no git tags present. We can fix this by
@@ -179,25 +170,24 @@ tagging a release.
 
 Commit the files that were modified and tag a release:
 
-```
-➜ git add main.go godel/config/dist-plugin.yml
-➜ git commit -m "Add version variable and define build configuration"
-[master d3f8b0d] Add version variable and define build configuration
- 2 files changed, 20 insertions(+), 2 deletions(-)
-➜ git tag 0.0.1
-```
+```START_TUTORIAL_CODE
+git add main.go godel/config/dist-plugin.yml
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git commit -m "Add version variable and define build configuration"
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git tag 0.0.1
+```END_TUTORIAL_CODE
 
 Now that the repository is tagged, run `./godelw build` and run version on the executable:
 
-```
-➜ ./godelw build
-Building echgo2 for darwin-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1/darwin-amd64/echgo2
-Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.223s)
-Finished building echgo2 for darwin-amd64 (0.262s)
-➜ ./out/build/echgo2/0.0.1/linux-amd64/echgo2 -version
-echgo2 version: 0.0.1
-```
+```START_TUTORIAL_CODE
+./godelw build
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+./out/build/echgo2/0.0.1/linux-amd64/echgo2 -version
+```END_TUTORIAL_CODE
 
 Tutorial end state
 ------------------
@@ -225,13 +215,9 @@ By default, `./godelw build` will build all of the products defined for a projec
 arguments to build only those products. For example, if the `echgo2` project defined multiple products, we could
 specify that we want to build only `echgo2` by running the following:
 
-```
-➜ ./godelw build echgo2
-Building echgo2 for darwin-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1/darwin-amd64/echgo2
-Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.090s)
-Finished building echgo2 for darwin-amd64 (0.095s)
-```
+```START_TUTORIAL_CODE
+./godelw build echgo2
+```END_TUTORIAL_CODE
 
 ### Specify build environment variables
 In some instances, products will want specific environment variables set during the build phase. These can be specified
@@ -273,12 +259,6 @@ This configuration evaluates `$(date +%Y)` when the `echgo` product is built and
 The `--dry-run` flag can be used to preview the operations that would be performed by `./godelw build` without actually
 performing them:
 
-```
-➜ ./godelw build --dry-run
-[DRY RUN] Building echgo2 for darwin-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1/darwin-amd64/echgo2
-[DRY RUN] Run: /usr/local/go/bin/go build -i -o /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1/darwin-amd64/echgo2 -ldflags -X main.version=0.0.1 ./.
-[DRY RUN] Finished building echgo2 for darwin-amd64 (0.000s)
-[DRY RUN] Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1/linux-amd64/echgo2
-[DRY RUN] Run: /usr/local/go/bin/go build -i -o /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1/linux-amd64/echgo2 -ldflags -X main.version=0.0.1 ./.
-[DRY RUN] Finished building echgo2 for linux-amd64 (0.000s)
-```
+```START_TUTORIAL_CODE
+./godelw build --dry-run
+```END_TUTORIAL_CODE

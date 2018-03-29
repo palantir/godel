@@ -41,27 +41,35 @@ that can be used for testing.
 We need to add `github.com/palantir/godel/pkg/products` as a vendored dependency for the project. Start by getting the
 gödel project:
 
-```
-➜ mkdir -p ${GOPATH}/src/github.com/palantir && cd $_
-➜ go get -u github.com/palantir/godel
-```
+```START_TUTORIAL_CODE
+mkdir -p ${GOPATH}/src/github.com/palantir && cd $_
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+go get -u github.com/palantir/godel
+```END_TUTORIAL_CODE
 
 There are multiple different ways to vendor dependencies. For the purposes of this tutorial, we will forego formal
 vendoring and vendor the dependency manually.
 
-```
-➜ cd ${GOPATH}/src/${PROJECT_PATH}
-➜ mkdir -p vendor/github.com/palantir/godel/pkg/products/v2/products
-➜ cp ${GOPATH}/src/github.com/palantir/godel/pkg/products/v2/products/* vendor/github.com/palantir/godel/pkg/products/v2/products
-```
+```START_TUTORIAL_CODE
+cd ${GOPATH}/src/${PROJECT_PATH}
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+mkdir -p vendor/github.com/palantir/godel/pkg/products/v2/products
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+cp ${GOPATH}/src/github.com/palantir/godel/pkg/products/v2/products/* vendor/github.com/palantir/godel/pkg/products/v2/products
+```END_TUTORIAL_CODE
 
 Run the following to define a test that tests the behavior of invoking echgo2 with an invalid echo type and run the test
 (this test is still in the iteration phase, so it simply prints the result of the output rather than asserting against
 it):
 
-```
-➜ mkdir -p integration_test
-➜ echo '// Copyright (c) 2018 Author Name. All rights reserved.
+```START_TUTORIAL_CODE
+mkdir -p integration_test
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+echo '// Copyright (c) 2018 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -88,13 +96,10 @@ func TestInvalidType(t *testing.T) {
 	fmt.Printf("%q", string(output))
 	fmt.Println()
 }' > integration_test/integration_test.go
-➜ go test -v ./integration_test
-=== RUN   TestInvalidType
-"invalid echo type: invalid\n"
---- PASS: TestInvalidType (0.59s)
-PASS
-ok  	github.com/nmiyake/echgo2/integration_test	0.592s
-```
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+go test -v ./integration_test
+```END_TUTORIAL_CODE
 
 The `products.Bin("echgo2")` call uses gödel to build the echgo2 product (if needed) and returns a path to the binary
 that was built. Because this is a path to a valid binary, `exec.Command` can be use to invoke it. This allows the test
@@ -106,8 +111,8 @@ code, which should cause `cmd.CombinedOutput` to return an error.
 
 Fix the bug by updating `main.go` and then re-run the test:
 
-```
-➜ SRC='// Copyright (c) 2018 Author Name. All rights reserved.
+```START_TUTORIAL_CODE
+SRC='// Copyright (c) 2018 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -140,20 +145,16 @@ func main() {
 	echoer := echo.NewEchoer(typ)
 	fmt.Println(echoer.Echo(strings.Join(flag.Args(), " ")))
 }' && SRC=${SRC//PROJECT_PATH/$PROJECT_PATH} && echo "$SRC" > main.go
-➜ go test -v ./integration_test
-=== RUN   TestInvalidType
-"invalid echo type: invalid\n"
---- FAIL: TestInvalidType (0.54s)
-	integration_test.go:23: cmd [/go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.2-4-g60994d2-dirty/linux-amd64/echgo2 -type invalid foo] failed with error exit status 1. Output: invalid echo type: invalid
-FAIL
-FAIL	github.com/nmiyake/echgo2/integration_test	0.545s
-```
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE|fail=true
+go test -v ./integration_test
+```END_TUTORIAL_CODE
 
 We can see that the test now fails as expected. Since this is the expected behavior, update the test to pass when this
 happens and run the test again:
 
-```
-➜ echo '// Copyright (c) 2018 Author Name. All rights reserved.
+```START_TUTORIAL_CODE
+echo '// Copyright (c) 2018 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -187,66 +188,58 @@ func TestInvalidType(t *testing.T) {
 		t.Errorf("invalid error output: want %q, got %q", wantErr, gotErr)
 	}
 }' > integration_test/integration_test.go
-➜ go test -v ./integration_test
-=== RUN   TestInvalidType
---- PASS: TestInvalidType (0.23s)
-PASS
-ok  	github.com/nmiyake/echgo2/integration_test	0.234s
-```
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+go test -v ./integration_test
+```END_TUTORIAL_CODE
 
 We can see that the test now passes. The test will now run when `./godelw test` is invoked.
 
 One thing to note about this construction is that the `go build` and `go install` commands will currently not work for
 `integration_test` because the directory contains only tests:
 
-```
-➜ go build ./integration_test
-go build github.com/nmiyake/echgo2/integration_test: no non-test Go files in /go/src/github.com/nmiyake/echgo2/integration_test
-```
+```START_TUTORIAL_CODE|fail=true
+go build ./integration_test
+```END_TUTORIAL_CODE
 
 We can work around this by adding a `doc.go` file to the directory to act as a placeholder:
 
-```
-➜ echo '// Copyright (c) 2018 Author Name. All rights reserved.
+```START_TUTORIAL_CODE
+echo '// Copyright (c) 2018 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
 // Package integration contains integration tests.
 package integration' > integration_test/doc.go
-```
+```END_TUTORIAL_CODE
 
 Verify that building the directory no longer fails:
 
-```
-➜ go build ./integration_test
-```
+```START_TUTORIAL_CODE
+go build ./integration_test
+```END_TUTORIAL_CODE
 
 Run `./godelw test` to verify that this test is run:
 
-```
-➜ ./godelw test
-?   	github.com/nmiyake/echgo2                 	[no test files]
-ok  	github.com/nmiyake/echgo2/echo            	0.002s
-?   	github.com/nmiyake/echgo2/generator       	[no test files]
-ok  	github.com/nmiyake/echgo2/integration_test	0.191s
-```
+```START_TUTORIAL_CODE
+./godelw test
+```END_TUTORIAL_CODE
 
 The configuration in `godel/config/test.yml` can be used to group tests into tags. Update the configuration as follows:
 
-```
-➜ echo 'tags:
+```START_TUTORIAL_CODE
+echo 'tags:
   integration:
     names:
       - "^integration_test$"' > godel/config/test-plugin.yml
-```
+```END_TUTORIAL_CODE
 
 This configuration defines a tag named "integration" that matches any directories named "integration_test". Run the
 following command to run only the tests that match the "integration" tag:
 
-```
-➜ ./godelw test --tags=integration
-ok  	github.com/nmiyake/echgo2/integration_test	0.196s
-```
+```START_TUTORIAL_CODE
+./godelw test --tags=integration
+```END_TUTORIAL_CODE
 
 By default, the `./godelw test` task runs all tests (all tagged and untagged tests). Multiple tags can be specified by
 separating them with a comma. Specifying `all` will run all tagged tests, while specifying `none` will run all tests
@@ -254,16 +247,12 @@ that do not match any tags.
 
 Commit these changes by running the following:
 
-```
-➜ git add godel main.go integration_test vendor
-➜ git commit -m "Add integration tests"
-[master 25fec88] Add integration tests
- 6 files changed, 220 insertions(+), 1 deletion(-)
- create mode 100644 integration_test/doc.go
- create mode 100644 integration_test/integration_test.go
- create mode 100644 vendor/github.com/palantir/godel/pkg/products/v2/products/products.go
- create mode 100644 vendor/github.com/palantir/godel/pkg/products/v2/products/products_test.go
-```
+```START_TUTORIAL_CODE
+git add godel main.go integration_test vendor
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git commit -m "Add integration tests"
+```END_TUTORIAL_CODE
 
 Tutorial end state
 ------------------

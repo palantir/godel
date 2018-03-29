@@ -26,17 +26,21 @@ We will now add documentation for echgo2 and sync it with the GitHub wiki for th
 
 Run the following to create a "docs" directory and add some documentation and commit the changes:
 
-```
-➜ mkdir -p docs
-➜ echo "* [Home](https://${PROJECT_PATH}/wiki)" > docs/_Sidebar.md
-➜ echo 'echgo2 is a tool that echoes the input provided by the user.' > docs/Home.md
-➜ git add docs
-➜ git commit -m "Add documentation"
-[master 28e4ae0] Add documentation
- 2 files changed, 2 insertions(+)
- create mode 100644 docs/Home.md
- create mode 100644 docs/_Sidebar.md
-```
+```START_TUTORIAL_CODE
+mkdir -p docs
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+echo "* [Home](https://${PROJECT_PATH}/wiki)" > docs/_Sidebar.md
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+echo 'echgo2 is a tool that echoes the input provided by the user.' > docs/Home.md
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git add docs
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git commit -m "Add documentation"
+```END_TUTORIAL_CODE
 
 The `github-wiki` task requires a project to have an existing GitHub wiki before it can work. In order to do this, one
 needs to be created using the GitHub UI. Navigate to the wiki for the project (for this example, the URL is

@@ -16,9 +16,9 @@ for a project to start development on it with minimal overhead.
 
 Run the following command to generate the IDE files:
 
-```
-➜ ./godelw goland
-```
+```START_TUTORIAL_CODE
+./godelw goland
+```END_TUTORIAL_CODE
 
 This generates an `.iml` and `.ipr` file for the project. The generated `.ipr` file can be opened in GoLand to reveal
 that the project has been set up properly:
@@ -28,16 +28,17 @@ that the project has been set up properly:
 We do not want to commit the GoLand files to the repository, so we will create and commit a `.gitigore` file that
 ignores these files:
 
-```
-➜ echo '*.iml
+```START_TUTORIAL_CODE
+echo '*.iml
 *.ipr
 *.iws' > .gitignore
-➜ git add .gitignore
-➜ git commit -m "Add .gitignore file"
-[master f90ff12] Add .gitignore file
- 1 file changed, 3 insertions(+)
- create mode 100644 .gitignore
-```
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git add .gitignore
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git commit -m "Add .gitignore file"
+```END_TUTORIAL_CODE
 
 Tutorial end state
 ------------------

@@ -28,9 +28,11 @@ the PRs for our project properly pass verification and so that artifacts are pub
 
 We will use CircleCI to set up CI for this project. Run the following to create a CircleCI configuration file:
 
-```
-➜ mkdir -p .circleci
-➜ SRC='defaults: &defaults
+```START_TUTORIAL_CODE
+mkdir -p .circleci
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+SRC='defaults: &defaults
   working_directory: /go/src/PROJECT_PATH
   docker:
     - image: golang:1.10.0
@@ -155,7 +157,7 @@ workflows:
               only: /^v?[0-9]+(\.[0-9]+)+(-rc[0-9]+)?(-alpha[0-9]+)?$/
             branches:
               ignore: /.*/' && SRC=${SRC//PROJECT_PATH/$PROJECT_PATH} && echo "$SRC" > .circleci/config.yml
-```
+```END_TUTORIAL_CODE
 
 The primary tasks performed by this CI are the following:
 
@@ -170,13 +172,12 @@ The primary tasks performed by this CI are the following:
 
 Commit the changes to the repository by running the following:
 
-```
-➜ git add .circleci
-➜ git commit -m "Add CircleCI configuration"
-[master 0a8c6f4] Add CircleCI configuration
- 1 file changed, 24 insertions(+)
- create mode 100644 .circleci/config.yml
-```
+```START_TUTORIAL_CODE
+git add .circleci
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git commit -m "Add CircleCI configuration"
+```END_TUTORIAL_CODE
 
 You can now configure the GitHub project to be run using CircleCI and it will run the CI process.
 
@@ -195,9 +196,9 @@ To git@github.com:nmiyake/echgo2.git
    1d3a164..3c292d5  master -> master
 ```
 
-```
-➜ git tag 1.0.0
-```
+```START_TUTORIAL_CODE
+git tag 1.0.0
+```END_TUTORIAL_CODE
 
 ```
 ➜ git push origin --tags

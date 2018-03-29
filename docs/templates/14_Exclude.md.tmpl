@@ -25,22 +25,9 @@ more detail.
 
 Examine the current state of `godel/config/godel.yml`:
 
-```
-➜ cat godel/config/godel.yml
-plugins:
-  resolvers:
-    - "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
-  plugins:
-    - locator:
-        id: "com.palantir.go-generate:generate-plugin:1.0.0-rc2"
-exclude:
-  names:
-    - "\\..+"
-    - "vendor"
-  paths:
-    - "godel"
-    - "echo/type_string.go"
-```
+```START_TUTORIAL_CODE
+cat godel/config/godel.yml
+```END_TUTORIAL_CODE
 
 As seen in the previous section, specifying `echo/type_string.go` as an exclude path caused this file to be ignored for
 all checks and operations. However, listing individual paths like this can be cumbersome and fragile -- for example, if
@@ -50,8 +37,8 @@ new entry.
 We can make this approach more general by excluding all files that end in `_string.go` instead. Run the following to
 update the configuration:
 
-```
-➜ echo 'plugins:
+```START_TUTORIAL_CODE
+echo 'plugins:
   resolvers:
     - "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
   plugins:
@@ -64,24 +51,22 @@ exclude:
     - ".+_string.go"
   paths:
     - "godel"' > godel/config/godel.yml
-```
+```END_TUTORIAL_CODE
 
 Verify that the `golint` check still succeeds:
 
-```
-➜ ./godelw check golint
-Running golint...
-Finished golint
-```
+```START_TUTORIAL_CODE
+./godelw check golint
+```END_TUTORIAL_CODE
 
 Check in the changes:
 
-```
-➜ git add godel/config/godel.yml
-➜ git commit -m "Update exclude configuration in godel.yml"
-[master 60994d2] Update exclude configuration in godel.yml
- 1 file changed, 1 insertion(+), 1 deletion(-)
-```
+```START_TUTORIAL_CODE
+git add godel/config/godel.yml
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git commit -m "Update exclude configuration in godel.yml"
+```END_TUTORIAL_CODE
 
 Tutorial end state
 ------------------

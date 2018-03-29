@@ -1,0 +1,223 @@
+Summary
+-------
+Install and run `godelinit` to add gödel to a project.
+
+Tutorial start state
+--------------------
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+
+Add gödel to a project
+----------------------
+The godelinit program can be used to add gödel to a new project. The godelinit program determines the latest release of
+gödel and installs it into the current directory, downloading it if needed.
+
+Install the `godelinit` program using `go get` and run the program to install gödel:
+
+```START_TUTORIAL_CODE
+go get github.com/palantir/godel/godelinit
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+godelinit
+```END_TUTORIAL_CODE
+
+Run `./godelw version` to verify that gödel was installed correctly. If this is the first run, this invocation will
+download all of the plugins and assets:
+
+```START_TUTORIAL_CODE
+./godelw version
+```END_TUTORIAL_CODE
+
+Technically, this is sufficient and we have a working gödel installation. However, because the installation was
+performed by downloading a distribution, the gödel installation itself does not have a checksum set (no verification was
+performed on the package itself):
+
+```START_TUTORIAL_CODE
+cat godel/config/godel.properties
+```END_TUTORIAL_CODE
+
+If we are concerned about integrity, we can specify the expected checksum for the package when using godelinit. The
+expected checksums for gödel releases can be found on its [Bintray](https://bintray.com/palantir/releases/godel) page.
+The checksum for 2.0.0-rc5 is 08d9ed3e33e69006a9c58ec65cef0ad9bd17af4c73b5c1d1aa116e813a954314. Install the distribution
+using this checksum:
+
+```START_TUTORIAL_CODE
+godelinit --checksum ${GODEL_CHECKSUM}
+```END_TUTORIAL_CODE
+
+If the installation succeeds with a checksum specified, it is set in the properties:
+
+```START_TUTORIAL_CODE
+cat godel/config/godel.properties
+```END_TUTORIAL_CODE
+
+Commit the changes to the repository:
+
+```START_TUTORIAL_CODE
+git add godel godelw
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git commit -m "Add godel to project"
+```END_TUTORIAL_CODE
+
+gödel has now been added to the project and is ready to use.
+
+Tutorial end state
+------------------
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* Project contains `godel` and `godelw`
+
+Tutorial next step
+------------------
+[Add Git hooks to enforce formatting](https://github.com/palantir/godel/wiki/Add-git-hooks)
+
+More
+----
+### Download and install gödel manually
+It is possible to add gödel to a project without using godelinit by downloading and installing it manually.
+
+Download the distribution into a temporary directory and expand it:
+
+```START_TUTORIAL_CODE
+mkdir -p download
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+curl -L "https://palantir.bintray.com/releases/com/palantir/godel/godel/${GODEL_VERSION}/godel-${GODEL_VERSION}.tgz" -o download/godel-"${GODEL_VERSION}".tgz
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+tar -xf download/godel-"${GODEL_VERSION}".tgz -C download
+```END_TUTORIAL_CODE
+
+Copy the contents of the wrapper directory (which contains godelw and godel) to the project directory:
+
+```START_TUTORIAL_CODE
+cp -r download/godel-"${GODEL_VERSION}"/wrapper/* .
+```END_TUTORIAL_CODE
+
+Run `./godelw version` to verify that gödel was installed correctly. This command will download the distribution if the
+distribution has not previously been installed locally. However, if you have followed the tutorial steps, this version
+has already been downloaded so it will not re-download:
+
+```START_TUTORIAL_CODE
+./godelw version
+```END_TUTORIAL_CODE
+
+Technically, this is sufficient and we have a working gödel install. However, distributions that are downloaded manually
+do not have a checksum set in `godel/config/godel.properties`:
+
+```START_TUTORIAL_CODE
+cat godel/config/godel.properties
+```END_TUTORIAL_CODE
+
+For completeness, set the checksum. The expected checksums for releases are listed on the download page at
+https://bintray.com/palantir/releases/godel.
+
+```START_TUTORIAL_CODE
+DIST_URL='distributionURL=https://palantir.bintray.com/releases/com/palantir/godel/godel/GODEL_VERSION/godel-GODEL_VERSION.tgz
+distributionSHA256=GODEL_CHECKSUM'; DIST_URL="${DIST_URL//GODEL_VERSION/$GODEL_VERSION}"; DIST_URL="${DIST_URL//GODEL_CHECKSUM/$GODEL_CHECKSUM}"
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+echo "${DIST_URL}" > godel/config/godel.properties
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+unset DIST_URL
+```END_TUTORIAL_CODE
+
+Now that gödel has been added to the project, remove the temporary directory and unset the version variable:
+
+```START_TUTORIAL_CODE
+rm -rf download
+```END_TUTORIAL_CODE
+
+### Copying gödel from an existing project
+If you have local projects that already use gödel, you can add gödel to a another project by copying the `godelw` and
+`godel/config/godel.properties` files from the project that already has gödel.
+
+For example, assume that `{$GOPATH}/src/${PROJECT_PATH}` exists in the current state of the tutorial and we want
+to create another project at `${GOPATH}/src/github.com/nmiyake/sample` that also uses gödel. This can be done as follows:
+
+```START_TUTORIAL_CODE
+mkdir -p ${GOPATH}/src/github.com/nmiyake/sample && cd $_
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+cp ${GOPATH}/src/${PROJECT_PATH}/godelw .
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+mkdir -p godel/config
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+cp ${GOPATH}/src/${PROJECT_PATH}/godel/config/godel.properties godel/config/
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+./godelw update --sync
+```END_TUTORIAL_CODE
+
+Verify that invoking `./godelw` works and that the `godel/config` directory has been populated with the default
+configuration files:
+
+```START_TUTORIAL_CODE
+./godelw version
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+ls godel/config
+```END_TUTORIAL_CODE
+
+Restore the workspace to the original state by setting the working directory back to the `echgo2` project and removing
+the sample project:
+
+```START_TUTORIAL_CODE
+cd ${GOPATH}/src/${PROJECT_PATH}
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+rm -rf ${GOPATH}/src/github.com/nmiyake/sample
+```END_TUTORIAL_CODE
+
+The steps above take the approach of copying the `godelw` file and `godel/config/godel.properties` file and running
+`update` to ensure that all of the configuration is in its default state -- if the entire `godel/config` directory was
+copied from the other project, then the current project would copy the other project's configuration as well, which is
+most likely not the correct thing to do.
+
+The `update` task updates gödel to the latest release version. Flags can be used to configure the behavior to perform
+different operations (for example, to update gödel to a specific version or to the version specified in
+`godel/config/godel.properties`). If the distribution is already downloaded locally in the local global gödel directory
+(`~/.godel` by default) and matches the checksum specified in `godel.properties`, the required files are copied from the
+local cache. If the distribution does not exist in the local cache or a checksum is not specified in `godel.properties`,
+then the distribution is downloaded from the distribution URL.
+
+### Specify the checksum in `godel/config/godel.properties`
+If the `godelw` script cannot locate the `godel` binary, it downloads it from the URL specified in
+`godel/godel.properties`. If a checksum is specified in `godel/config/godel.properties`, it is used to verify the
+integrity and validity of the distribution downloaded from the URL. The checksum is also used by the `update` task -- if
+the `update` task for a given version can find a download of the distribution in the downloads directory with a matching
+checksum, it will be used to update the version of gödel (otherwise, the `update` task will always download the
+distribution from the specified distribution URL).
+
+The checksum is the SHA-256 checksum of the `.tgz` archive of the product. The checksum can be obtained from the
+Bintray page for the distribution:
+
+![SHA checksum](images/tutorial/sha_checksum.png)
+
+If a user has obtained a trusted distribution locally, it is also possible to manually compute the checksum.
+
+Download the distribution by running the following:
+
+```START_TUTORIAL_CODE
+mkdir -p download
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+curl -L "https://palantir.bintray.com/releases/com/palantir/godel/godel/${GODEL_VERSION}/godel-${GODEL_VERSION}.tgz" -o download/godel-"${GODEL_VERSION}".tgz
+```END_TUTORIAL_CODE
+
+The checksum can be computed using `openssl` or `shasum` as follows:
+
+```START_TUTORIAL_CODE
+openssl dgst -sha256 download/godel-"${GODEL_VERSION}".tgz
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+shasum -a 256 download/godel-"${GODEL_VERSION}".tgz
+```END_TUTORIAL_CODE
+
+Run the following to clean up our state:
+
+```START_TUTORIAL_CODE
+rm -rf download
+```END_TUTORIAL_CODE

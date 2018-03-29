@@ -13,13 +13,17 @@ Format code
 -----------
 Update the program code to put the echo functionality into a separate package and call it from the main project:
 
-```
-➜ mkdir -p echo
-➜ echo 'package echo
+```START_TUTORIAL_CODE
+mkdir -p echo
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+echo 'package echo
 func Echo(in string) string {
 	return in
 }' > echo/echo.go
-➜ SRC='package main
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+SRC='package main
 
 import "fmt"
 import "os"
@@ -29,92 +33,43 @@ import "PROJECT_PATH"
 func main() {
 	fmt.Println(echo.Echo(strings.Join(os.Args[1:], " ")))
 }' && SRC=${SRC//PROJECT_PATH/$PROJECT_PATH} && echo "$SRC" > main.go
-```
+```END_TUTORIAL_CODE
 
 Stage these files as a git commit:
 
-```
-➜ git add echo main.go
-➜ git status
-On branch master
-Changes to be committed:
-  (use "git reset HEAD <file>..." to unstage)
-
-	new file:   echo/echo.go
-	modified:   main.go
-
-```
+```START_TUTORIAL_CODE
+git add echo main.go
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git status
+```END_TUTORIAL_CODE
 
 Run `./godelw format` to format all of the files in the project:
 
-```
-➜ ./godelw format
-```
+```START_TUTORIAL_CODE
+./godelw format
+```END_TUTORIAL_CODE
 
 This command formats all of the files using `ptimports`. Verify that this command modified the files:
 
-```
-➜ git status
-On branch master
-Changes to be committed:
-  (use "git reset HEAD <file>..." to unstage)
-
-	new file:   echo/echo.go
-	modified:   main.go
-
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git checkout -- <file>..." to discard changes in working directory)
-
-	modified:   echo/echo.go
-	modified:   main.go
-
-➜ git diff | cat
-diff --git a/echo/echo.go b/echo/echo.go
-index c3bf761..e7e2c75 100644
---- a/echo/echo.go
-+++ b/echo/echo.go
-@@ -1,4 +1,5 @@
- package echo
-+
- func Echo(in string) string {
- 	return in
- }
-diff --git a/main.go b/main.go
-index f69640d..d58038c 100644
---- a/main.go
-+++ b/main.go
-@@ -1,9 +1,12 @@
- package main
- 
--import "fmt"
--import "os"
--import "strings"
--import "github.com/nmiyake/echgo2"
-+import (
-+	"fmt"
-+	"os"
-+	"strings"
-+
-+	"github.com/nmiyake/echgo2/echo"
-+)
- 
- func main() {
- 	fmt.Println(echo.Echo(strings.Join(os.Args[1:], " ")))
-```
+```START_TUTORIAL_CODE
+git status
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git diff | cat
+```END_TUTORIAL_CODE
 
 In `main.go`, note how the imports that were on individual lines were grouped into an import block and how the standard
 library imports are separated from the non-standard library imports. This is due to `ptimports`.
 
 Commit the formatted files:
 
-```
-➜ git add main.go echo
-➜ git commit -m "Create echo package"
-[master e4f555f] Create echo package
- 2 files changed, 8 insertions(+), 1 deletion(-)
- create mode 100644 echo/echo.go
-```
+```START_TUTORIAL_CODE
+git add main.go echo
+```END_TUTORIAL_CODE
+```START_TUTORIAL_CODE
+git commit -m "Create echo package"
+```END_TUTORIAL_CODE
 
 Tutorial end state
 ------------------
