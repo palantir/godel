@@ -123,13 +123,13 @@ Some publish operations use a Maven group ID to determine the publish location. 
 publisher. Attempting to run a local publish will fail:
 
 ```START_TUTORIAL_CODE|fail=true
-./godelw publish local --dry-run
+./godelw publish maven-local --dry-run
 ```END_TUTORIAL_CODE
 
 As indicated by the error message, the group-id can be specified using a flag:
 
 ```START_TUTORIAL_CODE
-./godelw publish local --dry-run --group-id com.palantir.echgo2
+./godelw publish maven-local --dry-run --group-id com.palantir.echgo2
 ```END_TUTORIAL_CODE
 
 Although this approach works for one-off publishing operations, if the group ID is conceptually part of the product, it
@@ -171,7 +171,7 @@ use it. First, run the `./godelw dist` task to ensure that the dist outputs exis
 Now, dry run the publish again without the `--group-id` flag and verify that it succeeds:
 
 ```START_TUTORIAL_CODE
-./godelw publish local --dry-run
+./godelw publish maven-local --dry-run
 ```END_TUTORIAL_CODE
 
 Revert these changes by running the following:
@@ -180,11 +180,11 @@ Revert these changes by running the following:
 git checkout -- godel/config/dist-plugin.yml
 ```END_TUTORIAL_CODE
 
-### Local publishing
-The `local` publisher type copies the artifacts and a generated POM to a local directory:
+### Maven local publishing
+The `maven-local` publisher type copies the artifacts and a generated POM to a local directory:
 
 ```START_TUTORIAL_CODE
-./godelw publish local --dry-run --group-id com.palantir.echgo2 --base-dir ~/.m2/repository
+./godelw publish maven-local --dry-run --group-id com.palantir.echgo2
 ```END_TUTORIAL_CODE
 
 ### Artifactory publishing

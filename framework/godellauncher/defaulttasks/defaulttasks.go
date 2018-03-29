@@ -34,20 +34,20 @@ var defaultPluginsConfig = config.PluginsConfig{
 		{
 			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.distgo:dist-plugin:1.0.0-rc7",
+					ID: "com.palantir.distgo:dist-plugin:1.0.0-rc9",
 				}),
 			}),
 		},
 		{
 			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.godel-format-plugin:format-plugin:1.0.0-rc5",
+					ID: "com.palantir.godel-format-plugin:format-plugin:1.0.0-rc6",
 				}),
 			}),
 			Assets: config.ToLocatorWithResolverConfigs([]config.LocatorWithResolverConfig{
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-format-asset-ptimports:ptimports-asset:1.0.0-rc4",
+						ID: "com.palantir.godel-format-asset-ptimports:ptimports-asset:1.0.0-rc5",
 					}),
 				},
 			}),
@@ -62,7 +62,7 @@ var defaultPluginsConfig = config.PluginsConfig{
 		{
 			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.okgo:check-plugin:1.0.0-rc4",
+					ID: "com.palantir.okgo:check-plugin:1.0.0-rc5",
 				}),
 			}),
 			Assets: config.ToLocatorWithResolverConfigs([]config.LocatorWithResolverConfig{
@@ -108,7 +108,7 @@ var defaultPluginsConfig = config.PluginsConfig{
 				},
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-novendor:novendor-asset:1.0.0-rc2",
+						ID: "com.palantir.godel-okgo-asset-novendor:novendor-asset:1.0.0-rc3",
 					}),
 				},
 				{
