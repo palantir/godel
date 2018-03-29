@@ -28,7 +28,6 @@ const defaultResolver = "https://palantir.bintray.com/releases/{{GroupPath}}/{{P
 var defaultPluginsConfig = config.PluginsConfig{
 	DefaultResolvers: []string{
 		defaultResolver,
-		`/m2/repository/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz`,
 	},
 	Plugins: config.ToSinglePluginConfigs([]config.SinglePluginConfig{
 		{
