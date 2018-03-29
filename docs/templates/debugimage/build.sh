@@ -16,8 +16,9 @@ cp "${GODEL_DIR}/${GODEL_ARTIFACT_PATH}" "${SCRIPT_DIR}/"
 # core gödel code to use a custom resolver and use the plugin or configuring a custom resolver in the godel.yml of the
 # test project.
 #
-# Specifically, the following needs to be added to the "DefaultResolvers" slice of the "defaultPluginsConfig" variable
-# in framework/godellauncher/defaulttasks/defaulttasks.go:
+# Specifically, the following needs to be added to the "DefaultResolvers" slice of the "defaultPluginsConfig" variable:
+#
+# framework/godellauncher/defaulttasks/defaulttasks.go:
 #   `/m2/repository/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz`
 
 #################
