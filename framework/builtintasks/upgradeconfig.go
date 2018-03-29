@@ -169,8 +169,8 @@ func upgradeConfigFile(task godellauncher.UpgradeConfigTask, global godellaunche
 }
 
 func backupConfigFile(cfgFilePath string, dryRun bool, stdout io.Writer) error {
-	// if file does not exist, no need to back up
-	if _, err := os.Stat(cfgFilePath); os.IsNotExist(err) {
+	// if file does not exist or it exists but is empty, no need to back up
+	if fi, err := os.Stat(cfgFilePath); os.IsNotExist(err) || (err == nil && fi.Size() == 0) {
 		return nil
 	}
 
