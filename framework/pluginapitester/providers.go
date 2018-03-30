@@ -23,7 +23,9 @@ import (
 	"github.com/palantir/godel/framework/godel/config"
 	"github.com/palantir/godel/framework/godellauncher"
 	"github.com/palantir/godel/framework/internal/pathsinternal"
+	"github.com/palantir/godel/framework/internal/pluginsinternal"
 	"github.com/palantir/godel/framework/plugins"
+	"github.com/palantir/godel/pkg/osarch"
 )
 
 type PluginProvider interface {
@@ -98,4 +100,42 @@ func NewAssetProvider(assetPath string) AssetProvider {
 	return &fileAssetProvider{
 		asssetPath: assetPath,
 	}
+}
+
+func NewAssetProviderFromLocator(assetLocator, assetResolver string) (AssetProvider, error) {
+	lwrConfig := config.LocatorWithResolverConfig{
+		Locator: config.ToLocatorConfig(config.LocatorConfig{
+			ID: assetLocator,
+		}),
+		Resolver: assetResolver,
+	}
+	lwrParam, err := lwrConfig.ToParam()
+	if err != nil {
+		return nil, err
+	}
+	_, assetsDir, downloadsDir, err := pathsinternal.ResourceDirs()
+	if err != nil {
+		return nil, err
+	}
+	resolver, err := artifactresolver.NewTemplateResolver(assetResolver)
+	if err != nil {
+		return nil, err
+	}
+
+	outputBuf := &bytes.Buffer{}
+	if _, err := pluginsinternal.ResolveAssets(
+		assetsDir,
+		downloadsDir,
+		[]artifactresolver.LocatorWithResolverParam{
+			lwrParam,
+		},
+		osarch.Current(),
+		[]artifactresolver.Resolver{
+			resolver,
+		},
+		outputBuf,
+	); err != nil {
+		return nil, errors.Wrapf(err, "failed to resolve assets:\n%s", outputBuf.String())
+	}
+	return NewAssetProvider(pathsinternal.PluginPath(assetsDir, lwrParam.LocatorWithChecksums.Locator)), nil
 }
