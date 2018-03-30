@@ -31,6 +31,7 @@ import (
 	"github.com/palantir/godel/framework/godel/config"
 	"github.com/palantir/godel/framework/godellauncher"
 	"github.com/palantir/godel/framework/internal/pathsinternal"
+	"github.com/palantir/godel/framework/internal/pluginsinternal"
 	"github.com/palantir/godel/pkg/osarch"
 )
 
@@ -101,13 +102,13 @@ func resolveConfigProviders(configsDir, downloadsDir string, taskConfigProviders
 	for k := range providerErrors {
 		sortedKeys = append(sortedKeys, k)
 	}
-	sortLocators(sortedKeys)
+	pluginsinternal.SortLocators(sortedKeys)
 
 	errStringsParts := []string{fmt.Sprintf("failed to resolve %d configuration provider(s):", len(providerErrors))}
 	for _, k := range sortedKeys {
 		errStringsParts = append(errStringsParts, providerErrors[k].Error())
 	}
-	return nil, errors.New(strings.Join(errStringsParts, "\n"+strings.Repeat(" ", indentSpaces)))
+	return nil, errors.New(strings.Join(errStringsParts, "\n"+strings.Repeat(" ", pluginsinternal.IndentSpaces)))
 }
 
 func resolveAndVerifyConfigProvider(
