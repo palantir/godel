@@ -22,6 +22,7 @@ import (
 	"github.com/palantir/godel/framework/artifactresolver"
 	"github.com/palantir/godel/framework/godel/config/internal/v0"
 	"github.com/palantir/godel/framework/godellauncher"
+	"github.com/palantir/godel/framework/internal/pluginsinternal"
 )
 
 type GodelConfig v0.GodelConfig
@@ -50,15 +51,16 @@ func (c *TasksConfig) Combine(configs ...TasksConfig) {
 	}
 
 	for _, cfg := range configs {
-		// DefaultTask resolvers are appended
-		c.DefaultTasks.DefaultResolvers = append(c.DefaultTasks.DefaultResolvers, cfg.DefaultTasks.DefaultResolvers...)
+		// DefaultTask resolvers are appended and uniquified
+		c.DefaultTasks.DefaultResolvers = pluginsinternal.Uniquify(append(c.DefaultTasks.DefaultResolvers, cfg.DefaultTasks.DefaultResolvers...))
+
 		// DefaultTask tasks key/values are simply copied (and overwritten with last writer wins for any duplicate keys)
 		for k, v := range cfg.DefaultTasks.Tasks {
 			c.DefaultTasks.Tasks[k] = v
 		}
 
-		// Plugin resolvers and definitions are appended
-		c.Plugins.DefaultResolvers = append(c.Plugins.DefaultResolvers, cfg.Plugins.DefaultResolvers...)
+		// Plugin resolvers and definitions are appended and uniquified
+		c.Plugins.DefaultResolvers = pluginsinternal.Uniquify(append(c.Plugins.DefaultResolvers, cfg.Plugins.DefaultResolvers...))
 		c.Plugins.Plugins = append(c.Plugins.Plugins, cfg.Plugins.Plugins...)
 	}
 }

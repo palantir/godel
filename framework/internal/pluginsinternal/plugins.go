@@ -138,3 +138,19 @@ func SortLocators(locs []artifactresolver.Locator) {
 		return locs[i].String() < locs[j].String()
 	})
 }
+
+func Uniquify(in []string) []string {
+	if in == nil {
+		return nil
+	}
+	var out []string
+	seen := make(map[string]struct{})
+	for _, curr := range in {
+		if _, ok := seen[curr]; ok {
+			continue
+		}
+		out = append(out, curr)
+		seen[curr] = struct{}{}
+	}
+	return out
+}
