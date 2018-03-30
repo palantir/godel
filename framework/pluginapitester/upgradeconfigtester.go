@@ -34,6 +34,7 @@ import (
 
 	"github.com/palantir/godel/framework/builtintasks"
 	"github.com/palantir/godel/framework/godellauncher"
+	"github.com/palantir/godel/framework/godellauncher/defaulttasks"
 	"github.com/palantir/godel/framework/pluginapi/v2/pluginapi"
 )
 
@@ -48,31 +49,47 @@ import (
 func RunUpgradeConfig(
 	pluginProvider PluginProvider,
 	assetProviders []AssetProvider,
+	legacy bool,
 	projectDir string,
 	debug bool,
 	stdout io.Writer) (cleanup func(), rErr error) {
 
-	pluginPath := pluginProvider.PluginFilePath()
+	var pluginPath string
+	if pluginProvider != nil {
+		pluginPath = pluginProvider.PluginFilePath()
+	}
 	var assets []string
 	for _, asset := range assetProviders {
 		assets = append(assets, asset.AssetFilePath())
 	}
 
 	cleanup = func() {}
-	info, err := pluginapi.InfoFromPlugin(pluginPath)
-	if err != nil {
-		return cleanup, err
+
+	var upgradeTasks []godellauncher.UpgradeConfigTask
+	if pluginPath != "" {
+		info, err := pluginapi.InfoFromPlugin(pluginPath)
+		if err != nil {
+			return cleanup, err
+		}
+		upgradeTask := info.UpgradeConfigTask(pluginPath, assets)
+		if upgradeTask == nil {
+			return cleanup, errors.Errorf("plugin %s does not provide an upgrade task", pluginPath)
+		}
+		upgradeTasks = []godellauncher.UpgradeConfigTask{*upgradeTask}
+	} else {
+		// if no plugin was specified, add built-in upgraders
+		upgradeTasks = defaulttasks.BuiltinUpgradeConfigTasks()
 	}
 
-	upgradeTask := info.UpgradeConfigTask(pluginPath, assets)
-	if upgradeTask == nil {
-		return cleanup, errors.Errorf("plugin %s does not provide an upgrade task", pluginPath)
+	var taskArgs []string
+	if legacy {
+		taskArgs = append(taskArgs, "--legacy")
 	}
-
-	task := builtintasks.UpgradeConfigTask([]godellauncher.UpgradeConfigTask{*upgradeTask})
+	task := builtintasks.UpgradeConfigTask(upgradeTasks)
 	globalConfig := godellauncher.GlobalConfig{
-		Task:  task.Name,
-		Debug: debug,
+		Task:     task.Name,
+		TaskArgs: taskArgs,
+		Debug:    debug,
 	}
 	if projectDir != "" {
 		if !filepath.IsAbs(projectDir) {
@@ -102,6 +119,7 @@ func RunUpgradeConfig(
 type UpgradeConfigTestCase struct {
 	Name        string
 	ConfigFiles map[string]string
+	Legacy      bool
 	WantError   bool
 	WantOutput  string
 	WantFiles   map[string]string
@@ -140,7 +158,7 @@ func RunUpgradeConfigTest(t *testing.T,
 
 		outputBuf := &bytes.Buffer{}
 		func() {
-			runPluginCleanup, err := RunUpgradeConfig(pluginProvider, assetProviders, projectDir, false, outputBuf)
+			runPluginCleanup, err := RunUpgradeConfig(pluginProvider, assetProviders, tc.Legacy, projectDir, false, outputBuf)
 			defer runPluginCleanup()
 			if tc.WantError {
 				require.EqualError(t, err, "", "Case %d: %s\nOutput: %s", i, tc.Name, outputBuf.String())

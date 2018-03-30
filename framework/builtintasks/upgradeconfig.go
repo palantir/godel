@@ -287,8 +287,8 @@ var hardCodedLegacyUpgraders = []hardCodedLegacyUpgrader{
 	&hardCodedLegacyUpgraderImpl{
 		fileName: "exclude.yml",
 		upgradeConfigFn: func(configDirPath string, dryRun, printContent bool, stdout io.Writer) error {
-			// godel.yml itself is compatible. Only work to be performed is if "exclude.yml" exists and contains entries that
-			// differ from godel.yml.
+			// godel.yml itself is compatible. Only work to be performed is if "exclude.yml" exists and contains entries
+			// that differ from godel.yml.
 			legacyExcludeFilePath := path.Join(configDirPath, "exclude.yml")
 			if _, err := os.Stat(legacyExcludeFilePath); os.IsNotExist(err) {
 				// if legacy file does not exist, there is no upgrade to be performed
@@ -329,7 +329,7 @@ var hardCodedLegacyUpgraders = []hardCodedLegacyUpgrader{
 				if _, ok := existingPaths[legacyPath]; ok {
 					continue
 				}
-				currentGodelConfig.Exclude.Names = append(currentGodelConfig.Exclude.Paths, legacyPath)
+				currentGodelConfig.Exclude.Paths = append(currentGodelConfig.Exclude.Paths, legacyPath)
 				modified = true
 			}
 
@@ -348,9 +348,14 @@ var hardCodedLegacyUpgraders = []hardCodedLegacyUpgrader{
 				return errors.Wrapf(err, "failed to marshal upgraded godel configuration")
 			}
 
+			godelYMLPath := path.Join(configDirPath, "godel.yml")
+			// back up godel.yml because it is about to be overwritten
+			if err := backupConfigFile(godelYMLPath, dryRun, stdout); err != nil {
+				return errors.Wrapf(err, "failed to back up godel.yml")
+			}
 			if !dryRun {
 				// write migrated configuration
-				if err := ioutil.WriteFile(path.Join(configDirPath, "godel.yml"), upgradedCfgBytes, 0644); err != nil {
+				if err := ioutil.WriteFile(godelYMLPath, upgradedCfgBytes, 0644); err != nil {
 					return errors.Wrapf(err, "failed to write upgraded configuration")
 				}
 			}
