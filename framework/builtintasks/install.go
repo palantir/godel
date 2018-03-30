@@ -24,8 +24,12 @@ import (
 )
 
 func InstallTask() godellauncher.Task {
-	var globalCfg godellauncher.GlobalConfig
-	return godellauncher.CobraCLITask(&cobra.Command{
+	var (
+		globalCfg                godellauncher.GlobalConfig
+		skipUpgradeConfigFlagVal bool
+	)
+
+	cmd := &cobra.Command{
 		Use:   "install",
 		Short: "Install gödel from a local tgz file",
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -36,7 +40,18 @@ func InstallTask() godellauncher.Task {
 			if len(args) == 0 {
 				return errors.Errorf("path to package to install must be provided as an argument")
 			}
-			return installupdate.NewInstall(projectDir, godelgetter.NewPkgSrc(args[0], ""), cmd.OutOrStdout())
+			return installupdate.RunActionAndUpgradeConfig(
+				projectDir,
+				skipUpgradeConfigFlagVal,
+				func() error {
+					return installupdate.NewInstall(projectDir, godelgetter.NewPkgSrc(args[0], ""), cmd.OutOrStdout())
+				},
+				cmd.OutOrStdout(),
+				cmd.OutOrStderr(),
+			)
 		},
-	}, &globalCfg)
+	}
+	cmd.Flags().BoolVar(&skipUpgradeConfigFlagVal, "skip-upgrade-config", false, "skips running configuration upgrade tasks after installation")
+
+	return godellauncher.CobraCLITask(cmd, &globalCfg)
 }
