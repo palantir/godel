@@ -31,6 +31,8 @@ func upgradeGodelConfigTask() godellauncher.UpgradeConfigTask {
 	return godellauncher.UpgradeConfigTask{
 		ID:         "com.palantir.godel:godel",
 		ConfigFile: "godel.yml",
+		// Not setting the "LegacyConfigFile" is intentional: legacy configuration is serialization-compatible so no
+		// need to run the upgrader. godel.yml is also special because it is loaded before tasks.
 		RunImpl: func(t *godellauncher.UpgradeConfigTask, global godellauncher.GlobalConfig, configBytes []byte, stdout io.Writer) ([]byte, error) {
 			return config.UpgradeConfig(configBytes)
 		},

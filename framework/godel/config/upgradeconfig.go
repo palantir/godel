@@ -21,19 +21,13 @@ package config
 import (
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/framework/godel/config/internal/legacy"
 	"github.com/palantir/godel/framework/godel/config/internal/v0"
 	"github.com/palantir/godel/pkg/versionedconfig"
 )
 
 func UpgradeConfig(cfgBytes []byte) ([]byte, error) {
-	if versionedconfig.IsLegacyConfig(cfgBytes) {
-		v0Bytes, err := legacy.UpgradeConfig(cfgBytes)
-		if err != nil {
-			return nil, err
-		}
-		cfgBytes = v0Bytes
-	}
+	// legacy configuration is fully compatible with 2.0 configuration so no need to migrate. Configuration for godel is
+	// also special because it has already been loaded by the time the program is run.
 	version, err := versionedconfig.ConfigVersion(cfgBytes)
 	if err != nil {
 		return nil, err
