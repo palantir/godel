@@ -50,7 +50,15 @@ func getGodelVersion(projectDir string) (godelVersion, error) {
 	if err != nil {
 		return godelVersion{}, errors.Wrapf(err, "failed to execute command %v: %s", cmd.Args, string(output))
 	}
-	outputString := strings.TrimSpace(string(output))
+
+	// split input on newlines and only consider final line. Do this in case invoking "godelw" causes assets to be
+	// downloaded (in which case download messages will be in output before version is printed).
+	outputLines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	if len(outputLines) == 0 {
+		return godelVersion{}, errors.Wrapf(err, "no elements found when splitting output %q on newlines", string(output))
+	}
+	outputString := outputLines[len(outputLines)-1]
+
 	parts := strings.Split(outputString, " ")
 	if len(parts) != 3 {
 		return godelVersion{}, errors.Errorf(`expected output %s to have 3 parts when split by " ", but was %v`, outputString, parts)
