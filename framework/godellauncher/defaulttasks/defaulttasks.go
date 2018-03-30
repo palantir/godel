@@ -21,6 +21,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/palantir/godel/framework/godel/config"
+	"github.com/palantir/godel/framework/internal/pluginsinternal"
 )
 
 const defaultResolver = "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
@@ -153,8 +154,8 @@ func PluginsConfig(cfg config.DefaultTasksConfig) (config.PluginsConfig, error) 
 	pluginsCfg := config.PluginsConfig{
 		DefaultResolvers: defaultPluginsConfig.DefaultResolvers,
 	}
-	// append default resolvers provided by the configuration
-	pluginsCfg.DefaultResolvers = append(pluginsCfg.DefaultResolvers, cfg.DefaultResolvers...)
+	// append default resolvers provided by the configuration and uniquify
+	pluginsCfg.DefaultResolvers = pluginsinternal.Uniquify(append(pluginsCfg.DefaultResolvers, cfg.DefaultResolvers...))
 
 	defaultPluginKeys := make(map[string]struct{})
 	for _, currPlugin := range defaultPluginsConfig.Plugins {
