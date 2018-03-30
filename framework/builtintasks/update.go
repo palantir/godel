@@ -17,7 +17,6 @@ package builtintasks
 import (
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/palantir/godel/framework/builtintasks/installupdate"
@@ -26,12 +25,12 @@ import (
 
 func UpdateTask() godellauncher.Task {
 	var (
-		syncFlag              bool
-		versionFlag           string
-		checksumFlag          string
-		cacheDurationFlag     time.Duration
-		skipUpgradeConfigFlag bool
-		globalCfg             godellauncher.GlobalConfig
+		syncFlagVal              bool
+		versionFlagVal           string
+		checksumFlagVal          string
+		cacheDurationFlagVal     time.Duration
+		skipUpgradeConfigFlagVal bool
+		globalCfg                godellauncher.GlobalConfig
 	)
 
 	cmd := &cobra.Command{
@@ -43,50 +42,37 @@ func UpdateTask() godellauncher.Task {
 				return err
 			}
 
-			var godelVersionBeforeUpdate installupdate.Version
-			if !skipUpgradeConfigFlag {
-				versionBeforeUpdateVar, err := installupdate.GodelVersion(projectDir)
-				if err != nil {
-					return errors.Wrapf(err, "failed to determine version before update")
-				}
-				godelVersionBeforeUpdate = versionBeforeUpdateVar
-			}
-
-			if syncFlag {
-				// if sync flag is true, update version to what is specified in gödel.yml
-				pkgSrc, err := installupdate.GodelPropsDistPkgInfo(projectDir)
-				if err != nil {
-					return err
-				}
-				if err := installupdate.Update(projectDir, pkgSrc, cmd.OutOrStdout()); err != nil {
-					return err
-				}
-			} else {
-				if err := installupdate.InstallVersion(projectDir, versionFlag, checksumFlag, cacheDurationFlag, false, cmd.OutOrStdout()); err != nil {
-					return err
-				}
-			}
-
-			// run "upgrade-config" after upgrade if new version is greater than or equal to previous version.
-			if !skipUpgradeConfigFlag {
-				godelVersionAfterUpdate, err := installupdate.GodelVersion(projectDir)
-				if err != nil {
-					return errors.Wrapf(err, "failed to determine version after update")
-				}
-				if cmp, ok := godelVersionAfterUpdate.CompareTo(godelVersionBeforeUpdate); !ok || cmp >= 0 {
-					if err := installupdate.RunUpgradeConfig(projectDir, cmd.OutOrStdout(), cmd.OutOrStderr()); err != nil {
+			action := func() error {
+				if syncFlagVal {
+					// if sync flag is true, update version to what is specified in gödel.yml
+					pkgSrc, err := installupdate.GodelPropsDistPkgInfo(projectDir)
+					if err != nil {
+						return err
+					}
+					if err := installupdate.Update(projectDir, pkgSrc, cmd.OutOrStdout()); err != nil {
+						return err
+					}
+				} else {
+					if err := installupdate.InstallVersion(projectDir, versionFlagVal, checksumFlagVal, cacheDurationFlagVal, false, cmd.OutOrStdout()); err != nil {
 						return err
 					}
 				}
+				return nil
 			}
-			return nil
+			return installupdate.RunActionAndUpgradeConfig(
+				projectDir,
+				skipUpgradeConfigFlagVal,
+				action,
+				cmd.OutOrStdout(),
+				cmd.OutOrStderr(),
+			)
 		},
 	}
-	cmd.Flags().BoolVar(&syncFlag, "sync", false, "use version and checksum specified in godel.properties (if true, all other flags are ignored)")
-	cmd.Flags().StringVar(&versionFlag, "version", "", "version to update (if blank, uses latest version)")
-	cmd.Flags().StringVar(&checksumFlag, "checksum", "", "expected checksum for package")
-	cmd.Flags().DurationVar(&cacheDurationFlag, "cache-duration", time.Hour, "duration for which cache entries should be considered valid")
-	cmd.Flags().BoolVar(&skipUpgradeConfigFlag, "skip-upgrade-config", false, "skips running configuration upgrade tasks after running update")
+	cmd.Flags().BoolVar(&syncFlagVal, "sync", false, "use version and checksum specified in godel.properties (if true, all other flags are ignored)")
+	cmd.Flags().StringVar(&versionFlagVal, "version", "", "version to update (if blank, uses latest version)")
+	cmd.Flags().StringVar(&checksumFlagVal, "checksum", "", "expected checksum for package")
+	cmd.Flags().DurationVar(&cacheDurationFlagVal, "cache-duration", time.Hour, "duration for which cache entries should be considered valid")
+	cmd.Flags().BoolVar(&skipUpgradeConfigFlagVal, "skip-upgrade-config", false, "skips running configuration upgrade tasks after running update")
 
 	return godellauncher.CobraCLITask(cmd, &globalCfg)
 }

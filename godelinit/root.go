@@ -27,10 +27,10 @@ import (
 
 func rootCmd() *cobra.Command {
 	var (
-		versionFlag           string
-		checksumFlag          string
-		cacheDurationFlag     time.Duration
-		skipUpgradeConfigFlag bool
+		versionFlagVal           string
+		checksumFlagVal          string
+		cacheDurationFlagVal     time.Duration
+		skipUpgradeConfigFlagVal bool
 	)
 
 	cmd := &cobra.Command{
@@ -47,52 +47,23 @@ to the project. If a specific version of godel is desired, it can be specified u
 
 			// if current directory does not contain "godelw" wrapper, don't bother trying to upgrade configuration
 			if _, err := os.Stat(path.Join(projectDir, "godelw")); err != nil {
-				skipUpgradeConfigFlag = true
+				skipUpgradeConfigFlagVal = true
 			}
-
-			// determine version before install
-			var godelVersionBeforeUpdate installupdate.Version
-			if !skipUpgradeConfigFlag {
-				versionBeforeUpdateVar, err := installupdate.GodelVersion(projectDir)
-				if err != nil {
-					return errors.Wrapf(err, "failed to determine version before update")
-				}
-				godelVersionBeforeUpdate = versionBeforeUpdateVar
-			}
-
-			// perform install
-			if err := installupdate.InstallVersion(projectDir, versionFlag, checksumFlag, cacheDurationFlag, true, cmd.OutOrStdout()); err != nil {
-				return err
-			}
-
-			// run configuration upgrade if needed
-			if !skipUpgradeConfigFlag {
-				godelVersionAfterUpdate, err := installupdate.GodelVersion(projectDir)
-				if err != nil {
-					return errors.Wrapf(err, "failed to determine version after update")
-				}
-
-				if godelVersionBeforeUpdate.MajorVersionNum() <= 1 && godelVersionAfterUpdate.MajorVersionNum() >= 2 {
-					// if going from <=1 to >=2, run "upgrade-config --legacy" task to upgrade configuration
-					if err := installupdate.RunUpgradeLegacyConfig(projectDir, cmd.OutOrStdout(), cmd.OutOrStderr()); err != nil {
-						return err
-					}
-				} else if godelVersionBeforeUpdate.MajorVersionNum() >= 2 {
-					// if previous version is >=2 and new version is >= previous version, run "upgrade-config"
-					if cmp, ok := godelVersionAfterUpdate.CompareTo(godelVersionBeforeUpdate); !ok || cmp >= 0 {
-						if err := installupdate.RunUpgradeConfig(projectDir, cmd.OutOrStdout(), cmd.OutOrStderr()); err != nil {
-							return err
-						}
-					}
-				}
-			}
-			return nil
+			return installupdate.RunActionAndUpgradeConfig(
+				projectDir,
+				skipUpgradeConfigFlagVal,
+				func() error {
+					return installupdate.InstallVersion(projectDir, versionFlagVal, checksumFlagVal, cacheDurationFlagVal, true, cmd.OutOrStdout())
+				},
+				cmd.OutOrStdout(),
+				cmd.OutOrStderr(),
+			)
 		},
 	}
 
-	cmd.Flags().StringVar(&versionFlag, "version", "", "version to install (if unspecified, latest is used)")
-	cmd.Flags().StringVar(&checksumFlag, "checksum", "", "expected checksum for package")
-	cmd.Flags().DurationVar(&cacheDurationFlag, "cache-duration", time.Hour, "duration for which cache entries should be considered valid")
-	cmd.Flags().BoolVar(&skipUpgradeConfigFlag, "skip-upgrade-config", false, "skips running configuration upgrade tasks after running update")
+	cmd.Flags().StringVar(&versionFlagVal, "version", "", "version to install (if unspecified, latest is used)")
+	cmd.Flags().StringVar(&checksumFlagVal, "checksum", "", "expected checksum for package")
+	cmd.Flags().DurationVar(&cacheDurationFlagVal, "cache-duration", time.Hour, "duration for which cache entries should be considered valid")
+	cmd.Flags().BoolVar(&skipUpgradeConfigFlagVal, "skip-upgrade-config", false, "skips running configuration upgrade tasks after running update")
 	return cmd
 }

@@ -56,7 +56,7 @@ var releaseRegexps = []*regexp.Regexp{
 	NonOrderable:             regexp.MustCompile(`^([0-9]+)\.([0-9]+)\.([0-9])+(-[a-z0-9-]+)?(\.dirty)?$`),
 }
 
-type Version struct {
+type godelVersion struct {
 	version string
 
 	// computed once on construction and stored
@@ -68,47 +68,47 @@ type Version struct {
 	secondSequenceVersionNum *int
 }
 
-func (v Version) String() string {
+func (v godelVersion) String() string {
 	return v.version
 }
 
-func (v Version) Type() Type {
+func (v godelVersion) Type() Type {
 	return getType(v.version)
 }
 
-func (v Version) Orderable() bool {
+func (v godelVersion) Orderable() bool {
 	typ := v.Type()
 	return typ >= ReleaseCandidate && typ < NonOrderable
 }
 
-func (v Version) Value() string {
+func (v godelVersion) Value() string {
 	return v.version
 }
 
-func (v Version) MajorVersionNum() int {
+func (v godelVersion) MajorVersionNum() int {
 	return v.majorVersionNum
 }
 
-func (v Version) MinorVersionNum() int {
+func (v godelVersion) MinorVersionNum() int {
 	return v.minorVersionNum
 }
 
-func (v Version) PatchVersionNum() int {
+func (v godelVersion) PatchVersionNum() int {
 	return v.patchVersionNum
 }
 
-func (v Version) FirstSequenceVersionNum() *int {
+func (v godelVersion) FirstSequenceVersionNum() *int {
 	return v.firstSequenceVersionNum
 }
 
-func (v Version) SecondSequenceVersionNum() *int {
+func (v godelVersion) SecondSequenceVersionNum() *int {
 	return v.secondSequenceVersionNum
 }
 
-func NewVersion(v string) (Version, error) {
+func newGodelVersion(v string) (godelVersion, error) {
 	typ := getType(v)
 	if typ == unknown {
-		return Version{}, fmt.Errorf("%s is not a valid SLS version", v)
+		return godelVersion{}, fmt.Errorf("%s is not a valid SLS version", v)
 	}
 
 	matches := releaseRegexps[typ].FindStringSubmatch(v)
@@ -124,7 +124,7 @@ func NewVersion(v string) (Version, error) {
 		secondSequenceVersionNum = &n
 	}
 
-	return Version{
+	return godelVersion{
 		version:                  v,
 		typ:                      typ,
 		majorVersionNum:          mustAtoI(matches[1]),
@@ -148,7 +148,7 @@ func getType(v string) Type {
 // always returns -1 and false. If both versions are orderable, then returns -1 if the receiver is less than the
 // argument, 0 if they are equal and 1 if the receiver is greater than the argument. If both versions are orderable, the
 // second return value is always true.
-func (v Version) CompareTo(o Version) (int, bool) {
+func (v godelVersion) CompareTo(o godelVersion) (int, bool) {
 	// if either input is not orderable, always return -1 and false
 	if !v.Orderable() || !o.Orderable() {
 		return -1, false

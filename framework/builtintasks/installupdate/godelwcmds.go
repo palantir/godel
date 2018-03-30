@@ -42,22 +42,22 @@ func runUpgradeConfig(projectDir string, args []string, stdout, stderr io.Writer
 	return cmd.Run()
 }
 
-// GodelVersion returns the Version returned by "{{projectDir}}/godelw version".
-func GodelVersion(projectDir string) (Version, error) {
+// getGodelVersion returns the Version returned by "{{projectDir}}/godelw version".
+func getGodelVersion(projectDir string) (godelVersion, error) {
 	godelw := path.Join(projectDir, "godelw")
 	cmd := exec.Command(godelw, "version")
 	output, err := cmd.Output()
 	if err != nil {
-		return Version{}, errors.Wrapf(err, "failed to execute command %v: %s", cmd.Args, string(output))
+		return godelVersion{}, errors.Wrapf(err, "failed to execute command %v: %s", cmd.Args, string(output))
 	}
 	outputString := strings.TrimSpace(string(output))
 	parts := strings.Split(outputString, " ")
 	if len(parts) != 3 {
-		return Version{}, errors.Errorf(`expected output %s to have 3 parts when split by " ", but was %v`, outputString, parts)
+		return godelVersion{}, errors.Errorf(`expected output %s to have 3 parts when split by " ", but was %v`, outputString, parts)
 	}
-	v, err := NewVersion(parts[2])
+	v, err := newGodelVersion(parts[2])
 	if err != nil {
-		return Version{}, errors.Wrapf(err, "failed to create version from output")
+		return godelVersion{}, errors.Wrapf(err, "failed to create version from output")
 	}
 	return v, nil
 }
