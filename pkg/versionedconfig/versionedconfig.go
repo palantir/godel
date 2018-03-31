@@ -21,7 +21,7 @@ import (
 
 // ConfigWithVersion is a struct with a "version" YAML field that stores the version as a string.
 type ConfigWithVersion struct {
-	Version string `yaml:"version"`
+	Version string `yaml:"version,omitempty"`
 }
 
 // ConfigVersion unmarshals the provided bytes as YAML and returns the value of the top-level "version" key. The value

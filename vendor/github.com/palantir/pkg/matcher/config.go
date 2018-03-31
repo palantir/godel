@@ -7,8 +7,8 @@ package matcher
 // NamesPathsCfg is a configuration object that defines a list of names and paths that should be used to construct a
 // Matcher. The returned Matcher will match any name or path specified in the configuration.
 type NamesPathsCfg struct {
-	Names []string `yaml:"names" json:"names"`
-	Paths []string `yaml:"paths" json:"paths"`
+	Names []string `yaml:"names,omitempty" json:"names"`
+	Paths []string `yaml:"paths,omitempty" json:"paths"`
 }
 
 // Add appends the names and paths specified in the provided NamesPathsCfg to those in the receiver.
@@ -33,8 +33,8 @@ func (c *NamesPathsCfg) Matcher() Matcher {
 // to exclude matches. The returned Matcher will match any name or path specified in the configuration provided that the
 // matched path does not match the matcher produced by the "Exclude" configuration.
 type NamesPathsWithExcludeCfg struct {
-	NamesPathsCfg `yaml:",inline"`
-	Exclude       NamesPathsCfg `yaml:"exclude" json:"exclude"`
+	NamesPathsCfg `yaml:",inline,omitempty"`
+	Exclude       NamesPathsCfg `yaml:"exclude,omitempty" json:"exclude"`
 }
 
 // Matcher returns a Matcher constructed from the configuration. The Matcher returns true if it matches any of the

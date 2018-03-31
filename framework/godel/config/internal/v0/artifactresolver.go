@@ -15,26 +15,26 @@
 package v0
 
 type LocatorWithResolverConfig struct {
-	Locator  LocatorConfig `yaml:"locator"`
-	Resolver string        `yaml:"resolver"`
+	Locator  LocatorConfig `yaml:"locator,omitempty"`
+	Resolver string        `yaml:"resolver,omitempty"`
 }
 
 // ConfigProviderLocatorWithResolverConfig is the configuration for a locator with resolver for a configuration
 // provider. It differs from a LocatorWithResolverConfig in that the locator is a ConfigProviderLocatorConfig rather
 // than a LocatorConfig.
 type ConfigProviderLocatorWithResolverConfig struct {
-	Locator  ConfigProviderLocatorConfig `yaml:"locator"`
-	Resolver string                      `yaml:"resolver"`
+	Locator  ConfigProviderLocatorConfig `yaml:"locator,omitempty"`
+	Resolver string                      `yaml:"resolver,omitempty"`
 }
 
 type LocatorConfig struct {
-	ID        string            `yaml:"id"`
-	Checksums map[string]string `yaml:"checksums"`
+	ID        string            `yaml:"id,omitempty"`
+	Checksums map[string]string `yaml:"checksums,omitempty"`
 }
 
 // ConfigProviderLocatorConfig is the configuration for a locator for a configuration provider. It differs from a
 // LocatorConfig in that only a single checksum can be specified.
 type ConfigProviderLocatorConfig struct {
-	ID       string `yaml:"id"`
-	Checksum string `yaml:"checksum"`
+	ID       string `yaml:"id,omitempty"`
+	Checksum string `yaml:"checksum,omitempty"`
 }
