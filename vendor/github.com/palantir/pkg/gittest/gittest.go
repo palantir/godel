@@ -42,11 +42,12 @@ func Merge(t *testing.T, gitDir, branch string) {
 	RunGitCommand(t, gitDir, "merge", "--no-ff", branch)
 }
 
-func RunGitCommand(t *testing.T, gitDir string, args ...string) {
+func RunGitCommand(t *testing.T, gitDir string, args ...string) string {
 	cmd := exec.Command("git", args...)
 	cmd.Dir = gitDir
 	output, err := cmd.CombinedOutput()
 	requireNoError(t, err, string(output))
+	return string(output)
 }
 
 func requireNoError(t *testing.T, err error, msg string) {

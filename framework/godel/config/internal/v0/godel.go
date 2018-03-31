@@ -26,57 +26,57 @@ import (
 
 type GodelConfig struct {
 	// Version of the configuration
-	versionedconfig.ConfigWithVersion `yaml:",inline"`
+	versionedconfig.ConfigWithVersion `yaml:",inline,omitempty"`
 
 	// TasksConfigProviders specifies the providers used to load provided task configuration.
-	TasksConfigProviders TasksConfigProvidersConfig `yaml:"tasks-config-providers"`
+	TasksConfigProviders TasksConfigProvidersConfig `yaml:"tasks-config-providers,omitempty"`
 
 	// TasksConfig contains the configuration for the tasks (default and plugin).
-	TasksConfig `yaml:",inline"`
+	TasksConfig `yaml:",inline,omitempty"`
 
 	// Exclude specifies the files and directories that should be excluded from gödel operations.
-	Exclude matcher.NamesPathsCfg `yaml:"exclude"`
+	Exclude matcher.NamesPathsCfg `yaml:"exclude,omitempty"`
 }
 
 type TasksConfig struct {
 	// DefaultTasks specifies the configuration for the default tasks for gödel.
-	DefaultTasks DefaultTasksConfig `yaml:"default-tasks"`
+	DefaultTasks DefaultTasksConfig `yaml:"default-tasks,omitempty"`
 	// Plugins specifies the configuration for the plugins configured for gödel.
-	Plugins PluginsConfig `yaml:"plugins"`
+	Plugins PluginsConfig `yaml:"plugins,omitempty"`
 }
 
 type DefaultTasksConfig struct {
-	DefaultResolvers []string                           `yaml:"resolvers"`
-	Tasks            map[string]SingleDefaultTaskConfig `yaml:"tasks"`
+	DefaultResolvers []string                           `yaml:"resolvers,omitempty"`
+	Tasks            map[string]SingleDefaultTaskConfig `yaml:"tasks,omitempty"`
 }
 
 type TasksConfigProvidersConfig struct {
-	DefaultResolvers []string                                  `yaml:"resolvers"`
-	ConfigProviders  []ConfigProviderLocatorWithResolverConfig `yaml:"providers"`
+	DefaultResolvers []string                                  `yaml:"resolvers,omitempty"`
+	ConfigProviders  []ConfigProviderLocatorWithResolverConfig `yaml:"providers,omitempty"`
 }
 
 type SingleDefaultTaskConfig struct {
 	// LocatorWithResolverConfig contains the configuration for the locator and resolver. Any value provided here
 	// overrides the default value.
-	LocatorWithResolverConfig `yaml:",inline"`
+	LocatorWithResolverConfig `yaml:",inline,omitempty"`
 	// ExcludeAllDefaultAssets specifies whether or not all of the default assets should be excluded. If this value is
 	// true, then DefaultAssetsToExclude is ignored.
-	ExcludeAllDefaultAssets bool `yaml:"exclude-all-default-assets"`
+	ExcludeAllDefaultAssets bool `yaml:"exclude-all-default-assets,omitempty"`
 	// DefaultAssetsToExclude specifies the assets that should be excluded if they are provided by the default
 	// configuration. Only used if ExcludeAllDefaultAssets is false.
-	DefaultAssetsToExclude []string `yaml:"exclude-default-assets"`
+	DefaultAssetsToExclude []string `yaml:"exclude-default-assets,omitempty"`
 	// Assets specifies the custom assets that should be added to the default task.
-	Assets []LocatorWithResolverConfig `yaml:"assets"`
+	Assets []LocatorWithResolverConfig `yaml:"assets,omitempty"`
 }
 
 type PluginsConfig struct {
-	DefaultResolvers []string             `yaml:"resolvers"`
-	Plugins          []SinglePluginConfig `yaml:"plugins"`
+	DefaultResolvers []string             `yaml:"resolvers,omitempty"`
+	Plugins          []SinglePluginConfig `yaml:"plugins,omitempty"`
 }
 
 type SinglePluginConfig struct {
 	// LocatorWithResolverConfig stores the locator and the resolver for the plugin.
-	LocatorWithResolverConfig `yaml:",inline"`
+	LocatorWithResolverConfig `yaml:",inline,omitempty"`
 	// Assets stores the locators and resolvers for the assets for this plugin.
-	Assets []LocatorWithResolverConfig `yaml:"assets"`
+	Assets []LocatorWithResolverConfig `yaml:"assets,omitempty"`
 }

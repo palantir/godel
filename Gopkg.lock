@@ -64,8 +64,8 @@
 [[projects]]
   branch = "master"
   name = "github.com/palantir/pkg"
-  packages = ["cobracli","gittest","matcher","pkgpath","specdir"]
-  revision = "b59de130c1302a3c591efcfb0fd575727f53d0d2"
+  packages = ["cobracli","gittest","matcher","pkgpath","signals","specdir"]
+  revision = "15f6fc0c684b2603c4e75a02ca132e5c434c7297"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -130,6 +130,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0c6ccaefb4e22ecb19a2e6bd1b707dd68acccf3554fdea84375a7471759d70a7"
+  inputs-digest = "7bfe3904376d823a24ddc81060ec9bac59ff4bae9e47a1a58a9e8c916426977a"
   solver-name = "gps-cdcl"
   solver-version = 1
