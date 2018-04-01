@@ -23,10 +23,12 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/palantir/godel/framework/builtintasks/installupdate"
+	"github.com/palantir/godel/godelgetter"
 )
 
 func rootCmd() *cobra.Command {
 	var (
+		localFlagVal             string
 		versionFlagVal           string
 		checksumFlagVal          string
 		cacheDurationFlagVal     time.Duration
@@ -43,6 +45,9 @@ to the project. If a specific version of godel is desired, it can be specified u
 			if len(args) > 0 {
 				return cmd.Usage()
 			}
+			if localFlagVal != "" && versionFlagVal != "" {
+				return errors.Errorf("cannot specify both '--local' and '--version' flag")
+			}
 
 			projectDir, err := os.Getwd()
 			if err != nil {
@@ -53,18 +58,28 @@ to the project. If a specific version of godel is desired, it can be specified u
 			if _, err := os.Stat(path.Join(projectDir, "godelw")); err != nil {
 				skipUpgradeConfigFlagVal = true
 			}
+
+			var runFn func() error
+			if localFlagVal != "" {
+				runFn = func() error {
+					return installupdate.NewInstall(projectDir, godelgetter.NewPkgSrc(localFlagVal, checksumFlagVal), cmd.OutOrStdout())
+				}
+			} else {
+				runFn = func() error {
+					return installupdate.InstallVersion(projectDir, versionFlagVal, checksumFlagVal, cacheDurationFlagVal, true, cmd.OutOrStdout())
+				}
+			}
 			return installupdate.RunActionAndUpgradeConfig(
 				projectDir,
 				skipUpgradeConfigFlagVal,
-				func() error {
-					return installupdate.InstallVersion(projectDir, versionFlagVal, checksumFlagVal, cacheDurationFlagVal, true, cmd.OutOrStdout())
-				},
+				runFn,
 				cmd.OutOrStdout(),
 				cmd.OutOrStderr(),
 			)
 		},
 	}
 
+	cmd.Flags().StringVar(&localFlagVal, "local", "", "path to local tgz file that should be used for installation")
 	cmd.Flags().StringVar(&versionFlagVal, "version", "", "version to install (if unspecified, latest is used)")
 	cmd.Flags().StringVar(&checksumFlagVal, "checksum", "", "expected checksum for package")
 	cmd.Flags().DurationVar(&cacheDurationFlagVal, "cache-duration", time.Hour, "duration for which cache entries should be considered valid")
