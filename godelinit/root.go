@@ -40,6 +40,10 @@ func rootCmd() *cobra.Command {
 The default behavior adds the newest release of godel on GitHub (https://github.com/palantir/godel/releases)
 to the project. If a specific version of godel is desired, it can be specified using the '--version' flag.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) > 0 {
+				return cmd.Usage()
+			}
+
 			projectDir, err := os.Getwd()
 			if err != nil {
 				return errors.Wrapf(err, "failed to determine working directory")
