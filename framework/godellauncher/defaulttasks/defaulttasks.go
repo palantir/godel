@@ -34,7 +34,7 @@ var defaultPluginsConfig = config.PluginsConfig{
 		{
 			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.distgo:dist-plugin:1.0.0-rc10",
+					ID: "com.palantir.distgo:dist-plugin:1.0.0-rc11",
 				}),
 			}),
 		},
