@@ -67,7 +67,7 @@ Tutorial end state
 
 Tutorial next step
 ------------------
-[Other commands](https://github.com/palantir/godel/wiki/Other-commands)
+[Update legacy gödel](https://github.com/palantir/godel/wiki/Update-legacy-godel)
 
 More
 ----

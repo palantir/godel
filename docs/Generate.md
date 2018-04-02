@@ -30,7 +30,7 @@ Add the plugin definition to `godel/config/godel.yml`:
     - "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
   plugins:
     - locator:
-        id: "com.palantir.go-generate:generate-plugin:1.0.0-rc2"
+        id: "com.palantir.go-generate:generate-plugin:1.0.0-rc3"
 exclude:
   names:
     - "\\\\..+"
@@ -44,8 +44,8 @@ the plugin:
 
 ```
 ➜ ./godelw
-Getting package from https://palantir.bintray.com/releases/com/palantir/go-generate/generate-plugin/1.0.0-rc2/generate-plugin-1.0.0-rc2-linux-amd64.tgz...
- 3.27 MiB / 3.27 MiB  100.00% 2s
+Getting package from https://palantir.bintray.com/releases/com/palantir/go-generate/generate-plugin/1.0.0-rc3/generate-plugin-1.0.0-rc3-linux-amd64.tgz...
+ 0 B / 3.27 MiB    0.00% 638.36 KiB / 3.27 MiB   19.04% 1.30 MiB / 3.27 MiB   39.80% 2.43 MiB / 3.27 MiB   74.32% 3.27 MiB / 3.27 MiB  100.00% 0s
 Usage:
   godel [command]
 
@@ -448,7 +448,7 @@ exclude block of `godel/config/godel.yml` to reflect this and specify that the f
     - "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
   plugins:
     - locator:
-        id: "com.palantir.go-generate:generate-plugin:1.0.0-rc2"
+        id: "com.palantir.go-generate:generate-plugin:1.0.0-rc3"
 exclude:
   names:
     - "\\\\..+"
@@ -465,7 +465,7 @@ We can now commit the changes:
 ```
 ➜ git add echo godel main.go
 ➜ git commit -m "Add support for echo types"
-[master b0f25e5] Add support for echo types
+[master 038123b] Add support for echo types
  6 files changed, 78 insertions(+), 4 deletions(-)
  create mode 100644 echo/type_string.go
  create mode 100644 godel/config/generate-plugin.yml
@@ -598,10 +598,10 @@ Run the `check` command to verify that the project is still valid:
 
 ```
 ➜ ./godelw check
-[compiles]      Running compiles...
 [extimport]     Running extimport...
-[deadcode]      Running deadcode...
 [errcheck]      Running errcheck...
+[deadcode]      Running deadcode...
+[compiles]      Running compiles...
 [extimport]     Finished extimport
 [golint]        Running golint...
 [golint]        Finished golint
@@ -656,7 +656,7 @@ Commit these changes by running the following:
 ```
 ➜ git add echo generator godel
 ➜ git commit -m "Update generator code"
-[master c0a849e] Update generator code
+[master 2bea3e9] Update generator code
  8 files changed, 702 insertions(+), 4 deletions(-)
  create mode 100644 generator/generate.go
  create mode 100644 generator/vendor/golang.org/x/tools/cmd/stringer/importer18.go

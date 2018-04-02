@@ -58,11 +58,11 @@ We will perform a release for a 0.0.2 of our product. Create a `0.0.2` tag and p
 ```
 ➜ git tag 0.0.2
 ➜ ./godelw dist
-Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.2/linux-amd64/echgo2
-Building echgo2 for darwin-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.2/darwin-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.233s)
-Finished building echgo2 for darwin-amd64 (0.262s)
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz, /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz
+Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.2/darwin-amd64/echgo2
+Building echgo2 for linux-amd64 at out/build/echgo2/0.0.2/linux-amd64/echgo2
+Finished building echgo2 for linux-amd64 (0.216s)
+Finished building echgo2 for darwin-amd64 (0.223s)
+Creating distribution for echgo2 at out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz, out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
 
@@ -127,17 +127,17 @@ Some publish operations use a Maven group ID to determine the publish location. 
 publisher. Attempting to run a local publish will fail:
 
 ```
-➜ ./godelw publish local --dry-run
-Error: failed to publish echgo2 using local publisher: group-id was not specified -- it must be specified in configuration or using a flag
+➜ ./godelw publish maven-local --dry-run
+Error: failed to publish echgo2 using maven-local publisher: group-id was not specified -- it must be specified in configuration or using a flag
 ```
 
 As indicated by the error message, the group-id can be specified using a flag:
 
 ```
-➜ ./godelw publish local --dry-run --group-id com.palantir.echgo2
-[DRY RUN] Writing POM to com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2.pom
-[DRY RUN] Copying artifact from /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz to com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2-darwin-amd64.tgz
-[DRY RUN] Copying artifact from /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz to com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2-linux-amd64.tgz
+➜ ./godelw publish maven-local --dry-run --group-id com.palantir.echgo2
+[DRY RUN] Writing POM to /root/.m2/repository/com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2.pom
+[DRY RUN] Copying artifact from out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz to /root/.m2/repository/com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2-darwin-amd64.tgz
+[DRY RUN] Copying artifact from out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz to /root/.m2/repository/com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2-linux-amd64.tgz
 ```
 
 Although this approach works for one-off publishing operations, if the group ID is conceptually part of the product, it
@@ -174,21 +174,21 @@ use it. First, run the `./godelw dist` task to ensure that the dist outputs exis
 
 ```
 ➜ ./godelw dist
-Building echgo2 for darwin-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.2-dirty/darwin-amd64/echgo2
-Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.2-dirty/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.228s)
-Finished building echgo2 for darwin-amd64 (0.246s)
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2-dirty/os-arch-bin/echgo2-0.0.2-dirty-darwin-amd64.tgz, /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2-dirty/os-arch-bin/echgo2-0.0.2-dirty-linux-amd64.tgz
+Building echgo2 for linux-amd64 at out/build/echgo2/0.0.2-dirty/linux-amd64/echgo2
+Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.2-dirty/darwin-amd64/echgo2
+Finished building echgo2 for linux-amd64 (0.227s)
+Finished building echgo2 for darwin-amd64 (0.236s)
+Creating distribution for echgo2 at out/dist/echgo2/0.0.2-dirty/os-arch-bin/echgo2-0.0.2-dirty-darwin-amd64.tgz, out/dist/echgo2/0.0.2-dirty/os-arch-bin/echgo2-0.0.2-dirty-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
 
 Now, dry run the publish again without the `--group-id` flag and verify that it succeeds:
 
 ```
-➜ ./godelw publish local --dry-run
-[DRY RUN] Writing POM to com/palantir/echgo2/echgo2/0.0.2-dirty/echgo2-0.0.2-dirty.pom
-[DRY RUN] Copying artifact from /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2-dirty/os-arch-bin/echgo2-0.0.2-dirty-darwin-amd64.tgz to com/palantir/echgo2/echgo2/0.0.2-dirty/echgo2-0.0.2-dirty-darwin-amd64.tgz
-[DRY RUN] Copying artifact from /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2-dirty/os-arch-bin/echgo2-0.0.2-dirty-linux-amd64.tgz to com/palantir/echgo2/echgo2/0.0.2-dirty/echgo2-0.0.2-dirty-linux-amd64.tgz
+➜ ./godelw publish maven-local --dry-run
+[DRY RUN] Writing POM to /root/.m2/repository/com/palantir/echgo2/echgo2/0.0.2-dirty/echgo2-0.0.2-dirty.pom
+[DRY RUN] Copying artifact from out/dist/echgo2/0.0.2-dirty/os-arch-bin/echgo2-0.0.2-dirty-darwin-amd64.tgz to /root/.m2/repository/com/palantir/echgo2/echgo2/0.0.2-dirty/echgo2-0.0.2-dirty-darwin-amd64.tgz
+[DRY RUN] Copying artifact from out/dist/echgo2/0.0.2-dirty/os-arch-bin/echgo2-0.0.2-dirty-linux-amd64.tgz to /root/.m2/repository/com/palantir/echgo2/echgo2/0.0.2-dirty/echgo2-0.0.2-dirty-linux-amd64.tgz
 ```
 
 Revert these changes by running the following:
@@ -197,16 +197,16 @@ Revert these changes by running the following:
 ➜ git checkout -- godel/config/dist-plugin.yml
 ```
 
-### Local publishing
-The `local` publisher type copies the artifacts and a generated POM to a local directory:
+### Maven local publishing
+The `maven-local` publisher type copies the artifacts and a generated POM to a local directory:
 
 ```
-➜ ./godelw publish local --dry-run --group-id com.palantir.echgo2 --base-dir ~/.m2/repository
-[DRY RUN] Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz, /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz
+➜ ./godelw publish maven-local --dry-run --group-id com.palantir.echgo2
+[DRY RUN] Creating distribution for echgo2 at out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz, out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz
 [DRY RUN] Finished creating os-arch-bin distribution for echgo2
 [DRY RUN] Writing POM to /root/.m2/repository/com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2.pom
-[DRY RUN] Copying artifact from /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz to /root/.m2/repository/com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2-darwin-amd64.tgz
-[DRY RUN] Copying artifact from /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz to /root/.m2/repository/com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2-linux-amd64.tgz
+[DRY RUN] Copying artifact from out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz to /root/.m2/repository/com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2-darwin-amd64.tgz
+[DRY RUN] Copying artifact from out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz to /root/.m2/repository/com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2-linux-amd64.tgz
 ```
 
 ### Artifactory publishing
@@ -214,10 +214,10 @@ The `artifactory` publisher type uploads the artifacts and a generated POM to an
 
 ```
 ➜ ./godelw publish artifactory --dry-run --group-id com.palantir.echgo2 --url https://artifactory.domain.com --repository dist-repo --username username --password password
-[DRY RUN] Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz, /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz
+[DRY RUN] Creating distribution for echgo2 at out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz, out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz
 [DRY RUN] Finished creating os-arch-bin distribution for echgo2
-[DRY RUN] Uploading /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz to https://artifactory.domain.com/artifactory/dist-repo/com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2-darwin-amd64.tgz
-[DRY RUN] Uploading /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz to https://artifactory.domain.com/artifactory/dist-repo/com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2-linux-amd64.tgz
+[DRY RUN] Uploading out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz to https://artifactory.domain.com/artifactory/dist-repo/com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2-darwin-amd64.tgz
+[DRY RUN] Uploading out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz to https://artifactory.domain.com/artifactory/dist-repo/com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2-linux-amd64.tgz
 [DRY RUN] Uploading to https://artifactory.domain.com/artifactory/dist-repo/com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2.pom
 ```
 
@@ -228,10 +228,10 @@ The `bintray` publisher type uploads the artifacts and a generated POM to a Bint
 
 ```
 ➜ ./godelw publish bintray --dry-run --group-id com.palantir.echgo2 --url https://api.bintray.com --subject org --repository releases --username username --password password --publish --downloads-list
-[DRY RUN] Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz, /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz
+[DRY RUN] Creating distribution for echgo2 at out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz, out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz
 [DRY RUN] Finished creating os-arch-bin distribution for echgo2
-[DRY RUN] Uploading /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz to https://api.bintray.com/content/org/releases/echgo2/0.0.2/com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2-darwin-amd64.tgz
-[DRY RUN] Uploading /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz to https://api.bintray.com/content/org/releases/echgo2/0.0.2/com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2-linux-amd64.tgz
+[DRY RUN] Uploading out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz to https://api.bintray.com/content/org/releases/echgo2/0.0.2/com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2-darwin-amd64.tgz
+[DRY RUN] Uploading out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz to https://api.bintray.com/content/org/releases/echgo2/0.0.2/com/palantir/echgo2/echgo2/0.0.2/echgo2-0.0.2-linux-amd64.tgz
 [DRY RUN] Running Bintray publish for uploaded artifacts...done
 [DRY RUN] Adding artifact to Bintray downloads list for package...done
 [DRY RUN] Adding artifact to Bintray downloads list for package...done

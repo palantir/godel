@@ -32,7 +32,7 @@ plugins:
     - "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
   plugins:
     - locator:
-        id: "com.palantir.go-generate:generate-plugin:1.0.0-rc2"
+        id: "com.palantir.go-generate:generate-plugin:1.0.0-rc3"
 exclude:
   names:
     - "\\..+"
@@ -70,6 +70,8 @@ Verify that the `golint` check still succeeds:
 
 ```
 ➜ ./godelw check golint
+Getting package from https://palantir.bintray.com/releases/com/palantir/go-generate/generate-plugin/1.0.0-rc2/generate-plugin-1.0.0-rc2-linux-amd64.tgz...
+ 0 B / 3.27 MiB    0.00% 415.62 KiB / 3.27 MiB   12.40% 1s 972.34 KiB / 3.27 MiB   29.01% 1.97 MiB / 3.27 MiB   60.21% 3.07 MiB / 3.27 MiB   93.77% 3.27 MiB / 3.27 MiB  100.00% 0s
 Running golint...
 Finished golint
 ```
@@ -79,8 +81,8 @@ Check in the changes:
 ```
 ➜ git add godel/config/godel.yml
 ➜ git commit -m "Update exclude configuration in godel.yml"
-[master 60994d2] Update exclude configuration in godel.yml
- 1 file changed, 1 insertion(+), 1 deletion(-)
+[master 26bbf98] Update exclude configuration in godel.yml
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 ```
 
 Tutorial end state
