@@ -84,10 +84,7 @@ func InstallVersion(projectDir, targetVersion, wantChecksum string, cacheValidDu
 	} else {
 		installFn = Update
 	}
-	if err := installFn(projectDir, pkgSrc, stdout); err != nil {
-		return err
-	}
-	return nil
+	return installFn(projectDir, pkgSrc, stdout)
 }
 
 // pkgSrcForVersion returns a package source for the provided version. If the distribution for the provided version has

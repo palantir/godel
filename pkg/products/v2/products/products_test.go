@@ -32,9 +32,6 @@ func TestList(t *testing.T) {
 }
 
 func TestBin(t *testing.T) {
-	// TOOD: re-enable after project gödel is updated to 2.0 (https://github.com/palantir/godel/issues/301)
-	t.SkipNow()
-
 	bin, err := products.Bin("godel")
 	require.NoError(t, err)
 	cmd := exec.Command(bin, "version")

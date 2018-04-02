@@ -1,0 +1,6 @@
+checks:
+  golint:
+    filters:
+    - value: should have comment or be unexported
+    - value: or a comment on this block
+    - value: type name will be used as config.ConfigProviderLocator

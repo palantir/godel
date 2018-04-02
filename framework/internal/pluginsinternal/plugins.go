@@ -110,7 +110,7 @@ func ResolveAndVerify(
 			}
 
 			if err := artifactresolver.CopySingleFileTGZContent(pluginFile, tgzFile); err != nil {
-				return err
+				return errors.Wrapf(err, "failed to copy file out of TGZ from %s to %s", tgzDstPath, currDstPath)
 			}
 			return nil
 		}(); err != nil {
