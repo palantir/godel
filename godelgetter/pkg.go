@@ -24,10 +24,32 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewPkgSrc(srcPath, checksum string) PkgSrc {
+type PkgSourceParam interface {
+	apply(*basePkg)
+}
+
+type pkgSourceParamFunc func(*basePkg)
+
+func (f pkgSourceParamFunc) apply(impl *basePkg) {
+	f(impl)
+}
+
+func PkgSrcCanonicalSourceParam(canonicalSource string) PkgSourceParam {
+	return pkgSourceParamFunc(func(impl *basePkg) {
+		impl.canonicalSource = canonicalSource
+	})
+}
+
+func NewPkgSrc(srcPath, checksum string, params ...PkgSourceParam) PkgSrc {
 	pkg := basePkg{
 		path:     srcPath,
 		checksum: checksum,
+	}
+	for _, p := range params {
+		if p == nil {
+			continue
+		}
+		p.apply(&pkg)
 	}
 	if strings.HasPrefix(srcPath, "http://") || strings.HasPrefix(srcPath, "https://") {
 		return &remotePkg{basePkg: pkg}
@@ -40,6 +62,10 @@ type PkgSrc interface {
 	Name() string
 	// Returns the path to the source of this package.
 	Path() string
+	// Returns the canonical source for this package. This is an optional value. If this value is set, it indicates that
+	// the value returned by "Path()" is the preferred source for the package, but this value represents the canonical
+	// source path of the package.
+	CanonicalSource() string
 	// Returns the expected SHA-256 checksum for the package. If this function returns an empty string, then a checksum
 	// will not be performed.
 	Checksum() string
@@ -51,8 +77,9 @@ type PkgSrc interface {
 }
 
 type basePkg struct {
-	path     string
-	checksum string
+	path            string
+	canonicalSource string
+	checksum        string
 }
 
 func (p *basePkg) Name() string {
@@ -61,6 +88,10 @@ func (p *basePkg) Name() string {
 
 func (p *basePkg) Path() string {
 	return p.path
+}
+
+func (p *basePkg) CanonicalSource() string {
+	return p.canonicalSource
 }
 
 func (p *basePkg) Checksum() string {
