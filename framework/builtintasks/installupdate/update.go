@@ -87,13 +87,6 @@ func InstallVersion(projectDir, targetVersion, wantChecksum string, cacheValidDu
 	if err := installFn(projectDir, pkgSrc, stdout); err != nil {
 		return err
 	}
-
-	// update godel.properties with checksum if provided (if this point was reached, checksum was verified)
-	if wantChecksum != "" {
-		if err := setGodelPropertyKey(projectDir, propertiesChecksumKey, wantChecksum); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
@@ -105,11 +98,16 @@ func pkgSrcForVersion(version, wantChecksum string) (godelgetter.PkgSrc, error) 
 	if version == "" {
 		return nil, errors.Errorf("version for package must be specified")
 	}
+
+	// consider distribution URL to be canonical source
+	canonicalSrcPkgPath := fmt.Sprintf("https://palantir.bintray.com/releases/com/palantir/godel/godel/%s/godel-%s.tgz", version, version)
+
 	pkgPath, checksum, err := downloadedTGZForVersion(version)
 	if err != nil || (wantChecksum != "" && checksum != wantChecksum) {
-		pkgPath = fmt.Sprintf("https://palantir.bintray.com/releases/com/palantir/godel/godel/%s/godel-%s.tgz", version, version)
+		// if downloaded version was not present locally, fall back on canonical source
+		pkgPath = canonicalSrcPkgPath
 	}
-	return godelgetter.NewPkgSrc(pkgPath, wantChecksum), nil
+	return godelgetter.NewPkgSrc(pkgPath, wantChecksum, godelgetter.PkgSrcCanonicalSourceParam(canonicalSrcPkgPath)), nil
 }
 
 // downloadedTGZForVersion returns the path and checksum for the downloaded TGZ for the specified version. Returns an
@@ -340,6 +338,18 @@ func update(wrapperScriptDir string, pkg godelgetter.PkgSrc, newInstall bool, st
 				return errors.Wrapf(err, "failed to copy %s to %s", syncSrcPath, syncDestPath)
 			}
 		}
+	}
+
+	// update values in godel.properties
+	canonicalSrc := pkg.CanonicalSource()
+	if canonicalSrc == "" {
+		canonicalSrc = pkg.Path()
+	}
+	if err := setGodelPropertyKey(wrapperScriptDir, propertiesURLKey, canonicalSrc); err != nil {
+		return errors.Wrap(err, "failed to update URL in godel properties file")
+	}
+	if err := setGodelPropertyKey(wrapperScriptDir, propertiesChecksumKey, pkg.Checksum()); err != nil {
+		return errors.Wrap(err, "failed to update checksum in godel properties file")
 	}
 	return nil
 }
