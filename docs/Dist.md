@@ -25,9 +25,9 @@ Observe the default behavior by removing the configuration in the `godel/config/
 ```
 ➜ echo '' > godel/config/dist-plugin.yml
 ➜ ./godelw dist
-Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-dirty/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.199s)
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-dirty/os-arch-bin/echgo2-0.0.1-dirty-linux-amd64.tgz
+Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-dirty/linux-amd64/echgo2
+Finished building echgo2 for linux-amd64 (0.205s)
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-dirty/os-arch-bin/echgo2-0.0.1-dirty-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
 
@@ -67,9 +67,9 @@ Run `./godelw dist` to verify that the distributions are built:
 
 ```
 ➜ ./godelw dist
-Building echgo2 for darwin-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-dirty/darwin-amd64/echgo2
+Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-dirty/darwin-amd64/echgo2
 Finished building echgo2 for darwin-amd64 (0.205s)
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-dirty/os-arch-bin/echgo2-0.0.1-dirty-darwin-amd64.tgz, /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-dirty/os-arch-bin/echgo2-0.0.1-dirty-linux-amd64.tgz
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-dirty/os-arch-bin/echgo2-0.0.1-dirty-darwin-amd64.tgz, out/dist/echgo2/0.0.1-dirty/os-arch-bin/echgo2-0.0.1-dirty-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
 
@@ -83,7 +83,7 @@ Commit this update:
 ```
 ➜ git add godel/config/dist-plugin.yml
 ➜ git commit -m "Specify dist configuration"
-[master 14e6d3c] Specify dist configuration
+[master 9fb427c] Specify dist configuration
  1 file changed, 9 insertions(+)
 ```
 
@@ -119,11 +119,11 @@ Run `./godelw dist` to generate the dist artifacts. This run will build and dist
 
 ```
 ➜ ./godelw dist
-Building echgo2 for darwin-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c/darwin-amd64/echgo2
-Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c/linux-amd64/echgo2
-Finished building echgo2 for darwin-amd64 (0.230s)
-Finished building echgo2 for linux-amd64 (0.249s)
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c/os-arch-bin/echgo2-0.0.1-1-g14e6d3c-darwin-amd64.tgz, /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c/os-arch-bin/echgo2-0.0.1-1-g14e6d3c-linux-amd64.tgz
+Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-g9fb427c/darwin-amd64/echgo2
+Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-g9fb427c/linux-amd64/echgo2
+Finished building echgo2 for linux-amd64 (0.207s)
+Finished building echgo2 for darwin-amd64 (0.245s)
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g9fb427c/os-arch-bin/echgo2-0.0.1-1-g9fb427c-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-g9fb427c/os-arch-bin/echgo2-0.0.1-1-g9fb427c-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
 
@@ -138,7 +138,7 @@ out of date:
 
 ```
 ➜ ./godelw dist --force
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c/os-arch-bin/echgo2-0.0.1-1-g14e6d3c-darwin-amd64.tgz, /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c/os-arch-bin/echgo2-0.0.1-1-g14e6d3c-linux-amd64.tgz
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g9fb427c/os-arch-bin/echgo2-0.0.1-1-g9fb427c-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-g9fb427c/os-arch-bin/echgo2-0.0.1-1-g9fb427c-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
 
@@ -178,13 +178,13 @@ Verify that running `./godelw dist --force` generates both distributions:
 
 ```
 ➜ ./godelw dist --force
-Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c-dirty/linux-amd64/echgo2
-Building echgo2 for darwin-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c-dirty/darwin-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.212s)
+Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-g9fb427c-dirty/darwin-amd64/echgo2
+Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-g9fb427c-dirty/linux-amd64/echgo2
 Finished building echgo2 for darwin-amd64 (0.220s)
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c-dirty/bin/echgo2-0.0.1-1-g14e6d3c-dirty.tgz
+Finished building echgo2 for linux-amd64 (0.231s)
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g9fb427c-dirty/bin/echgo2-0.0.1-1-g9fb427c-dirty.tgz
 Finished creating bin distribution for echgo2
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c-dirty/os-arch-bin/echgo2-0.0.1-1-g14e6d3c-dirty-darwin-amd64.tgz, /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c-dirty/os-arch-bin/echgo2-0.0.1-1-g14e6d3c-dirty-linux-amd64.tgz
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g9fb427c-dirty/os-arch-bin/echgo2-0.0.1-1-g9fb427c-dirty-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-g9fb427c-dirty/os-arch-bin/echgo2-0.0.1-1-g9fb427c-dirty-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
 
@@ -196,7 +196,7 @@ A specific dister for a product can be run using the `<product>.<name>` syntax. 
 
 ```
 ➜ ./godelw dist --force echgo2.bin
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c-dirty/bin/echgo2-0.0.1-1-g14e6d3c-dirty.tgz
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g9fb427c-dirty/bin/echgo2-0.0.1-1-g9fb427c-dirty.tgz
 Finished creating bin distribution for echgo2
 ```
 
@@ -244,11 +244,11 @@ Run the `dist` command:
 
 ```
 ➜ ./godelw dist --force
-Building echgo2 for darwin-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c-dirty/darwin-amd64/echgo2
-Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c-dirty/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.201s)
-Finished building echgo2 for darwin-amd64 (0.268s)
-Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c-dirty/bin/echgo2-0.0.1-1-g14e6d3c-dirty.tgz
+Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-g9fb427c-dirty/darwin-amd64/echgo2
+Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-g9fb427c-dirty/linux-amd64/echgo2
+Finished building echgo2 for linux-amd64 (0.215s)
+Finished building echgo2 for darwin-amd64 (0.266s)
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g9fb427c-dirty/bin/echgo2-0.0.1-1-g9fb427c-dirty.tgz
 Finished creating bin distribution for echgo2
 ```
 
@@ -258,16 +258,16 @@ Verify that `timestamp.txt` was created in the distribution directory:
 ➜ tree out/dist
 out/dist
 `-- echgo2
-    `-- 0.0.1-1-g14e6d3c-dirty
+    `-- 0.0.1-1-g9fb427c-dirty
         `-- bin
-            |-- echgo2-0.0.1-1-g14e6d3c-dirty
+            |-- echgo2-0.0.1-1-g9fb427c-dirty
             |   |-- bin
             |   |   |-- darwin-amd64
             |   |   |   `-- echgo2
             |   |   `-- linux-amd64
             |   |       `-- echgo2
             |   `-- timestamp.txt
-            `-- echgo2-0.0.1-1-g14e6d3c-dirty.tgz
+            `-- echgo2-0.0.1-1-g9fb427c-dirty.tgz
 
 7 directories, 4 files
 ```
@@ -285,13 +285,13 @@ performing them:
 
 ```
 ➜ ./godelw dist --force --dry-run
-[DRY RUN] Building echgo2 for darwin-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c/darwin-amd64/echgo2
-[DRY RUN] Run: /usr/local/go/bin/go build -o /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c/darwin-amd64/echgo2 -ldflags -X main.version=0.0.1-1-g14e6d3c ./.
+[DRY RUN] Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-g9fb427c/linux-amd64/echgo2
+[DRY RUN] Run: /usr/local/go/bin/go build -o /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g9fb427c/linux-amd64/echgo2 -ldflags -X main.version=0.0.1-1-g9fb427c ./.
+[DRY RUN] Finished building echgo2 for linux-amd64 (0.000s)
+[DRY RUN] Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-g9fb427c/darwin-amd64/echgo2
+[DRY RUN] Run: /usr/local/go/bin/go build -o /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g9fb427c/darwin-amd64/echgo2 -ldflags -X main.version=0.0.1-1-g9fb427c ./.
 [DRY RUN] Finished building echgo2 for darwin-amd64 (0.000s)
-[DRY RUN] Building echgo2 for linux-amd64 at /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c/linux-amd64/echgo2
-[DRY RUN] Run: /usr/local/go/bin/go build -o /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g14e6d3c/linux-amd64/echgo2 -ldflags -X main.version=0.0.1-1-g14e6d3c ./.
-[DRY RUN] Finished building echgo2 for linux-amd64 (0.001s)
-[DRY RUN] Creating distribution for echgo2 at /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c/os-arch-bin/echgo2-0.0.1-1-g14e6d3c-darwin-amd64.tgz, /go/src/github.com/nmiyake/echgo2/out/dist/echgo2/0.0.1-1-g14e6d3c/os-arch-bin/echgo2-0.0.1-1-g14e6d3c-linux-amd64.tgz
+[DRY RUN] Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g9fb427c/os-arch-bin/echgo2-0.0.1-1-g9fb427c-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-g9fb427c/os-arch-bin/echgo2-0.0.1-1-g9fb427c-linux-amd64.tgz
 [DRY RUN] Finished creating os-arch-bin distribution for echgo2
 ```
 

@@ -18,6 +18,7 @@
   * [Verify project](https://github.com/palantir/godel/wiki/Verify)
   * [Set up CI to run tasks](https://github.com/palantir/godel/wiki/CI-setup)
   * [Update gödel](https://github.com/palantir/godel/wiki/Update-godel)
+  * [Update legacy gödel](https://github.com/palantir/godel/wiki/Update-legacy-godel)
   * [Other commands](https://github.com/palantir/godel/wiki/Other-commands)
   * [Conclusion](https://github.com/palantir/godel/wiki/Tutorial-conclusion)
 * [Name](https://github.com/palantir/godel/wiki/Name)
