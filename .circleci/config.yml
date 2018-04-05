@@ -207,7 +207,7 @@ jobs:
       - restore_cache:
           keys:
             - dist-{{ .Environment.CIRCLE_WORKFLOW_ID }}-{{ .Environment.CIRCLE_SHA1 }}-v1
-      - run: ./godelw publish bintray --url https://api.bintray.com --subject palantir --repository releases --user "$BINTRAY_USER" --password "$BINTRAY_PASSWORD" --publish --downloads-list godel
+      - run: ./godelw publish bintray --url https://api.bintray.com --subject palantir --repository releases --username "$BINTRAY_USER" --password "$BINTRAY_PASSWORD" --publish --downloads-list godel
 
 ### Workflows ###
 requires_products: &requires_products
