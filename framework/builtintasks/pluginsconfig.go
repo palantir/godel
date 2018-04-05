@@ -48,10 +48,7 @@ func printTasksCfgInfo(tasksCfgInfo config.TasksConfigInfo, stdout io.Writer) er
 	}
 	fmt.Fprintln(stdout)
 
-	if err := printWithHeader("Plugin configuration for default tasks", tasksCfgInfo.DefaultTasksPluginsConfig, stdout); err != nil {
-		return err
-	}
-	return nil
+	return printWithHeader("Plugin configuration for default tasks", tasksCfgInfo.DefaultTasksPluginsConfig, stdout)
 }
 
 func printWithHeader(header string, in interface{}, stdout io.Writer) error {

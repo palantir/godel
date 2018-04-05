@@ -32,6 +32,9 @@ func TestList(t *testing.T) {
 }
 
 func TestBin(t *testing.T) {
+	// Do not test v1 API on current project because it uses v2 godel.
+	t.SkipNow()
+
 	bin, err := products.Bin("godel")
 	require.NoError(t, err)
 	cmd := exec.Command(bin, "version")

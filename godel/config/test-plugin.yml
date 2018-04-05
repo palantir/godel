@@ -1,4 +1,4 @@
 tags:
   integration:
     paths:
-      - "integration_test"
+    - integration_test
