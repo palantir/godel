@@ -28,6 +28,7 @@ The tutorial consists of the following steps:
 * [Verify project](https://github.com/palantir/godel/wiki/Verify)
 * [Set up CI to run tasks](https://github.com/palantir/godel/wiki/CI-setup)
 * [Update gödel](https://github.com/palantir/godel/wiki/Update-g%C3%B6del)
+* [Update legacy gödel](https://github.com/palantir/godel/wiki/Update-legacy-godel)
 * [Other commands](https://github.com/palantir/godel/wiki/Other-commands)
 * [Conclusion](https://github.com/palantir/godel/wiki/Tutorial-conclusion)
 
@@ -122,7 +123,7 @@ Initialized empty Git repository in /go/src/github.com/nmiyake/echgo2/.git/
 ➜ echo 'echgo2 is a program that echoes input provided by the user.' > README.md
 ➜ git add README.md
 ➜ git commit -m "Initial commit"
-[master (root-commit) e7e33d2] Initial commit
+[master (root-commit) 10ee146] Initial commit
  1 file changed, 1 insertion(+)
  create mode 100644 README.md
 ```
