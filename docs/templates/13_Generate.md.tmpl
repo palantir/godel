@@ -19,7 +19,7 @@ Tutorial start state
 Add the `go generate` plugin
 ----------------------------
 The [go-generate](https://github.com/palantir/go-generate) tool provides a gödel plugin that allows `go generate` tasks
-to be defined, run and verified. The plugin identifier is "com.palantir.go-generate:go-generate-plugin:1.0.0", and it
+to be defined, run and verified. The plugin identifier is "com.palantir.godel-generate-plugin:generate-plugin:1.0.0", and it
 is available on Bintray.
 
 Add the plugin definition to `godel/config/godel.yml`:
@@ -30,7 +30,7 @@ echo 'plugins:
     - "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
   plugins:
     - locator:
-        id: "com.palantir.go-generate:generate-plugin:1.0.0-rc3"
+        id: "com.palantir.godel-generate-plugin:generate-plugin:1.0.0-rc1"
 exclude:
   names:
     - "\\\\..+"
@@ -395,7 +395,7 @@ echo 'plugins:
     - "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
   plugins:
     - locator:
-        id: "com.palantir.go-generate:generate-plugin:1.0.0-rc3"
+        id: "com.palantir.godel-generate-plugin:generate-plugin:1.0.0-rc1"
 exclude:
   names:
     - "\\\\..+"

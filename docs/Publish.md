@@ -58,10 +58,10 @@ We will perform a release for a 0.0.2 of our product. Create a `0.0.2` tag and p
 ```
 ➜ git tag 0.0.2
 ➜ ./godelw dist
-Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.2/darwin-amd64/echgo2
 Building echgo2 for linux-amd64 at out/build/echgo2/0.0.2/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.216s)
-Finished building echgo2 for darwin-amd64 (0.223s)
+Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.2/darwin-amd64/echgo2
+Finished building echgo2 for darwin-amd64 (0.246s)
+Finished building echgo2 for linux-amd64 (0.265s)
 Creating distribution for echgo2 at out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz, out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
@@ -176,8 +176,8 @@ use it. First, run the `./godelw dist` task to ensure that the dist outputs exis
 ➜ ./godelw dist
 Building echgo2 for linux-amd64 at out/build/echgo2/0.0.2-dirty/linux-amd64/echgo2
 Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.2-dirty/darwin-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.227s)
-Finished building echgo2 for darwin-amd64 (0.236s)
+Finished building echgo2 for linux-amd64 (0.217s)
+Finished building echgo2 for darwin-amd64 (0.277s)
 Creating distribution for echgo2 at out/dist/echgo2/0.0.2-dirty/os-arch-bin/echgo2-0.0.2-dirty-darwin-amd64.tgz, out/dist/echgo2/0.0.2-dirty/os-arch-bin/echgo2-0.0.2-dirty-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
@@ -186,6 +186,8 @@ Now, dry run the publish again without the `--group-id` flag and verify that it 
 
 ```
 ➜ ./godelw publish maven-local --dry-run
+[DRY RUN] Creating distribution for echgo2 at out/dist/echgo2/0.0.2-dirty/os-arch-bin/echgo2-0.0.2-dirty-darwin-amd64.tgz, out/dist/echgo2/0.0.2-dirty/os-arch-bin/echgo2-0.0.2-dirty-linux-amd64.tgz
+[DRY RUN] Finished creating os-arch-bin distribution for echgo2
 [DRY RUN] Writing POM to /root/.m2/repository/com/palantir/echgo2/echgo2/0.0.2-dirty/echgo2-0.0.2-dirty.pom
 [DRY RUN] Copying artifact from out/dist/echgo2/0.0.2-dirty/os-arch-bin/echgo2-0.0.2-dirty-darwin-amd64.tgz to /root/.m2/repository/com/palantir/echgo2/echgo2/0.0.2-dirty/echgo2-0.0.2-dirty-darwin-amd64.tgz
 [DRY RUN] Copying artifact from out/dist/echgo2/0.0.2-dirty/os-arch-bin/echgo2-0.0.2-dirty-linux-amd64.tgz to /root/.m2/repository/com/palantir/echgo2/echgo2/0.0.2-dirty/echgo2-0.0.2-dirty-linux-amd64.tgz

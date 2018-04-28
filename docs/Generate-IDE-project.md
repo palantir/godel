@@ -34,7 +34,7 @@ ignores these files:
 *.iws' > .gitignore
 ➜ git add .gitignore
 ➜ git commit -m "Add .gitignore file"
-[master 8eff1a1] Add .gitignore file
+[master cbc795e] Add .gitignore file
  1 file changed, 3 insertions(+)
  create mode 100644 .gitignore
 ```
