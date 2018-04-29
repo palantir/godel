@@ -34,11 +34,15 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
 
-	"github.com/palantir/distgo/dister"
+	"github.com/palantir/distgo/dister/disterfactory"
+	"github.com/palantir/distgo/dister/osarchbin"
+	osarchbinconfig "github.com/palantir/distgo/dister/osarchbin/config"
 	"github.com/palantir/distgo/distgo"
+	distgoconfig "github.com/palantir/distgo/distgo/config"
 	"github.com/palantir/distgo/distgo/dist"
 	"github.com/palantir/distgo/distgo/publish"
-	"github.com/palantir/distgo/dockerbuilder"
+	"github.com/palantir/distgo/dockerbuilder/dockerbuilderfactory"
+	"github.com/palantir/distgo/publisher/publisherfactory"
 )
 
 const (
@@ -80,16 +84,16 @@ func TestPublish(t *testing.T) {
 
 	for i, tc := range []struct {
 		name             string
-		projectCfg       distgo.ProjectConfig
+		projectCfg       distgoconfig.ProjectConfig
 		distIDs          []distgo.ProductDistID
-		preDistAction    func(projectDir string, projectCfg distgo.ProjectConfig)
+		preDistAction    func(projectDir string, projectCfg distgoconfig.ProjectConfig)
 		wantStdoutRegexp func(projectDir string) string
 	}{
 		{
 			"publish publishes the dist artifact of a product",
-			distgo.ProjectConfig{},
+			distgoconfig.ProjectConfig{},
 			nil,
-			func(projectDir string, projectCfg distgo.ProjectConfig) {
+			func(projectDir string, projectCfg distgoconfig.ProjectConfig) {
 				gittest.CreateGitTag(t, projectDir, "0.1.0")
 			},
 			func(projectDir string) string {
@@ -100,31 +104,31 @@ os-arch-bin: [%s/out/dist/foo/0.1.0/os-arch-bin/foo-0.1.0-%s.tgz]
 		},
 		{
 			"publish publishes all of the dist artifact of a product",
-			distgo.ProjectConfig{
-				ProductDefaults: distgo.ProductConfig{
-					Build: &distgo.BuildConfig{
+			distgoconfig.ProjectConfig{
+				ProductDefaults: *distgoconfig.ToProductConfig(&distgoconfig.ProductConfig{
+					Build: distgoconfig.ToBuildConfig(&distgoconfig.BuildConfig{
 						OSArchs: &[]osarch.OSArch{
 							mustOSArch("darwin-amd64"),
 							mustOSArch("linux-amd64"),
 						},
-					},
-					Dist: &distgo.DistConfig{
-						Disters: &distgo.DistersConfig{
-							dister.OSArchBinDistTypeName: {
-								Type: stringPtr(dister.OSArchBinDistTypeName),
-								Config: mustMapSlicePtr(dister.OSArchBinDistConfig{
+					}),
+					Dist: distgoconfig.ToDistConfig(&distgoconfig.DistConfig{
+						Disters: distgoconfig.ToDistersConfig(&distgoconfig.DistersConfig{
+							osarchbin.TypeName: {
+								Type: stringPtr(osarchbin.TypeName),
+								Config: mustMapSlicePtr(osarchbinconfig.OSArchBin{
 									OSArchs: []osarch.OSArch{
 										mustOSArch("darwin-amd64"),
 										mustOSArch("linux-amd64"),
 									},
 								}),
 							},
-						},
-					},
-				},
+						}),
+					}),
+				}),
 			},
 			nil,
-			func(projectDir string, projectCfg distgo.ProjectConfig) {
+			func(projectDir string, projectCfg distgoconfig.ProjectConfig) {
 				gittest.CreateGitTag(t, projectDir, "0.1.0")
 			},
 			func(projectDir string) string {
@@ -135,41 +139,41 @@ os-arch-bin: [%s/out/dist/foo/0.1.0/os-arch-bin/foo-0.1.0-darwin-amd64.tgz %s/ou
 		},
 		{
 			"publish publishes the dist artifact of a product but not its dependencies",
-			distgo.ProjectConfig{
-				Products: map[distgo.ProductID]distgo.ProductConfig{
+			distgoconfig.ProjectConfig{
+				Products: distgoconfig.ToProductsMap(map[distgo.ProductID]distgoconfig.ProductConfig{
 					"foo": {
-						Build: &distgo.BuildConfig{
+						Build: distgoconfig.ToBuildConfig(&distgoconfig.BuildConfig{
 							MainPkg: stringPtr("./foo"),
-						},
-						Dist: &distgo.DistConfig{
-							Disters: &distgo.DistersConfig{
-								dister.OSArchBinDistTypeName: distgo.DisterConfig{
-									Type: stringPtr(dister.OSArchBinDistTypeName),
-								},
-							},
-						},
+						}),
+						Dist: distgoconfig.ToDistConfig(&distgoconfig.DistConfig{
+							Disters: distgoconfig.ToDistersConfig(&distgoconfig.DistersConfig{
+								osarchbin.TypeName: distgoconfig.ToDisterConfig(distgoconfig.DisterConfig{
+									Type: stringPtr(osarchbin.TypeName),
+								}),
+							}),
+						}),
 						Dependencies: &[]distgo.ProductID{
 							"bar",
 						},
 					},
 					"bar": {
-						Build: &distgo.BuildConfig{
+						Build: distgoconfig.ToBuildConfig(&distgoconfig.BuildConfig{
 							MainPkg: stringPtr("./foo"),
-						},
-						Dist: &distgo.DistConfig{
-							Disters: &distgo.DistersConfig{
-								dister.OSArchBinDistTypeName: distgo.DisterConfig{
-									Type: stringPtr(dister.OSArchBinDistTypeName),
-								},
-							},
-						},
+						}),
+						Dist: distgoconfig.ToDistConfig(&distgoconfig.DistConfig{
+							Disters: distgoconfig.ToDistersConfig(&distgoconfig.DistersConfig{
+								osarchbin.TypeName: distgoconfig.ToDisterConfig(distgoconfig.DisterConfig{
+									Type: stringPtr(osarchbin.TypeName),
+								}),
+							}),
+						}),
 					},
-				},
+				}),
 			},
 			[]distgo.ProductDistID{
 				"foo",
 			},
-			func(projectDir string, projectCfg distgo.ProjectConfig) {
+			func(projectDir string, projectCfg distgoconfig.ProjectConfig) {
 				gittest.CreateGitTag(t, projectDir, "0.1.0")
 			},
 			func(projectDir string) string {
@@ -193,14 +197,16 @@ os-arch-bin: [%s/out/dist/foo/0.1.0/os-arch-bin/foo-0.1.0-%s.tgz]
 			tc.preDistAction(projectDir, tc.projectCfg)
 		}
 
-		disterFactory, err := dister.NewDisterFactory()
+		disterFactory, err := disterfactory.New(nil, nil)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		defaultDisterCfg, err := dister.DefaultConfig()
+		defaultDisterCfg, err := disterfactory.DefaultConfig()
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		dockerBuilderFactory, err := dockerbuilder.NewDockerBuilderFactory()
+		dockerBuilderFactory, err := dockerbuilderfactory.New(nil, nil)
+		require.NoError(t, err, "Case %d: %s", i, tc.name)
+		publisherFactory, err := publisherfactory.New(nil, nil)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
-		projectParam, err := tc.projectCfg.ToParam(projectDir, disterFactory, defaultDisterCfg, dockerBuilderFactory)
+		projectParam, err := tc.projectCfg.ToParam(projectDir, disterFactory, defaultDisterCfg, dockerBuilderFactory, publisherFactory)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
 		projectInfo, err := projectParam.ProjectInfo(projectDir)

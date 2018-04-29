@@ -25,13 +25,14 @@ import (
 
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/nmiyake/pkg/gofiles"
+	"github.com/palantir/godel/framework/pluginapitester"
 	"github.com/palantir/godel/pkg/products"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestRun(t *testing.T) {
-	cli, err := products.Bin("distgo-plugin")
+	cli, err := products.Bin("dist-plugin")
 	require.NoError(t, err)
 
 	tmpDir, cleanup, err := dirs.TempDir(".", "")
@@ -172,7 +173,7 @@ products:
 }
 
 func TestRunWithStdin(t *testing.T) {
-	cli, err := products.Bin("distgo-plugin")
+	cli, err := products.Bin("dist-plugin")
 	require.NoError(t, err)
 
 	wd, err := os.Getwd()
@@ -247,4 +248,309 @@ products:
 
 	content := string(output)[strings.Index(string(output), "\n")+1:]
 	assert.Equal(t, fmt.Sprintf("read: %q", stdInContent), content)
+}
+
+const (
+	godelYML = `exclude:
+  names:
+    - "\\..+"
+    - "vendor"
+  paths:
+    - "godel"
+`
+)
+
+func TestUpgradeConfig(t *testing.T) {
+	pluginPath, err := products.Bin("dist-plugin")
+	require.NoError(t, err)
+	pluginProvider := pluginapitester.NewPluginProvider(pluginPath)
+
+	pluginapitester.RunUpgradeConfigTest(t,
+		pluginProvider,
+		nil,
+		[]pluginapitester.UpgradeConfigTestCase{
+			{
+				Name: "legacy configuration is upgraded",
+				ConfigFiles: map[string]string{
+					"godel/config/godel.yml": godelYML,
+					"godel/config/dist-plugin.yml": `
+legacy-config: true
+products:
+  foo:
+    build:
+      main-pkg: ./foo/main/foo
+      output-dir: foo/build/bin
+      version-var: github.com/palantir/foo/main.version
+      os-archs:
+        - os: linux
+          arch: amd64
+    dist:
+      input-dir: foo/dist/input
+      output-dir: foo/build/distributions
+      input-products:
+        - bar
+      dist-type:
+        type: bin
+        info:
+          omit-init-sh: true
+      script: |
+               # move bin directory into service directory
+               mkdir $DIST_DIR/service
+               mv $DIST_DIR/bin $DIST_DIR/service/bin
+    docker:
+      - repository: test/foo
+        tag: snapshot
+        context-dir: foo/dist/docker
+        dependencies:
+         - product: foo
+           type: bin
+           target-file: foo-latest.tgz
+      - repository: test/foo-other
+        tag: snapshot
+        context-dir: other/foo/dist/docker
+        dependencies:
+         - product: foo
+           type: bin
+           target-file: foo-latest.tgz
+  bar:
+    build:
+      main-pkg: ./bar/main/bar
+      output-dir: bar/build/bin
+      version-var: github.com/palantir/bar/main.version
+      os-archs:
+        - os: darwin
+          arch: amd64
+        - os: linux
+          arch: amd64
+    dist:
+      input-dir: bar/dist/bar
+      output-dir: bar/build/distributions
+      dist-type:
+        type: bin
+        info:
+          omit-init-sh: true
+      script: |
+               if [ "$IS_SNAPSHOT" == "1" ]; then
+                 echo "snapshot"
+               fi
+               # move bin directory into service directory
+               mv $DIST_DIR/bin/darwin-amd64 $DIST_DIR/service/bin/darwin-amd64
+               mv $DIST_DIR/bin/linux-amd64 $DIST_DIR/service/bin/linux-amd64
+               rm -rf $DIST_DIR/bin
+group-id: com.palantir.group
+`,
+				},
+				WantOutput: "Upgraded configuration for dist-plugin.yml\n",
+				WantFiles: map[string]string{
+					"godel/config/dist-plugin.yml": `products:
+  bar:
+    build:
+      name-template: null
+      output-dir: bar/build/bin
+      main-pkg: ./bar/main/bar
+      build-args-script: null
+      version-var: github.com/palantir/bar/main.version
+      environment: null
+      os-archs:
+      - os: darwin
+        arch: amd64
+      - os: linux
+        arch: amd64
+    run: null
+    dist:
+      output-dir: bar/build/distributions
+      disters:
+        bin:
+          type: bin
+          config: null
+          name-template: null
+          script: |
+            #!/bin/bash
+            ### START: auto-generated back-compat code for "input-dir" behavior ###
+            cp -r "$PROJECT_DIR"/bar/dist/bar/. "$DIST_WORK_DIR"
+            find "$DIST_WORK_DIR" -type f -name .gitkeep -exec rm '{}' \;
+            ### END: auto-generated back-compat code for "input-dir" behavior ###
+            ### START: auto-generated back-compat code for "IS_SNAPSHOT" variable ###
+            IS_SNAPSHOT=0
+            if [[ $VERSION =~ .+g[-+.]?[a-fA-F0-9]{3,}$ ]]; then IS_SNAPSHOT=1; fi
+            ### END: auto-generated back-compat code for "IS_SNAPSHOT" variable ###
+            if [ "$IS_SNAPSHOT" == "1" ]; then
+              echo "snapshot"
+            fi
+            # move bin directory into service directory
+            mv $DIST_WORK_DIR/bin/darwin-amd64 $DIST_WORK_DIR/service/bin/darwin-amd64
+            mv $DIST_WORK_DIR/bin/linux-amd64 $DIST_WORK_DIR/service/bin/linux-amd64
+            rm -rf $DIST_WORK_DIR/bin
+    publish:
+      group-id: null
+      info: null
+    docker: null
+    dependencies: null
+  foo:
+    build:
+      name-template: null
+      output-dir: foo/build/bin
+      main-pkg: ./foo/main/foo
+      build-args-script: null
+      version-var: github.com/palantir/foo/main.version
+      environment: null
+      os-archs:
+      - os: linux
+        arch: amd64
+    run: null
+    dist:
+      output-dir: foo/build/distributions
+      disters:
+        bin:
+          type: bin
+          config: null
+          name-template: null
+          script: |
+            #!/bin/bash
+            ### START: auto-generated back-compat code for "input-dir" behavior ###
+            cp -r "$PROJECT_DIR"/foo/dist/input/. "$DIST_WORK_DIR"
+            find "$DIST_WORK_DIR" -type f -name .gitkeep -exec rm '{}' \;
+            ### END: auto-generated back-compat code for "input-dir" behavior ###
+            # move bin directory into service directory
+            mkdir $DIST_WORK_DIR/service
+            mv $DIST_WORK_DIR/bin $DIST_WORK_DIR/service/bin
+    publish:
+      group-id: null
+      info: null
+    docker:
+      repository: null
+      docker-builders:
+        docker-image-0:
+          type: default
+          config: null
+          dockerfile-path: null
+          context-dir: foo/dist/docker
+          input-products-dir: null
+          input-builds: null
+          input-dists:
+          - foo.bin
+          tag-templates:
+          - snapshot
+        docker-image-1:
+          type: default
+          config: null
+          dockerfile-path: null
+          context-dir: other/foo/dist/docker
+          input-products-dir: null
+          input-builds: null
+          input-dists:
+          - foo.bin
+          tag-templates:
+          - snapshot
+    dependencies:
+    - bar
+product-defaults:
+  build: null
+  run: null
+  dist: null
+  publish:
+    group-id: com.palantir.group
+    info: null
+  docker: null
+  dependencies: null
+script-includes: ""
+exclude:
+  names: []
+  paths: []
+`,
+				},
+			},
+			{
+				Name: "valid v0 configuration is not modified",
+				ConfigFiles: map[string]string{
+					"godel/config/godel.yml": godelYML,
+					"godel/config/dist-plugin.yml": `
+products:
+  # comment
+  test:
+    build:
+      main-pkg: ./cmd/test
+      output-dir: build
+      build-args-script: |
+                         YEAR=$(date +%Y)
+                         echo "-ldflags"
+                         echo "-X"
+                         echo "main.year=$YEAR"
+      version-var: main.version
+      environment:
+        foo: bar
+        baz: 1
+        bool: TRUE
+      os-archs:
+        - os: "darwin"
+          arch: "amd64"
+        - os: "linux"
+          arch: "amd64"
+    dist:
+      output-dir: dist
+      disters:
+        type: bin
+    publish:
+      group-id: com.test.foo
+      info:
+        bintray:
+          config:
+            username: username
+            password: password
+script-includes: |
+                 #!/usr/bin/env bash
+exclude:
+  names:
+    - ".*test"
+  paths:
+    - "vendor"
+`,
+				},
+				WantOutput: ``,
+				WantFiles: map[string]string{
+					"godel/config/dist-plugin.yml": `
+products:
+  # comment
+  test:
+    build:
+      main-pkg: ./cmd/test
+      output-dir: build
+      build-args-script: |
+                         YEAR=$(date +%Y)
+                         echo "-ldflags"
+                         echo "-X"
+                         echo "main.year=$YEAR"
+      version-var: main.version
+      environment:
+        foo: bar
+        baz: 1
+        bool: TRUE
+      os-archs:
+        - os: "darwin"
+          arch: "amd64"
+        - os: "linux"
+          arch: "amd64"
+    dist:
+      output-dir: dist
+      disters:
+        type: bin
+    publish:
+      group-id: com.test.foo
+      info:
+        bintray:
+          config:
+            username: username
+            password: password
+script-includes: |
+                 #!/usr/bin/env bash
+exclude:
+  names:
+    - ".*test"
+  paths:
+    - "vendor"
+`,
+				},
+			},
+		},
+	)
 }

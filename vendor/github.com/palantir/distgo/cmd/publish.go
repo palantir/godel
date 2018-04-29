@@ -16,14 +16,12 @@ package cmd
 
 import (
 	"fmt"
-	"sort"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/palantir/distgo/distgo"
 	"github.com/palantir/distgo/distgo/publish"
-	"github.com/palantir/distgo/publisher"
 )
 
 var (
@@ -41,22 +39,16 @@ func init() {
 	RootCmd.AddCommand(publishCmd)
 }
 
-func addPublishSubcommands() {
-	publishers := publisher.Publishers()
-	var sortedPublisherKeys []string
-	for k := range publishers {
-		sortedPublisherKeys = append(sortedPublisherKeys, k)
-	}
-	sort.Strings(sortedPublisherKeys)
-
-	for _, k := range sortedPublisherKeys {
-		publisher := publishers[k]
+func addPublishSubcommands(publisherTypes []string, publishers []distgo.Publisher) {
+	for i, publisher := range publishers {
+		publisher := publisher
+		publisherType := publisherTypes[i]
 		currFlags, err := publisher.Flags()
 		if err != nil {
-			panic(errors.Wrapf(err, "failed to get flags for publisher %s", k))
+			panic(errors.Wrapf(err, "failed to get flags for publisher %s", publisherType))
 		}
 		currPublisherSubCmd := &cobra.Command{
-			Use: fmt.Sprintf("%s [flags] [products]", k),
+			Use: fmt.Sprintf("%s [flags] [products]", publisherType),
 			RunE: func(cmd *cobra.Command, args []string) error {
 				projectInfo, projectParam, err := distgoProjectParamFromFlags()
 				if err != nil {
@@ -79,7 +71,7 @@ func addPublishSubcommands() {
 		}
 		for _, currFlag := range currFlags {
 			if _, err := currFlag.AddFlag(currPublisherSubCmd.Flags()); err != nil {
-				panic(errors.Wrapf(err, "failed to add flag %v for publisher %s", currFlag, k))
+				panic(errors.Wrapf(err, "failed to add flag %v for publisher %s", currFlag, publisherType))
 			}
 		}
 		currPublisherSubCmd.Flags().BoolVar(&publishDryRunFlagVal, "dry-run", false, "print the operations that would be performed")

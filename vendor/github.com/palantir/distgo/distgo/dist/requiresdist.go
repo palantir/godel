@@ -37,6 +37,11 @@ func RequiresDist(projectInfo distgo.ProjectInfo, productParam distgo.ProductPar
 	if productParam.Dist == nil {
 		return nil, nil
 	}
+
+	// create a copy of the dist parameter so that it is safe for modification
+	distCopy := *productParam.Dist
+	productParam.Dist = &distCopy
+
 	productTaskOutputInfo, err := distgo.ToProductTaskOutputInfo(projectInfo, productParam)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to compute output information for %s", productParam.ID)

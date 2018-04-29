@@ -69,7 +69,7 @@ func Run(projectInfo distgo.ProjectInfo, productParam distgo.ProductParam, dryRu
 		// add dist directory for product for removal
 		if currProductParam.Dist != nil {
 			for distID := range currProductParam.Dist.DistParams {
-				removePaths[path.Dir(outputInfo.ProductDistOutputDir(distID))] = pathInfo{
+				removePaths[path.Dir(path.Dir(outputInfo.ProductDistOutputDir(distID)))] = pathInfo{
 					rootDir: projectInfo.ProjectDir,
 					isDir:   true,
 				}

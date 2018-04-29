@@ -30,6 +30,7 @@ import (
 )
 
 func ProjectVersion(projectDir, versionScriptContent string) (rVersion string, rErr error) {
+	// TODO: replace versionScriptContent with asset-based behavior
 	if versionScriptContent == "" {
 		return git.ProjectVersion(projectDir)
 	}

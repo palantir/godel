@@ -78,9 +78,3 @@ func (p *assetPublisher) RunPublish(productTaskOutputInfo distgo.ProductTaskOutp
 	}
 	return nil
 }
-
-func newAssetPublisher(assetPath string) distgo.Publisher {
-	return &assetPublisher{
-		assetPath: assetPath,
-	}
-}

@@ -87,7 +87,7 @@ func TestProjectVersion(t *testing.T) {
 
 	testProjectDir := setUpGödelTestAndDownload(t, tmpDir, gödelTGZ, version)
 	output := execCommand(t, testProjectDir, "./godelw", "project-version")
-	assert.Equal(t, "testTag-dirty\n", string(output))
+	assert.Equal(t, "testTag.dirty\n", string(output))
 }
 
 func TestGitHooksSuccess(t *testing.T) {

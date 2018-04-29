@@ -30,11 +30,15 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/distgo/dister"
+	"github.com/palantir/distgo/dister/disterfactory"
+	"github.com/palantir/distgo/dister/osarchbin"
 	"github.com/palantir/distgo/distgo"
 	"github.com/palantir/distgo/distgo/artifacts"
 	"github.com/palantir/distgo/distgo/build"
-	"github.com/palantir/distgo/dockerbuilder"
+	distgoconfig "github.com/palantir/distgo/distgo/config"
+	"github.com/palantir/distgo/dockerbuilder/defaultdockerbuilder"
+	"github.com/palantir/distgo/dockerbuilder/dockerbuilderfactory"
+	"github.com/palantir/distgo/publisher/publisherfactory"
 )
 
 func TestBuildArtifactsDefaultOutput(t *testing.T) {
@@ -44,14 +48,14 @@ func TestBuildArtifactsDefaultOutput(t *testing.T) {
 
 	for i, tc := range []struct {
 		name            string
-		projectConfig   distgo.ProjectConfig
+		projectConfig   distgoconfig.ProjectConfig
 		setupProjectDir func(projectDir string)
 		wantAbsFalse    func(projectDir string) string
 		wantAbsTrue     func(projectDir string) string
 	}{
 		{
 			"if param is empty, prints main packages in build output directory",
-			distgo.ProjectConfig{},
+			distgoconfig.ProjectConfig{},
 			func(projectDir string) {
 				_, err := gofiles.Write(projectDir, []gofiles.GoFileSpec{
 					{
@@ -82,17 +86,17 @@ out/build/foo/unspecified/%v/foo
 		},
 		{
 			"output directory specified in param is used",
-			distgo.ProjectConfig{
-				Products: map[distgo.ProductID]distgo.ProductConfig{
+			distgoconfig.ProjectConfig{
+				Products: distgoconfig.ToProductsMap(map[distgo.ProductID]distgoconfig.ProductConfig{
 					"foo": {
-						Build: &distgo.BuildConfig{
+						Build: distgoconfig.ToBuildConfig(&distgoconfig.BuildConfig{
 							OutputDir: stringPtr("build-output"),
 							OSArchs: &[]osarch.OSArch{
 								osarch.Current(),
 							},
-						},
+						}),
 					},
-				},
+				}),
 			},
 			nil,
 			func(projectDir string) string {
@@ -113,16 +117,19 @@ out/build/foo/unspecified/%v/foo
 			tc.setupProjectDir(projectDir)
 		}
 
-		disterFactory, err := dister.NewDisterFactory()
+		disterFactory, err := disterfactory.New(nil, nil)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
-		defaultDisterCfg, err := dister.DefaultConfig()
+		defaultDisterCfg, err := disterfactory.DefaultConfig()
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
-		dockerBuilderFactory, err := dockerbuilder.NewDockerBuilderFactory()
+		dockerBuilderFactory, err := dockerbuilderfactory.New(nil, nil)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
-		projectParam, err := tc.projectConfig.ToParam(projectDir, disterFactory, defaultDisterCfg, dockerBuilderFactory)
+		publisherFactory, err := publisherfactory.New(nil, nil)
+		require.NoError(t, err, "Case %d: %s", i, tc.name)
+
+		projectParam, err := tc.projectConfig.ToParam(projectDir, disterFactory, defaultDisterCfg, dockerBuilderFactory, publisherFactory)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
 		projectInfo, err := projectParam.ProjectInfo(projectDir)
@@ -330,7 +337,7 @@ func TestDistArtifacts(t *testing.T) {
 		// returns dist artifact outputs
 		{
 			params: []distgo.ProductParam{
-				createDistSpec("foo", dister.NewOSArchBinDister(
+				createDistSpec("foo", osarchbin.New(
 					osarch.OSArch{OS: "darwin", Arch: "amd64"},
 					osarch.OSArch{OS: "linux", Arch: "amd64"},
 				)),
@@ -365,28 +372,28 @@ func TestDockerArtifacts(t *testing.T) {
 
 	for i, tc := range []struct {
 		name string
-		cfg  distgo.ProjectConfig
+		cfg  distgoconfig.ProjectConfig
 		want map[distgo.ProductID][]string
 	}{
 		{
 			"prints docker artifacts",
-			distgo.ProjectConfig{
-				Products: map[distgo.ProductID]distgo.ProductConfig{
+			distgoconfig.ProjectConfig{
+				Products: distgoconfig.ToProductsMap(map[distgo.ProductID]distgoconfig.ProductConfig{
 					"foo": {
-						Docker: &distgo.DockerConfig{
+						Docker: distgoconfig.ToDockerConfig(&distgoconfig.DockerConfig{
 							Repository: stringPtr("repo"),
-							DockerBuildersConfig: &distgo.DockerBuildersConfig{
-								dockerbuilder.DefaultBuilderTypeName: distgo.DockerBuilderConfig{
-									Type:       stringPtr(dockerbuilder.DefaultBuilderTypeName),
+							DockerBuildersConfig: distgoconfig.ToDockerBuildersConfig(&distgoconfig.DockerBuildersConfig{
+								defaultdockerbuilder.TypeName: distgoconfig.ToDockerBuilderConfig(distgoconfig.DockerBuilderConfig{
+									Type:       stringPtr(defaultdockerbuilder.TypeName),
 									ContextDir: stringPtr("dockerContextDir"),
 									TagTemplates: &[]string{
 										"{{Repository}}/foo:latest",
 									},
-								},
-							},
-						},
+								}),
+							}),
+						}),
 					},
-				},
+				}),
 			},
 			map[distgo.ProductID][]string{
 				"foo": {
@@ -400,14 +407,16 @@ func TestDockerArtifacts(t *testing.T) {
 		gittest.InitGitDir(t, projectDir)
 		gittest.CreateGitTag(t, projectDir, "0.1.0")
 
-		disterFactory, err := dister.NewDisterFactory()
+		disterFactory, err := disterfactory.New(nil, nil)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		defaultDisterCfg, err := dister.DefaultConfig()
+		defaultDisterCfg, err := disterfactory.DefaultConfig()
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		dockerBuilderFactory, err := dockerbuilder.NewDockerBuilderFactory()
+		dockerBuilderFactory, err := dockerbuilderfactory.New(nil, nil)
+		require.NoError(t, err, "Case %d: %s", i, tc.name)
+		publisherFactory, err := publisherfactory.New(nil, nil)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
-		projectParam, err := tc.cfg.ToParam(projectDir, disterFactory, defaultDisterCfg, dockerBuilderFactory)
+		projectParam, err := tc.cfg.ToParam(projectDir, disterFactory, defaultDisterCfg, dockerBuilderFactory, publisherFactory)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
 		projectInfo, err := projectParam.ProjectInfo(projectDir)

@@ -10,7 +10,14 @@
 [[projects]]
   branch = "master"
   name = "github.com/dsnet/compress"
-  packages = [".","bzip2","bzip2/internal/sais","internal","internal/errors","internal/prefix"]
+  packages = [
+    ".",
+    "bzip2",
+    "bzip2/internal/sais",
+    "internal",
+    "internal/errors",
+    "internal/prefix"
+  ]
   revision = "cc9eb1d7ad760af14e8f918698f745e80377af4f"
 
 [[projects]]
@@ -46,7 +53,11 @@
 [[projects]]
   branch = "develop"
   name = "github.com/nmiyake/pkg"
-  packages = ["dirs","errorstringer","gofiles"]
+  packages = [
+    "dirs",
+    "errorstringer",
+    "gofiles"
+  ]
   revision = "b64318170fdef93b4462420e0badef8050dbb7ec"
 
 [[projects]]
@@ -58,13 +69,20 @@
 [[projects]]
   name = "github.com/palantir/distgo"
   packages = ["pkg/git"]
-  revision = "dc2defa42d07f78d281c056ae5afc86464e5041e"
-  version = "v1.0.0-rc2"
+  revision = "b5cc307a2ffa8be91b5771d0418c68dc34106203"
+  version = "v1.0.0-rc9"
 
 [[projects]]
   branch = "master"
   name = "github.com/palantir/pkg"
-  packages = ["cobracli","gittest","matcher","pkgpath","signals","specdir"]
+  packages = [
+    "cobracli",
+    "gittest",
+    "matcher",
+    "pkgpath",
+    "signals",
+    "specdir"
+  ]
   revision = "15f6fc0c684b2603c4e75a02ca132e5c434c7297"
 
 [[projects]]
@@ -82,8 +100,8 @@
 [[projects]]
   name = "github.com/spf13/cobra"
   packages = ["."]
-  revision = "7b2c5ac9fc04fc5efafb60700713d4fa609b777b"
-  version = "v0.0.1"
+  revision = "a1f051bc3eba734da4772d60e2d677f47cf93ef4"
+  version = "v0.0.2"
 
 [[projects]]
   name = "github.com/spf13/pflag"
@@ -93,7 +111,10 @@
 
 [[projects]]
   name = "github.com/stretchr/testify"
-  packages = ["assert","require"]
+  packages = [
+    "assert",
+    "require"
+  ]
   revision = "12b6f73e6084dad08a7c6e575284b177ecafbc71"
   version = "v1.2.1"
 
@@ -105,7 +126,12 @@
 
 [[projects]]
   name = "github.com/ulikunitz/xz"
-  packages = [".","internal/hash","internal/xlog","lzma"]
+  packages = [
+    ".",
+    "internal/hash",
+    "internal/xlog",
+    "lzma"
+  ]
   revision = "0c6b41e72360850ca4f98dc341fd999726ea007f"
   version = "v0.5.4"
 
@@ -130,6 +156,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7bfe3904376d823a24ddc81060ec9bac59ff4bae9e47a1a58a9e8c916426977a"
+  inputs-digest = "898b9ea70064a5f0527e242cff92bfbdae8f8607d478798ef0c52a28fcdc1b65"
   solver-name = "gps-cdcl"
   solver-version = 1

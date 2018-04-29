@@ -27,10 +27,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/distgo/dister"
+	"github.com/palantir/distgo/dister/disterfactory"
 	"github.com/palantir/distgo/distgo"
+	distgoconfig "github.com/palantir/distgo/distgo/config"
 	"github.com/palantir/distgo/distgo/run"
-	"github.com/palantir/distgo/dockerbuilder"
+	"github.com/palantir/distgo/dockerbuilder/dockerbuilderfactory"
 )
 
 const (
@@ -71,17 +72,17 @@ func TestRun(t *testing.T) {
 
 	for i, tc := range []struct {
 		name          string
-		productConfig distgo.ProductConfig
+		productConfig distgoconfig.ProductConfig
 		runArgs       []string
 		preRunAction  func(projectDir string)
 		validate      func(runErr error, caseNum int, projectDir string)
 	}{
 		{
 			`"run" runs main file`,
-			distgo.ProductConfig{
-				Build: &distgo.BuildConfig{
+			distgoconfig.ProductConfig{
+				Build: distgoconfig.ToBuildConfig(&distgoconfig.BuildConfig{
 					MainPkg: stringPtr("."),
-				},
+				}),
 			},
 			nil,
 			func(projectDir string) {
@@ -97,17 +98,17 @@ func TestRun(t *testing.T) {
 		},
 		{
 			`"run" uses arguments provided in configuration (but does not evaluate them)`,
-			distgo.ProductConfig{
-				Build: &distgo.BuildConfig{
+			distgoconfig.ProductConfig{
+				Build: distgoconfig.ToBuildConfig(&distgoconfig.BuildConfig{
 					MainPkg: stringPtr("."),
-				},
-				Run: &distgo.RunConfig{
+				}),
+				Run: distgoconfig.ToRunConfig(&distgoconfig.RunConfig{
 					Args: &[]string{
 						"foo",
 						"bar",
 						"$GOPATH",
 					},
-				},
+				}),
 			},
 			nil,
 			func(projectDir string) {
@@ -123,10 +124,10 @@ func TestRun(t *testing.T) {
 		},
 		{
 			`"run" uses arguments provided in slice`,
-			distgo.ProductConfig{
-				Build: &distgo.BuildConfig{
+			distgoconfig.ProductConfig{
+				Build: distgoconfig.ToBuildConfig(&distgoconfig.BuildConfig{
 					MainPkg: stringPtr("."),
-				},
+				}),
 			},
 			[]string{"foo", "bar", "$GOPATH"},
 			func(projectDir string) {
@@ -142,17 +143,17 @@ func TestRun(t *testing.T) {
 		},
 		{
 			`"run" combines arguments in configuration with provided arguments`,
-			distgo.ProductConfig{
-				Build: &distgo.BuildConfig{
+			distgoconfig.ProductConfig{
+				Build: distgoconfig.ToBuildConfig(&distgoconfig.BuildConfig{
 					MainPkg: stringPtr("."),
-				},
-				Run: &distgo.RunConfig{
+				}),
+				Run: distgoconfig.ToRunConfig(&distgoconfig.RunConfig{
 					Args: &[]string{
 						"cfgArg_foo",
 						"cfgArg_bar",
 						"$cfgArg",
 					},
-				},
+				}),
 			},
 			[]string{"runArg_foo", "runArg_bar", "$runArg"},
 			func(projectDir string) {
@@ -168,11 +169,11 @@ func TestRun(t *testing.T) {
 		},
 		{
 			`"run" uses build arguments specified in build configuration`,
-			distgo.ProductConfig{
-				Build: &distgo.BuildConfig{
+			distgoconfig.ProductConfig{
+				Build: distgoconfig.ToBuildConfig(&distgoconfig.BuildConfig{
 					MainPkg:    stringPtr("."),
 					VersionVar: stringPtr("main.testVersionVar"),
-				},
+				}),
 			},
 			nil,
 			func(projectDir string) {
@@ -201,10 +202,10 @@ func main() {
 		},
 		{
 			`"run" works with multiple main package files as long as there is a single main function`,
-			distgo.ProductConfig{
-				Build: &distgo.BuildConfig{
+			distgoconfig.ProductConfig{
+				Build: distgoconfig.ToBuildConfig(&distgoconfig.BuildConfig{
 					MainPkg: stringPtr("./foo"),
-				},
+				}),
 			},
 			nil,
 			func(projectDir string) {
@@ -236,10 +237,10 @@ func Bar() string {
 		},
 		{
 			`"run" works with multiple main package files with tests`,
-			distgo.ProductConfig{
-				Build: &distgo.BuildConfig{
+			distgoconfig.ProductConfig{
+				Build: distgoconfig.ToBuildConfig(&distgoconfig.BuildConfig{
 					MainPkg: stringPtr("./foo"),
-				},
+				}),
 			},
 			nil,
 			func(projectDir string) {
@@ -264,10 +265,10 @@ func TestBar(t *testing.T) {
 		},
 		{
 			`"run" fails if a main package does not exist`,
-			distgo.ProductConfig{
-				Build: &distgo.BuildConfig{
+			distgoconfig.ProductConfig{
+				Build: distgoconfig.ToBuildConfig(&distgoconfig.BuildConfig{
 					MainPkg: stringPtr("./foo"),
-				},
+				}),
 			},
 			nil,
 			func(projectDir string) {
@@ -287,10 +288,10 @@ func main() {
 		},
 		{
 			`"run" fails if main function does not exist in a main pkg`,
-			distgo.ProductConfig{
-				Build: &distgo.BuildConfig{
+			distgoconfig.ProductConfig{
+				Build: distgoconfig.ToBuildConfig(&distgoconfig.BuildConfig{
 					MainPkg: stringPtr("./foo"),
-				},
+				}),
 			},
 			nil,
 			func(projectDir string) {
@@ -328,13 +329,12 @@ func main() {
 			Version:    "0.1.0",
 		}
 
-		disterFactory, err := dister.NewDisterFactory()
+		disterFactory, err := disterfactory.New(nil, nil)
+		require.NoError(t, err, "Case %d: %s", i, tc.name)
+		dockerBuilderFactory, err := dockerbuilderfactory.New(nil, nil)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
-		dockerBuilderFactory, err := dockerbuilder.NewDockerBuilderFactory()
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-
-		productParam, err := tc.productConfig.ToParam("foo", "", distgo.ProductConfig{}, disterFactory, dockerBuilderFactory)
+		productParam, err := tc.productConfig.ToParam("foo", "", distgoconfig.ProductConfig{}, disterFactory, dockerBuilderFactory)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
 		err = run.Product(projectInfo, productParam, tc.runArgs, ioutil.Discard, ioutil.Discard)

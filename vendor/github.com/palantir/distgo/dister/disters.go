@@ -49,45 +49,9 @@ func NewCreator(typeName string, creatorFn CreatorFunction) Creator {
 	}
 }
 
-type disterFactory struct {
-	disterCreators map[string]CreatorFunction
-}
-
-func (f *disterFactory) NewDister(typeName string, cfgYMLBytes []byte) (distgo.Dister, error) {
-	creatorFn, ok := f.disterCreators[typeName]
-	if !ok {
-		var disterNames []string
-		for k := range f.disterCreators {
-			disterNames = append(disterNames, k)
-		}
-		sort.Strings(disterNames)
-		return nil, errors.Errorf("no dister registered for dister type %q (registered disters: %v)", typeName, disterNames)
-	}
-	return creatorFn(cfgYMLBytes)
-}
-
-func NewDisterFactory(providedDisterCreators ...Creator) (distgo.DisterFactory, error) {
-	disterCreators := make(map[string]CreatorFunction)
-	for k, v := range builtinDisters() {
-		disterCreators[k] = v
-	}
-	for _, currCreator := range providedDisterCreators {
-		disterCreators[currCreator.TypeName()] = currCreator.Creator()
-	}
-	return &disterFactory{
-		disterCreators: disterCreators,
-	}, nil
-}
-
-func builtinDisters() map[string]CreatorFunction {
-	return map[string]CreatorFunction{
-		OSArchBinDistTypeName: NewOSArchBinDisterFromConfig,
-		ManualDistTypeName:    NewManualDisterFromConfig,
-	}
-}
-
-func AssetDisterCreators(assetPaths ...string) ([]Creator, error) {
+func AssetDisterCreators(assetPaths ...string) ([]Creator, []distgo.ConfigUpgrader, error) {
 	var disterCreators []Creator
+	var configUpgraders []distgo.ConfigUpgrader
 	disterNameToAssets := make(map[string][]string)
 	for _, currAssetPath := range assetPaths {
 		currDister := assetDister{
@@ -95,7 +59,7 @@ func AssetDisterCreators(assetPaths ...string) ([]Creator, error) {
 		}
 		disterName, err := currDister.TypeName()
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to determine dister type name for asset %s", currAssetPath)
+			return nil, nil, errors.Wrapf(err, "failed to determine dister type name for asset %s", currAssetPath)
 		}
 		disterNameToAssets[disterName] = append(disterNameToAssets[disterName], currAssetPath)
 		disterCreators = append(disterCreators, NewCreator(disterName,
@@ -106,6 +70,10 @@ func AssetDisterCreators(assetPaths ...string) ([]Creator, error) {
 				}
 				return &currDister, nil
 			}))
+		configUpgraders = append(configUpgraders, &assetConfigUpgrader{
+			typeName:  disterName,
+			assetPath: currAssetPath,
+		})
 	}
 	var sortedKeys []string
 	for k := range disterNameToAssets {
@@ -117,7 +85,7 @@ func AssetDisterCreators(assetPaths ...string) ([]Creator, error) {
 			continue
 		}
 		sort.Strings(disterNameToAssets[k])
-		return nil, errors.Errorf("dister type %s provided by multiple assets: %v", k, disterNameToAssets[k])
+		return nil, nil, errors.Errorf("dister type %s provided by multiple assets: %v", k, disterNameToAssets[k])
 	}
-	return disterCreators, nil
+	return disterCreators, configUpgraders, nil
 }
