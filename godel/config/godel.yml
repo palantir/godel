@@ -1,3 +1,9 @@
+plugins:
+  resolvers:
+    - "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
+  plugins:
+    - locator:
+        id: "com.palantir.godel-dep-plugin:dep-plugin:1.0.0-rc2"
 exclude:
   names:
     - "\\..+"
