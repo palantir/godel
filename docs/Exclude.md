@@ -79,7 +79,7 @@ Check in the changes:
 ```
 ➜ git add godel/config/godel.yml
 ➜ git commit -m "Update exclude configuration in godel.yml"
-[master 08fba76] Update exclude configuration in godel.yml
+[master 1322c85] Update exclude configuration in godel.yml
  1 file changed, 1 insertion(+), 1 deletion(-)
 ```
 
