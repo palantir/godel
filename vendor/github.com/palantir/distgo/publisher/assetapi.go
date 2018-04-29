@@ -17,6 +17,7 @@ package publisher
 import (
 	"encoding/json"
 
+	"github.com/palantir/godel/framework/pluginapi"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
@@ -24,7 +25,7 @@ import (
 	"github.com/palantir/distgo/distgo"
 )
 
-func AssetRootCmd(creator Creator, short string) *cobra.Command {
+func AssetRootCmd(creator Creator, upgradeConfigFn pluginapi.UpgradeConfigFn, short string) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   creator.TypeName(),
 		Short: short,
@@ -35,6 +36,7 @@ func AssetRootCmd(creator Creator, short string) *cobra.Command {
 	rootCmd.AddCommand(assetapi.NewAssetTypeCmd(assetapi.Publisher))
 	rootCmd.AddCommand(newFlagsCmd(publisher))
 	rootCmd.AddCommand(newRunPublishCmd(publisher))
+	rootCmd.AddCommand(pluginapi.CobraUpgradeConfigCmd(upgradeConfigFn))
 
 	return rootCmd
 }

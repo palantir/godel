@@ -91,20 +91,6 @@ func TestProjectVersion(t *testing.T) {
 			distgo.ProjectParam{},
 			"^1.0.0-1-g[a-f0-9]{7}-dirty\n$",
 		},
-		{
-			"version output uses script if specified",
-			func(testDir string) {
-				gittest.CommitRandomFile(t, testDir, "Initial commit")
-				gittest.CreateGitTag(t, testDir, "1.0.0")
-			},
-			distgo.ProjectParam{
-				VersionScript: `#!/usr/bin/env bash
-VERSION=$(git describe --tags)
-echo "$VERSION-custom"
-`,
-			},
-			"^1.0.0-custom\n$",
-		},
 	} {
 		projectDir, err := ioutil.TempDir(rootDir, "")
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
@@ -116,7 +102,7 @@ echo "$VERSION-custom"
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
 		buf := &bytes.Buffer{}
-		err = projectversion.Run(projectInfo, tc.projectParam, buf)
+		err = projectversion.Run(projectInfo, buf)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 		assert.Regexp(t, tc.want, buf.String(), "Case %d: %s", i, tc.name)
 	}

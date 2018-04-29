@@ -28,10 +28,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/distgo/dister"
+	"github.com/palantir/distgo/dister/disterfactory"
 	"github.com/palantir/distgo/distgo"
+	distgoconfig "github.com/palantir/distgo/distgo/config"
 	"github.com/palantir/distgo/distgo/printproducts"
-	"github.com/palantir/distgo/dockerbuilder"
+	"github.com/palantir/distgo/dockerbuilder/dockerbuilderfactory"
+	"github.com/palantir/distgo/publisher/publisherfactory"
 )
 
 func TestProducts(t *testing.T) {
@@ -41,17 +43,17 @@ func TestProducts(t *testing.T) {
 
 	for i, tc := range []struct {
 		name            string
-		projectConfig   distgo.ProjectConfig
+		projectConfig   distgoconfig.ProjectConfig
 		setupProjectDir func(projectDir string)
 		want            func(projectDir string) string
 	}{
 		{
 			"prints products defined in param",
-			distgo.ProjectConfig{
-				Products: map[distgo.ProductID]distgo.ProductConfig{
+			distgoconfig.ProjectConfig{
+				Products: distgoconfig.ToProductsMap(map[distgo.ProductID]distgoconfig.ProductConfig{
 					"foo": {},
 					"bar": {},
-				},
+				}),
 			},
 			func(projectDir string) {},
 			func(projectDir string) string {
@@ -62,7 +64,7 @@ foo
 		},
 		{
 			"if param is empty, prints main packages",
-			distgo.ProjectConfig{},
+			distgoconfig.ProjectConfig{},
 			func(projectDir string) {
 				_, err := gofiles.Write(projectDir, []gofiles.GoFileSpec{
 					{
@@ -88,7 +90,7 @@ foo
 		},
 		{
 			"if param is empty, prints main packages and uses exclude param",
-			distgo.ProjectConfig{
+			distgoconfig.ProjectConfig{
 				Exclude: matcher.NamesPathsCfg{
 					Paths: []string{
 						"foo",
@@ -124,14 +126,16 @@ foo
 		gittest.InitGitDir(t, projectDir)
 		tc.setupProjectDir(projectDir)
 
-		disterFactory, err := dister.NewDisterFactory()
+		disterFactory, err := disterfactory.New(nil, nil)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		defaultDisterCfg, err := dister.DefaultConfig()
+		defaultDisterCfg, err := disterfactory.DefaultConfig()
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		dockerBuilderFactory, err := dockerbuilder.NewDockerBuilderFactory()
+		dockerBuilderFactory, err := dockerbuilderfactory.New(nil, nil)
+		require.NoError(t, err, "Case %d: %s", i, tc.name)
+		publisherFactory, err := publisherfactory.New(nil, nil)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
-		projectParam, err := tc.projectConfig.ToParam(projectDir, disterFactory, defaultDisterCfg, dockerBuilderFactory)
+		projectParam, err := tc.projectConfig.ToParam(projectDir, disterFactory, defaultDisterCfg, dockerBuilderFactory, publisherFactory)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
 		buf := &bytes.Buffer{}

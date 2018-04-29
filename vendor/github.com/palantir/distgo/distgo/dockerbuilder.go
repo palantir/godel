@@ -33,6 +33,8 @@ type DockerBuilder interface {
 
 type DockerBuilderFactory interface {
 	NewDockerBuilder(typeName string, cfgYMLBytes []byte) (DockerBuilder, error)
+	ConfigUpgrader(typeName string) (ConfigUpgrader, error)
+	Types() []string
 }
 
 func RunCommandWithVerboseOption(cmd *exec.Cmd, verbose, dryRun bool, stdout io.Writer) error {

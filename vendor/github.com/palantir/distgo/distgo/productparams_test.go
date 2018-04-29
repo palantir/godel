@@ -20,7 +20,7 @@ import (
 	"github.com/palantir/godel/pkg/osarch"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/palantir/distgo/dister"
+	"github.com/palantir/distgo/dister/osarchbin"
 	"github.com/palantir/distgo/distgo"
 )
 
@@ -261,8 +261,8 @@ func TestProductParamsForDistProductArgs(t *testing.T) {
 						ID: "foo",
 						Dist: &distgo.DistParam{
 							DistParams: map[distgo.DistID]distgo.DisterParam{
-								dister.OSArchBinDistTypeName: {
-									Dister: dister.NewOSArchBinDister(),
+								osarchbin.TypeName: {
+									Dister: osarchbin.New(),
 								},
 							},
 						},
@@ -271,8 +271,8 @@ func TestProductParamsForDistProductArgs(t *testing.T) {
 						ID: "bar",
 						Dist: &distgo.DistParam{
 							DistParams: map[distgo.DistID]distgo.DisterParam{
-								dister.OSArchBinDistTypeName: {
-									Dister: dister.NewOSArchBinDister(),
+								osarchbin.TypeName: {
+									Dister: osarchbin.New(),
 								},
 							},
 						},
@@ -285,8 +285,8 @@ func TestProductParamsForDistProductArgs(t *testing.T) {
 					ID: "bar",
 					Dist: &distgo.DistParam{
 						DistParams: map[distgo.DistID]distgo.DisterParam{
-							dister.OSArchBinDistTypeName: {
-								Dister: dister.NewOSArchBinDister(),
+							osarchbin.TypeName: {
+								Dister: osarchbin.New(),
 							},
 						},
 					},
@@ -295,8 +295,8 @@ func TestProductParamsForDistProductArgs(t *testing.T) {
 					ID: "foo",
 					Dist: &distgo.DistParam{
 						DistParams: map[distgo.DistID]distgo.DisterParam{
-							dister.OSArchBinDistTypeName: {
-								Dister: dister.NewOSArchBinDister(),
+							osarchbin.TypeName: {
+								Dister: osarchbin.New(),
 							},
 						},
 					},
@@ -311,10 +311,10 @@ func TestProductParamsForDistProductArgs(t *testing.T) {
 						Dist: &distgo.DistParam{
 							DistParams: map[distgo.DistID]distgo.DisterParam{
 								"dister-1": {
-									Dister: dister.NewOSArchBinDister(),
+									Dister: osarchbin.New(),
 								},
 								"dister-2": {
-									Dister: dister.NewOSArchBinDister(),
+									Dister: osarchbin.New(),
 								},
 							},
 						},
@@ -323,8 +323,8 @@ func TestProductParamsForDistProductArgs(t *testing.T) {
 						ID: "bar",
 						Dist: &distgo.DistParam{
 							DistParams: map[distgo.DistID]distgo.DisterParam{
-								dister.OSArchBinDistTypeName: {
-									Dister: dister.NewOSArchBinDister(),
+								osarchbin.TypeName: {
+									Dister: osarchbin.New(),
 								},
 							},
 						},
@@ -340,8 +340,8 @@ func TestProductParamsForDistProductArgs(t *testing.T) {
 					ID: "bar",
 					Dist: &distgo.DistParam{
 						DistParams: map[distgo.DistID]distgo.DisterParam{
-							dister.OSArchBinDistTypeName: {
-								Dister: dister.NewOSArchBinDister(),
+							osarchbin.TypeName: {
+								Dister: osarchbin.New(),
 							},
 						},
 					},
@@ -351,7 +351,7 @@ func TestProductParamsForDistProductArgs(t *testing.T) {
 					Dist: &distgo.DistParam{
 						DistParams: map[distgo.DistID]distgo.DisterParam{
 							"dister-2": {
-								Dister: dister.NewOSArchBinDister(),
+								Dister: osarchbin.New(),
 							},
 						},
 					},
@@ -366,10 +366,10 @@ func TestProductParamsForDistProductArgs(t *testing.T) {
 						Dist: &distgo.DistParam{
 							DistParams: map[distgo.DistID]distgo.DisterParam{
 								"dister-1": {
-									Dister: dister.NewOSArchBinDister(),
+									Dister: osarchbin.New(),
 								},
 								"dister-2": {
-									Dister: dister.NewOSArchBinDister(),
+									Dister: osarchbin.New(),
 								},
 							},
 						},
@@ -378,8 +378,8 @@ func TestProductParamsForDistProductArgs(t *testing.T) {
 						ID: "bar",
 						Dist: &distgo.DistParam{
 							DistParams: map[distgo.DistID]distgo.DisterParam{
-								dister.OSArchBinDistTypeName: {
-									Dister: dister.NewOSArchBinDister(),
+								osarchbin.TypeName: {
+									Dister: osarchbin.New(),
 								},
 							},
 						},
@@ -399,10 +399,10 @@ func TestProductParamsForDistProductArgs(t *testing.T) {
 						Dist: &distgo.DistParam{
 							DistParams: map[distgo.DistID]distgo.DisterParam{
 								"dister-1": {
-									Dister: dister.NewOSArchBinDister(),
+									Dister: osarchbin.New(),
 								},
 								"dister-2": {
-									Dister: dister.NewOSArchBinDister(),
+									Dister: osarchbin.New(),
 								},
 							},
 						},
@@ -411,8 +411,8 @@ func TestProductParamsForDistProductArgs(t *testing.T) {
 						ID: "bar",
 						Dist: &distgo.DistParam{
 							DistParams: map[distgo.DistID]distgo.DisterParam{
-								dister.OSArchBinDistTypeName: {
-									Dister: dister.NewOSArchBinDister(),
+								osarchbin.TypeName: {
+									Dister: osarchbin.New(),
 								},
 							},
 						},

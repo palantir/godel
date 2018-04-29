@@ -20,7 +20,7 @@ import (
 	"strconv"
 )
 
-func createScriptContent(script, scriptIncludes string) string {
+func CreateScriptContent(script, scriptIncludes string) string {
 	if scriptIncludes == "" || script == "" {
 		return script
 	}

@@ -29,10 +29,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/distgo/dister"
+	"github.com/palantir/distgo/dister/disterfactory"
+	"github.com/palantir/distgo/dister/osarchbin"
 	"github.com/palantir/distgo/distgo"
+	distgoconfig "github.com/palantir/distgo/distgo/config"
 	"github.com/palantir/distgo/distgo/dist"
-	"github.com/palantir/distgo/dockerbuilder"
+	"github.com/palantir/distgo/dockerbuilder/dockerbuilderfactory"
+	"github.com/palantir/distgo/publisher/publisherfactory"
 )
 
 const (
@@ -53,20 +56,20 @@ func TestDist(t *testing.T) {
 	defer cleanup()
 	require.NoError(t, err)
 
-	defaultDisterCfg, err := dister.DefaultConfig()
+	defaultDisterCfg, err := disterfactory.DefaultConfig()
 	require.NoError(t, err)
 
 	for i, tc := range []struct {
 		name            string
-		projectCfg      distgo.ProjectConfig
-		preDistAction   func(projectDir string, projectCfg distgo.ProjectConfig)
+		projectCfg      distgoconfig.ProjectConfig
+		preDistAction   func(projectDir string, projectCfg distgoconfig.ProjectConfig)
 		wantErrorRegexp string
 		validate        func(caseNum int, name, projectDir string)
 	}{
 		{
 			"default dist is os-arch-bin",
-			distgo.ProjectConfig{},
-			func(projectDir string, projectCfg distgo.ProjectConfig) {
+			distgoconfig.ProjectConfig{},
+			func(projectDir string, projectCfg distgoconfig.ProjectConfig) {
 				gittest.CreateGitTag(t, projectDir, "0.1.0")
 			},
 			"",
@@ -78,21 +81,21 @@ func TestDist(t *testing.T) {
 		},
 		{
 			"runs custom dist script",
-			distgo.ProjectConfig{
-				ProductDefaults: distgo.ProductConfig{
-					Dist: &distgo.DistConfig{
-						Disters: &distgo.DistersConfig{
-							dister.OSArchBinDistTypeName: {
+			distgoconfig.ProjectConfig{
+				ProductDefaults: *distgoconfig.ToProductConfig(&distgoconfig.ProductConfig{
+					Dist: distgoconfig.ToDistConfig(&distgoconfig.DistConfig{
+						Disters: distgoconfig.ToDistersConfig(&distgoconfig.DistersConfig{
+							osarchbin.TypeName: {
 								Type:   defaultDisterCfg.Type,
 								Config: defaultDisterCfg.Config,
 								Script: stringPtr(`#!/usr/bin/env bash
 touch $DIST_DIR/test-file.txt`),
 							},
-						},
-					},
-				},
+						}),
+					}),
+				}),
 			},
-			func(projectDir string, projectCfg distgo.ProjectConfig) {
+			func(projectDir string, projectCfg distgoconfig.ProjectConfig) {
 				gittest.CreateGitTag(t, projectDir, "0.1.0")
 			},
 			"",
@@ -104,21 +107,21 @@ touch $DIST_DIR/test-file.txt`),
 		},
 		{
 			"custom dist script inherits process environment variables",
-			distgo.ProjectConfig{
-				ProductDefaults: distgo.ProductConfig{
-					Dist: &distgo.DistConfig{
-						Disters: &distgo.DistersConfig{
-							dister.OSArchBinDistTypeName: {
+			distgoconfig.ProjectConfig{
+				ProductDefaults: *distgoconfig.ToProductConfig(&distgoconfig.ProductConfig{
+					Dist: distgoconfig.ToDistConfig(&distgoconfig.DistConfig{
+						Disters: distgoconfig.ToDistersConfig(&distgoconfig.DistersConfig{
+							osarchbin.TypeName: {
 								Type:   defaultDisterCfg.Type,
 								Config: defaultDisterCfg.Config,
 								Script: stringPtr(`#!/usr/bin/env bash
 touch $DIST_DIR/$DIST_TEST_KEY.txt`),
 							},
-						},
-					},
-				},
+						}),
+					}),
+				}),
 			},
-			func(projectDir string, projectCfg distgo.ProjectConfig) {
+			func(projectDir string, projectCfg distgoconfig.ProjectConfig) {
 				gittest.CreateGitTag(t, projectDir, "0.1.0")
 				err := os.Setenv("DIST_TEST_KEY", "distTestVal")
 				require.NoError(t, err)
@@ -134,26 +137,26 @@ touch $DIST_DIR/$DIST_TEST_KEY.txt`),
 		},
 		{
 			"custom dist script uses script includes",
-			distgo.ProjectConfig{
+			distgoconfig.ProjectConfig{
 				ScriptIncludes: `touch $DIST_DIR/foo.txt
 helper_func() {
 	touch $DIST_DIR/baz.txt
 }`,
-				ProductDefaults: distgo.ProductConfig{
-					Dist: &distgo.DistConfig{
-						Disters: &distgo.DistersConfig{
-							dister.OSArchBinDistTypeName: {
+				ProductDefaults: *distgoconfig.ToProductConfig(&distgoconfig.ProductConfig{
+					Dist: distgoconfig.ToDistConfig(&distgoconfig.DistConfig{
+						Disters: distgoconfig.ToDistersConfig(&distgoconfig.DistersConfig{
+							osarchbin.TypeName: {
 								Type:   defaultDisterCfg.Type,
 								Config: defaultDisterCfg.Config,
 								Script: stringPtr(`#!/usr/bin/env bash
 touch $DIST_DIR/$VERSION
 helper_func`),
 							},
-						},
-					},
-				},
+						}),
+					}),
+				}),
 			},
-			func(projectDir string, projectCfg distgo.ProjectConfig) {
+			func(projectDir string, projectCfg distgoconfig.ProjectConfig) {
 				gittest.CreateGitTag(t, projectDir, "0.1.0")
 			},
 			"",
@@ -173,13 +176,13 @@ helper_func`),
 		},
 		{
 			"script includes not executed if custom script not specified",
-			distgo.ProjectConfig{
+			distgoconfig.ProjectConfig{
 				ScriptIncludes: `touch $DIST_DIR/foo.txt
 helper_func() {
 	touch $DIST_DIR/baz.txt
 }`,
 			},
-			func(projectDir string, projectCfg distgo.ProjectConfig) {
+			func(projectDir string, projectCfg distgoconfig.ProjectConfig) {
 				gittest.CreateGitTag(t, projectDir, "0.1.0")
 			},
 			"",
@@ -190,15 +193,15 @@ helper_func() {
 		},
 		{
 			"dependent products and dists are available",
-			distgo.ProjectConfig{
-				Products: map[distgo.ProductID]distgo.ProductConfig{
+			distgoconfig.ProjectConfig{
+				Products: distgoconfig.ToProductsMap(map[distgo.ProductID]distgoconfig.ProductConfig{
 					"foo": {
-						Build: &distgo.BuildConfig{
+						Build: distgoconfig.ToBuildConfig(&distgoconfig.BuildConfig{
 							MainPkg: stringPtr("foo"),
-						},
-						Dist: &distgo.DistConfig{
-							Disters: &distgo.DistersConfig{
-								dister.OSArchBinDistTypeName: {
+						}),
+						Dist: distgoconfig.ToDistConfig(&distgoconfig.DistConfig{
+							Disters: distgoconfig.ToDistersConfig(&distgoconfig.DistersConfig{
+								osarchbin.TypeName: {
 									Type:   defaultDisterCfg.Type,
 									Config: defaultDisterCfg.Config,
 									Script: stringPtr(`#!/usr/bin/env bash
@@ -208,28 +211,28 @@ echo $DEP_PRODUCT_ID_0_DIST_ID_0_DIST_DIR > $DIST_DIR/bar-dist-dir.txt
 echo $DEP_PRODUCT_ID_0_DIST_ID_0_DIST_ARTIFACT_0 > $DIST_DIR/bar-dist-artifacts.txt
 `),
 								},
-							},
-						},
+							}),
+						}),
 						Dependencies: &[]distgo.ProductID{
 							"bar",
 						},
 					},
 					"bar": {
-						Build: &distgo.BuildConfig{
+						Build: distgoconfig.ToBuildConfig(&distgoconfig.BuildConfig{
 							MainPkg: stringPtr("bar"),
-						},
-						Dist: &distgo.DistConfig{
-							Disters: &distgo.DistersConfig{
-								dister.OSArchBinDistTypeName: {
+						}),
+						Dist: distgoconfig.ToDistConfig(&distgoconfig.DistConfig{
+							Disters: distgoconfig.ToDistersConfig(&distgoconfig.DistersConfig{
+								osarchbin.TypeName: {
 									Type:   defaultDisterCfg.Type,
 									Config: defaultDisterCfg.Config,
 								},
-							},
-						},
+							}),
+						}),
 					},
-				},
+				}),
 			},
-			func(projectDir string, projectCfg distgo.ProjectConfig) {
+			func(projectDir string, projectCfg distgoconfig.ProjectConfig) {
 				_, err := gofiles.Write(projectDir, []gofiles.GoFileSpec{
 					{
 						RelPath: "bar/main.go",
@@ -277,14 +280,16 @@ func main() {}
 			tc.preDistAction(projectDir, tc.projectCfg)
 		}
 
-		disterFactory, err := dister.NewDisterFactory()
+		disterFactory, err := disterfactory.New(nil, nil)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		defaultDistCfg, err := dister.DefaultConfig()
+		defaultDistCfg, err := disterfactory.DefaultConfig()
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		dockerBuilderFactory, err := dockerbuilder.NewDockerBuilderFactory()
+		dockerBuilderFactory, err := dockerbuilderfactory.New(nil, nil)
+		require.NoError(t, err, "Case %d: %s", i, tc.name)
+		publisherFactory, err := publisherfactory.New(nil, nil)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
-		projectParam, err := tc.projectCfg.ToParam(projectDir, disterFactory, defaultDistCfg, dockerBuilderFactory)
+		projectParam, err := tc.projectCfg.ToParam(projectDir, disterFactory, defaultDistCfg, dockerBuilderFactory, publisherFactory)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
 		projectInfo, err := projectParam.ProjectInfo(projectDir)

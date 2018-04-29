@@ -33,6 +33,11 @@ func RequiresBuild(projectInfo distgo.ProjectInfo, productParam distgo.ProductPa
 	if productParam.Build == nil {
 		return nil, nil
 	}
+
+	// create a copy of the build parameter so that it is safe for modification
+	buildCopy := *productParam.Build
+	productParam.Build = &buildCopy
+
 	productTaskOutputInfo, err := distgo.ToProductTaskOutputInfo(projectInfo, productParam)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to compute output information for %s", productParam.ID)

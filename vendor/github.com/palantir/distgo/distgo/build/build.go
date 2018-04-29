@@ -20,6 +20,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -168,7 +169,13 @@ func executeBuild(unit buildUnit, buildOpts Options, stdout io.Writer) error {
 	if !ok {
 		return fmt.Errorf("failed to determine artifact path for %s for %s", name, osArch.String())
 	}
-	distgo.PrintlnOrDryRunPrintln(stdout, fmt.Sprintf("Building %s for %s at %s", name, osArch.String(), outputArtifactPath), buildOpts.DryRun)
+	outputArtifactDisplayPath := outputArtifactPath
+	if wd, err := os.Getwd(); err == nil {
+		if relPath, err := filepath.Rel(wd, outputArtifactPath); err == nil {
+			outputArtifactDisplayPath = relPath
+		}
+	}
+	distgo.PrintlnOrDryRunPrintln(stdout, fmt.Sprintf("Building %s for %s at %s", name, osArch.String(), outputArtifactDisplayPath), buildOpts.DryRun)
 
 	if !buildOpts.DryRun {
 		if err := os.MkdirAll(path.Dir(outputArtifactPath), 0755); err != nil {

@@ -17,6 +17,7 @@ package dister
 import (
 	"encoding/json"
 
+	"github.com/palantir/godel/framework/pluginapi"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
@@ -24,7 +25,7 @@ import (
 	"github.com/palantir/distgo/distgo"
 )
 
-func AssetRootCmd(creator Creator, short string) *cobra.Command {
+func AssetRootCmd(creator Creator, upgradeConfigFn pluginapi.UpgradeConfigFn, short string) *cobra.Command {
 	name := creator.TypeName()
 	rootCmd := &cobra.Command{
 		Use:   name,
@@ -38,6 +39,7 @@ func AssetRootCmd(creator Creator, short string) *cobra.Command {
 	rootCmd.AddCommand(newArtifactPathsCmd(creatorFn))
 	rootCmd.AddCommand(newRunDistCmd(creatorFn))
 	rootCmd.AddCommand(newGenerateDistArtifactsCmd(creatorFn))
+	rootCmd.AddCommand(pluginapi.CobraUpgradeConfigCmd(upgradeConfigFn))
 
 	return rootCmd
 }

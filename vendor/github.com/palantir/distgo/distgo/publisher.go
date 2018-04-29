@@ -34,6 +34,12 @@ type Publisher interface {
 	RunPublish(productTaskOutputInfo ProductTaskOutputInfo, cfgYML []byte, flagVals map[PublisherFlagName]interface{}, dryRun bool, stdout io.Writer) error
 }
 
+type PublisherFactory interface {
+	Types() []string
+	NewPublisher(typeName string) (Publisher, error)
+	ConfigUpgrader(typeName string) (ConfigUpgrader, error)
+}
+
 type PublisherFlagName string
 
 type PublisherFlag struct {

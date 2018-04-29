@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -129,7 +130,7 @@ func Run(projectInfo distgo.ProjectInfo, productParam distgo.ProductParam, dryRu
 			}
 		}
 
-		distgo.PrintlnOrDryRunPrintln(stdout, fmt.Sprintf("Creating distribution for %s at %v", productParam.ID, strings.Join(distgo.ProductDistArtifactPaths(projectInfo, productOutputInfo)[currDistID], ", ")), dryRun)
+		distgo.PrintlnOrDryRunPrintln(stdout, fmt.Sprintf("Creating distribution for %s at %v", productParam.ID, strings.Join(outputArtifactDisplayPaths(distgo.ProductDistArtifactPaths(projectInfo, productOutputInfo)[currDistID]), ", ")), dryRun)
 		if !dryRun {
 			// run dist task
 			runDistOutput, err := productParam.Dist.DistParams[currDistID].Dister.RunDist(currDistID, productTaskOutputInfo)
@@ -148,6 +149,26 @@ func Run(projectInfo distgo.ProjectInfo, productParam distgo.ProductParam, dryRu
 		distgo.PrintlnOrDryRunPrintln(stdout, fmt.Sprintf("Finished creating %s distribution for %s", currDistID, productParam.ID), dryRun)
 	}
 	return nil
+}
+
+func outputArtifactDisplayPaths(in []string) []string {
+	if in == nil {
+		return nil
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		return in
+	}
+	out := make([]string, len(in))
+	for i, outputArtifactPath := range in {
+		outputArtifactDisplayPath := outputArtifactPath
+		if relPath, err := filepath.Rel(wd, outputArtifactPath); err == nil {
+			outputArtifactDisplayPath = relPath
+		}
+		out[i] = outputArtifactDisplayPath
+	}
+	return out
 }
 
 func sortedMapKeys(m map[distgo.ProductID]struct{}) []distgo.ProductID {

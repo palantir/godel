@@ -25,7 +25,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
+	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -174,12 +176,23 @@ func (b *BasicConnectionInfo) UploadDistArtifacts(productTaskOutputInfo distgo.P
 func (b *BasicConnectionInfo) UploadFile(fileInfo FileInfo, baseURL, artifactName string, artifactExists ArtifactExistsFunc, dryRun bool, stdout io.Writer) (rURL string, rErr error) {
 	rawUploadURL := strings.Join([]string{baseURL, artifactName}, "/")
 
-	filePath := ""
-	if fileInfo.Path != "" {
-		filePath = fileInfo.Path + " "
+	filePath := fileInfo.Path
+	if filePath != "" {
+		if filepath.IsAbs(filePath) {
+			if wd, err := os.Getwd(); err == nil {
+				if relPath, err := filepath.Rel(wd, filePath); err == nil {
+					filePath = relPath
+				}
+			}
+		}
 	}
 	if !dryRun && artifactExists != nil && artifactExists(artifactName, fileInfo.Checksums, b.Username, b.Password) {
-		fmt.Fprintf(stdout, "File %salready exists at %s, skipping upload.\n", filePath, rawUploadURL)
+		errMsgParts := []string{"File"}
+		if filePath != "" {
+			errMsgParts = append(errMsgParts, filePath)
+		}
+		errMsgParts = append(errMsgParts, fmt.Sprintf("already exists at %s, skipping upload.\n", rawUploadURL))
+		fmt.Fprintf(stdout, strings.Join(errMsgParts, " "))
 		return rawUploadURL, nil
 	}
 
@@ -188,7 +201,12 @@ func (b *BasicConnectionInfo) UploadFile(fileInfo FileInfo, baseURL, artifactNam
 		return rawUploadURL, errors.Wrapf(err, "failed to parse %s as URL", rawUploadURL)
 	}
 
-	distgo.PrintlnOrDryRunPrintln(stdout, fmt.Sprintf("Uploading %sto %s", filePath, rawUploadURL), dryRun)
+	uploadMsgParts := []string{"Uploading"}
+	if filePath != "" {
+		uploadMsgParts = append(uploadMsgParts, filePath)
+	}
+	uploadMsgParts = append(uploadMsgParts, "to", rawUploadURL)
+	distgo.PrintlnOrDryRunPrintln(stdout, fmt.Sprintf(strings.Join(uploadMsgParts, " ")), dryRun)
 
 	if !dryRun {
 		header := http.Header{}
@@ -214,7 +232,12 @@ func (b *BasicConnectionInfo) UploadFile(fileInfo FileInfo, baseURL, artifactNam
 
 		resp, err := http.DefaultClient.Do(&req)
 		if err != nil {
-			return rawUploadURL, errors.Wrapf(err, "failed to upload %sto %s", filePath, rawUploadURL)
+			errMsgParts := []string{"failed to upload"}
+			if filePath != "" {
+				errMsgParts = append(errMsgParts, filePath)
+			}
+			errMsgParts = append(errMsgParts, "to", rawUploadURL)
+			return rawUploadURL, errors.Wrapf(err, strings.Join(errMsgParts, " "))
 		}
 		defer func() {
 			if err := resp.Body.Close(); err != nil && rErr == nil {
@@ -223,7 +246,13 @@ func (b *BasicConnectionInfo) UploadFile(fileInfo FileInfo, baseURL, artifactNam
 		}()
 
 		if resp.StatusCode >= http.StatusBadRequest {
-			msg := fmt.Sprintf("uploading%s to %s resulted in response %q", filePath, rawUploadURL, resp.Status)
+			msgParts := []string{"uploading"}
+			if filePath != "" {
+				msgParts = append(msgParts, filePath)
+			}
+			msgParts = append(msgParts, fmt.Sprintf("to %s resulted in response %q", rawUploadURL, resp.Status))
+
+			msg := fmt.Sprintf(strings.Join(msgParts, " "))
 			if body, err := ioutil.ReadAll(resp.Body); err == nil {
 				bodyStr := string(body)
 				if bodyStr != "" {

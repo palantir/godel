@@ -21,8 +21,8 @@ import (
 	"github.com/palantir/distgo/distgo"
 )
 
-func Run(projectInfo distgo.ProjectInfo, projectParam distgo.ProjectParam, stdout io.Writer) error {
-	version, err := distgo.ProjectVersion(projectInfo.ProjectDir, projectParam.VersionScript)
+func Run(projectInfo distgo.ProjectInfo, stdout io.Writer) error {
+	version, err := distgo.ProjectVersion(projectInfo.ProjectDir, "")
 	if err != nil {
 		return err
 	}

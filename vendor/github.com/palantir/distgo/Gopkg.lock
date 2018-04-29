@@ -70,13 +70,13 @@
 [[projects]]
   branch = "master"
   name = "github.com/palantir/godel"
-  packages = ["framework/artifactresolver","framework/builtintasks/installupdate/layout","framework/godel","framework/godellauncher","framework/pluginapi","framework/verifyorder","godelgetter","pkg/osarch","pkg/products"]
-  revision = "23cdea0b00851e6cbdc14f50676c43ba26b47894"
+  packages = ["framework/artifactresolver","framework/builtintasks","framework/builtintasks/checkpath","framework/builtintasks/githooks","framework/builtintasks/githubwiki","framework/builtintasks/idea","framework/builtintasks/installupdate","framework/builtintasks/installupdate/layout","framework/builtintasks/packages","framework/godel","framework/godel/config","framework/godel/config/internal/v0","framework/godellauncher","framework/godellauncher/defaulttasks","framework/internal/pathsinternal","framework/internal/pluginsinternal","framework/pluginapi","framework/pluginapi/v2/pluginapi","framework/pluginapitester","framework/plugins","framework/verifyorder","godelgetter","pkg/osarch","pkg/products","pkg/versionedconfig"]
+  revision = "6ef6fc2811e260af0641aae25a45881217b3cf3d"
 
 [[projects]]
   branch = "master"
   name = "github.com/palantir/pkg"
-  packages = ["cobracli","gittest","matcher","specdir"]
+  packages = ["cobracli","gittest","matcher","pkgpath","specdir"]
   revision = "b59de130c1302a3c591efcfb0fd575727f53d0d2"
 
 [[projects]]
@@ -160,6 +160,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d0a4f2f2246c41fbd97538cbb6aeaf1a30e783abfd47185faece638bfa0a5b7a"
+  inputs-digest = "9ea1b8d5dc7349933586f346db94ad418597b6f4ca126cef50aa58c67576a612"
   solver-name = "gps-cdcl"
   solver-version = 1

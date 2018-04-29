@@ -47,52 +47,27 @@ func NewCreator(typeName string, publisherCreator func() distgo.Publisher) Creat
 	}
 }
 
-var registeredPublishers map[string]Creator
-
-func init() {
-	registeredPublishers = builtinPublishers()
-}
-
-func SetPublishers(publishers map[string]Creator) error {
-	registeredPublishers = make(map[string]Creator)
-	for k, v := range builtinPublishers() {
-		registeredPublishers[k] = v
-	}
-	for k, v := range publishers {
-		registeredPublishers[k] = v
-	}
-	return nil
-}
-
-func Publishers() map[string]distgo.Publisher {
-	publishers := make(map[string]distgo.Publisher)
-	for k, v := range registeredPublishers {
-		publishers[k] = v.Publisher()
-	}
-	return publishers
-}
-
-func builtinPublishers() map[string]Creator {
-	return map[string]Creator{
-		LocalPublishTypeName:       NewLocalPublisherCreator(),
-		ArtifactoryPublishTypeName: NewArtifactoryPublisherCreator(),
-		BintrayPublishTypeName:     NewBintrayPublisherCreator(),
-		GitHubPublishTypeName:      NewGitHubPublisherCreator(),
-	}
-}
-
-func AssetPublisherCreators(assetPaths ...string) (map[string]Creator, error) {
-	publishers := make(map[string]Creator)
+func AssetPublisherCreators(assetPaths ...string) ([]Creator, []distgo.ConfigUpgrader, error) {
+	var publisherCreators []Creator
+	var configUpgraders []distgo.ConfigUpgrader
 	publisherNameToAssets := make(map[string][]string)
 	for _, currAssetPath := range assetPaths {
-		publisher := newAssetPublisher(currAssetPath)
+		publisher := assetPublisher{
+			assetPath: currAssetPath,
+		}
 		publisherName, err := publisher.TypeName()
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to determine type name for asset %s", currAssetPath)
+			return nil, nil, errors.Wrapf(err, "failed to determine type name for asset %s", currAssetPath)
 		}
 		publisherNameToAssets[publisherName] = append(publisherNameToAssets[publisherName], currAssetPath)
-		publishers[publisherName] = NewCreator(publisherName, func() distgo.Publisher {
-			return newAssetPublisher(currAssetPath)
+		publisherCreators = append(publisherCreators, NewCreator(publisherName, func() distgo.Publisher {
+			return &assetPublisher{
+				assetPath: currAssetPath,
+			}
+		}))
+		configUpgraders = append(configUpgraders, &assetConfigUpgrader{
+			typeName:  publisherName,
+			assetPath: currAssetPath,
 		})
 	}
 	var sortedKeys []string
@@ -105,7 +80,7 @@ func AssetPublisherCreators(assetPaths ...string) (map[string]Creator, error) {
 			continue
 		}
 		sort.Strings(publisherNameToAssets[k])
-		return nil, errors.Errorf("publisher type %s provided by multiple assets: %v", k, publisherNameToAssets[k])
+		return nil, nil, errors.Errorf("publisher type %s provided by multiple assets: %v", k, publisherNameToAssets[k])
 	}
-	return publishers, nil
+	return publisherCreators, configUpgraders, nil
 }

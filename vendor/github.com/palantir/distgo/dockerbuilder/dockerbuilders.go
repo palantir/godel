@@ -49,44 +49,9 @@ func NewCreator(typeName string, creatorFn CreatorFunction) Creator {
 	}
 }
 
-type dockerBuilderFactory struct {
-	dockerBuilderCreators map[string]CreatorFunction
-}
-
-func (f *dockerBuilderFactory) NewDockerBuilder(typeName string, cfgYMLBytes []byte) (distgo.DockerBuilder, error) {
-	creatorFn, ok := f.dockerBuilderCreators[typeName]
-	if !ok {
-		var dockerBuilderNames []string
-		for k := range f.dockerBuilderCreators {
-			dockerBuilderNames = append(dockerBuilderNames, k)
-		}
-		sort.Strings(dockerBuilderNames)
-		return nil, errors.Errorf("no DockerBuilder registered for DockerBuilder type %q (registered disters: %v)", typeName, dockerBuilderNames)
-	}
-	return creatorFn(cfgYMLBytes)
-}
-
-func NewDockerBuilderFactory(providedDockerBuilderCreators ...Creator) (distgo.DockerBuilderFactory, error) {
-	disterCreators := make(map[string]CreatorFunction)
-	for k, v := range builtinDisters() {
-		disterCreators[k] = v
-	}
-	for _, currCreator := range providedDockerBuilderCreators {
-		disterCreators[currCreator.TypeName()] = currCreator.Creator()
-	}
-	return &dockerBuilderFactory{
-		dockerBuilderCreators: disterCreators,
-	}, nil
-}
-
-func builtinDisters() map[string]CreatorFunction {
-	return map[string]CreatorFunction{
-		DefaultBuilderTypeName: NewDefaultDockerBuilderFromConfig,
-	}
-}
-
-func AssetDockerBuilderCreators(assetPaths ...string) ([]Creator, error) {
+func AssetDockerBuilderCreators(assetPaths ...string) ([]Creator, []distgo.ConfigUpgrader, error) {
 	var dockerBuilderCreators []Creator
+	var configUpgraders []distgo.ConfigUpgrader
 	dockerBuilderNameToAssets := make(map[string][]string)
 	for _, currAssetPath := range assetPaths {
 		currDockerBuilder := assetDockerBuilder{
@@ -94,7 +59,7 @@ func AssetDockerBuilderCreators(assetPaths ...string) ([]Creator, error) {
 		}
 		dockerBuilderName, err := currDockerBuilder.TypeName()
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to determine DockerBuilder type name for asset %s", currAssetPath)
+			return nil, nil, errors.Wrapf(err, "failed to determine DockerBuilder type name for asset %s", currAssetPath)
 		}
 		dockerBuilderNameToAssets[dockerBuilderName] = append(dockerBuilderNameToAssets[dockerBuilderName], currAssetPath)
 		dockerBuilderCreators = append(dockerBuilderCreators, NewCreator(dockerBuilderName,
@@ -105,6 +70,10 @@ func AssetDockerBuilderCreators(assetPaths ...string) ([]Creator, error) {
 				}
 				return &currDockerBuilder, nil
 			}))
+		configUpgraders = append(configUpgraders, &assetConfigUpgrader{
+			typeName:  dockerBuilderName,
+			assetPath: currAssetPath,
+		})
 	}
 	var sortedKeys []string
 	for k := range dockerBuilderNameToAssets {
@@ -116,7 +85,7 @@ func AssetDockerBuilderCreators(assetPaths ...string) ([]Creator, error) {
 			continue
 		}
 		sort.Strings(dockerBuilderNameToAssets[k])
-		return nil, errors.Errorf("DockerBuilder type %s provided by multiple assets: %v", k, dockerBuilderNameToAssets[k])
+		return nil, nil, errors.Errorf("DockerBuilder type %s provided by multiple assets: %v", k, dockerBuilderNameToAssets[k])
 	}
-	return dockerBuilderCreators, nil
+	return dockerBuilderCreators, configUpgraders, nil
 }

@@ -24,11 +24,11 @@ var projectVersionCmd = &cobra.Command{
 	Use:   "project-version",
 	Short: "Print the version of the project",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		projectInfo, projectParam, err := distgoProjectParamFromFlags()
+		projectInfo, _, err := distgoProjectParamFromFlags()
 		if err != nil {
 			return err
 		}
-		return projectversion.Run(projectInfo, projectParam, cmd.OutOrStdout())
+		return projectversion.Run(projectInfo, cmd.OutOrStdout())
 	},
 }
 

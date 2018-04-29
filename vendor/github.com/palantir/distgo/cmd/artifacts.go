@@ -72,11 +72,11 @@ var (
 )
 
 func init() {
-	artifactsCmd.PersistentFlags().BoolVar(&artifactsAbsPathFlagVal, "absolute", false, "print the absolute path for artifacts")
-
+	artifactsBuildSubcmd.Flags().BoolVar(&artifactsAbsPathFlagVal, "absolute", false, "print the absolute path for artifacts")
 	artifactsBuildSubcmd.Flags().BoolVar(&artifactsRequiresBuildFlagVal, "requires-build", false, "only prints the artifacts that require building (omits artifacts that are already built and are up-to-date)")
 	artifactsCmd.AddCommand(artifactsBuildSubcmd)
 
+	artifactsDistSubcmd.Flags().BoolVar(&artifactsAbsPathFlagVal, "absolute", false, "print the absolute path for artifacts")
 	artifactsCmd.AddCommand(artifactsDistSubcmd)
 
 	artifactsDockerSubcmd.Flags().StringVar(&artifactsDockerRepositoryFlagVal, "repository", "", "specifies the value that should be used for the Docker repository (overrides any value(s) specified in configuration)")

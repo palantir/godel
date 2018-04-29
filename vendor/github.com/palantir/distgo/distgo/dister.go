@@ -37,5 +37,7 @@ type Dister interface {
 }
 
 type DisterFactory interface {
+	Types() []string
 	NewDister(typeName string, cfgYMLBytes []byte) (Dister, error)
+	ConfigUpgrader(typeName string) (ConfigUpgrader, error)
 }
