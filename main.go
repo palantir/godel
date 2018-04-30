@@ -68,9 +68,11 @@ func runGodelApp(osArgs []string) int {
 		if err != nil {
 			printErrAndExit(err, global.Debug)
 		}
-		// combine base configuration with resolved configurations
-		tasksConfig := config.TasksConfig(godelCfg.TasksConfig)
+		tasksConfig := config.TasksConfig{}
+		// add resolved configurations
 		tasksConfig.Combine(providedConfigs...)
+		// add configuration specified in config file (overrides any provided config)
+		tasksConfig.Combine(config.TasksConfig(godelCfg.TasksConfig))
 		tasksCfgInfo.TasksConfig = tasksConfig
 
 		// add default tasks
