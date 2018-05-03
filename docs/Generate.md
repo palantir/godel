@@ -30,7 +30,7 @@ Add the plugin definition to `godel/config/godel.yml`:
     - "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
   plugins:
     - locator:
-        id: "com.palantir.godel-generate-plugin:generate-plugin:1.0.0-rc1"
+        id: "com.palantir.godel-generate-plugin:generate-plugin:1.0.0"
 exclude:
   names:
     - "\\\\..+"
@@ -44,8 +44,8 @@ the plugin:
 
 ```
 ➜ ./godelw
-Getting package from https://palantir.bintray.com/releases/com/palantir/godel-generate-plugin/generate-plugin/1.0.0-rc1/generate-plugin-1.0.0-rc1-linux-amd64.tgz...
- 0 B / 3.29 MiB    0.00% 95.15 KiB / 3.29 MiB    2.83% 6s 238.71 KiB / 3.29 MiB    7.09% 5s 484.80 KiB / 3.29 MiB   14.39% 3s 687.14 KiB / 3.29 MiB   20.40% 3s 914.10 KiB / 3.29 MiB   27.14% 2s 1.22 MiB / 3.29 MiB   37.09% 2s 1.55 MiB / 3.29 MiB   47.15% 1s 1.88 MiB / 3.29 MiB   57.22% 1s 2.22 MiB / 3.29 MiB   67.49% 2.31 MiB / 3.29 MiB   70.13% 2.59 MiB / 3.29 MiB   78.90% 2.84 MiB / 3.29 MiB   86.49% 3.10 MiB / 3.29 MiB   94.36% 3.27 MiB / 3.29 MiB   99.52% 3.29 MiB / 3.29 MiB  100.00% 2s
+Getting package from https://palantir.bintray.com/releases/com/palantir/godel-generate-plugin/generate-plugin/1.0.0/generate-plugin-1.0.0-linux-amd64.tgz...
+ 0 B / 3.29 MiB    0.00% 925.80 KiB / 3.29 MiB   27.49% 1.50 MiB / 3.29 MiB   45.50% 2.00 MiB / 3.29 MiB   60.81% 2.78 MiB / 3.29 MiB   84.55% 3.29 MiB / 3.29 MiB  100.00% 0s
 Usage:
   godel [command]
 
@@ -448,7 +448,7 @@ exclude block of `godel/config/godel.yml` to reflect this and specify that the f
     - "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
   plugins:
     - locator:
-        id: "com.palantir.godel-generate-plugin:generate-plugin:1.0.0-rc1"
+        id: "com.palantir.godel-generate-plugin:generate-plugin:1.0.0"
 exclude:
   names:
     - "\\\\..+"
@@ -465,7 +465,7 @@ We can now commit the changes:
 ```
 ➜ git add echo godel main.go
 ➜ git commit -m "Add support for echo types"
-[master 9b9078c] Add support for echo types
+[master f15c6c9] Add support for echo types
  6 files changed, 78 insertions(+), 4 deletions(-)
  create mode 100644 echo/type_string.go
  create mode 100644 godel/config/generate-plugin.yml
@@ -598,10 +598,10 @@ Run the `check` command to verify that the project is still valid:
 
 ```
 ➜ ./godelw check
-[extimport]     Running extimport...
 [compiles]      Running compiles...
-[deadcode]      Running deadcode...
+[extimport]     Running extimport...
 [errcheck]      Running errcheck...
+[deadcode]      Running deadcode...
 [extimport]     Finished extimport
 [golint]        Running golint...
 [golint]        Finished golint
@@ -615,11 +615,11 @@ Run the `check` command to verify that the project is still valid:
 [novendor]      golang.org/x/tools
 [novendor]      Finished novendor
 [outparamcheck] Running outparamcheck...
-[compiles]      Finished compiles
-[unconvert]     Running unconvert...
 [errcheck]      Finished errcheck
-[deadcode]      Finished deadcode
+[unconvert]     Running unconvert...
+[compiles]      Finished compiles
 [varcheck]      Running varcheck...
+[deadcode]      Finished deadcode
 [outparamcheck] Finished outparamcheck
 [unconvert]     Finished unconvert
 [varcheck]      Finished varcheck
@@ -656,7 +656,7 @@ Commit these changes by running the following:
 ```
 ➜ git add echo generator godel
 ➜ git commit -m "Update generator code"
-[master f5abc0b] Update generator code
+[master 1961f01] Update generator code
  8 files changed, 702 insertions(+), 4 deletions(-)
  create mode 100644 generator/generate.go
  create mode 100644 generator/vendor/golang.org/x/tools/cmd/stringer/importer18.go

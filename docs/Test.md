@@ -52,7 +52,7 @@ Commit the test to the repository:
 ```
 ➜ git add echo
 ➜ git commit -m "Add tests for echo package"
-[master b9713b0] Add tests for echo package
+[master 2d2b762] Add tests for echo package
  1 file changed, 22 insertions(+)
  create mode 100644 echo/echo_test.go
 ```
@@ -128,13 +128,13 @@ For example, the following command prints the output as JSON:
 
 ```
 ➜ ./godelw test -- -json
-{"Time":"2018-04-30T04:23:49.948564Z","Action":"run","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho"}
-{"Time":"2018-04-30T04:23:49.9486919Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho","Output":"=== RUN   TestEcho\n"}
-{"Time":"2018-04-30T04:23:49.9487115Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho","Output":"--- PASS: TestEcho (0.00s)\n"}
-{"Time":"2018-04-30T04:23:49.948726Z","Action":"pass","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho","Elapsed":0}
-{"Time":"2018-04-30T04:23:49.9487395Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Output":"PASS\n"}
-{"Time":"2018-04-30T04:23:49.9487504Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Output":"ok  \tgithub.com/nmiyake/echgo2/echo\t(cached)\n"}
-{"Time":"2018-04-30T04:23:49.9490958Z","Action":"pass","Package":"github.com/nmiyake/echgo2/echo","Elapsed":0.001}
-{"Time":"2018-04-30T04:23:49.9524977Z","Action":"output","Package":"github.com/nmiyake/echgo2","Output":"?   \tgithub.com/nmiyake/echgo2\t[no test files]\n"}
-{"Time":"2018-04-30T04:23:49.9525331Z","Action":"skip","Package":"github.com/nmiyake/echgo2","Elapsed":0}
+{"Time":"2018-05-03T19:05:02.1867867Z","Action":"output","Package":"github.com/nmiyake/echgo2","Output":"?   \tgithub.com/nmiyake/echgo2\t[no test files]\n"}
+{"Time":"2018-05-03T19:05:02.1869511Z","Action":"skip","Package":"github.com/nmiyake/echgo2","Elapsed":0}
+{"Time":"2018-05-03T19:05:02.1928314Z","Action":"run","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho"}
+{"Time":"2018-05-03T19:05:02.1928662Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho","Output":"=== RUN   TestEcho\n"}
+{"Time":"2018-05-03T19:05:02.1928828Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho","Output":"--- PASS: TestEcho (0.00s)\n"}
+{"Time":"2018-05-03T19:05:02.1928967Z","Action":"pass","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho","Elapsed":0}
+{"Time":"2018-05-03T19:05:02.1929095Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Output":"PASS\n"}
+{"Time":"2018-05-03T19:05:02.1929202Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Output":"ok  \tgithub.com/nmiyake/echgo2/echo\t(cached)\n"}
+{"Time":"2018-05-03T19:05:02.1929386Z","Action":"pass","Package":"github.com/nmiyake/echgo2/echo","Elapsed":0}
 ```

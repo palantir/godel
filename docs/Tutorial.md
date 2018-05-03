@@ -123,7 +123,7 @@ Initialized empty Git repository in /go/src/github.com/nmiyake/echgo2/.git/
 ➜ echo 'echgo2 is a program that echoes input provided by the user.' > README.md
 ➜ git add README.md
 ➜ git commit -m "Initial commit"
-[master (root-commit) d71ac98] Initial commit
+[master (root-commit) 8f3415d] Initial commit
  1 file changed, 1 insertion(+)
  create mode 100644 README.md
 ```

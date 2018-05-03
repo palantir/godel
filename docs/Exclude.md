@@ -32,7 +32,7 @@ plugins:
     - "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
   plugins:
     - locator:
-        id: "com.palantir.godel-generate-plugin:generate-plugin:1.0.0-rc1"
+        id: "com.palantir.godel-generate-plugin:generate-plugin:1.0.0"
 exclude:
   names:
     - "\\..+"
@@ -56,7 +56,7 @@ update the configuration:
     - "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
   plugins:
     - locator:
-        id: "com.palantir.godel-generate-plugin:generate-plugin:1.0.0-rc1"
+        id: "com.palantir.godel-generate-plugin:generate-plugin:1.0.0"
 exclude:
   names:
     - "\\\\..+"
@@ -79,7 +79,7 @@ Check in the changes:
 ```
 ➜ git add godel/config/godel.yml
 ➜ git commit -m "Update exclude configuration in godel.yml"
-[master 1ec1a1e] Update exclude configuration in godel.yml
+[master 85105f6] Update exclude configuration in godel.yml
  1 file changed, 1 insertion(+), 1 deletion(-)
 ```
 
