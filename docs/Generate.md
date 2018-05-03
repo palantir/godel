@@ -45,7 +45,7 @@ the plugin:
 ```
 ➜ ./godelw
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-generate-plugin/generate-plugin/1.0.0/generate-plugin-1.0.0-linux-amd64.tgz...
- 0 B / 3.29 MiB    0.00% 925.80 KiB / 3.29 MiB   27.49% 1.50 MiB / 3.29 MiB   45.50% 2.00 MiB / 3.29 MiB   60.81% 2.78 MiB / 3.29 MiB   84.55% 3.29 MiB / 3.29 MiB  100.00% 0s
+ 0 B / 3.29 MiB    0.00% 3.29 MiB / 3.29 MiB  100.00% 0s
 Usage:
   godel [command]
 
@@ -465,7 +465,7 @@ We can now commit the changes:
 ```
 ➜ git add echo godel main.go
 ➜ git commit -m "Add support for echo types"
-[master f15c6c9] Add support for echo types
+[master 0a7c9e9] Add support for echo types
  6 files changed, 78 insertions(+), 4 deletions(-)
  create mode 100644 echo/type_string.go
  create mode 100644 godel/config/generate-plugin.yml
@@ -598,10 +598,10 @@ Run the `check` command to verify that the project is still valid:
 
 ```
 ➜ ./godelw check
-[compiles]      Running compiles...
-[extimport]     Running extimport...
-[errcheck]      Running errcheck...
 [deadcode]      Running deadcode...
+[extimport]     Running extimport...
+[compiles]      Running compiles...
+[errcheck]      Running errcheck...
 [extimport]     Finished extimport
 [golint]        Running golint...
 [golint]        Finished golint
@@ -615,14 +615,14 @@ Run the `check` command to verify that the project is still valid:
 [novendor]      golang.org/x/tools
 [novendor]      Finished novendor
 [outparamcheck] Running outparamcheck...
-[errcheck]      Finished errcheck
-[unconvert]     Running unconvert...
 [compiles]      Finished compiles
-[varcheck]      Running varcheck...
+[unconvert]     Running unconvert...
 [deadcode]      Finished deadcode
+[varcheck]      Running varcheck...
+[errcheck]      Finished errcheck
 [outparamcheck] Finished outparamcheck
-[unconvert]     Finished unconvert
 [varcheck]      Finished varcheck
+[unconvert]     Finished unconvert
 Check(s) produced output: [novendor]
 ```
 
@@ -656,7 +656,7 @@ Commit these changes by running the following:
 ```
 ➜ git add echo generator godel
 ➜ git commit -m "Update generator code"
-[master 1961f01] Update generator code
+[master f551677] Update generator code
  8 files changed, 702 insertions(+), 4 deletions(-)
  create mode 100644 generator/generate.go
  create mode 100644 generator/vendor/golang.org/x/tools/cmd/stringer/importer18.go
