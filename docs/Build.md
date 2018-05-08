@@ -22,7 +22,7 @@ Start by running `./godelw build` in the project to observe the default behavior
 ```
 ➜ ./godelw build
 Building echgo2 for linux-amd64 at out/build/echgo2/unspecified/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.489s)
+Finished building echgo2 for linux-amd64 (0.222s)
 ```
 
 The default build settings builds all `main` packages for the executing platform. As stated by the output, this command
@@ -42,7 +42,7 @@ in git, so run the following to add `/out/` to the `.gitignore` file and commit 
 ➜ echo '/out/' >> .gitignore
 ➜ git add .gitignore
 ➜ git commit -m "Update .gitignore to ignore out directory"
-[master 9d537a1] Update .gitignore to ignore out directory
+[master 3115841] Update .gitignore to ignore out directory
  1 file changed, 1 insertion(+)
 ```
 
@@ -89,8 +89,8 @@ Run `./godelw build` with the updated configuration:
 ➜ ./godelw build
 Building echgo2 for darwin-amd64 at out/build/echgo2/unspecified/darwin-amd64/echgo2
 Building echgo2 for linux-amd64 at out/build/echgo2/unspecified/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.098s)
-Finished building echgo2 for darwin-amd64 (4.213s)
+Finished building echgo2 for linux-amd64 (0.073s)
+Finished building echgo2 for darwin-amd64 (2.835s)
 ```
 
 As indicated by the output, the product has now been built for both `darwin-amd64` and `linux-amd64`.
@@ -165,10 +165,10 @@ Run `./godelw build` and invoke the build executable to see that the version var
 
 ```
 ➜ ./godelw build
-Building echgo2 for linux-amd64 at out/build/echgo2/unspecified/linux-amd64/echgo2
 Building echgo2 for darwin-amd64 at out/build/echgo2/unspecified/darwin-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.413s)
-Finished building echgo2 for darwin-amd64 (0.637s)
+Building echgo2 for linux-amd64 at out/build/echgo2/unspecified/linux-amd64/echgo2
+Finished building echgo2 for linux-amd64 (0.282s)
+Finished building echgo2 for darwin-amd64 (0.465s)
 ➜ ./out/build/echgo2/unspecified/linux-amd64/echgo2 -version
 echgo2 version: unspecified
 ```
@@ -182,7 +182,7 @@ Commit the files that were modified and tag a release:
 ```
 ➜ git add main.go godel/config/dist-plugin.yml
 ➜ git commit -m "Add version variable and define build configuration"
-[master 2f17625] Add version variable and define build configuration
+[master 73cc6dd] Add version variable and define build configuration
  2 files changed, 20 insertions(+), 2 deletions(-)
 ➜ git tag 0.0.1
 ```
@@ -193,8 +193,8 @@ Now that the repository is tagged, run `./godelw build` and run version on the e
 ➜ ./godelw build
 Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1/darwin-amd64/echgo2
 Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.337s)
-Finished building echgo2 for darwin-amd64 (0.409s)
+Finished building echgo2 for linux-amd64 (0.219s)
+Finished building echgo2 for darwin-amd64 (0.233s)
 ➜ ./out/build/echgo2/0.0.1/linux-amd64/echgo2 -version
 echgo2 version: 0.0.1
 ```
@@ -229,8 +229,8 @@ specify that we want to build only `echgo2` by running the following:
 ➜ ./godelw build echgo2
 Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1/darwin-amd64/echgo2
 Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.116s)
-Finished building echgo2 for darwin-amd64 (0.139s)
+Finished building echgo2 for linux-amd64 (0.082s)
+Finished building echgo2 for darwin-amd64 (0.093s)
 ```
 
 ### Specify build environment variables
