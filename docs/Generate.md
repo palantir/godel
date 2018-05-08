@@ -14,6 +14,7 @@ Tutorial start state
 * Project is tagged as 0.0.1
 * `godel/config/dist-plugin.yml` is configured to create distributions for `echgo`
 * Project is tagged as 0.0.2
+* `dockerctx` directory exists and `godel/config/dist-plugin.yml` is configured to build Docker images for the product
 * Go files have license headers
 
 Add the `go generate` plugin
@@ -45,7 +46,7 @@ the plugin:
 ```
 ➜ ./godelw
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-generate-plugin/generate-plugin/1.0.0/generate-plugin-1.0.0-linux-amd64.tgz...
- 0 B / 3.29 MiB    0.00% 3.29 MiB / 3.29 MiB  100.00% 0s
+ 0 B / 3.29 MiB    0.00% 1020.48 KiB / 3.29 MiB   30.30% 1.50 MiB / 3.29 MiB   45.50% 2.14 MiB / 3.29 MiB   65.06% 2.93 MiB / 3.29 MiB   89.23% 3.29 MiB / 3.29 MiB  100.00% 0s
 Usage:
   godel [command]
 
@@ -465,7 +466,7 @@ We can now commit the changes:
 ```
 ➜ git add echo godel main.go
 ➜ git commit -m "Add support for echo types"
-[master 0a7c9e9] Add support for echo types
+[master 3bed9db] Add support for echo types
  6 files changed, 78 insertions(+), 4 deletions(-)
  create mode 100644 echo/type_string.go
  create mode 100644 godel/config/generate-plugin.yml
@@ -598,10 +599,10 @@ Run the `check` command to verify that the project is still valid:
 
 ```
 ➜ ./godelw check
-[deadcode]      Running deadcode...
-[extimport]     Running extimport...
 [compiles]      Running compiles...
+[extimport]     Running extimport...
 [errcheck]      Running errcheck...
+[deadcode]      Running deadcode...
 [extimport]     Finished extimport
 [golint]        Running golint...
 [golint]        Finished golint
@@ -615,14 +616,14 @@ Run the `check` command to verify that the project is still valid:
 [novendor]      golang.org/x/tools
 [novendor]      Finished novendor
 [outparamcheck] Running outparamcheck...
-[compiles]      Finished compiles
+[errcheck]      Finished errcheck
 [unconvert]     Running unconvert...
 [deadcode]      Finished deadcode
 [varcheck]      Running varcheck...
-[errcheck]      Finished errcheck
+[compiles]      Finished compiles
 [outparamcheck] Finished outparamcheck
-[varcheck]      Finished varcheck
 [unconvert]     Finished unconvert
+[varcheck]      Finished varcheck
 Check(s) produced output: [novendor]
 ```
 
@@ -656,7 +657,7 @@ Commit these changes by running the following:
 ```
 ➜ git add echo generator godel
 ➜ git commit -m "Update generator code"
-[master f551677] Update generator code
+[master 81ce000] Update generator code
  8 files changed, 702 insertions(+), 4 deletions(-)
  create mode 100644 generator/generate.go
  create mode 100644 generator/vendor/golang.org/x/tools/cmd/stringer/importer18.go
@@ -681,6 +682,7 @@ Tutorial end state
 * Project is tagged as 0.0.1
 * `godel/config/dist-plugin.yml` is configured to create distributions for `echgo`
 * Project is tagged as 0.0.2
+* `dockerctx` directory exists and `godel/config/dist-plugin.yml` is configured to build Docker images for the product
 * Go files have license headers
 * `godel/config/godel.yml` is configured to add the go-generate plugin
 * `godel/config/generate-plugin.yml` is configured to generate string function

@@ -13,6 +13,7 @@ Tutorial start state
 * Project is tagged as 0.0.1
 * `godel/config/dist-plugin.yml` is configured to create distributions for `echgo`
 * Project is tagged as 0.0.2
+* `dockerctx` directory exists and `godel/config/dist-plugin.yml` is configured to build Docker images for the product
 
 License
 -------
@@ -25,7 +26,7 @@ First, add the license as a license file:
 ➜ curl http://www.apache.org/licenses/LICENSE-2.0.txt | sed '/./,$!d' > LICENSE
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0100 11358  100 11358    0     0   7131      0  0:00:01  0:00:01 --:--:--  7129
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 11358  100 11358    0     0  69558      0 --:--:-- --:--:-- --:--:-- 69256
 ```
 
 Run the following to configure a license header:
@@ -91,7 +92,7 @@ Commit the changes to the repository:
 ```
 ➜ git add LICENSE echo godel main.go
 ➜ git commit -m "Add LICENSE and license headers"
-[master 4961628] Add LICENSE and license headers
+[master afd3a7d] Add LICENSE and license headers
  6 files changed, 221 insertions(+)
  create mode 100644 LICENSE
 ```
@@ -107,6 +108,7 @@ Tutorial end state
 * Project is tagged as 0.0.1
 * `godel/config/dist-plugin.yml` is configured to create distributions for `echgo`
 * Project is tagged as 0.0.2
+* `dockerctx` directory exists and `godel/config/dist-plugin.yml` is configured to build Docker images for the product
 * Go files have license headers
 
 Tutorial next step

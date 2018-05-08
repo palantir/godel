@@ -13,6 +13,7 @@ Tutorial start state
 * Project is tagged as 0.0.1
 * `godel/config/dist-plugin.yml` is configured to create distributions for `echgo`
 * Project is tagged as 0.0.2
+* `dockerctx` directory exists and `godel/config/dist-plugin.yml` is configured to build Docker images for the product
 * Go files have license headers
 * `godel/config/godel.yml` is configured to add the go-generate plugin
 * `godel/config/generate-plugin.yml` is configured to generate string function
@@ -41,9 +42,9 @@ Running generate...
 Running license...
 Running check...
 [extimport]     Running extimport...
+[errcheck]      Running errcheck...
 [compiles]      Running compiles...
 [deadcode]      Running deadcode...
-[errcheck]      Running errcheck...
 [extimport]     Finished extimport
 [golint]        Running golint...
 [golint]        Finished golint
@@ -56,19 +57,19 @@ Running check...
 [novendor]      Running novendor...
 [novendor]      Finished novendor
 [outparamcheck] Running outparamcheck...
-[errcheck]      Finished errcheck
+[deadcode]      Finished deadcode
 [unconvert]     Running unconvert...
 [compiles]      Finished compiles
 [varcheck]      Running varcheck...
-[deadcode]      Finished deadcode
+[errcheck]      Finished errcheck
 [outparamcheck] Finished outparamcheck
-[unconvert]     Finished unconvert
 [varcheck]      Finished varcheck
+[unconvert]     Finished unconvert
 Running test...
 ?   	github.com/nmiyake/echgo2                 	[no test files]
 ok  	github.com/nmiyake/echgo2/echo            	(cached)
 ?   	github.com/nmiyake/echgo2/generator       	[no test files]
-ok  	github.com/nmiyake/echgo2/integration_test	2.592s
+ok  	github.com/nmiyake/echgo2/integration_test	2.311s
 ```
 
 Tutorial end state
@@ -82,6 +83,7 @@ Tutorial end state
 * Project is tagged as 0.0.1
 * `godel/config/dist-plugin.yml` is configured to create distributions for `echgo`
 * Project is tagged as 0.0.2
+* `dockerctx` directory exists and `godel/config/dist-plugin.yml` is configured to build Docker images for the product
 * Go files have license headers
 * `godel/config/godel.yml` is configured to add the go-generate plugin
 * `godel/config/generate-plugin.yml` is configured to generate string function
