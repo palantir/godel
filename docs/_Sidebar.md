@@ -10,6 +10,7 @@
   * [Run](https://github.com/palantir/godel/wiki/Run)
   * [Dist](https://github.com/palantir/godel/wiki/Dist)
   * [Publish](https://github.com/palantir/godel/wiki/Publish)
+  * [Build and push Docker images](https://github.com/palantir/godel/wiki/Docker)
   * [Generate license headers](https://github.com/palantir/godel/wiki/License-headers)
   * [Go generate tasks](https://github.com/palantir/godel/wiki/Generate)
   * [Define excludes](https://github.com/palantir/godel/wiki/Exclude)
