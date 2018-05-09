@@ -92,9 +92,9 @@ func TestInvalidType(t *testing.T) {
 ➜ go test -v ./integration_test
 === RUN   TestInvalidType
 "invalid echo type: invalid\n"
---- PASS: TestInvalidType (2.34s)
+--- PASS: TestInvalidType (2.30s)
 PASS
-ok  	github.com/nmiyake/echgo2/integration_test	2.345s
+ok  	github.com/nmiyake/echgo2/integration_test	2.306s
 ```
 
 The `products.Bin("echgo2")` call uses gödel to build the echgo2 product (if needed) and returns a path to the binary
@@ -144,10 +144,10 @@ func main() {
 ➜ go test -v ./integration_test
 === RUN   TestInvalidType
 "invalid echo type: invalid\n"
---- FAIL: TestInvalidType (2.32s)
-	integration_test.go:23: cmd [/go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.2-5-gba37539.dirty/linux-amd64/echgo2 -type invalid foo] failed with error exit status 1. Output: invalid echo type: invalid
+--- FAIL: TestInvalidType (2.29s)
+	integration_test.go:23: cmd [/go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.2-5-g0d0a950.dirty/linux-amd64/echgo2 -type invalid foo] failed with error exit status 1. Output: invalid echo type: invalid
 FAIL
-FAIL	github.com/nmiyake/echgo2/integration_test	2.322s
+FAIL	github.com/nmiyake/echgo2/integration_test	2.293s
 ```
 
 We can see that the test now fails as expected. Since this is the expected behavior, update the test to pass when this
@@ -190,9 +190,9 @@ func TestInvalidType(t *testing.T) {
 }' > integration_test/integration_test.go
 ➜ go test -v ./integration_test
 === RUN   TestInvalidType
---- PASS: TestInvalidType (1.38s)
+--- PASS: TestInvalidType (1.37s)
 PASS
-ok  	github.com/nmiyake/echgo2/integration_test	1.386s
+ok  	github.com/nmiyake/echgo2/integration_test	1.376s
 ```
 
 We can see that the test now passes. The test will now run when `./godelw test` is invoked.
@@ -229,7 +229,7 @@ Run `./godelw test` to verify that this test is run:
 ?   	github.com/nmiyake/echgo2                 	[no test files]
 ok  	github.com/nmiyake/echgo2/echo            	0.002s
 ?   	github.com/nmiyake/echgo2/generator       	[no test files]
-ok  	github.com/nmiyake/echgo2/integration_test	1.377s
+ok  	github.com/nmiyake/echgo2/integration_test	1.365s
 ```
 
 The configuration in `godel/config/test.yml` can be used to group tests into tags. Update the configuration as follows:
@@ -258,7 +258,7 @@ Commit these changes by running the following:
 ```
 ➜ git add godel main.go integration_test vendor
 ➜ git commit -m "Add integration tests"
-[master 268139e] Add integration tests
+[master 722ce79] Add integration tests
  6 files changed, 217 insertions(+), 1 deletion(-)
  create mode 100644 integration_test/doc.go
  create mode 100644 integration_test/integration_test.go
