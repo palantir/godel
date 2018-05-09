@@ -39,7 +39,7 @@ Run the following to define a Dockerfile:
 ```START_TUTORIAL_CODE
 echo 'FROM alpine:3.7
 
-COPY {{InputBuildArtifact "echgo2" "linux-amd64"}} /usr/local/bin/
+COPY {{InputBuildArtifact Product "linux-amd64"}} /usr/local/bin/
 
 ENTRYPOINT [ "/usr/local/bin/echgo2" ]' > dockerctx/Dockerfile
 ```END_TUTORIAL_CODE

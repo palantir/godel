@@ -26,7 +26,7 @@ Observe the default behavior by removing the configuration in the `godel/config/
 ➜ echo '' > godel/config/dist-plugin.yml
 ➜ ./godelw dist
 Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1.dirty/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.205s)
+Finished building echgo2 for linux-amd64 (0.210s)
 Creating distribution for echgo2 at out/dist/echgo2/0.0.1.dirty/os-arch-bin/echgo2-0.0.1.dirty-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
@@ -68,7 +68,7 @@ Run `./godelw dist` to verify that the distributions are built:
 ```
 ➜ ./godelw dist
 Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1.dirty/darwin-amd64/echgo2
-Finished building echgo2 for darwin-amd64 (0.204s)
+Finished building echgo2 for darwin-amd64 (0.198s)
 Creating distribution for echgo2 at out/dist/echgo2/0.0.1.dirty/os-arch-bin/echgo2-0.0.1.dirty-darwin-amd64.tgz, out/dist/echgo2/0.0.1.dirty/os-arch-bin/echgo2-0.0.1.dirty-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
@@ -83,7 +83,7 @@ Commit this update:
 ```
 ➜ git add godel/config/dist-plugin.yml
 ➜ git commit -m "Specify dist configuration"
-[master 762c104] Specify dist configuration
+[master cec1351] Specify dist configuration
  1 file changed, 9 insertions(+)
 ```
 
@@ -119,11 +119,11 @@ Run `./godelw dist` to generate the dist artifacts. This run will build and dist
 
 ```
 ➜ ./godelw dist
-Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-g762c104/darwin-amd64/echgo2
-Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-g762c104/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.266s)
-Finished building echgo2 for darwin-amd64 (0.285s)
-Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g762c104/os-arch-bin/echgo2-0.0.1-1-g762c104-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-g762c104/os-arch-bin/echgo2-0.0.1-1-g762c104-linux-amd64.tgz
+Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-gcec1351/darwin-amd64/echgo2
+Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-gcec1351/linux-amd64/echgo2
+Finished building echgo2 for darwin-amd64 (0.220s)
+Finished building echgo2 for linux-amd64 (0.224s)
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-gcec1351/os-arch-bin/echgo2-0.0.1-1-gcec1351-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-gcec1351/os-arch-bin/echgo2-0.0.1-1-gcec1351-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
 
@@ -138,7 +138,7 @@ out of date:
 
 ```
 ➜ ./godelw dist --force
-Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g762c104/os-arch-bin/echgo2-0.0.1-1-g762c104-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-g762c104/os-arch-bin/echgo2-0.0.1-1-g762c104-linux-amd64.tgz
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-gcec1351/os-arch-bin/echgo2-0.0.1-1-gcec1351-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-gcec1351/os-arch-bin/echgo2-0.0.1-1-gcec1351-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
 
@@ -178,13 +178,13 @@ Verify that running `./godelw dist --force` generates both distributions:
 
 ```
 ➜ ./godelw dist --force
-Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-g762c104.dirty/darwin-amd64/echgo2
-Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-g762c104.dirty/linux-amd64/echgo2
-Finished building echgo2 for darwin-amd64 (0.286s)
-Finished building echgo2 for linux-amd64 (0.285s)
-Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g762c104.dirty/bin/echgo2-0.0.1-1-g762c104.dirty.tgz
+Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-gcec1351.dirty/darwin-amd64/echgo2
+Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-gcec1351.dirty/linux-amd64/echgo2
+Finished building echgo2 for linux-amd64 (0.228s)
+Finished building echgo2 for darwin-amd64 (0.229s)
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-gcec1351.dirty/bin/echgo2-0.0.1-1-gcec1351.dirty.tgz
 Finished creating bin distribution for echgo2
-Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g762c104.dirty/os-arch-bin/echgo2-0.0.1-1-g762c104.dirty-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-g762c104.dirty/os-arch-bin/echgo2-0.0.1-1-g762c104.dirty-linux-amd64.tgz
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-gcec1351.dirty/os-arch-bin/echgo2-0.0.1-1-gcec1351.dirty-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-gcec1351.dirty/os-arch-bin/echgo2-0.0.1-1-gcec1351.dirty-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
 
@@ -196,7 +196,7 @@ A specific dister for a product can be run using the `<product>.<name>` syntax. 
 
 ```
 ➜ ./godelw dist --force echgo2.bin
-Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g762c104.dirty/bin/echgo2-0.0.1-1-g762c104.dirty.tgz
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-gcec1351.dirty/bin/echgo2-0.0.1-1-gcec1351.dirty.tgz
 Finished creating bin distribution for echgo2
 ```
 
@@ -244,11 +244,11 @@ Run the `dist` command:
 
 ```
 ➜ ./godelw dist --force
-Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-g762c104.dirty/darwin-amd64/echgo2
-Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-g762c104.dirty/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.234s)
-Finished building echgo2 for darwin-amd64 (0.261s)
-Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g762c104.dirty/bin/echgo2-0.0.1-1-g762c104.dirty.tgz
+Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-gcec1351.dirty/darwin-amd64/echgo2
+Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-gcec1351.dirty/linux-amd64/echgo2
+Finished building echgo2 for linux-amd64 (0.230s)
+Finished building echgo2 for darwin-amd64 (0.242s)
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-gcec1351.dirty/bin/echgo2-0.0.1-1-gcec1351.dirty.tgz
 Finished creating bin distribution for echgo2
 ```
 
@@ -258,16 +258,16 @@ Verify that `timestamp.txt` was created in the distribution directory:
 ➜ tree out/dist
 out/dist
 `-- echgo2
-    `-- 0.0.1-1-g762c104.dirty
+    `-- 0.0.1-1-gcec1351.dirty
         `-- bin
-            |-- echgo2-0.0.1-1-g762c104.dirty
+            |-- echgo2-0.0.1-1-gcec1351.dirty
             |   |-- bin
             |   |   |-- darwin-amd64
             |   |   |   `-- echgo2
             |   |   `-- linux-amd64
             |   |       `-- echgo2
             |   `-- timestamp.txt
-            `-- echgo2-0.0.1-1-g762c104.dirty.tgz
+            `-- echgo2-0.0.1-1-gcec1351.dirty.tgz
 
 7 directories, 4 files
 ```
@@ -285,13 +285,13 @@ performing them:
 
 ```
 ➜ ./godelw dist --force --dry-run
-[DRY RUN] Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-g762c104/darwin-amd64/echgo2
-[DRY RUN] Run: /usr/local/go/bin/go build -o /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g762c104/darwin-amd64/echgo2 -ldflags -X main.version=0.0.1-1-g762c104 ./.
+[DRY RUN] Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-gcec1351/darwin-amd64/echgo2
+[DRY RUN] Run: /usr/local/go/bin/go build -o /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-gcec1351/darwin-amd64/echgo2 -ldflags -X main.version=0.0.1-1-gcec1351 ./.
 [DRY RUN] Finished building echgo2 for darwin-amd64 (0.000s)
-[DRY RUN] Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-g762c104/linux-amd64/echgo2
-[DRY RUN] Run: /usr/local/go/bin/go build -o /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g762c104/linux-amd64/echgo2 -ldflags -X main.version=0.0.1-1-g762c104 ./.
+[DRY RUN] Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-gcec1351/linux-amd64/echgo2
+[DRY RUN] Run: /usr/local/go/bin/go build -o /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-gcec1351/linux-amd64/echgo2 -ldflags -X main.version=0.0.1-1-gcec1351 ./.
 [DRY RUN] Finished building echgo2 for linux-amd64 (0.000s)
-[DRY RUN] Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g762c104/os-arch-bin/echgo2-0.0.1-1-g762c104-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-g762c104/os-arch-bin/echgo2-0.0.1-1-g762c104-linux-amd64.tgz
+[DRY RUN] Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-gcec1351/os-arch-bin/echgo2-0.0.1-1-gcec1351-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-gcec1351/os-arch-bin/echgo2-0.0.1-1-gcec1351-linux-amd64.tgz
 [DRY RUN] Finished creating os-arch-bin distribution for echgo2
 ```
 
