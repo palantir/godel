@@ -26,7 +26,7 @@ First, add the license as a license file:
 ➜ curl http://www.apache.org/licenses/LICENSE-2.0.txt | sed '/./,$!d' > LICENSE
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 11358  100 11358    0     0  35745      0 --:--:-- --:--:-- --:--:-- 35829
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0 35 11358   35  4031    0     0  12696      0 --:--:-- --:--:-- --:--:-- 12676100 11358  100 11358    0     0  35642      0 --:--:-- --:--:-- --:--:-- 35605
 ```
 
 Run the following to configure a license header:
@@ -92,7 +92,7 @@ Commit the changes to the repository:
 ```
 ➜ git add LICENSE echo godel main.go
 ➜ git commit -m "Add LICENSE and license headers"
-[master 8171ad2] Add LICENSE and license headers
+[master 1901c41] Add LICENSE and license headers
  6 files changed, 221 insertions(+)
  create mode 100644 LICENSE
 ```
