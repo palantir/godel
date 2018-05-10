@@ -44,7 +44,7 @@ COPY {{InputBuildArtifact Product "linux-amd64"}} /usr/local/bin/
 ENTRYPOINT [ "/usr/local/bin/echgo2" ]' > dockerctx/Dockerfile
 ```
 
-For the most part, this is a standard Dockerfile. The custom portion is `{{InputBuildArtifact "echgo2" "linux-amd64"}}`.
+For the most part, this is a standard Dockerfile. The custom portion is `{{InputBuildArtifact Product "linux-amd64"}}`.
 This renders to the path of the build output of the `echgo2` product built for the `linux-amd64` OS/architecture. The
 example above uses the build artifact (which is the generated Go binary). The `InputDistArtifacts` function can be used
 get the paths to the distribution outputs for a product (useful if the `dist` task for a product packages resources or
@@ -161,7 +161,7 @@ Commit the changes that were made to the repository:
 ```
 ➜ git add dockerctx godel/config/dist-plugin.yml
 ➜ git commit -m "Add Docker build configuration"
-[master 94a40c1] Add Docker build configuration
+[master 350be98] Add Docker build configuration
  3 files changed, 15 insertions(+)
  create mode 100644 dockerctx/.gitignore
  create mode 100644 dockerctx/Dockerfile
@@ -175,7 +175,7 @@ to observe how the Docker image would be pushed:
 ```
 ➜ ./godelw docker push --dry-run
 [DRY RUN] Running Docker push for configuration echgo2 of product echgo2...
-[DRY RUN] Run [docker push echgo2:0.0.2-1-g94a40c1]
+[DRY RUN] Run [docker push echgo2:0.0.2-1-g350be98]
 [DRY RUN] Run [docker push echgo2:latest]
 ```
 

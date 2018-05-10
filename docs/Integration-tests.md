@@ -92,9 +92,9 @@ func TestInvalidType(t *testing.T) {
 ➜ go test -v ./integration_test
 === RUN   TestInvalidType
 "invalid echo type: invalid\n"
---- PASS: TestInvalidType (2.30s)
+--- PASS: TestInvalidType (2.74s)
 PASS
-ok  	github.com/nmiyake/echgo2/integration_test	2.300s
+ok  	github.com/nmiyake/echgo2/integration_test	2.738s
 ```
 
 The `products.Bin("echgo2")` call uses gödel to build the echgo2 product (if needed) and returns a path to the binary
@@ -144,10 +144,10 @@ func main() {
 ➜ go test -v ./integration_test
 === RUN   TestInvalidType
 "invalid echo type: invalid\n"
---- FAIL: TestInvalidType (2.32s)
-	integration_test.go:23: cmd [/go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.2-5-gc4c7c12.dirty/linux-amd64/echgo2 -type invalid foo] failed with error exit status 1. Output: invalid echo type: invalid
+--- FAIL: TestInvalidType (2.46s)
+	integration_test.go:23: cmd [/go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.2-5-g4b5e624.dirty/linux-amd64/echgo2 -type invalid foo] failed with error exit status 1. Output: invalid echo type: invalid
 FAIL
-FAIL	github.com/nmiyake/echgo2/integration_test	2.325s
+FAIL	github.com/nmiyake/echgo2/integration_test	2.458s
 ```
 
 We can see that the test now fails as expected. Since this is the expected behavior, update the test to pass when this
@@ -229,7 +229,7 @@ Run `./godelw test` to verify that this test is run:
 ?   	github.com/nmiyake/echgo2                 	[no test files]
 ok  	github.com/nmiyake/echgo2/echo            	0.002s
 ?   	github.com/nmiyake/echgo2/generator       	[no test files]
-ok  	github.com/nmiyake/echgo2/integration_test	1.382s
+ok  	github.com/nmiyake/echgo2/integration_test	1.418s
 ```
 
 The configuration in `godel/config/test.yml` can be used to group tests into tags. Update the configuration as follows:
@@ -258,7 +258,7 @@ Commit these changes by running the following:
 ```
 ➜ git add godel main.go integration_test vendor
 ➜ git commit -m "Add integration tests"
-[master 2dc7cb8] Add integration tests
+[master de6b67f] Add integration tests
  6 files changed, 217 insertions(+), 1 deletion(-)
  create mode 100644 integration_test/doc.go
  create mode 100644 integration_test/integration_test.go
