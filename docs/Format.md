@@ -111,7 +111,7 @@ Commit the formatted files:
 ```
 ➜ git add main.go echo
 ➜ git commit -m "Create echo package"
-[master 4760975] Create echo package
+[master 169a6d4] Create echo package
  2 files changed, 8 insertions(+), 1 deletion(-)
  create mode 100644 echo/echo.go
 ```

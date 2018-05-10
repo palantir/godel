@@ -44,7 +44,7 @@ COPY {{InputBuildArtifact Product "linux-amd64"}} /usr/local/bin/
 ENTRYPOINT [ "/usr/local/bin/echgo2" ]' > dockerctx/Dockerfile
 ```END_TUTORIAL_CODE
 
-For the most part, this is a standard Dockerfile. The custom portion is `{{InputBuildArtifact "echgo2" "linux-amd64"}}`.
+For the most part, this is a standard Dockerfile. The custom portion is `{{InputBuildArtifact Product "linux-amd64"}}`.
 This renders to the path of the build output of the `echgo2` product built for the `linux-amd64` OS/architecture. The
 example above uses the build artifact (which is the generated Go binary). The `InputDistArtifacts` function can be used
 get the paths to the distribution outputs for a product (useful if the `dist` task for a product packages resources or
