@@ -28,7 +28,7 @@ go-install-packages: &go-install-packages
   run: go install $(./godelw packages)
 
 godelw-verify: &godelw-verify
-  run: ./godelw verify --junit-output="$TESTS_DIR/$CIRCLE_PROJECT_REPONAME-tests.xml"
+  run: ./godelw verify --apply=false --junit-output="$TESTS_DIR/$CIRCLE_PROJECT_REPONAME-tests.xml"
 
 godelw-test: &godelw-test
   run: ./godelw test --junit-output="$TESTS_DIR/$CIRCLE_PROJECT_REPONAME-tests.xml"
@@ -44,10 +44,26 @@ store-artifacts: &store-artifacts
 
 version: 2
 jobs:
+  go-1.10:
+    <<: *working_dir
+    docker:
+      - image: golang:1.10.1
+    steps:
+      - checkout
+      - *go-version
+      - *godel-cache-restore
+      - *godel-version
+      - *godel-cache-save
+      - *define-tests-dir
+      - *mkdir-tests-dir
+      - *go-install-packages
+      - *godelw-verify
+      - *store-test-results
+      - *store-artifacts
   go-1.9:
     <<: *working_dir
     docker:
-      - image: golang:1.9.2
+      - image: golang:1.9.5
     steps:
       - checkout
       - *go-version
@@ -63,7 +79,7 @@ jobs:
   go-1.8:
     <<: *working_dir
     docker:
-      - image: golang:1.8.5
+      - image: golang:1.8.7
     steps:
       - checkout
       - *go-version
@@ -81,5 +97,6 @@ workflows:
   version: 2
   build-publish:
     jobs:
+      - go-1.10
       - go-1.9
       - go-1.8

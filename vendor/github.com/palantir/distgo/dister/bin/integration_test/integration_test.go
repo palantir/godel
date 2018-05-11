@@ -355,25 +355,16 @@ func TestBinUpgradeConfig(t *testing.T) {
 					"godel/config/dist-plugin.yml": `products:
   foo:
     build:
-      name-template: null
-      output-dir: null
       main-pkg: ./foo
-      build-args-script: null
-      version-var: null
-      environment: null
       os-archs:
       - os: darwin
         arch: amd64
       - os: linux
         arch: amd64
-    run: null
     dist:
-      output-dir: null
       disters:
         bin:
           type: bin
-          config: null
-          name-template: null
           script: |
             #!/bin/bash
             ### START: auto-generated back-compat code for "omit-init-sh: false" behavior for bin dist ###
@@ -409,20 +400,6 @@ func TestBinUpgradeConfig(t *testing.T) {
             echo "$GODELUPGRADED_templated" > "$DIST_WORK_DIR"/bin/"$PRODUCT".sh
             chmod 755 "$DIST_WORK_DIR"/bin/"$PRODUCT".sh
             ### END: auto-generated back-compat code for "omit-init-sh: false" behavior for bin dist ###
-    publish: null
-    docker: null
-    dependencies: null
-product-defaults:
-  build: null
-  run: null
-  dist: null
-  publish: null
-  docker: null
-  dependencies: null
-script-includes: ""
-exclude:
-  names: []
-  paths: []
 `,
 				},
 			},

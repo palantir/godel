@@ -52,5 +52,5 @@ func init() {
 	distCmd.Flags().BoolVar(&distDryRunFlagVal, "dry-run", false, "print the operations that would be performed")
 	distCmd.Flags().BoolVar(&distForceFlagVal, "force", false, "create distribution outputs even if they are considered up-to-date")
 
-	RootCmd.AddCommand(distCmd)
+	rootCmd.AddCommand(distCmd)
 }

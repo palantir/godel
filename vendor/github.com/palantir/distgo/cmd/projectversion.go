@@ -33,5 +33,5 @@ var projectVersionCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(projectVersionCmd)
+	rootCmd.AddCommand(projectVersionCmd)
 }

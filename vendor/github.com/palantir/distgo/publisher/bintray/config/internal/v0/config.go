@@ -22,12 +22,12 @@ import (
 )
 
 type Config struct {
-	publisher.BasicConnectionInfo `yaml:",inline"`
-	Subject                       string `yaml:"subject"`
-	Repository                    string `yaml:"repository"`
-	Product                       string `yaml:"product"`
-	Publish                       bool   `yaml:"publish"`
-	DownloadsList                 bool   `yaml:"downloads-list"`
+	publisher.BasicConnectionInfo `yaml:",inline,omitempty"`
+	Subject                       string `yaml:"subject,omitempty"`
+	Repository                    string `yaml:"repository,omitempty"`
+	Product                       string `yaml:"product,omitempty"`
+	Publish                       bool   `yaml:"publish,omitempty"`
+	DownloadsList                 bool   `yaml:"downloads-list,omitempty"`
 }
 
 func UpgradeConfig(cfgBytes []byte) ([]byte, error) {

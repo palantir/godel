@@ -29,6 +29,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/palantir/distgo/distgo"
+	"github.com/palantir/distgo/distgo/build"
 	"github.com/palantir/distgo/distgo/dist"
 )
 
@@ -39,12 +40,34 @@ func BuildProducts(projectInfo distgo.ProjectInfo, projectParam distgo.ProjectPa
 		return err
 	}
 
-	// create a ProductDistID for all of the products for which a Docker action will be run
+	// run build for products that require build artifact generation (not sufficient to just run dist because product
+	// may declare build output but not dist output)
+	var productParamsToBuild []distgo.ProductParam
+	for _, currProduct := range productParams {
+		requiresBuildParam, err := build.RequiresBuild(projectInfo, currProduct)
+		if err != nil {
+			return err
+		}
+		if requiresBuildParam == nil {
+			continue
+		}
+		productParamsToBuild = append(productParamsToBuild, *requiresBuildParam)
+	}
+	if len(productParamsToBuild) != 0 {
+		if err := build.Run(projectInfo, productParamsToBuild, build.Options{
+			Parallel: true,
+			DryRun:   dryRun,
+		}, stdout); err != nil {
+			return err
+		}
+	}
+
+	// create a ProductBuildID and ProductDistID for all of the products for which a Docker action will be run
 	var productDistIDs []distgo.ProductDistID
 	for _, currProductParam := range productParams {
 		productDistIDs = append(productDistIDs, distgo.ProductDistID(currProductParam.ID))
 	}
-	// run dist for products (will only run dist for productDistIDs that require dist artifact generation)
+	// run dist for products that require dist artifact generation
 	if err := dist.Products(projectInfo, projectParam, configModTime, productDistIDs, dryRun, stdout); err != nil {
 		return err
 	}

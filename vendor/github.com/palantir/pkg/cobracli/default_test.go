@@ -23,8 +23,6 @@ func TestExecuteWithDefaultParams(t *testing.T) {
 		runE       func(cmd *cobra.Command, args []string) error
 		configure  func(cmd *cobra.Command)
 		args       []string
-		debugVar   *bool
-		version    string
 		wantRV     int
 		wantOutput interface{}
 	}{
@@ -36,8 +34,6 @@ func TestExecuteWithDefaultParams(t *testing.T) {
 			},
 			nil,
 			nil,
-			nil,
-			"",
 			0,
 			"hello, world!\n",
 		},
@@ -49,10 +45,15 @@ func TestExecuteWithDefaultParams(t *testing.T) {
 			},
 			nil,
 			[]string{"--invalid-flag"},
-			nil,
-			"",
 			1,
-			"Error: unknown flag: --invalid-flag\nUsage:\n  my-app [flags]\n\nFlags:\n  -h, --help   help for my-app\n",
+			`Error: unknown flag: --invalid-flag
+Usage:
+  my-app [flags]
+
+Flags:
+      --debug   run in debug mode
+  -h, --help    help for my-app
+`,
 		},
 		{
 			"error prints output but without usage",
@@ -61,47 +62,34 @@ func TestExecuteWithDefaultParams(t *testing.T) {
 			},
 			nil,
 			nil,
-			nil,
-			"",
 			1,
 			"Error: hello-error\n",
 		},
 		{
-			"error with debug variable prints full stack trace",
+			"error with debug flag prints full stack trace",
 			func(cmd *cobra.Command, args []string) error {
 				return errors.Errorf("hello-error")
 			},
 			nil,
-			nil,
-			boolVar(true),
-			"",
+			[]string{"--debug"},
 			1,
-			regexp.MustCompile("^Error: hello-error\n\tgithub.com/palantir/pkg/cobracli_test.TestExecuteWithDefaultParams.+"),
+			regexp.MustCompile(`(?s)^Error: hello-error
+	github.com/palantir/pkg/cobracli_test.TestExecuteWithDefaultParams.+`),
 		},
 		{
-			"version command prints version",
+			"debug flag is not added to CLI if it already exists",
 			func(cmd *cobra.Command, args []string) error {
 				return errors.Errorf("hello-error")
 			},
-			nil,
-			[]string{"version"},
-			nil,
-			"1.0.0",
-			0,
-			"my-app version 1.0.0\n",
-		},
-		{
-			"version command does not exist if version is empty",
-			func(cmd *cobra.Command, args []string) error {
-				cmd.Println(args)
-				return nil
+			func(cmd *cobra.Command) {
+				// add a debug flag outside of default execution
+				cmd.Flags().Bool("debug", false, "some other debug flag")
 			},
-			nil,
-			[]string{"version"},
-			nil,
-			"",
-			0,
-			"[version]\n",
+			[]string{"--debug"},
+			1,
+			// a "--debug" flag was already defined on the root command, so the default executor does not displace the
+			// flag. Because that flag is not hooked up to the default Debug variable, no stack trace is printed.
+			"Error: hello-error\n",
 		},
 		{
 			"print usage when required flag is not provided",
@@ -114,10 +102,16 @@ func TestExecuteWithDefaultParams(t *testing.T) {
 				_ = cmd.MarkFlagRequired("required-flag")
 			},
 			nil,
-			nil,
-			"",
 			1,
-			regexp.MustCompile(`(?s)^Error: .+` + "\nUsage:\n  my-app " + regexp.QuoteMeta(`[flags]`) + "\n\nFlags:\n  -h, --help            help for my-app\n      --required-flag\n$"),
+			`Error: required flag(s) "required-flag" not set
+Usage:
+  my-app [flags]
+
+Flags:
+      --debug           run in debug mode
+  -h, --help            help for my-app
+      --required-flag
+`,
 		},
 		{
 			"subcommand required flag error prints help for subcommand",
@@ -134,10 +128,18 @@ func TestExecuteWithDefaultParams(t *testing.T) {
 				cmd.AddCommand(subCmd)
 			},
 			[]string{"subcmd"},
-			nil,
-			"",
 			1,
-			regexp.MustCompile(`(?s)^Error: .+` + "\nUsage:\n  my-app subcmd " + regexp.QuoteMeta(`[flags]`) + "\n\nFlags:\n  -h, --help           help for subcmd\n      --sub-req-flag\n$"),
+			`Error: required flag(s) "sub-req-flag" not set
+Usage:
+  my-app subcmd [flags]
+
+Flags:
+  -h, --help           help for subcmd
+      --sub-req-flag
+
+Global Flags:
+      --debug   run in debug mode
+`,
 		},
 	} {
 		func() {
@@ -152,21 +154,17 @@ func TestExecuteWithDefaultParams(t *testing.T) {
 				tc.configure(rootCmd)
 			}
 
-			rv := cobracli.ExecuteWithDefaultParamsWithVersion(rootCmd, tc.debugVar, tc.version)
+			rv := cobracli.ExecuteWithDefaultParams(rootCmd)
 			require.Equal(t, tc.wantRV, rv, "Case %d: %s", i, tc.name)
 
 			switch val := tc.wantOutput.(type) {
 			case *regexp.Regexp:
-				assert.Regexp(t, val, outBuf.String(), "Case %d: %s", i, tc.name)
+				assert.Regexp(t, val, outBuf.String(), "Case %d: %s\nGot:\n%s", i, tc.name, outBuf.String())
 			case string:
-				assert.Equal(t, val, outBuf.String(), "Case %d: %s", i, tc.name)
+				assert.Equal(t, val, outBuf.String(), "Case %d: %s\nGot:\n%s", i, tc.name, outBuf.String())
 			default:
 				require.Fail(t, "unsupported type: %s. Case %d, %s", val, i, tc.name)
 			}
 		}()
 	}
-}
-
-func boolVar(b bool) *bool {
-	return &b
 }

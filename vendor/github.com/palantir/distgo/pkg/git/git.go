@@ -15,7 +15,9 @@
 package git
 
 import (
+	"fmt"
 	"os/exec"
+	"regexp"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -23,25 +25,36 @@ import (
 
 const Unspecified = "unspecified"
 
+var fullDescribeRegexp = regexp.MustCompile(`^(.+)-([0-9]+)-g([0-9a-f]{40})$`)
+
 // ProjectVersion returns the version string for the git repository that the provided directory is in. The output is the
-// output of "git describe --tags --first-parent" followed by "-dirty" if the repository currently has any uncommitted
-// changes (including untracked files) as determined by "git status --porcelain". If the output starts with the
-// character 'v' followed by a digit (0-9), then the leading 'v' is trimmed. Returns "unspecified" if the repository
-// does not contain any tags.
+// output of "git describe --tags --first-parent" followed by ".dirty" if the repository currently has any uncommitted
+// changes (including untracked files) as determined by "git status --porcelain". If the "git describe" output includes
+// a trailing commit hash ("-g[0-9a-f]+", where [0-9a-f]+ is the commit hash), then the commit hash will be 7
+// characters long even if the "git describe" operation returns a longer hash. If the output starts with the character
+// 'v' followed by a digit (0-9), then the leading 'v' is trimmed. Returns "unspecified" if the current commit cannot be
+// described.
 func ProjectVersion(gitDir string) (string, error) {
-	tags, err := Tags(gitDir)
+	// use "--long" and "--abbrev=40" to ensure that output is always of the form [tag]-[0-9]+-g[0-9a-f]{40}
+	result, err := CmdOutput(gitDir, "describe", "--tags", "--first-parent", "--long", "--abbrev=40")
 	if err != nil {
+		if strings.HasPrefix(strings.TrimSpace(result), "fatal:") {
+			// if output starts with "fatal: ", treat as a Git error ("fatal: No names found, cannot describe anything.",
+			// "fatal: No tags can describe '[0-9a-f]{40}'.", etc.).
+			return Unspecified, nil
+		}
 		return "", err
 	}
 
-	// if no tags exist, return Unspecified as the version
-	if tags == "" {
-		return Unspecified, nil
+	matchParts := fullDescribeRegexp.FindStringSubmatch(result)
+	if matchParts == nil {
+		return "", errors.Errorf("output %q does not match regexp %s", result, fullDescribeRegexp.String())
 	}
 
-	result, err := CmdOutput(gitDir, "describe", "--tags", "--first-parent")
-	if err != nil {
-		return "", err
+	result = matchParts[1]
+	if matchParts[2] != "0" {
+		// use only the first 7 characters of the hash to ensure that output is deterministic
+		result += fmt.Sprintf("-%s-g%s", matchParts[2], matchParts[3][:7])
 	}
 
 	// if tag name starts with "v#", strip the leading 'v'.
@@ -56,21 +69,18 @@ func ProjectVersion(gitDir string) (string, error) {
 		return "", err
 	}
 	if dirtyFiles != "" {
-		result += "-dirty"
+		result += ".dirty"
 	}
 	return result, nil
-}
-
-func Tags(gitDir string) (string, error) {
-	return CmdOutput(gitDir, "tag", "-l")
 }
 
 func CmdOutput(gitDir string, args ...string) (string, error) {
 	cmd := exec.Command("git", args...)
 	cmd.Dir = gitDir
-	out, err := cmd.CombinedOutput()
+	outBytes, err := cmd.CombinedOutput()
+	out := string(outBytes)
 	if err != nil {
-		return "", errors.Wrapf(err, "command %v failed with output %v", cmd.Args, string(out))
+		return out, errors.Wrapf(err, "command %v failed with output %v", cmd.Args, out)
 	}
-	return strings.TrimSpace(string(out)), err
+	return strings.TrimSpace(out), nil
 }

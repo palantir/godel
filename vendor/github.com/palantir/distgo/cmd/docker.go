@@ -75,5 +75,5 @@ func init() {
 	dockerPushSubCmd.Flags().BoolVar(&dockerPushDryRunFlagVal, "dry-run", false, "print the operations that would be performed")
 	dockerCmd.AddCommand(dockerPushSubCmd)
 
-	RootCmd.AddCommand(dockerCmd)
+	rootCmd.AddCommand(dockerCmd)
 }

@@ -24,8 +24,8 @@ import (
 )
 
 type Config struct {
-	versionedconfig.ConfigWithLegacy `yaml:",inline"`
-	OSArchs                          []osarch.OSArch `yaml:"os-archs"`
+	versionedconfig.ConfigWithLegacy `yaml:",inline,omitempty"`
+	OSArchs                          []osarch.OSArch `yaml:"os-archs,omitempty"`
 }
 
 func UpgradeConfig(cfgBytes []byte) ([]byte, error) {

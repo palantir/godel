@@ -27,23 +27,29 @@ import (
 
 type ProjectConfig struct {
 	// Products maps product names to configurations.
-	Products map[distgo.ProductID]ProductConfig `yaml:"products"`
+	Products map[distgo.ProductID]ProductConfig `yaml:"products,omitempty"`
 
 	// ProductDefaults specifies the default values that should be used for unspecified values in the products map. If a
 	// field in a top-level key in a "ProductConfig" value in the "Products" map is nil and the corresponding value in
 	// ProductDefaults is non-nil, the value in ProductDefaults is used.
-	ProductDefaults ProductConfig `yaml:"product-defaults"`
+	ProductDefaults ProductConfig `yaml:"product-defaults,omitempty"`
 
 	// ScriptIncludes specifies a string that is appended to every script that is written out. Can be used to define
 	// functions or constants for all scripts.
-	ScriptIncludes string `yaml:"script-includes"`
+	ScriptIncludes string `yaml:"script-includes,omitempty"`
+
+	// ProjectVersioner specifies the operation that is used to compute the version for the project. If unspecified,
+	// defaults to using the git project versioner (refer to the "projectversioner/git" package for details on the
+	// implementation of this operation).
+	ProjectVersioner *ProjectVersionConfig `yaml:"project-versioner,omitempty"`
 
 	// Exclude matches the paths to exclude when determining the projects to build.
-	Exclude matcher.NamesPathsCfg `yaml:"exclude"`
+	Exclude matcher.NamesPathsCfg `yaml:"exclude,omitempty"`
 }
 
 func UpgradeConfig(
 	cfgBytes []byte,
+	projectVersionerFactory distgo.ProjectVersionerFactory,
 	disterFactory distgo.DisterFactory,
 	dockerBuilderFactory distgo.DockerBuilderFactory,
 	publisherFactory distgo.PublisherFactory) ([]byte, error) {
@@ -52,10 +58,20 @@ func UpgradeConfig(
 	if err := yaml.UnmarshalStrict(cfgBytes, &cfg); err != nil {
 		return nil, errors.Wrapf(err, "failed to unmarshal dist-plugin v0 configuration")
 	}
-	changed, err := upgradeAssets(&cfg, disterFactory, dockerBuilderFactory, publisherFactory)
+
+	changed := false
+	projectVerionerChanged, err := upgradeProjectVersioner(&cfg, projectVersionerFactory)
 	if err != nil {
 		return nil, err
 	}
+	changed = changed || projectVerionerChanged
+
+	assetsChanged, err := upgradeAssets(&cfg, disterFactory, dockerBuilderFactory, publisherFactory)
+	if err != nil {
+		return nil, err
+	}
+	changed = changed || assetsChanged
+
 	if !changed {
 		return cfgBytes, nil
 	}
@@ -64,6 +80,40 @@ func UpgradeConfig(
 		return nil, errors.Wrapf(err, "failed to marshal dist-plugin v0 configuration")
 	}
 	return upgradedBytes, nil
+}
+
+// upgradeProjectVersioner upgrades the project versioner for the provided configuration. Returns true if any changes
+// were made by the upgrade. If any upgrade operations are performed, the provided configuration is modified directly.
+func upgradeProjectVersioner(cfg *ProjectConfig, projectVersionerFactory distgo.ProjectVersionerFactory) (changed bool, rErr error) {
+	if cfg.ProjectVersioner == nil {
+		return false, nil
+	}
+
+	upgrader, err := projectVersionerFactory.ConfigUpgrader(cfg.ProjectVersioner.Type)
+	if err != nil {
+		return false, errors.Wrapf(err, "failed to upgrade project versioner of type %q", cfg.ProjectVersioner.Type)
+	}
+	originalCfgBytes, err := yaml.Marshal(cfg.ProjectVersioner.Config)
+	if err != nil {
+		return false, errors.Wrapf(err, "failed to marshal configuration for project versioner of type %q", cfg.ProjectVersioner.Type)
+	}
+	upgradedCfgBytes, err := upgrader.UpgradeConfig(originalCfgBytes)
+	if err != nil {
+		return false, errors.Wrapf(err, "failed to upgrade configuration for project versioner of type %q", cfg.ProjectVersioner.Type)
+	}
+
+	if bytes.Equal(originalCfgBytes, upgradedCfgBytes) {
+		// upgrade was a no-op: do not modify configuration and continue
+		return false, nil
+	}
+
+	var yamlRep yaml.MapSlice
+	if err := yaml.Unmarshal(upgradedCfgBytes, &yamlRep); err != nil {
+		return false, errors.Wrapf(err, "failed to unmarshal YAML of upgraded configuration for project versioner of type %q", cfg.ProjectVersioner.Type)
+	}
+
+	cfg.ProjectVersioner.Config = yamlRep
+	return true, nil
 }
 
 // upgradeAssets upgrades the assets for the provided configuration. Returns true if any upgrade operations were

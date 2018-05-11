@@ -9,20 +9,31 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var Version = "unspecified"
-
-// ExecuteWithDefaultParams executes the provided root command using the parameters returned by DefaultParams. This
-// function also adds a "version command that prints the value of the "version" variable of this package. The value of
-// this version variable should be set using build flags. Typical usage is
-// "os.Exit(cobracli.ExecuteWithDefaultParams(...))" in a main function.
-func ExecuteWithDefaultParams(rootCmd *cobra.Command, debugVar *bool) int {
-	return ExecuteWithDefaultParamsWithVersion(rootCmd, debugVar, Version)
+// ExecuteWithDefaultParams executes the provided root command using the parameters returned by DefaultParams and the
+// provided params. Also adds a "--debug" boolean flag as a persistent flag on the command (unless the command already
+// has a flag with that name). If the "--debug" flag is added by this function, then invoking the command with the flag
+// will make it such that, if the command exits with an error, full stack traces will be printed if available as part of
+// the error.
+func ExecuteWithDefaultParams(rootCmd *cobra.Command, params ...Param) int {
+	debug := false
+	return ExecuteWithDebugVarAndDefaultParams(rootCmd, &debug, params...)
 }
 
-// ExecuteWithDefaultParamsWithVersion executes the provided root command using the parameters returned by
-// DefaultParams. Typical usage is "os.Exit(cobracli.ExecuteWithDefaultParamsWithVersion(...))" in a main function.
-func ExecuteWithDefaultParamsWithVersion(rootCmd *cobra.Command, debugVar *bool, version string) int {
-	return Execute(rootCmd, DefaultParams(debugVar, version)...)
+// ExecuteWithDebugVarAndDefaultParams executes the provided root command using the parameters returned by DefaultParams
+// and the provided params. If the provided debugVar pointer is non-nil, adds a "--debug" boolean flag as a persistent
+// flag on the command (unless the command already has a flag with that name). If the "--debug" flag is added by this
+// function, then invoking the command with the flag will set the value of the variable pointed to by debugVar. If that
+// variable is true, then if the command exits with an error, full stack traces will be printed if available as part of
+// the error.
+func ExecuteWithDebugVarAndDefaultParams(rootCmd *cobra.Command, debugVar *bool, params ...Param) int {
+	defaultParams := DefaultParams(debugVar)
+	if debugVar != nil {
+		if debugFlag := rootCmd.Flag("debug"); debugFlag == nil {
+			defaultParams = append(defaultParams, AddDebugPersistentFlagParam(debugVar))
+		}
+	}
+	defaultParams = append(defaultParams, params...)
+	return Execute(rootCmd, defaultParams...)
 }
 
 // DefaultParams returns a slice of Params that configures Cobra CLI execution with specific opinionated default
@@ -37,10 +48,8 @@ func ExecuteWithDefaultParamsWithVersion(rootCmd *cobra.Command, debugVar *bool,
 //   true, then <error.Error()> is printed as a full verbose stack trace if it is a pkg/errors error. This printer is
 //   also configured to print the usage output for a command if the command returns an error that indicates that a
 //   required flag was not provided.
-// * If the provided version is non-empty, adds a "version" command that prints the version of the application in the
-//   form "<rootCmd.Use> version <version>".
-func DefaultParams(debugVar *bool, version string) []Param {
-	params := []Param{
+func DefaultParams(debugVar *bool) []Param {
+	return []Param{
 		// silence default error and usage printing provided by cobra CLI
 		ConfigureCmdParam(SilenceErrorsConfigurer),
 		// if error is encountered while parsing a flag, include the usage for the command as part of the error
@@ -50,13 +59,4 @@ func DefaultParams(debugVar *bool, version string) []Param {
 		// error, the full stack trace is printed.
 		ErrorHandlerParam(PrintUsageOnRequiredFlagErrorHandlerDecorator(ErrorPrinterWithDebugHandler(debugVar, errorstringer.StackWithInterleavedMessages))),
 	}
-	if version != "" {
-		params = append(params,
-			// add the "version" command
-			ConfigureCmdParam(func(cmd *cobra.Command) {
-				cmd.AddCommand(VersionCmd(cmd.Use, version))
-			}),
-		)
-	}
-	return params
 }

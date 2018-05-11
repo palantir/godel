@@ -28,12 +28,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/distgo/dister/disterfactory"
 	"github.com/palantir/distgo/distgo"
 	distgoconfig "github.com/palantir/distgo/distgo/config"
 	"github.com/palantir/distgo/distgo/printproducts"
-	"github.com/palantir/distgo/dockerbuilder/dockerbuilderfactory"
-	"github.com/palantir/distgo/publisher/publisherfactory"
+	"github.com/palantir/distgo/distgo/testfuncs"
 )
 
 func TestProducts(t *testing.T) {
@@ -43,7 +41,7 @@ func TestProducts(t *testing.T) {
 
 	for i, tc := range []struct {
 		name            string
-		projectConfig   distgoconfig.ProjectConfig
+		projectCfg      distgoconfig.ProjectConfig
 		setupProjectDir func(projectDir string)
 		want            func(projectDir string) string
 	}{
@@ -126,18 +124,7 @@ foo
 		gittest.InitGitDir(t, projectDir)
 		tc.setupProjectDir(projectDir)
 
-		disterFactory, err := disterfactory.New(nil, nil)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		defaultDisterCfg, err := disterfactory.DefaultConfig()
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		dockerBuilderFactory, err := dockerbuilderfactory.New(nil, nil)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		publisherFactory, err := publisherfactory.New(nil, nil)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-
-		projectParam, err := tc.projectConfig.ToParam(projectDir, disterFactory, defaultDisterCfg, dockerBuilderFactory, publisherFactory)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-
+		projectParam := testfuncs.NewProjectParam(t, tc.projectCfg, projectDir, fmt.Sprintf("Case %d: %s", i, tc.name))
 		buf := &bytes.Buffer{}
 		err = printproducts.Run(projectParam, buf)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)

@@ -20,7 +20,7 @@ import (
 )
 
 type Config struct {
-	BuildArgs []string `yaml:"build-args"`
+	BuildArgs []string `yaml:"build-args,omitempty"`
 }
 
 func UpgradeConfig(cfgBytes []byte) ([]byte, error) {

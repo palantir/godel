@@ -21,20 +21,20 @@ import (
 // ProductConfig represents user-specified configuration on how to build a specific product.
 type ProductConfig struct {
 	// Build specifies the build configuration for the product.
-	Build *BuildConfig `yaml:"build"`
+	Build *BuildConfig `yaml:"build,omitempty"`
 
 	// Run specifies the run configuration for the product.
-	Run *RunConfig `yaml:"run"`
+	Run *RunConfig `yaml:"run,omitempty"`
 
 	// Dist specifies the dist configuration for the product.
-	Dist *DistConfig `yaml:"dist"`
+	Dist *DistConfig `yaml:"dist,omitempty"`
 
 	// Publish specifies the publish configuration for the product.
-	Publish *PublishConfig `yaml:"publish"`
+	Publish *PublishConfig `yaml:"publish,omitempty"`
 
 	// Docker specifies the Docker configuration for the product.
-	Docker *DockerConfig `yaml:"docker"`
+	Docker *DockerConfig `yaml:"docker,omitempty"`
 
 	// Dependencies specifies the first-level dependencies of this product. Stores the IDs of the products.
-	Dependencies *[]distgo.ProductID `yaml:"dependencies"`
+	Dependencies *[]distgo.ProductID `yaml:"dependencies,omitempty"`
 }

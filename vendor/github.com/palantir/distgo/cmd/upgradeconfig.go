@@ -21,9 +21,9 @@ import (
 )
 
 var upgradeConfigCmd = pluginapi.CobraUpgradeConfigCmd(func(cfgBytes []byte) ([]byte, error) {
-	return config.UpgradeConfig(cfgBytes, cliDisterFactory, cliDockerBuilderFactory, cliPublisherFactory)
+	return config.UpgradeConfig(cfgBytes, cliProjectVersionerFactory, cliDisterFactory, cliDockerBuilderFactory, cliPublisherFactory)
 })
 
 func init() {
-	RootCmd.AddCommand(upgradeConfigCmd)
+	rootCmd.AddCommand(upgradeConfigCmd)
 }

@@ -23,7 +23,7 @@ import (
 type Config struct {
 	// OSArchs specifies the GOOS and GOARCH pairs for which TGZ distributions are created. If blank, defaults to
 	// the GOOS and GOARCH of the host system at runtime.
-	OSArchs []osarch.OSArch `yaml:"os-archs"`
+	OSArchs []osarch.OSArch `yaml:"os-archs,omitempty"`
 }
 
 func UpgradeConfig(cfgBytes []byte) ([]byte, error) {

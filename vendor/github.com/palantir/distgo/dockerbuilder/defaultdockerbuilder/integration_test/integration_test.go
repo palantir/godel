@@ -26,17 +26,15 @@ import (
 	"github.com/palantir/distgo/dockerbuilder/dockerbuildertester"
 )
 
-const (
-	godelYML = `exclude:
+func TestDocker(t *testing.T) {
+	const godelYML = `exclude:
   names:
     - "\\..+"
     - "vendor"
   paths:
     - "godel"
 `
-)
 
-func TestDocker(t *testing.T) {
 	pluginPath, err := products.Bin("dist-plugin")
 	require.NoError(t, err)
 

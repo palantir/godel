@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"github.com/palantir/pkg/cobracli"
 	"github.com/spf13/cobra"
 
 	"github.com/palantir/godel/docsgenerator/generator"
@@ -33,7 +34,7 @@ var (
 	leaveGeneratedFilesFlagVal  bool
 )
 
-var RootCmd = &cobra.Command{
+var rootCmd = &cobra.Command{
 	Use: "docs-generator",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		params := generator.Params{
@@ -48,24 +49,28 @@ var RootCmd = &cobra.Command{
 	},
 }
 
+func Execute() int {
+	return cobracli.ExecuteWithDefaultParams(rootCmd)
+}
+
 func init() {
-	RootCmd.Flags().StringVar(&inputDirFlagVal, "input-dir", "", "input directory")
-	if err := RootCmd.MarkFlagRequired("input-dir"); err != nil {
+	rootCmd.Flags().StringVar(&inputDirFlagVal, "input-dir", "", "input directory")
+	if err := rootCmd.MarkFlagRequired("input-dir"); err != nil {
 		panic(err)
 	}
-	RootCmd.Flags().StringVar(&outputDirFlagVal, "output-dir", "", "output directory")
-	if err := RootCmd.MarkFlagRequired("output-dir"); err != nil {
+	rootCmd.Flags().StringVar(&outputDirFlagVal, "output-dir", "", "output directory")
+	if err := rootCmd.MarkFlagRequired("output-dir"); err != nil {
 		panic(err)
 	}
-	RootCmd.Flags().StringVar(&baseImageFlagVal, "base-image", "", "the base image for the first Docker image")
-	if err := RootCmd.MarkFlagRequired("base-image"); err != nil {
+	rootCmd.Flags().StringVar(&baseImageFlagVal, "base-image", "", "the base image for the first Docker image")
+	if err := rootCmd.MarkFlagRequired("base-image"); err != nil {
 		panic(err)
 	}
 
-	RootCmd.Flags().StringVar(&tagPrefixFlagVal, "tag-prefix", "docsgenerator", "the prefix for the Docker tag used for the images")
-	RootCmd.Flags().BoolVar(&runDockerBuildFlagVal, "run-docker-build", true, "run the 'docker build' actions for the templates")
-	RootCmd.Flags().BoolVar(&suppressDockerOutputFlagVal, "suppress-docker-output", false, "suppress the output of the 'docker build' operation(s)")
-	RootCmd.Flags().IntVar(&startStepFlagVal, "start-step", -1, "start step")
-	RootCmd.Flags().IntVar(&endStepFlagVal, "end-step", -1, "end step")
-	RootCmd.Flags().BoolVar(&leaveGeneratedFilesFlagVal, "leave-generated-files", false, "do not clean up the generated intermediate files")
+	rootCmd.Flags().StringVar(&tagPrefixFlagVal, "tag-prefix", "docsgenerator", "the prefix for the Docker tag used for the images")
+	rootCmd.Flags().BoolVar(&runDockerBuildFlagVal, "run-docker-build", true, "run the 'docker build' actions for the templates")
+	rootCmd.Flags().BoolVar(&suppressDockerOutputFlagVal, "suppress-docker-output", false, "suppress the output of the 'docker build' operation(s)")
+	rootCmd.Flags().IntVar(&startStepFlagVal, "start-step", -1, "start step")
+	rootCmd.Flags().IntVar(&endStepFlagVal, "end-step", -1, "end step")
+	rootCmd.Flags().BoolVar(&leaveGeneratedFilesFlagVal, "leave-generated-files", false, "do not clean up the generated intermediate files")
 }

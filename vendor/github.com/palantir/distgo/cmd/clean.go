@@ -40,5 +40,5 @@ var (
 func init() {
 	cleanCmd.Flags().BoolVar(&cleanDryRunFlagVal, "dry-run", false, "print the paths that would be removed by the operation without actually removing them")
 
-	RootCmd.AddCommand(cleanCmd)
+	rootCmd.AddCommand(cleanCmd)
 }

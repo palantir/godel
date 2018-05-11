@@ -15,6 +15,7 @@
 package config_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -29,42 +30,14 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
 
-	"github.com/palantir/distgo/dister/disterfactory"
 	"github.com/palantir/distgo/dister/manual"
 	"github.com/palantir/distgo/dister/osarchbin"
 	"github.com/palantir/distgo/distgo"
 	distgoconfig "github.com/palantir/distgo/distgo/config"
+	"github.com/palantir/distgo/distgo/testfuncs"
 	"github.com/palantir/distgo/dockerbuilder/defaultdockerbuilder"
-	"github.com/palantir/distgo/dockerbuilder/dockerbuilderfactory"
-	"github.com/palantir/distgo/publisher/publisherfactory"
+	"github.com/palantir/distgo/projectversioner/git"
 )
-
-var (
-	disterFactory        distgo.DisterFactory
-	defaultDisterCfg     distgoconfig.DisterConfig
-	dockerBuilderFactory distgo.DockerBuilderFactory
-	publisherFactory     distgo.PublisherFactory
-)
-
-func init() {
-	var err error
-	disterFactory, err = disterfactory.New(nil, nil)
-	if err != nil {
-		panic(err)
-	}
-	defaultDisterCfg, err = disterfactory.DefaultConfig()
-	if err != nil {
-		panic(err)
-	}
-	dockerBuilderFactory, err = dockerbuilderfactory.New(nil, nil)
-	if err != nil {
-		panic(err)
-	}
-	publisherFactory, err = publisherfactory.New(nil, nil)
-	if err != nil {
-		panic(err)
-	}
-}
 
 func TestLoadConfig(t *testing.T) {
 	for i, tc := range []struct {
@@ -401,6 +374,9 @@ products:
 						ID: "test-4",
 					},
 				},
+				ProjectVersionerParam: distgo.ProjectVersionerParam{
+					ProjectVersioner: git.New(),
+				},
 			},
 		},
 		{
@@ -448,6 +424,9 @@ products:
 					"test-3": {
 						ID: "test-3",
 					},
+				},
+				ProjectVersionerParam: distgo.ProjectVersionerParam{
+					ProjectVersioner: git.New(),
 				},
 			},
 		},
@@ -583,6 +562,9 @@ products:
 							},
 						},
 					},
+				},
+				ProjectVersionerParam: distgo.ProjectVersionerParam{
+					ProjectVersioner: git.New(),
 				},
 			},
 		},
@@ -722,13 +704,16 @@ products:
 						},
 					},
 				},
+				ProjectVersionerParam: distgo.ProjectVersionerParam{
+					ProjectVersioner: git.New(),
+				},
 			},
 		},
 	} {
 		var gotCfg distgoconfig.ProjectConfig
 		err := yaml.Unmarshal([]byte(tc.yml), &gotCfg)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		gotParam, err := gotCfg.ToParam("", disterFactory, defaultDisterCfg, dockerBuilderFactory, publisherFactory)
+		gotParam := testfuncs.NewProjectParam(t, gotCfg, "", fmt.Sprintf("Case %d: %s", i, tc.name))
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 		assert.Equal(t, tc.want, gotParam, "Case %d: %s", i, tc.name)
 	}
@@ -796,6 +781,9 @@ func TestProjectConfig_DefaultProducts(t *testing.T) {
 					"foo": defaultProductParam("foo", "./foo"),
 					"bar": defaultProductParam("bar", "./bar"),
 				},
+				ProjectVersionerParam: distgo.ProjectVersionerParam{
+					ProjectVersioner: git.New(),
+				},
 			},
 		},
 		{
@@ -823,6 +811,9 @@ product-defaults:
 					"bar": defaultProductParam("bar", "./bar", func(param *distgo.ProductParam) {
 						param.Build.OutputDir = "default-output"
 					}),
+				},
+				ProjectVersionerParam: distgo.ProjectVersionerParam{
+					ProjectVersioner: git.New(),
 				},
 			},
 		},
@@ -861,6 +852,9 @@ product-defaults:
 					"foo-2":   defaultProductParam("foo-2", "./foo"),
 					"foo-1":   defaultProductParam("foo-1", "./foo-1"),
 				},
+				ProjectVersionerParam: distgo.ProjectVersionerParam{
+					ProjectVersioner: git.New(),
+				},
 			},
 		},
 	} {
@@ -874,7 +868,7 @@ product-defaults:
 		err = yaml.Unmarshal([]byte(tc.yml), &gotCfg)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
-		gotParam, err := gotCfg.ToParam(currProjectDir, disterFactory, defaultDisterCfg, dockerBuilderFactory, publisherFactory)
+		gotParam := testfuncs.NewProjectParam(t, gotCfg, currProjectDir, fmt.Sprintf("Case %d: %s", i, tc.name))
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 		assert.Equal(t, tc.want, gotParam, "Case %d: %s", i, tc.name)
 	}
@@ -932,7 +926,7 @@ products:
 		var gotCfg distgoconfig.ProjectConfig
 		err := yaml.Unmarshal([]byte(tc.yml), &gotCfg)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		_, err = gotCfg.ToParam("", disterFactory, defaultDisterCfg, dockerBuilderFactory, publisherFactory)
+		_, err = testfuncs.NewProjectParamReturnError(t, gotCfg, "", fmt.Sprintf("Case %d: %s", i, tc.name))
 		assert.EqualError(t, err, tc.wantError, "Case %d: %s", i, tc.name)
 	}
 }
@@ -988,7 +982,7 @@ products:
 		var gotCfg distgoconfig.ProjectConfig
 		err := yaml.Unmarshal([]byte(tc.yml), &gotCfg)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		_, err = gotCfg.ToParam("", disterFactory, defaultDisterCfg, dockerBuilderFactory, publisherFactory)
+		_, err = testfuncs.NewProjectParamReturnError(t, gotCfg, "", fmt.Sprintf("Case %d: %s", i, tc.name))
 		assert.EqualError(t, err, tc.wantError, "Case %d: %s", i, tc.name)
 	}
 }
@@ -1041,8 +1035,7 @@ products:
 		var gotCfg distgoconfig.ProjectConfig
 		err := yaml.Unmarshal([]byte(tc.yml), &gotCfg)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		gotParam, err := gotCfg.ToParam("", disterFactory, defaultDisterCfg, dockerBuilderFactory, publisherFactory)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
+		gotParam := testfuncs.NewProjectParam(t, gotCfg, "", fmt.Sprintf("Case %d: %s", i, tc.name))
 		projectInfo, err := gotParam.ProjectInfo(projectDir)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 

@@ -48,9 +48,9 @@ var (
 
 func init() {
 	buildCmd.Flags().BoolVar(&buildParallelFlagVal, "parallel", true, "build binaries in parallel")
-	buildCmd.Flags().BoolVar(&buildInstallFlagVal, "install", true, "build products with the '-i' flag")
+	buildCmd.Flags().BoolVar(&buildInstallFlagVal, "install", false, "build products with the '-i' flag")
 	buildCmd.Flags().StringSliceVar(&buildOSArchsFlagVal, "os-arch", nil, "if specified, only builds the binaries for the specified GOOS-GOARCH(s)")
 	buildCmd.Flags().BoolVar(&buildDryRunFlagVal, "dry-run", false, "print the operations that would be performed")
 
-	RootCmd.AddCommand(buildCmd)
+	rootCmd.AddCommand(buildCmd)
 }

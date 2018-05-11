@@ -15,6 +15,7 @@
 package clean_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -34,8 +35,7 @@ import (
 	"github.com/palantir/distgo/distgo/clean"
 	distgoconfig "github.com/palantir/distgo/distgo/config"
 	"github.com/palantir/distgo/distgo/dist"
-	"github.com/palantir/distgo/dockerbuilder/dockerbuilderfactory"
-	"github.com/palantir/distgo/publisher/publisherfactory"
+	"github.com/palantir/distgo/distgo/testfuncs"
 )
 
 const (
@@ -358,21 +358,7 @@ func TestClean(t *testing.T) {
 
 		tc.preAction(projectDir)
 
-		disterFactory, err := disterfactory.New(nil, nil)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-
-		defaultDistInfoCfg, err := disterfactory.DefaultConfig()
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-
-		dockerBuilderFactory, err := dockerbuilderfactory.New(nil, nil)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-
-		publisherFactory, err := publisherfactory.New(nil, nil)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-
-		projectParam, err := tc.projectConfig.ToParam(projectDir, disterFactory, defaultDistInfoCfg, dockerBuilderFactory, publisherFactory)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-
+		projectParam := testfuncs.NewProjectParam(t, tc.projectConfig, projectDir, fmt.Sprintf("Case %d: %s", i, tc.name))
 		projectInfo, err := projectParam.ProjectInfo(projectDir)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 

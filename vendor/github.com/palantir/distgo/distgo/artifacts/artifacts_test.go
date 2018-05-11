@@ -36,8 +36,10 @@ import (
 	"github.com/palantir/distgo/distgo/artifacts"
 	"github.com/palantir/distgo/distgo/build"
 	distgoconfig "github.com/palantir/distgo/distgo/config"
+	"github.com/palantir/distgo/distgo/testfuncs"
 	"github.com/palantir/distgo/dockerbuilder/defaultdockerbuilder"
 	"github.com/palantir/distgo/dockerbuilder/dockerbuilderfactory"
+	"github.com/palantir/distgo/projectversioner/projectversionerfactory"
 	"github.com/palantir/distgo/publisher/publisherfactory"
 )
 
@@ -117,21 +119,7 @@ out/build/foo/unspecified/%v/foo
 			tc.setupProjectDir(projectDir)
 		}
 
-		disterFactory, err := disterfactory.New(nil, nil)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-
-		defaultDisterCfg, err := disterfactory.DefaultConfig()
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-
-		dockerBuilderFactory, err := dockerbuilderfactory.New(nil, nil)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-
-		publisherFactory, err := publisherfactory.New(nil, nil)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-
-		projectParam, err := tc.projectConfig.ToParam(projectDir, disterFactory, defaultDisterCfg, dockerBuilderFactory, publisherFactory)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-
+		projectParam := testfuncs.NewProjectParam(t, tc.projectConfig, projectDir, fmt.Sprintf("Case %d: %s", i, tc.name))
 		projectInfo, err := projectParam.ProjectInfo(projectDir)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
@@ -407,6 +395,8 @@ func TestDockerArtifacts(t *testing.T) {
 		gittest.InitGitDir(t, projectDir)
 		gittest.CreateGitTag(t, projectDir, "0.1.0")
 
+		projectVersionerFactory, err := projectversionerfactory.New(nil, nil)
+		require.NoError(t, err, "Case %d: %s", i, tc.name)
 		disterFactory, err := disterfactory.New(nil, nil)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 		defaultDisterCfg, err := disterfactory.DefaultConfig()
@@ -416,7 +406,7 @@ func TestDockerArtifacts(t *testing.T) {
 		publisherFactory, err := publisherfactory.New(nil, nil)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
-		projectParam, err := tc.cfg.ToParam(projectDir, disterFactory, defaultDisterCfg, dockerBuilderFactory, publisherFactory)
+		projectParam, err := tc.cfg.ToParam(projectDir, projectVersionerFactory, disterFactory, defaultDisterCfg, dockerBuilderFactory, publisherFactory)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 
 		projectInfo, err := projectParam.ProjectInfo(projectDir)

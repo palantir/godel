@@ -23,8 +23,8 @@ import (
 )
 
 type Config struct {
-	versionedconfig.ConfigWithLegacy `yaml:",inline"`
-	Extension                        string `yaml:"extension"`
+	versionedconfig.ConfigWithLegacy `yaml:",inline,omitempty"`
+	Extension                        string `yaml:"extension,omitempty"`
 }
 
 func UpgradeConfig(cfgBytes []byte) ([]byte, error) {

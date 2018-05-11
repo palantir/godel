@@ -50,13 +50,16 @@ type ProjectParam struct {
 	// functions or constants for all scripts.
 	ScriptIncludes string
 
+	// ProjectVersionerParam provides the operation for determining the project version.
+	ProjectVersionerParam ProjectVersionerParam
+
 	// Exclude is a matcher that matches any directories that should be ignored as main files. Only relevant if products
 	// are not specified.
 	Exclude matcher.Matcher
 }
 
 func (p *ProjectParam) ProjectInfo(projectDir string) (ProjectInfo, error) {
-	version, err := ProjectVersion(projectDir, "")
+	version, err := p.ProjectVersionerParam.ProjectVersioner.ProjectVersion(projectDir)
 	if err != nil {
 		return ProjectInfo{}, err
 	}

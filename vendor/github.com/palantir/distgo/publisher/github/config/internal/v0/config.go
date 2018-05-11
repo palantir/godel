@@ -20,11 +20,11 @@ import (
 )
 
 type Config struct {
-	APIURL     string `yaml:"api-url"`
-	User       string `yaml:"user"`
-	Token      string `yaml:"token"`
-	Owner      string `yaml:"owner"`
-	Repository string `yaml:"repository"`
+	APIURL     string `yaml:"api-url,omitempty"`
+	User       string `yaml:"user,omitempty"`
+	Token      string `yaml:"token,omitempty"`
+	Owner      string `yaml:"owner,omitempty"`
+	Repository string `yaml:"repository,omitempty"`
 }
 
 func UpgradeConfig(cfgBytes []byte) ([]byte, error) {

@@ -16,56 +16,12 @@ package distgo
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
-	"os/exec"
 	"path"
 	"sort"
-	"strings"
 
 	"github.com/palantir/godel/pkg/osarch"
 	"github.com/pkg/errors"
-
-	"github.com/palantir/distgo/pkg/git"
 )
-
-func ProjectVersion(projectDir, versionScriptContent string) (rVersion string, rErr error) {
-	// TODO: replace versionScriptContent with asset-based behavior
-	if versionScriptContent == "" {
-		return git.ProjectVersion(projectDir)
-	}
-
-	tmpDir, err := ioutil.TempDir("", "distgo_script")
-	if err != nil {
-		return "", errors.Wrapf(err, "failed to create temporary directory")
-	}
-	defer func() {
-		if err := os.RemoveAll(tmpDir); rErr == nil && err != nil {
-			rErr = errors.Wrapf(err, "failed to remove temporary directory")
-		}
-	}()
-
-	versionScript := path.Join(tmpDir, "version")
-	if err := ioutil.WriteFile(versionScript, []byte(versionScriptContent), 0755); err != nil {
-		return "", errors.Wrapf(err, "failed to write version script to %s", versionScript)
-	}
-	versionScriptCmd := exec.Command(versionScript)
-	versionScriptCmd.Dir = projectDir
-	outputBytes, err := versionScriptCmd.CombinedOutput()
-	output := string(outputBytes)
-	if err != nil {
-		return "", errors.Wrapf(err, "command %v failed with output %s", versionScriptCmd.Args, output)
-	}
-	parts := strings.Split(output, "\n")
-	if len(parts) == 0 {
-		return git.Unspecified, nil
-	}
-	scriptOutput := strings.TrimSpace(parts[0])
-	if scriptOutput == "" {
-		return git.Unspecified, nil
-	}
-	return scriptOutput, nil
-}
 
 func ToProductTaskOutputInfo(projectInfo ProjectInfo, productParam ProductParam) (ProductTaskOutputInfo, error) {
 	var deps map[ProductID]ProductOutputInfo

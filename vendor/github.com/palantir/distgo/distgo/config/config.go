@@ -39,7 +39,14 @@ func ToProductsMap(in map[distgo.ProductID]ProductConfig) map[distgo.ProductID]v
 	return out
 }
 
-func (cfg *ProjectConfig) ToParam(projectDir string, disterFactory distgo.DisterFactory, defaultDisterCfg DisterConfig, dockerBuilderFactory distgo.DockerBuilderFactory, publisherFactory distgo.PublisherFactory) (distgo.ProjectParam, error) {
+func (cfg *ProjectConfig) ToParam(
+	projectDir string,
+	projectVersionerFactory distgo.ProjectVersionerFactory,
+	disterFactory distgo.DisterFactory,
+	defaultDisterCfg DisterConfig,
+	dockerBuilderFactory distgo.DockerBuilderFactory,
+	publisherFactory distgo.PublisherFactory) (distgo.ProjectParam, error) {
+
 	var exclude matcher.Matcher
 	if !cfg.Exclude.Empty() {
 		exclude = cfg.Exclude.Matcher()
@@ -165,10 +172,17 @@ func (cfg *ProjectConfig) ToParam(projectDir string, disterFactory distgo.Dister
 		}
 	}
 
+	projectVersionerCfg := (*ProjectVersionConfig)(cfg.ProjectVersioner)
+	projectVersionerParam, err := projectVersionerCfg.ToParam(projectVersionerFactory)
+	if err != nil {
+		return distgo.ProjectParam{}, err
+	}
+
 	projectParam := distgo.ProjectParam{
-		Products:       products,
-		ScriptIncludes: cfg.ScriptIncludes,
-		Exclude:        exclude,
+		Products:              products,
+		ScriptIncludes:        cfg.ScriptIncludes,
+		ProjectVersionerParam: projectVersionerParam,
+		Exclude:               exclude,
 	}
 	return projectParam, nil
 }
