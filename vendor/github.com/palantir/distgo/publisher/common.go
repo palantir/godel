@@ -129,9 +129,9 @@ func BasicConnectionInfoFlags() []distgo.PublisherFlag {
 }
 
 type BasicConnectionInfo struct {
-	URL      string `yaml:"url"`
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
+	URL      string `yaml:"url,omitempty"`
+	Username string `yaml:"username,omitempty"`
+	Password string `yaml:"password,omitempty"`
 }
 
 func (b *BasicConnectionInfo) SetValuesFromFlags(flagVals map[distgo.PublisherFlagName]interface{}) error {

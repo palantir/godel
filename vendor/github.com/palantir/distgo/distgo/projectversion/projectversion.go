@@ -22,10 +22,6 @@ import (
 )
 
 func Run(projectInfo distgo.ProjectInfo, stdout io.Writer) error {
-	version, err := distgo.ProjectVersion(projectInfo.ProjectDir, "")
-	if err != nil {
-		return err
-	}
-	fmt.Fprintln(stdout, version)
+	fmt.Fprintln(stdout, projectInfo.Version)
 	return nil
 }

@@ -16,34 +16,36 @@ package cmd
 
 import (
 	"github.com/palantir/godel/framework/pluginapi/v2/pluginapi"
-	"github.com/palantir/pkg/cobracli"
 	"github.com/spf13/cobra"
 )
 
-var PluginInfo = pluginapi.MustNewPluginInfo(
-	"com.palantir.distgo",
-	"dist-plugin",
-	cobracli.Version,
-	pluginapi.PluginInfoUsesConfigFile(),
-	pluginapi.PluginInfoGlobalFlagOptions(
-		pluginapi.GlobalFlagOptionsParamDebugFlag("--"+pluginapi.DebugFlagName),
-		pluginapi.GlobalFlagOptionsParamProjectDirFlag("--"+pluginapi.ProjectDirFlagName),
-		pluginapi.GlobalFlagOptionsParamGodelConfigFlag("--"+pluginapi.GodelConfigFlagName),
-		pluginapi.GlobalFlagOptionsParamConfigFlag("--"+pluginapi.ConfigFlagName),
-	),
-	newTaskInfoFromCmd(artifactsCmd),
-	newTaskInfoFromCmd(buildCmd),
-	newTaskInfoFromCmd(cleanCmd),
-	newTaskInfoFromCmd(distCmd),
-	newTaskInfoFromCmd(dockerCmd),
-	newTaskInfoFromCmd(productsCmd),
-	newTaskInfoFromCmd(projectVersionCmd),
-	newTaskInfoFromCmd(publishCmd),
-	newTaskInfoFromCmd(runCmd),
-	pluginapi.PluginInfoUpgradeConfigTaskInfo(
-		pluginapi.UpgradeConfigTaskInfoCommand("upgrade-config"),
-		pluginapi.LegacyConfigFile("dist.yml"),
-	),
+var (
+	Version    = "unspecified"
+	PluginInfo = pluginapi.MustNewPluginInfo(
+		"com.palantir.distgo",
+		"dist-plugin",
+		Version,
+		pluginapi.PluginInfoUsesConfigFile(),
+		pluginapi.PluginInfoGlobalFlagOptions(
+			pluginapi.GlobalFlagOptionsParamDebugFlag("--"+pluginapi.DebugFlagName),
+			pluginapi.GlobalFlagOptionsParamProjectDirFlag("--"+pluginapi.ProjectDirFlagName),
+			pluginapi.GlobalFlagOptionsParamGodelConfigFlag("--"+pluginapi.GodelConfigFlagName),
+			pluginapi.GlobalFlagOptionsParamConfigFlag("--"+pluginapi.ConfigFlagName),
+		),
+		newTaskInfoFromCmd(artifactsCmd),
+		newTaskInfoFromCmd(buildCmd),
+		newTaskInfoFromCmd(cleanCmd),
+		newTaskInfoFromCmd(distCmd),
+		newTaskInfoFromCmd(dockerCmd),
+		newTaskInfoFromCmd(productsCmd),
+		newTaskInfoFromCmd(projectVersionCmd),
+		newTaskInfoFromCmd(publishCmd),
+		newTaskInfoFromCmd(runCmd),
+		pluginapi.PluginInfoUpgradeConfigTaskInfo(
+			pluginapi.UpgradeConfigTaskInfoCommand("upgrade-config"),
+			pluginapi.LegacyConfigFile("dist.yml"),
+		),
+	)
 )
 
 func newTaskInfoFromCmd(cmd *cobra.Command) pluginapi.PluginInfoParam {

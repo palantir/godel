@@ -28,19 +28,19 @@ type DistConfig struct {
 	// "{{OutputDir}}/{{ID}}/{{Version}}".
 	//
 	// If a value is not specified, "out/dist" is used as the default value.
-	OutputDir *string `yaml:"output-dir"`
+	OutputDir *string `yaml:"output-dir,omitempty"`
 
 	// Disters is the configuration for the disters for this product. The YAML representation can be a single DisterConfig
 	// or a map[DistID]DisterConfig.
-	Disters *DistersConfig `yaml:"disters"`
+	Disters *DistersConfig `yaml:"disters,omitempty"`
 }
 
 type DisterConfig struct {
 	// Type is the type of the dister. This field must be non-nil and non-empty and resolve to a valid Dister.
-	Type *string `yaml:"type"`
+	Type *string `yaml:"type,omitempty"`
 
 	// Config is the YAML configuration content for the dister.
-	Config *yaml.MapSlice `yaml:"config"`
+	Config *yaml.MapSlice `yaml:"config,omitempty"`
 
 	// NameTemplate is the template used for the executable output. The following template parameters can be used in the
 	// template:
@@ -48,14 +48,14 @@ type DisterConfig struct {
 	//   * {{Version}}: the version of the project.
 	//
 	// If a value is not specified, "{{Product}}-{{Version}}" is used as the default value.
-	NameTemplate *string `yaml:"name-template"`
+	NameTemplate *string `yaml:"name-template,omitempty"`
 
 	// Script is the content of a script that is written to file a file and run after the initial distribution
 	// process but before the artifact generation process. The content of this value is written to a file and executed
 	// with the project directory as the working directory. The script process inherits the environment variables of the
 	// Go process and also has dist-related environment variables. Refer to the documentation for the
 	// distgo.DistScriptEnvVariables function for the extra environment variables.
-	Script *string `yaml:"script"`
+	Script *string `yaml:"script,omitempty"`
 }
 
 type DistersConfig map[distgo.DistID]DisterConfig

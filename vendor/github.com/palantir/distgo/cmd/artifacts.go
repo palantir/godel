@@ -82,5 +82,5 @@ func init() {
 	artifactsDockerSubcmd.Flags().StringVar(&artifactsDockerRepositoryFlagVal, "repository", "", "specifies the value that should be used for the Docker repository (overrides any value(s) specified in configuration)")
 	artifactsCmd.AddCommand(artifactsDockerSubcmd)
 
-	RootCmd.AddCommand(artifactsCmd)
+	rootCmd.AddCommand(artifactsCmd)
 }

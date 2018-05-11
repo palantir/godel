@@ -22,8 +22,8 @@ import (
 )
 
 type Config struct {
-	publisher.BasicConnectionInfo `yaml:",inline"`
-	Repository                    string `yaml:"repository"`
+	publisher.BasicConnectionInfo `yaml:",inline,omitempty"`
+	Repository                    string `yaml:"repository,omitempty"`
 }
 
 func UpgradeConfig(cfgBytes []byte) ([]byte, error) {

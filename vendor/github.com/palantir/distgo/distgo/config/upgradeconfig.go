@@ -25,6 +25,7 @@ import (
 
 func UpgradeConfig(
 	cfgBytes []byte,
+	projectVersionerFactory distgo.ProjectVersionerFactory,
 	disterFactory distgo.DisterFactory,
 	dockerBuilderFactory distgo.DockerBuilderFactory,
 	publisherFactory distgo.PublisherFactory) ([]byte, error) {
@@ -43,7 +44,7 @@ func UpgradeConfig(
 	}
 	switch version {
 	case "", "0":
-		return v0.UpgradeConfig(cfgBytes, disterFactory, dockerBuilderFactory, publisherFactory)
+		return v0.UpgradeConfig(cfgBytes, projectVersionerFactory, disterFactory, dockerBuilderFactory, publisherFactory)
 	default:
 		return nil, errors.Errorf("unsupported version: %s", version)
 	}

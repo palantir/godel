@@ -93,7 +93,7 @@ func TestBuildAll(t *testing.T) {
 				param.Build.VersionVar = "main.testVersionVar"
 			}),
 			runExecutable: true,
-			wantOutput:    testVersionValue + "-dirty",
+			wantOutput:    testVersionValue + ".dirty",
 		},
 		// building project that requires CGo succeeds if "CGO_ENABLED" environment variable is set to 1
 		{

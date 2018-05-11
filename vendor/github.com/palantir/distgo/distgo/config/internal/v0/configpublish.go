@@ -22,13 +22,13 @@ import (
 
 type PublishConfig struct {
 	// GroupID is the product-specific configuration equivalent to the global GroupID configuration.
-	GroupID *string `yaml:"group-id"`
+	GroupID *string `yaml:"group-id,omitempty"`
 
 	// PublishInfo contains extra configuration for the publish operation. The key is the type of publish and the value
 	// is the configuration for that publish operation type.
-	PublishInfo *map[distgo.PublisherTypeID]PublisherConfig `yaml:"info"`
+	PublishInfo *map[distgo.PublisherTypeID]PublisherConfig `yaml:"info,omitempty"`
 }
 
 type PublisherConfig struct {
-	Config *yaml.MapSlice `yaml:"config"`
+	Config *yaml.MapSlice `yaml:"config,omitempty"`
 }

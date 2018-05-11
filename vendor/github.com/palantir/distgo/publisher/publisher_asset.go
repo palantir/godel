@@ -65,16 +65,22 @@ func (p *assetPublisher) RunPublish(productTaskOutputInfo distgo.ProductTaskOutp
 		return errors.Wrapf(err, "failed to marshal JSON for flagVals")
 	}
 
-	runPublishCmd := exec.Command(p.assetPath, runPublishCmdName,
-		"--"+runPublishCmdProductTaskOutputInfoFlagName, string(productTaskOutputInfoJSON),
-		"--"+runPublishCmdConfigYMLFlagName, string(cfgYML),
-		"--"+runPublishCmdFlagValsFlagName, string(flagValsJSON),
-		"--"+runPublishCmdDryRunFlagName, strconv.FormatBool(dryRun),
-	)
+	args := []string{runPublishCmdName}
+	args = append(args, "--"+runPublishCmdProductTaskOutputInfoFlagName, string(productTaskOutputInfoJSON))
+	cfgYMLString := string(cfgYML)
+	if cfgYMLString == "" {
+		cfgYMLString = "{}"
+	}
+	args = append(args, "--"+runPublishCmdConfigYMLFlagName, cfgYMLString)
+	args = append(args, "--"+runPublishCmdFlagValsFlagName, string(flagValsJSON))
+	args = append(args, "--"+runPublishCmdDryRunFlagName, strconv.FormatBool(dryRun))
+
+	runPublishCmd := exec.Command(p.assetPath, args...)
 	runPublishCmd.Stdout = stdout
+	runPublishCmd.Stderr = stdout
 
 	if err := runPublishCmd.Run(); err != nil {
-		return errors.Wrapf(err, "command %v failed", runPublishCmd.Args)
+		return errors.Wrapf(err, "command %v failed", runPublishCmd.Args[0])
 	}
 	return nil
 }

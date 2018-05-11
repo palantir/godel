@@ -250,16 +250,6 @@ products:
 	assert.Equal(t, fmt.Sprintf("read: %q", stdInContent), content)
 }
 
-const (
-	godelYML = `exclude:
-  names:
-    - "\\..+"
-    - "vendor"
-  paths:
-    - "godel"
-`
-)
-
 func TestUpgradeConfig(t *testing.T) {
 	pluginPath, err := products.Bin("dist-plugin")
 	require.NoError(t, err)
@@ -272,9 +262,7 @@ func TestUpgradeConfig(t *testing.T) {
 			{
 				Name: "legacy configuration is upgraded",
 				ConfigFiles: map[string]string{
-					"godel/config/godel.yml": godelYML,
-					"godel/config/dist-plugin.yml": `
-legacy-config: true
+					"godel/config/dist.yml": `
 products:
   foo:
     build:
@@ -337,33 +325,36 @@ products:
                mv $DIST_DIR/bin/darwin-amd64 $DIST_DIR/service/bin/darwin-amd64
                mv $DIST_DIR/bin/linux-amd64 $DIST_DIR/service/bin/linux-amd64
                rm -rf $DIST_DIR/bin
+  baz:
+    build:
+      main-pkg: ./baz/main/baz
+      os-archs:
+        - os: darwin
+          arch: amd64
+        - os: linux
+          arch: amd64
 group-id: com.palantir.group
 `,
 				},
+				Legacy:     true,
 				WantOutput: "Upgraded configuration for dist-plugin.yml\n",
 				WantFiles: map[string]string{
 					"godel/config/dist-plugin.yml": `products:
   bar:
     build:
-      name-template: null
       output-dir: bar/build/bin
       main-pkg: ./bar/main/bar
-      build-args-script: null
       version-var: github.com/palantir/bar/main.version
-      environment: null
       os-archs:
       - os: darwin
         arch: amd64
       - os: linux
         arch: amd64
-    run: null
     dist:
       output-dir: bar/build/distributions
       disters:
         bin:
           type: bin
-          config: null
-          name-template: null
           script: |
             #!/bin/bash
             ### START: auto-generated back-compat code for "input-dir" behavior ###
@@ -381,30 +372,39 @@ group-id: com.palantir.group
             mv $DIST_WORK_DIR/bin/darwin-amd64 $DIST_WORK_DIR/service/bin/darwin-amd64
             mv $DIST_WORK_DIR/bin/linux-amd64 $DIST_WORK_DIR/service/bin/linux-amd64
             rm -rf $DIST_WORK_DIR/bin
-    publish:
-      group-id: null
-      info: null
-    docker: null
-    dependencies: null
+    publish: {}
+  baz:
+    build:
+      main-pkg: ./baz/main/baz
+      os-archs:
+      - os: darwin
+        arch: amd64
+      - os: linux
+        arch: amd64
+    dist:
+      disters:
+        os-arch-bin:
+          type: os-arch-bin
+          config:
+            os-archs:
+            - os: darwin
+              arch: amd64
+            - os: linux
+              arch: amd64
+    publish: {}
   foo:
     build:
-      name-template: null
       output-dir: foo/build/bin
       main-pkg: ./foo/main/foo
-      build-args-script: null
       version-var: github.com/palantir/foo/main.version
-      environment: null
       os-archs:
       - os: linux
         arch: amd64
-    run: null
     dist:
       output-dir: foo/build/distributions
       disters:
         bin:
           type: bin
-          config: null
-          name-template: null
           script: |
             #!/bin/bash
             ### START: auto-generated back-compat code for "input-dir" behavior ###
@@ -414,56 +414,101 @@ group-id: com.palantir.group
             # move bin directory into service directory
             mkdir $DIST_WORK_DIR/service
             mv $DIST_WORK_DIR/bin $DIST_WORK_DIR/service/bin
-    publish:
-      group-id: null
-      info: null
+    publish: {}
     docker:
-      repository: null
       docker-builders:
         docker-image-0:
           type: default
-          config: null
-          dockerfile-path: null
           context-dir: foo/dist/docker
-          input-products-dir: null
-          input-builds: null
           input-dists:
           - foo.bin
           tag-templates:
-          - snapshot
+          - '{{Repository}}test/foo:snapshot'
         docker-image-1:
           type: default
-          config: null
-          dockerfile-path: null
           context-dir: other/foo/dist/docker
-          input-products-dir: null
-          input-builds: null
           input-dists:
           - foo.bin
           tag-templates:
-          - snapshot
+          - '{{Repository}}test/foo-other:snapshot'
     dependencies:
     - bar
 product-defaults:
-  build: null
-  run: null
-  dist: null
   publish:
     group-id: com.palantir.group
-    info: null
-  docker: null
-  dependencies: null
-script-includes: ""
-exclude:
-  names: []
-  paths: []
+`,
+				},
+			},
+			{
+				Name: "legacy configuration dist block is not upgraded if os-archs not specified for build",
+				ConfigFiles: map[string]string{
+					"godel/config/dist.yml": `
+products:
+  foo:
+    build:
+      main-pkg: ./foo/main/foo
+      output-dir: foo/build/bin
+      version-var: github.com/palantir/foo/main.version
+`,
+				},
+				Legacy:     true,
+				WantOutput: "Upgraded configuration for dist-plugin.yml\n",
+				WantFiles: map[string]string{
+					"godel/config/dist-plugin.yml": `products:
+  foo:
+    build:
+      output-dir: foo/build/bin
+      main-pkg: ./foo/main/foo
+      version-var: github.com/palantir/foo/main.version
+`,
+				},
+			},
+			{
+				Name: "legacy configuration with no Docker tag is upgraded",
+				ConfigFiles: map[string]string{
+					"godel/config/dist.yml": `
+products:
+  foo:
+    build:
+      main-pkg: ./foo
+      os-archs:
+        - os: linux
+          arch: amd64
+    dist:
+      dist-type:
+        type: bin
+    docker:
+    - repository: repo/foo
+      context-dir: foo-docker
+`,
+				},
+				Legacy:     true,
+				WantOutput: "Upgraded configuration for dist-plugin.yml\n",
+				WantFiles: map[string]string{
+					"godel/config/dist-plugin.yml": `products:
+  foo:
+    build:
+      main-pkg: ./foo
+      os-archs:
+      - os: linux
+        arch: amd64
+    dist:
+      disters:
+        bin:
+          type: bin
+    docker:
+      docker-builders:
+        docker-image-0:
+          type: default
+          context-dir: foo-docker
+          tag-templates:
+          - '{{Repository}}repo/foo:{{Version}}'
 `,
 				},
 			},
 			{
 				Name: "valid v0 configuration is not modified",
 				ConfigFiles: map[string]string{
-					"godel/config/godel.yml": godelYML,
 					"godel/config/dist-plugin.yml": `
 products:
   # comment

@@ -36,7 +36,7 @@ var (
 )
 
 func init() {
-	RootCmd.AddCommand(publishCmd)
+	rootCmd.AddCommand(publishCmd)
 }
 
 func addPublishSubcommands(publisherTypes []string, publishers []distgo.Publisher) {

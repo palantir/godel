@@ -4,7 +4,7 @@
     "testOnlyImports": [
         {
             "path": "github.com/palantir/pkg/vendor/github.com/stretchr/testify/assert",
-            "numGoFiles": 9,
+            "numGoFiles": 10,
             "numImportedGoFiles": 19,
             "importedFrom": [
                 "github.com/palantir/pkg/transform_test"

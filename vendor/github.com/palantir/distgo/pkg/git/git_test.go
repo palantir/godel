@@ -38,7 +38,15 @@ func TestProjectInfo(t *testing.T) {
 		want          string
 	}{
 		{
+			gitOperations: func(gitDir string) {},
+			want:          "^unspecified$",
+		},
+		{
 			gitOperations: func(gitDir string) {
+				gittest.CreateBranch(t, gitDir, "featureBranch")
+				gittest.CommitRandomFile(t, gitDir, "commit on feature branch")
+				gittest.CreateGitTag(t, gitDir, "featureBranchTag1.0")
+				gittest.RunGitCommand(t, gitDir, "checkout", "master")
 			},
 			want: "^unspecified$",
 		},
@@ -74,7 +82,7 @@ func TestProjectInfo(t *testing.T) {
 				err = ioutil.WriteFile(path.Join(gitDir, "foo"), []byte("foo"), 0644)
 				require.NoError(t, err)
 			},
-			want: "^" + regexp.QuoteMeta("0.0.1-dirty") + "$",
+			want: "^" + regexp.QuoteMeta("0.0.1.dirty") + "$",
 		},
 		{
 			gitOperations: func(gitDir string) {
@@ -90,7 +98,7 @@ func TestProjectInfo(t *testing.T) {
 				err = ioutil.WriteFile(path.Join(gitDir, "foo"), []byte("foo"), 0644)
 				require.NoError(t, err)
 			},
-			want: "^" + regexp.QuoteMeta("0.0.1-1-g") + "[a-f0-9]{7}" + regexp.QuoteMeta("-dirty") + "$",
+			want: "^" + regexp.QuoteMeta("0.0.1-1-g") + "[a-f0-9]{7}" + regexp.QuoteMeta(".dirty") + "$",
 		},
 		{
 			gitOperations: func(gitDir string) {

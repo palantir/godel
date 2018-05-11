@@ -12,7 +12,7 @@
         },
         {
             "path": "github.com/palantir/pkg/vendor/github.com/stretchr/testify/assert",
-            "numGoFiles": 9,
+            "numGoFiles": 10,
             "numImportedGoFiles": 19,
             "importedFrom": [
                 "github.com/palantir/pkg/specdir_test"
@@ -21,7 +21,7 @@
         {
             "path": "github.com/palantir/pkg/vendor/github.com/stretchr/testify/require",
             "numGoFiles": 7,
-            "numImportedGoFiles": 28,
+            "numImportedGoFiles": 29,
             "importedFrom": [
                 "github.com/palantir/pkg/specdir_test"
             ]

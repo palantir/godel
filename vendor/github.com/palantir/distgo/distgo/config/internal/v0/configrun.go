@@ -16,5 +16,5 @@ package v0
 
 type RunConfig struct {
 	// Args contain the arguments provided to the product when invoked using the "run" task.
-	Args *[]string `yaml:"args"`
+	Args *[]string `yaml:"args,omitempty"`
 }

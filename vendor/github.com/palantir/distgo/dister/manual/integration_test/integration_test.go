@@ -168,41 +168,18 @@ products:
 					"godel/config/dist-plugin.yml": `products:
   foo:
     build:
-      name-template: null
-      output-dir: null
       main-pkg: ./foo
-      build-args-script: null
-      version-var: null
-      environment: null
       os-archs:
       - os: darwin
         arch: amd64
       - os: linux
         arch: amd64
-    run: null
     dist:
-      output-dir: null
       disters:
         manual:
           type: manual
           config:
             extension: zip
-          name-template: null
-          script: null
-    publish: null
-    docker: null
-    dependencies: null
-product-defaults:
-  build: null
-  run: null
-  dist: null
-  publish: null
-  docker: null
-  dependencies: null
-script-includes: ""
-exclude:
-  names: []
-  paths: []
 `,
 				},
 			},

@@ -233,7 +233,11 @@ func doBuildAction(unit buildUnit, outputArtifactPath string, doInstall, dryRun 
 	cmd.Args = args
 
 	if dryRun {
-		distgo.DryRunPrintln(stdout, fmt.Sprintf("Run: %s", strings.Join(cmd.Args, " ")))
+		dryRunMsg := fmt.Sprintf("Run: %s", strings.Join(cmd.Args, " "))
+		if len(env) > 0 {
+			dryRunMsg += fmt.Sprintf(" with additional environment variables %v", env)
+		}
+		distgo.DryRunPrintln(stdout, dryRunMsg)
 	} else {
 		if output, err := cmd.CombinedOutput(); err != nil {
 			errOutput := strings.TrimSpace(string(output))

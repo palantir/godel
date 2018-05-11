@@ -16,7 +16,7 @@
     "bzip2/internal/sais",
     "internal",
     "internal/errors",
-    "internal/prefix"
+    "internal/prefix",
   ]
   revision = "cc9eb1d7ad760af14e8f918698f745e80377af4f"
 
@@ -56,7 +56,7 @@
   packages = [
     "dirs",
     "errorstringer",
-    "gofiles"
+    "gofiles",
   ]
   revision = "b64318170fdef93b4462420e0badef8050dbb7ec"
 
@@ -69,8 +69,8 @@
 [[projects]]
   name = "github.com/palantir/distgo"
   packages = ["pkg/git"]
-  revision = "b5cc307a2ffa8be91b5771d0418c68dc34106203"
-  version = "v1.0.0-rc9"
+  revision = "104f3f9050fd740f6ea22acac2896940a76e09c9"
+  version = "v1.2.0"
 
 [[projects]]
   branch = "master"
@@ -81,9 +81,9 @@
     "matcher",
     "pkgpath",
     "signals",
-    "specdir"
+    "specdir",
   ]
-  revision = "15f6fc0c684b2603c4e75a02ca132e5c434c7297"
+  revision = "23395ebeee5df1083443a6261e5f674a76af91b6"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -113,7 +113,7 @@
   name = "github.com/stretchr/testify"
   packages = [
     "assert",
-    "require"
+    "require",
   ]
   revision = "12b6f73e6084dad08a7c6e575284b177ecafbc71"
   version = "v1.2.1"
@@ -130,7 +130,7 @@
     ".",
     "internal/hash",
     "internal/xlog",
-    "lzma"
+    "lzma",
   ]
   revision = "0c6b41e72360850ca4f98dc341fd999726ea007f"
   version = "v0.5.4"

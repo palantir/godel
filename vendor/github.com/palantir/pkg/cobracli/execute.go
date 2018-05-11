@@ -23,7 +23,7 @@ func Execute(rootCmd *cobra.Command, params ...Param) int {
 		p.apply(executor)
 	}
 
-	for _, configureCmd := range executor.configureCmds {
+	for _, configureCmd := range executor.rootCmdConfigurers {
 		configureCmd(rootCmd)
 	}
 
@@ -47,9 +47,9 @@ func Execute(rootCmd *cobra.Command, params ...Param) int {
 }
 
 type executor struct {
-	configureCmds     []func(*cobra.Command)
-	errorHandler      func(*cobra.Command, error)
-	exitCodeExtractor func(error) int
+	rootCmdConfigurers []func(*cobra.Command)
+	errorHandler       func(*cobra.Command, error)
+	exitCodeExtractor  func(error) int
 }
 
 type Param interface {
@@ -151,7 +151,7 @@ func isRequiredFlagError(inErr error) bool {
 // executor are applied to the root command before it is executed.
 func ConfigureCmdParam(configureCmd func(*cobra.Command)) Param {
 	return paramFunc(func(executor *executor) {
-		executor.configureCmds = append(executor.configureCmds, configureCmd)
+		executor.rootCmdConfigurers = append(executor.rootCmdConfigurers, configureCmd)
 	})
 }
 
@@ -162,6 +162,32 @@ func RemoveHelpCommandConfigurer(command *cobra.Command) {
 	// help command implementation.
 	command.SetHelpCommand(&cobra.Command{
 		Hidden: true,
+	})
+}
+
+// AddDebugPersistentFlagParam adds "--debug" as a boolean persistent flag that sets the value of the provided *bool.
+func AddDebugPersistentFlagParam(debug *bool) Param {
+	return ConfigureCmdParam(func(cmd *cobra.Command) {
+		cmd.PersistentFlags().BoolVar(debug, "debug", false, "run in debug mode")
+	})
+}
+
+// VersionFlagParam configures a command so that its "Version" field has the provided value. If it is non-empty, this
+// will add a top-level "--version" flag that prints the version for that command.
+func VersionFlagParam(version string) Param {
+	return ConfigureCmdParam(func(cmd *cobra.Command) {
+		cmd.Version = version
+	})
+}
+
+// VersionCmdParam configures a command so that it has a "version" subcommand that prints the value of the provided
+// version. Is a noop if the provided version is empty.
+func VersionCmdParam(version string) Param {
+	return ConfigureCmdParam(func(cmd *cobra.Command) {
+		if version == "" {
+			return
+		}
+		cmd.AddCommand(VersionCmd(cmd.Use, version))
 	})
 }
 
