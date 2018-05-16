@@ -125,6 +125,10 @@ var configProviderOSArch = osarch.Current()
 // LocatorConfig in that only a single checksum can be specified.
 type ConfigProviderLocatorConfig v0.ConfigProviderLocatorConfig
 
+func ToConfigProviderLocatorConfig(in ConfigProviderLocatorConfig) v0.ConfigProviderLocatorConfig {
+	return v0.ConfigProviderLocatorConfig(in)
+}
+
 // ToLocatorConfig translates the ConfigProviderLocatorConfig into a LocatorConfig where the checksum (if any exists) is
 // keyed as the current OS/Arch.
 func (c *ConfigProviderLocatorConfig) ToLocatorConfig() (LocatorConfig, error) {
