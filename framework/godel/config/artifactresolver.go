@@ -66,6 +66,10 @@ func (c *LocatorWithResolverConfig) ToParam() (artifactresolver.LocatorWithResol
 // than a LocatorConfig.
 type ConfigProviderLocatorWithResolverConfig v0.ConfigProviderLocatorWithResolverConfig
 
+func ToConfigProviderLocatorWithResolverConfig(in ConfigProviderLocatorWithResolverConfig) v0.ConfigProviderLocatorWithResolverConfig {
+	return v0.ConfigProviderLocatorWithResolverConfig(in)
+}
+
 // ToParam converts the configuration into a LocatorWithResolverParam. Any checksums that exist are put in a map where
 // the key is the current OS/Arch.
 func (c *ConfigProviderLocatorWithResolverConfig) ToParam() (artifactresolver.LocatorWithResolverParam, error) {
