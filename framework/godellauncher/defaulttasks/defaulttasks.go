@@ -115,10 +115,10 @@ var defaultPluginsConfig = config.PluginsConfig{
 				},
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-extimport:extimport-asset:1.0.0",
+						ID: "com.palantir.godel-okgo-asset-extimport:extimport-asset:1.1.0",
 						Checksums: map[string]string{
-							"darwin-amd64": "76a16a0228a1dbb3fbd28614094a52e9a0a320178aa70d045575eb07ca022b15",
-							"linux-amd64":  "ca9a0d9044cb626898d3eb5b3f56d85df543d536150180ee506f27489f84aa19",
+							"darwin-amd64": "af3757a10ef206ad2f21d1dba3cca0c798d4cd9c3a903e588c1589d93c3ad407",
+							"linux-amd64":  "290008db565ad95924cc0cb07740f944bc84a1f0dcdff221f028df2a0eecd7e5",
 						},
 					}),
 				},
