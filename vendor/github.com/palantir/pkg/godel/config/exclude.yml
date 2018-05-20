@@ -1,6 +1,0 @@
-names:
-  - "\\..+"
-  - "testdata"
-  - "vendor"
-paths:
-  - "godel"
