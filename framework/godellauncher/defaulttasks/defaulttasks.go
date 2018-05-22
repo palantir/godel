@@ -45,10 +45,10 @@ var defaultPluginsConfig = config.PluginsConfig{
 		{
 			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.godel-format-plugin:format-plugin:1.0.0",
+					ID: "com.palantir.godel-format-plugin:format-plugin:1.1.1",
 					Checksums: map[string]string{
-						"darwin-amd64": "1c6c7e06226efab7213f0b7f2e8ee61f59c0198d7cb72fcee76b2c7d9abddf36",
-						"linux-amd64":  "f29f608a13eb1991357a29e6576c4010738fcd43e0930f5e507c02b2b87dfb73",
+						"darwin-amd64": "30848937399398b7fd6acf206112b0fce129d3d79450f1aacdc6d77f91146001",
+						"linux-amd64":  "6700496ced47596e802ca2016f03c890c3e685b17f559d98397533e433b5556c",
 					},
 				}),
 			}),
