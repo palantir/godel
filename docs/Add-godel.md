@@ -17,7 +17,7 @@ Install the `godelinit` program using `go get` and run the program to install g�
 ➜ go get github.com/palantir/godel/godelinit
 ➜ godelinit
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel/godel/2.4.0/godel-2.4.0.tgz...
- 0 B / 9.33 MiB    0.00% 926.02 KiB / 9.33 MiB    9.69% 1s 1.25 MiB / 9.33 MiB   13.40% 2s 1.80 MiB / 9.33 MiB   19.26% 2s 2.75 MiB / 9.33 MiB   29.45% 1s 3.67 MiB / 9.33 MiB   39.34% 1s 4.52 MiB / 9.33 MiB   48.48% 1s 5.53 MiB / 9.33 MiB   59.29% 6.39 MiB / 9.33 MiB   68.48% 7.08 MiB / 9.33 MiB   75.85% 7.34 MiB / 9.33 MiB   78.67% 7.39 MiB / 9.33 MiB   79.25% 9.33 MiB / 9.33 MiB  100.00% 2s
+ 0 B / 9.33 MiB    0.00% 5.54 MiB / 9.33 MiB   59.43% 9.33 MiB / 9.33 MiB  100.00% 0s
 ```
 
 Run `./godelw version` to verify that gödel was installed correctly. If this is the first run, this invocation will
@@ -26,43 +26,43 @@ download all of the plugins and assets:
 ```
 ➜ ./godelw version
 Getting package from https://palantir.bintray.com/releases/com/palantir/distgo/dist-plugin/1.6.0/dist-plugin-1.6.0-linux-amd64.tgz...
- 0 B / 4.74 MiB    0.00% 256.00 KiB / 4.74 MiB    5.27% 3s 837.36 KiB / 4.74 MiB   17.24% 1s 1.80 MiB / 4.74 MiB   37.87% 2.64 MiB / 4.74 MiB   55.64% 3.59 MiB / 4.74 MiB   75.73% 4.55 MiB / 4.74 MiB   95.85% 4.74 MiB / 4.74 MiB  100.00% 1s
+ 0 B / 4.74 MiB    0.00% 4.74 MiB / 4.74 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-format-plugin/format-plugin/1.1.1/format-plugin-1.1.1-linux-amd64.tgz...
- 0 B / 3.32 MiB    0.00% 764.92 KiB / 3.32 MiB   22.51% 1.50 MiB / 3.32 MiB   45.19% 2.23 MiB / 3.32 MiB   67.22% 3.17 MiB / 3.32 MiB   95.56% 3.32 MiB / 3.32 MiB  100.00% 0s
+ 0 B / 3.32 MiB    0.00% 3.32 MiB / 3.32 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-format-asset-ptimports/ptimports-asset/1.1.0/ptimports-asset-1.1.0-linux-amd64.tgz...
- 0 B / 3.60 MiB    0.00% 1.00 MiB / 3.60 MiB   27.76% 1.84 MiB / 3.60 MiB   51.16% 2.75 MiB / 3.60 MiB   76.30% 3.60 MiB / 3.60 MiB  100.00% 0s
+ 0 B / 3.60 MiB    0.00% 3.60 MiB / 3.60 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-goland-plugin/goland-plugin/1.0.0/goland-plugin-1.0.0-linux-amd64.tgz...
- 0 B / 3.09 MiB    0.00% 256.00 KiB / 3.09 MiB    8.10% 2s 1.28 MiB / 3.09 MiB   41.49% 1.97 MiB / 3.09 MiB   63.71% 3.09 MiB / 3.09 MiB  100.00% 0s
+ 0 B / 3.09 MiB    0.00% 3.09 MiB / 3.09 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/okgo/check-plugin/1.1.1/check-plugin-1.1.1-linux-amd64.tgz...
- 0 B / 3.53 MiB    0.00% 1.00 MiB / 3.53 MiB   28.37% 1.23 MiB / 3.53 MiB   34.92% 1.75 MiB / 3.53 MiB   49.64% 2.72 MiB / 3.53 MiB   77.04% 3.53 MiB / 3.53 MiB  100.00% 0s
+ 0 B / 3.53 MiB    0.00% 3.53 MiB / 3.53 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-okgo-asset-compiles/compiles-asset/1.0.0/compiles-asset-1.0.0-linux-amd64.tgz...
- 0 B / 3.71 MiB    0.00% 1.06 MiB / 3.71 MiB   28.64% 1.68 MiB / 3.71 MiB   45.45% 2.61 MiB / 3.71 MiB   70.53% 3.55 MiB / 3.71 MiB   95.67% 3.71 MiB / 3.71 MiB  100.00% 0s
+ 0 B / 3.71 MiB    0.00% 3.71 MiB / 3.71 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-okgo-asset-deadcode/deadcode-asset/1.0.0/deadcode-asset-1.0.0-linux-amd64.tgz...
- 0 B / 3.73 MiB    0.00% 783.77 KiB / 3.73 MiB   20.52% 1.75 MiB / 3.73 MiB   46.92% 2.64 MiB / 3.73 MiB   70.75% 3.64 MiB / 3.73 MiB   97.56% 3.73 MiB / 3.73 MiB  100.00% 0s
+ 0 B / 3.73 MiB    0.00% 1.28 MiB / 3.73 MiB   34.19% 2.47 MiB / 3.73 MiB   66.26% 3.73 MiB / 3.73 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-okgo-asset-errcheck/errcheck-asset/1.0.0/errcheck-asset-1.0.0-linux-amd64.tgz...
- 0 B / 3.81 MiB    0.00% 808.00 KiB / 3.81 MiB   20.69% 1.50 MiB / 3.81 MiB   39.33% 1.75 MiB / 3.81 MiB   45.80% 2.67 MiB / 3.81 MiB   70.01% 3.62 MiB / 3.81 MiB   95.05% 3.81 MiB / 3.81 MiB  100.00% 1s
+ 0 B / 3.81 MiB    0.00% 276.45 KiB / 3.81 MiB    7.08% 2s 2.08 MiB / 3.81 MiB   54.54% 3.81 MiB / 3.81 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-okgo-asset-extimport/extimport-asset/1.1.0/extimport-asset-1.1.0-linux-amd64.tgz...
- 0 B / 3.36 MiB    0.00% 910.23 KiB / 3.36 MiB   26.42% 1.81 MiB / 3.36 MiB   53.87% 2.76 MiB / 3.36 MiB   81.94% 3.36 MiB / 3.36 MiB  100.00% 0s
+ 0 B / 3.36 MiB    0.00% 2.77 MiB / 3.36 MiB   82.40% 3.36 MiB / 3.36 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-okgo-asset-golint/golint-asset/1.0.0/golint-asset-1.0.0-linux-amd64.tgz...
- 0 B / 3.88 MiB    0.00% 1.04 MiB / 3.88 MiB   26.92% 1.95 MiB / 3.88 MiB   50.30% 2.94 MiB / 3.88 MiB   75.74% 3.82 MiB / 3.88 MiB   98.53% 3.88 MiB / 3.88 MiB  100.00% 0s
+ 0 B / 3.88 MiB    0.00% 3.40 MiB / 3.88 MiB   87.58% 3.88 MiB / 3.88 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-okgo-asset-govet/govet-asset/1.0.0/govet-asset-1.0.0-linux-amd64.tgz...
- 0 B / 3.16 MiB    0.00% 768.00 KiB / 3.16 MiB   23.71% 1.09 MiB / 3.16 MiB   34.58% 2.00 MiB / 3.16 MiB   63.12% 2.86 MiB / 3.16 MiB   90.36% 3.16 MiB / 3.16 MiB  100.00% 0s
+ 0 B / 3.16 MiB    0.00% 3.16 MiB / 3.16 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-okgo-asset-importalias/importalias-asset/1.0.0/importalias-asset-1.0.0-linux-amd64.tgz...
- 0 B / 3.38 MiB    0.00% 256.00 KiB / 3.38 MiB    7.40% 2s 717.58 KiB / 3.38 MiB   20.75% 1s 1.59 MiB / 3.38 MiB   46.94% 2.45 MiB / 3.38 MiB   72.58% 3.38 MiB / 3.38 MiB  100.00% 0s
+ 0 B / 3.38 MiB    0.00% 3.06 MiB / 3.38 MiB   90.57% 3.38 MiB / 3.38 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-okgo-asset-ineffassign/ineffassign-asset/1.0.0/ineffassign-asset-1.0.0-linux-amd64.tgz...
- 0 B / 3.35 MiB    0.00% 1004.70 KiB / 3.35 MiB   29.28% 1.55 MiB / 3.35 MiB   46.15% 1.80 MiB / 3.35 MiB   53.61% 2.15 MiB / 3.35 MiB   64.30% 2.51 MiB / 3.35 MiB   74.85% 2.82 MiB / 3.35 MiB   84.12% 3.29 MiB / 3.35 MiB   98.17% 3.35 MiB / 3.35 MiB  100.00% 1s
+ 0 B / 3.35 MiB    0.00% 2.61 MiB / 3.35 MiB   77.86% 3.35 MiB / 3.35 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-okgo-asset-novendor/novendor-asset/1.0.0/novendor-asset-1.0.0-linux-amd64.tgz...
- 0 B / 3.41 MiB    0.00% 240.00 KiB / 3.41 MiB    6.86% 2s 256.00 KiB / 3.41 MiB    7.32% 5s 256.00 KiB / 3.41 MiB    7.32% 4s 256.00 KiB / 3.41 MiB    7.32% 4s 256.00 KiB / 3.41 MiB    7.32% 4s 256.00 KiB / 3.41 MiB    7.32% 4s 256.00 KiB / 3.41 MiB    7.32% 4s 256.00 KiB / 3.41 MiB    7.32% 3s 256.00 KiB / 3.41 MiB    7.32% 3s 256.00 KiB / 3.41 MiB    7.32% 3s 256.00 KiB / 3.41 MiB    7.32% 3s 463.77 KiB / 3.41 MiB   13.26% 15s 945.56 KiB / 3.41 MiB   27.04% 7s 2.07 MiB / 3.41 MiB   60.48% 1s 3.41 MiB / 3.41 MiB  100.00% 2s
+ 0 B / 3.41 MiB    0.00% 3.41 MiB / 3.41 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-okgo-asset-outparamcheck/outparamcheck-asset/1.0.0/outparamcheck-asset-1.0.0-linux-amd64.tgz...
- 0 B / 3.84 MiB    0.00% 973.14 KiB / 3.84 MiB   24.77% 1.89 MiB / 3.84 MiB   49.22% 2.95 MiB / 3.84 MiB   76.89% 3.75 MiB / 3.84 MiB   97.73% 3.84 MiB / 3.84 MiB  100.00% 0s
+ 0 B / 3.84 MiB    0.00% 2.60 MiB / 3.84 MiB   67.67% 3.84 MiB / 3.84 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-okgo-asset-unconvert/unconvert-asset/1.0.0/unconvert-asset-1.0.0-linux-amd64.tgz...
- 0 B / 3.91 MiB    0.00% 764.70 KiB / 3.91 MiB   19.11% 1.48 MiB / 3.91 MiB   37.91% 1.75 MiB / 3.91 MiB   44.79% 2.46 MiB / 3.91 MiB   62.93% 3.34 MiB / 3.91 MiB   85.56% 3.91 MiB / 3.91 MiB  100.00% 1s
+ 0 B / 3.91 MiB    0.00% 3.59 MiB / 3.91 MiB   91.80% 3.91 MiB / 3.91 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-okgo-asset-varcheck/varcheck-asset/1.0.0/varcheck-asset-1.0.0-linux-amd64.tgz...
- 0 B / 3.75 MiB    0.00% 768.00 KiB / 3.75 MiB   20.02% 768.00 KiB / 3.75 MiB   20.02% 1.72 MiB / 3.75 MiB   45.79% 2.59 MiB / 3.75 MiB   69.21% 3.54 MiB / 3.75 MiB   94.58% 3.75 MiB / 3.75 MiB  100.00% 1s
+ 0 B / 3.75 MiB    0.00% 2.99 MiB / 3.75 MiB   79.79% 3.75 MiB / 3.75 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-license-plugin/license-plugin/1.0.0/license-plugin-1.0.0-linux-amd64.tgz...
- 0 B / 3.30 MiB    0.00% 1.15 MiB / 3.30 MiB   34.93% 2.11 MiB / 3.30 MiB   63.79% 3.08 MiB / 3.30 MiB   93.07% 3.30 MiB / 3.30 MiB  100.00% 0s
+ 0 B / 3.30 MiB    0.00% 3.30 MiB / 3.30 MiB  100.00% 0s
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-test-plugin/test-plugin/1.0.0/test-plugin-1.0.0-linux-amd64.tgz...
- 0 B / 3.60 MiB    0.00% 973.14 KiB / 3.60 MiB   26.41% 1.00 MiB / 3.60 MiB   27.79% 1s 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.00 MiB / 3.60 MiB   27.79% 1.25 MiB / 3.60 MiB   34.74% 14s 1.95 MiB / 3.60 MiB   54.21% 6s 2.37 MiB / 3.60 MiB   65.99% 4s 3.17 MiB / 3.60 MiB   88.06% 1s 3.60 MiB / 3.60 MiB  100.00% 8s
+ 0 B / 3.60 MiB    0.00% 3.60 MiB / 3.60 MiB  100.00% 0s
 godel version 2.4.0
 ```
 
@@ -97,7 +97,7 @@ Commit the changes to the repository:
 ```
 ➜ git add godel godelw
 ➜ git commit -m "Add godel to project"
-[master 2adb1fa] Add godel to project
+[master 466d13c] Add godel to project
  8 files changed, 243 insertions(+)
  create mode 100644 godel/config/check-plugin.yml
  create mode 100644 godel/config/dist-plugin.yml
@@ -133,7 +133,7 @@ Download the distribution into a temporary directory and expand it:
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
- 73 9552k   73 6973k    0     0  8548k      0  0:00:01 --:--:--  0:00:01 8548k100 9552k  100 9552k    0     0  10.3M      0 --:--:-- --:--:-- --:--:-- 28.9M
+ 99 9552k   99 9490k    0     0  13.7M      0 --:--:-- --:--:-- --:--:-- 13.7M100 9552k  100 9552k    0     0  13.8M      0 --:--:-- --:--:-- --:--:-- 60.1M
 ➜ tar -xf download/godel-"${GODEL_VERSION}".tgz -C download
 ```
 
@@ -251,7 +251,7 @@ Download the distribution by running the following:
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-100 9552k  100 9552k    0     0  14.3M      0 --:--:-- --:--:-- --:--:-- 14.3M
+100 9552k  100 9552k    0     0  13.0M      0 --:--:-- --:--:-- --:--:-- 13.0M
 ```
 
 The checksum can be computed using `openssl` or `shasum` as follows:

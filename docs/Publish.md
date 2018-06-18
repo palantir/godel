@@ -60,8 +60,8 @@ We will perform a release for a 0.0.2 of our product. Create a `0.0.2` tag and p
 ➜ ./godelw dist
 Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.2/darwin-amd64/echgo2
 Building echgo2 for linux-amd64 at out/build/echgo2/0.0.2/linux-amd64/echgo2
-Finished building echgo2 for darwin-amd64 (0.230s)
-Finished building echgo2 for linux-amd64 (0.230s)
+Finished building echgo2 for darwin-amd64 (0.210s)
+Finished building echgo2 for linux-amd64 (0.261s)
 Creating distribution for echgo2 at out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-darwin-amd64.tgz, out/dist/echgo2/0.0.2/os-arch-bin/echgo2-0.0.2-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
@@ -174,10 +174,10 @@ use it. First, run the `./godelw dist` task to ensure that the dist outputs exis
 
 ```
 ➜ ./godelw dist
-Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.2.dirty/darwin-amd64/echgo2
 Building echgo2 for linux-amd64 at out/build/echgo2/0.0.2.dirty/linux-amd64/echgo2
-Finished building echgo2 for darwin-amd64 (0.233s)
-Finished building echgo2 for linux-amd64 (0.251s)
+Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.2.dirty/darwin-amd64/echgo2
+Finished building echgo2 for linux-amd64 (0.220s)
+Finished building echgo2 for darwin-amd64 (0.267s)
 Creating distribution for echgo2 at out/dist/echgo2/0.0.2.dirty/os-arch-bin/echgo2-0.0.2.dirty-darwin-amd64.tgz, out/dist/echgo2/0.0.2.dirty/os-arch-bin/echgo2-0.0.2.dirty-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```

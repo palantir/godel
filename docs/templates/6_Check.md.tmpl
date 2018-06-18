@@ -167,33 +167,40 @@ git checkout -- echo godel
 ```END_TUTORIAL_CODE
 
 Filters have a `type` and a `value`. When `type` is not specified (as in the examples above), it defaults to `message`,
-which means that the value is matched against the message of the output. The `type` field for filters can also be `name`
-or `path`. `name` matches files based on their name, while `path` matches based on an exact relative path.
+which means that the value is matched against the message of the output. Currently, `message` is the only filter.
+
+### Exclude specific file names or paths from a check
+Checks have an optional `exclude` field that can be used to specify names or paths of files that should be excluded from
+the check.
 
 For example, the following configuration will ignore all issues reported by `errcheck` for `main.go`:
 
 ```yaml
 checks:
   errcheck:
-    filters:
-      - type: "path"
-        value: "main.go"
+    exclude:
+      paths:
+        - main.go
 ```
 
-Because the `type` above is `path`, this configuration would ignore `errcheck` issues in `./main.go`. However, issues in
+Because the exclude type is `path`, this configuration would ignore `errcheck` issues in `./main.go`. However, issues in
 other files named `main.go` in the project (for example, `./subproject/main.go`) would still be reported. Setting the
-`type` to `name` would change the behavior so that issues in all files named `main.go` would be ignored.
+exclude type to `names` would change the behavior so that issues in all files named `main.go` would be ignored. Both
+`names` and `paths` can be specified in the same `exclude` configuration.
 
-The match values use Go regular expressions to perform matches. For example, the following configuration ignores all
-`golint` issues reported for any files that have the extension `.pb.go`:
+The name match values use Go regular expressions to perform matches. For example, the following configuration ignores
+all `golint` issues reported for any files that have the extension `.pb.go`:
 
 ```yaml
 checks:
   golint:
-    filters:
-      - type: "name"
-        value: ".*.pb.go"
+    exclude:
+      names:
+        - ".*.pb.go"
 ```
+
+The `checks` configuration also supports specifying `exclude` as a top-level value that applies to all checks (rather
+than just an individual one).
 
 ### Disable checks
 Checks can be disabled completely for the entire project by setting the `skip` field to `true`.
