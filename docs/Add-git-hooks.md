@@ -54,7 +54,7 @@ to format the file and then verify that adding and committing the file works:
 ➜ ./godelw format
 ➜ git add main.go
 ➜ git commit -m "Add main.go"
-[master fc62d8d] Add main.go
+[master c111ccc] Add main.go
  1 file changed, 11 insertions(+)
  create mode 100644 main.go
 ```
