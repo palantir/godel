@@ -174,7 +174,7 @@ Commit the changes to the repository by running the following:
 ```
 ➜ git add .circleci
 ➜ git commit -m "Add CircleCI configuration"
-[master 1aafe3d] Add CircleCI configuration
+[master 82c39c0] Add CircleCI configuration
  1 file changed, 24 insertions(+)
  create mode 100644 .circleci/config.yml
 ```
