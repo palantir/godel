@@ -161,7 +161,7 @@ Commit the changes that were made to the repository:
 ```
 ➜ git add dockerctx godel/config/dist-plugin.yml
 ➜ git commit -m "Add Docker build configuration"
-[master e746ea8] Add Docker build configuration
+[master 5daba6b] Add Docker build configuration
  3 files changed, 15 insertions(+)
  create mode 100644 dockerctx/.gitignore
  create mode 100644 dockerctx/Dockerfile
@@ -175,7 +175,7 @@ to observe how the Docker image would be pushed:
 ```
 ➜ ./godelw docker push --dry-run
 [DRY RUN] Running Docker push for configuration echgo2 of product echgo2...
-[DRY RUN] Run [docker push echgo2:0.0.2-1-ge746ea8]
+[DRY RUN] Run [docker push echgo2:0.0.2-1-g5daba6b]
 [DRY RUN] Run [docker push echgo2:latest]
 ```
 

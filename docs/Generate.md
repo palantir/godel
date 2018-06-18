@@ -46,7 +46,7 @@ the plugin:
 ```
 ➜ ./godelw
 Getting package from https://palantir.bintray.com/releases/com/palantir/godel-generate-plugin/generate-plugin/1.0.0/generate-plugin-1.0.0-linux-amd64.tgz...
- 0 B / 3.29 MiB    0.00% 1.06 MiB / 3.29 MiB   32.28% 1.97 MiB / 3.29 MiB   59.77% 2.74 MiB / 3.29 MiB   83.30% 3.29 MiB / 3.29 MiB  100.00% 0s
+ 0 B / 3.29 MiB    0.00% 3.29 MiB / 3.29 MiB  100.00% 0s
 Usage:
   godel [command]
 
@@ -466,7 +466,7 @@ We can now commit the changes:
 ```
 ➜ git add echo godel main.go
 ➜ git commit -m "Add support for echo types"
-[master 027434a] Add support for echo types
+[master d92ce33] Add support for echo types
  6 files changed, 78 insertions(+), 4 deletions(-)
  create mode 100644 echo/type_string.go
  create mode 100644 godel/config/generate-plugin.yml
@@ -599,10 +599,10 @@ Run the `check` command to verify that the project is still valid:
 
 ```
 ➜ ./godelw check
-[deadcode]      Running deadcode...
 [compiles]      Running compiles...
-[extimport]     Running extimport...
 [errcheck]      Running errcheck...
+[extimport]     Running extimport...
+[deadcode]      Running deadcode...
 [extimport]     Finished extimport
 [golint]        Running golint...
 [golint]        Finished golint
@@ -616,14 +616,14 @@ Run the `check` command to verify that the project is still valid:
 [novendor]      golang.org/x/tools
 [novendor]      Finished novendor
 [outparamcheck] Running outparamcheck...
-[compiles]      Finished compiles
+[deadcode]      Finished deadcode
 [unconvert]     Running unconvert...
 [errcheck]      Finished errcheck
 [varcheck]      Running varcheck...
-[deadcode]      Finished deadcode
+[compiles]      Finished compiles
 [outparamcheck] Finished outparamcheck
-[varcheck]      Finished varcheck
 [unconvert]     Finished unconvert
+[varcheck]      Finished varcheck
 Check(s) produced output: [novendor]
 ```
 
@@ -657,7 +657,7 @@ Commit these changes by running the following:
 ```
 ➜ git add echo generator godel
 ➜ git commit -m "Update generator code"
-[master 806ba8a] Update generator code
+[master e7ce18b] Update generator code
  8 files changed, 702 insertions(+), 4 deletions(-)
  create mode 100644 generator/generate.go
  create mode 100644 generator/vendor/golang.org/x/tools/cmd/stringer/importer18.go
