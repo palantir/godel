@@ -34,10 +34,10 @@ var defaultPluginsConfig = config.PluginsConfig{
 		{
 			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.distgo:dist-plugin:1.9.1",
+					ID: "com.palantir.distgo:dist-plugin:1.10.0",
 					Checksums: map[string]string{
-						"darwin-amd64": "b36ecd7292a1fe87e22091f23df38a94942d974edb2b066bbfa0a3768434d77a",
-						"linux-amd64":  "ed25ca203eb7b8f6de63834e474db1efd664d04245cc832e428a34074f98c0b6",
+						"darwin-amd64": "f70129e1f7a11053c5c8b566a509d3b80c9fa28880f360a8aa08dbdc2cde4178",
+						"linux-amd64":  "97f176f4ff970d0800b9c511fb26d28a7aebc1cce27b8b8503616c318589d805",
 					},
 				}),
 			}),
