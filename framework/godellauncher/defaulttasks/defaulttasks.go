@@ -169,10 +169,10 @@ var defaultPluginsConfig = config.PluginsConfig{
 				},
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-outparamcheck:outparamcheck-asset:1.0.0",
+						ID: "com.palantir.godel-okgo-asset-outparamcheck:outparamcheck-asset:1.1.1",
 						Checksums: map[string]string{
-							"darwin-amd64": "9612037f770679e7deb9ee3f11f939a7e565193b6b558759199ba3a0635f97b0",
-							"linux-amd64":  "3eec093c4c62a5a809ee58acf6a76efeb86a35bdf5416397ff7f5ddef1b8a35a",
+							"darwin-amd64": "ee30e5a6f703aafcafa87c02b8f2bd3841942c4727115322cae121bca3cb9fbb",
+							"linux-amd64":  "eade1327d5e46bdb7e4e4de6adc5976726fab5e36b090b72d4a37d29a4474fc1",
 						},
 					}),
 				},
