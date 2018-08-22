@@ -48,52 +48,68 @@ Start the tutorial by building the Docker image:
 ```
 ➜ cd ${GOPATH}/src/github.com/palantir/godel/docs/templates/baseimage
 ➜ ./build.sh
-➜  baseimage git:(updatetutorial-usedocker-submit) ✗ ./build.sh
 Sending build context to Docker daemon  3.584kB
-Step 1/9 : FROM godeltutorial:setup
- ---> cf02231516b7
-Step 2/9 : ENV GODEL_VERSION 2.0.0-rc5
- ---> Running in 5edef2973ec8
-Removing intermediate container 5edef2973ec8
- ---> a31a93d9c1b5
-Step 3/9 : ENV GODEL_CHECKSUM 08d9ed3e33e69006a9c58ec65cef0ad9bd17af4c73b5c1d1aa116e813a954314
- ---> Running in 204d4784866d
-Removing intermediate container 204d4784866d
- ---> 1fb055da5c26
+Step 1/9 : FROM golang:1.10.2
+ ---> 6b369f7eed80
+Step 2/9 : ENV GODEL_VERSION 2.4.0
+ ---> Running in 547cd20e3b9d
+Removing intermediate container 547cd20e3b9d
+ ---> e71eeff7a9d3
+Step 3/9 : ENV GODEL_CHECKSUM 48e50289db0acfce7f8a68b12f8ab433a2fcbf67e80b7658dfc1e105228228c1
+ ---> Running in a12624ef6c18
+Removing intermediate container a12624ef6c18
+ ---> 4a6c208a2564
 Step 4/9 : ENV PROJECT_PATH github.com/nmiyake/echgo2
- ---> Running in 8ea1a7b8e296
-Removing intermediate container 8ea1a7b8e296
- ---> 9e896868efd2
+ ---> Running in 8ba493bc138c
+Removing intermediate container 8ba493bc138c
+ ---> 867c9d408573
 Step 5/9 : ENV GIT_USERNAME "Tutorial User"
- ---> Running in 8196119c82ed
-Removing intermediate container 8196119c82ed
- ---> 799c306ce276
+ ---> Running in 3afbcfcbbfd0
+Removing intermediate container 3afbcfcbbfd0
+ ---> e3a677672529
 Step 6/9 : ENV GIT_EMAIL "tutorial@tutorial-user.com"
- ---> Running in 22b80563fdab
-Removing intermediate container 22b80563fdab
- ---> cdfc69253319
+ ---> Running in 2fad3751d74d
+Removing intermediate container 2fad3751d74d
+ ---> 37a208d68bf4
 Step 7/9 : RUN apt-get update && apt-get install -y tree
- ---> Running in 12f566bc04a1
-Ign:1 http://deb.debian.org/debian stretch InRelease
-Hit:2 http://security.debian.org stretch/updates InRelease
-Hit:3 http://deb.debian.org/debian stretch-updates InRelease
-Hit:4 http://deb.debian.org/debian stretch Release
+ ---> Running in aae3f8b8b1a7
+Get:1 http://security.debian.org/debian-security stretch/updates InRelease [94.3 kB]
+Ign:2 http://deb.debian.org/debian stretch InRelease
+Get:3 http://deb.debian.org/debian stretch-updates InRelease [91.0 kB]
+Get:4 http://deb.debian.org/debian stretch Release [118 kB]
+Get:5 http://deb.debian.org/debian stretch Release.gpg [2434 B]
+Get:6 http://security.debian.org/debian-security stretch/updates/main amd64 Packages [488 kB]
+Get:7 http://deb.debian.org/debian stretch-updates/main amd64 Packages [5476 B]
+Get:8 http://deb.debian.org/debian stretch/main amd64 Packages [9500 kB]
+Fetched 10.3 MB in 3s (3170 kB/s)
 Reading package lists...
 Reading package lists...
 Building dependency tree...
 Reading state information...
-tree is already the newest version (1.7.0-5).
-0 upgraded, 0 newly installed, 0 to remove and 5 not upgraded.
-Removing intermediate container 12f566bc04a1
- ---> b5cb8a79a6cc
+The following NEW packages will be installed:
+  tree
+0 upgraded, 1 newly installed, 0 to remove and 30 not upgraded.
+Need to get 46.1 kB of archives.
+After this operation, 106 kB of additional disk space will be used.
+Get:1 http://deb.debian.org/debian stretch/main amd64 tree amd64 1.7.0-5 [46.1 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 46.1 kB in 0s (368 kB/s)
+Selecting previously unselected package tree.
+(Reading database ... 15055 files and directories currently installed.)
+Preparing to unpack .../tree_1.7.0-5_amd64.deb ...
+Unpacking tree (1.7.0-5) ...
+Setting up tree (1.7.0-5) ...
+Removing intermediate container aae3f8b8b1a7
+ ---> 4b6736bd5793
 Step 8/9 : RUN git config --global user.name "${GIT_USERNAME}" &&     git config --global user.email "${GIT_EMAIL}" &&     mkdir -p ${GOPATH}/src/${PROJECT_PATH}
- ---> Running in 73a28cc0f3e3
-Removing intermediate container 73a28cc0f3e3
- ---> 6b746e11b8d0
+ ---> Running in 148d6b5b593d
+Removing intermediate container 148d6b5b593d
+ ---> 075039d532f0
 Step 9/9 : WORKDIR /go/src/${PROJECT_PATH}
-Removing intermediate container 1d583c4c8c77
- ---> 8b99407e39f9
-Successfully built 8b99407e39f9
+ ---> Running in 6337686c6dfd
+Removing intermediate container 6337686c6dfd
+ ---> 7bc4deeef8cb
+Successfully built 7bc4deeef8cb
 Successfully tagged godeltutorial:setup
 ```
 
@@ -123,7 +139,7 @@ Initialized empty Git repository in /go/src/github.com/nmiyake/echgo2/.git/
 ➜ echo 'echgo2 is a program that echoes input provided by the user.' > README.md
 ➜ git add README.md
 ➜ git commit -m "Initial commit"
-[master (root-commit) 78f9807] Initial commit
+[master (root-commit) 58cb4f5] Initial commit
  1 file changed, 1 insertion(+)
  create mode 100644 README.md
 ```

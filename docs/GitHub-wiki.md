@@ -33,7 +33,7 @@ Run the following to create a "docs" directory and add some documentation and co
 ➜ echo 'echgo2 is a tool that echoes the input provided by the user.' > docs/Home.md
 ➜ git add docs
 ➜ git commit -m "Add documentation"
-[master 00e5dad] Add documentation
+[master c469655] Add documentation
  2 files changed, 2 insertions(+)
  create mode 100644 docs/Home.md
  create mode 100644 docs/_Sidebar.md

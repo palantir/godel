@@ -1,8 +1,8 @@
-# change FROM to output of basegodel to use warm cache (skips expensive downloads)
-FROM godeltutorial:setup
+# change FROM to output of basegodel (typically godeltutorial:setup) to use warm cache (skips expensive downloads)
+FROM golang:1.10.3
 
-ENV GODEL_VERSION 2.4.0
-ENV GODEL_CHECKSUM 48e50289db0acfce7f8a68b12f8ab433a2fcbf67e80b7658dfc1e105228228c1
+ENV GODEL_VERSION 2.9.1
+ENV GODEL_CHECKSUM 240052b05e96e95b3f9bae3f89a091ba5dc5ec808d6a8d9cf086be92f7cdd31c
 
 ENV PROJECT_PATH github.com/nmiyake/echgo2
 
