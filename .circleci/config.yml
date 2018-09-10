@@ -2,7 +2,7 @@
 alpine-go-curr: &alpine-go-curr
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:alpine-go-1.11-t132
+    - image: nmiyake/go:alpine-go-1.11-t133
 
 alpine-go-prev: &alpine-go-prev
   working_directory: /go/src/github.com/palantir/godel
@@ -12,17 +12,17 @@ alpine-go-prev: &alpine-go-prev
 brew-go: &brew-go
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:brew-go-t132
+    - image: nmiyake/go:brew-go-t133
 
 darwin-linux: &darwin-linux
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:go-darwin-linux-1.11-t132
+    - image: nmiyake/go:go-darwin-linux-1.11-t133
 
 darwin-linux-no-cgo: &darwin-linux-no-cgo
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:go-darwin-linux-no-cgo-1.11-t132
+    - image: nmiyake/go:go-darwin-linux-no-cgo-1.11-t133
       environment:
         CGO_ENABLED: 0
 
@@ -117,7 +117,8 @@ jobs:
       - *godel-version
       - *godel-root-cache-save
       - *go-install-packages
-      - run: ./godelw verify --apply=false --skip-test
+      # TODO: remove "--skip-check" option once checks are re-compiled for Go 1.11
+      - run: ./godelw verify --apply=false --skip-check --skip-test
 
   ### Base tests ###
   godel:
