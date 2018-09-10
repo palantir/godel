@@ -59,7 +59,7 @@ func (f *parsedTemplateFile) Render(renderedCode []string) ([]byte, error) {
 	var rErr error
 	rendered := tutorialCodeRegexp.ReplaceAllFunc(f.FullContent, func([]byte) []byte {
 		if idx >= len(renderedCode) {
-			rErr = errors.Errorf("index %d is >= than number of rendered code parts %d", len(renderedCode))
+			rErr = errors.Errorf("index %d is >= than number of rendered code parts %d", idx, len(renderedCode))
 			return nil
 		}
 		curr := strings.Join([]string{

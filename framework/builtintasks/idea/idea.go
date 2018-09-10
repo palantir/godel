@@ -135,7 +135,7 @@ func createIDEAFiles(rootDir string, imlContent, iprContent string) error {
 	}
 	imlTemplate := template.Must(template.New("iml").Parse(imlContent))
 	if err := imlTemplate.Execute(&buffer, templateValues); err != nil {
-		return errors.Wrapf(err, "failed to execute template %s with values %v", imlTemplate, templateValues)
+		return errors.Wrapf(err, "failed to execute template %s with values %v", imlContent, templateValues)
 	}
 
 	imlFilePath := path.Join(rootDir, projectName+".iml")
@@ -146,7 +146,7 @@ func createIDEAFiles(rootDir string, imlContent, iprContent string) error {
 	iprTemplate := template.Must(template.New("modules").Parse(iprContent))
 	buffer = bytes.Buffer{}
 	if err := iprTemplate.Execute(&buffer, templateValues); err != nil {
-		return errors.Wrapf(err, "failed to execute template %s with values %v", imlTemplate, templateValues)
+		return errors.Wrapf(err, "failed to execute template %s with values %v", iprContent, templateValues)
 	}
 
 	iprFilePath := path.Join(rootDir, projectName+".ipr")
