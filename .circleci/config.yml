@@ -2,27 +2,27 @@
 alpine-go-curr: &alpine-go-curr
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:alpine-go-1.10.2-t128
+    - image: nmiyake/go:alpine-go-1.11-t132
 
 alpine-go-prev: &alpine-go-prev
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:alpine-go-1.9.6-t128
+    - image: nmiyake/go:alpine-go-1.10.4-t132
 
 brew-go: &brew-go
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:brew-go-t128
+    - image: nmiyake/go:brew-go-t132
 
 darwin-linux: &darwin-linux
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:go-darwin-linux-1.10.2-t128
+    - image: nmiyake/go:go-darwin-linux-1.11-t132
 
 darwin-linux-no-cgo: &darwin-linux-no-cgo
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:go-darwin-linux-no-cgo-1.10.2-t128
+    - image: nmiyake/go:go-darwin-linux-no-cgo-1.11-t132
       environment:
         CGO_ENABLED: 0
 
