@@ -110,7 +110,7 @@ func CopyFile(src, dst string) (rErr error) {
 	}
 	defer func() {
 		if err := dstFile.Close(); err != nil {
-			rErr = errors.Wrapf(err, "failed to close %s in defer")
+			rErr = errors.Wrapf(err, "failed to close %s in defer", dstFile.Name())
 		}
 	}()
 

@@ -154,7 +154,7 @@ func CopySingleFileTGZContent(dst io.Writer, tgzContentReader io.Reader) error {
 func SHA256ChecksumFile(fPath string) (string, error) {
 	f, err := os.Open(fPath)
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to open %s for reading", f)
+		return "", errors.Wrapf(err, "failed to open %s for reading", f.Name())
 	}
 	defer func() {
 		_ = f.Close()
