@@ -117,8 +117,7 @@ jobs:
       - *godel-version
       - *godel-root-cache-save
       - *go-install-packages
-      # TODO: remove "--skip-check" option once checks are re-compiled for Go 1.11
-      - run: ./godelw verify --apply=false --skip-check --skip-test
+      - run: ./godelw verify --apply=false --skip-test
 
   ### Base tests ###
   godel:
