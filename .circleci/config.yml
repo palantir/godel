@@ -2,41 +2,26 @@
 alpine-go-curr: &alpine-go-curr
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:alpine-go-1.11-t134
+    - image: nmiyake/go:alpine-go-1.11.1-t135
 
 alpine-go-prev: &alpine-go-prev
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:alpine-go-1.10.4-t134
+    - image: nmiyake/go:alpine-go-1.10.4-t135
 
 brew-go: &brew-go
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:brew-go-t134
-
-darwin-linux: &darwin-linux
-  working_directory: /go/src/github.com/palantir/godel
-  docker:
-    - image: nmiyake/go:go-darwin-linux-1.11-t134
+    - image: nmiyake/go:brew-go-t135
 
 darwin-linux-no-cgo: &darwin-linux-no-cgo
   working_directory: /go/src/github.com/palantir/godel
   docker:
-    - image: nmiyake/go:go-darwin-linux-no-cgo-1.11-t134
+    - image: nmiyake/go:go-darwin-linux-no-cgo-1.11.1-t135
       environment:
         CGO_ENABLED: 0
 
 ### Shared cache steps ###
-godel-gouser-cache-restore: &godel-gouser-cache-restore
-  restore_cache:
-    keys:
-      - godel-gouser-cache-{{ checksum "godelw" }}-{{ checksum "godel/config/godel.yml" }}-v1
-godel-gouser-cache-save: &godel-gouser-cache-save
-  save_cache:
-    key: godel-gouser-cache-{{ checksum "godelw" }}-{{ checksum "godel/config/godel.yml" }}-v1
-    paths:
-      - /home/gouser/.godel
-
 godel-linuxbrew-cache-restore: &godel-linuxbrew-cache-restore
   restore_cache:
     keys:
