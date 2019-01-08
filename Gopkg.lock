@@ -73,7 +73,6 @@
   version = "v1.2.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/palantir/pkg"
   packages = [
     "cobracli",
@@ -83,7 +82,8 @@
     "signals",
     "specdir",
   ]
-  revision = "23395ebeee5df1083443a6261e5f674a76af91b6"
+  revision = "d12f4064ff8e52f0860934d543810751f618769b"
+  version = "0.9.2"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -156,6 +156,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "940ea2ff5655c01c3c7d10978778be4ac394d3168756b90630d60871ea55bef6"
+  inputs-digest = "40ffbbdd547ecd535dc351d613625094ceedf9971d864b3bae368ab746ce25ec"
   solver-name = "gps-cdcl"
   solver-version = 1
