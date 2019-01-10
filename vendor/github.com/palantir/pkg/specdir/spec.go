@@ -1,4 +1,4 @@
-// Copyright 2016 Palantir Technologies. All rights reserved.
+// Copyright (c) 2016 Palantir Technologies. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -145,11 +145,7 @@ func (s *layoutSpec) Validate(root string, values TemplateValues) error {
 	}
 
 	// verify all child nodes match
-	if err := s.root.verifyLayoutForDir(root, "", values); err != nil {
-		return err
-	}
-
-	return nil
+	return s.root.verifyLayoutForDir(root, "", values)
 }
 
 func (s *layoutSpec) getNameTemplateKeys() []string {

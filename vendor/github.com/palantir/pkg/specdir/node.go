@@ -1,4 +1,4 @@
-// Copyright 2016 Palantir Technologies. All rights reserved.
+// Copyright (c) 2016 Palantir Technologies. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -164,11 +164,7 @@ func (n *fileNode) validate(rootDir, pathFromRoot string, values TemplateValues)
 	}
 
 	// verify all child nodes match
-	if err := n.verifyLayoutForDir(rootDir, pathFromRoot, values); err != nil {
-		return err
-	}
-
-	return nil
+	return n.verifyLayoutForDir(rootDir, pathFromRoot, values)
 }
 
 func (n *fileNode) verifyLayoutForDir(rootDir, pathFromRoot string, values TemplateValues) error {
