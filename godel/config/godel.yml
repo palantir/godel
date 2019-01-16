@@ -3,10 +3,10 @@ plugins:
     - "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
   plugins:
     - locator:
-        id: "com.palantir.godel-dep-plugin:dep-plugin:1.0.0"
+        id: com.palantir.godel-dep-plugin:dep-plugin:1.1.0
         checksums:
-          darwin-amd64: "8f0f4e8b1f918fb4294fdd9a10faac1895fe6ed3de6aa5209b0cea9d42da7f17"
-          linux-amd64: "21ec9bb75bb925e45ee7be16ed23821888cd7b82089c167d9d28ea4b3594f4e7"
+          darwin-amd64: 946b0def510a7e94b46bb635a67f00c05243505e2a2ef9b0b7dab45b0437be1f
+          linux-amd64: cc2729e7f25c0121f841e237238c11514ee4c1376c458a1c4997ee86de17b209
 exclude:
   names:
     - "\\..+"
