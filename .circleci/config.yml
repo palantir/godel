@@ -1,238 +1,117 @@
-### Docker images ###
-alpine-go-curr: &alpine-go-curr
-  working_directory: /go/src/github.com/palantir/godel
-  docker:
-    - image: nmiyake/go:alpine-go-1.11.1-t135
+owner-repo: &owner-repo
+  owner-repo: palantir/godel
 
-alpine-go-prev: &alpine-go-prev
-  working_directory: /go/src/github.com/palantir/godel
-  docker:
-    - image: nmiyake/go:alpine-go-1.10.4-t135
+excutor: &executor
+  executor:
+    name: go/darwin-linux-no-cgo
+    <<: *owner-repo
 
-brew-go: &brew-go
-  working_directory: /go/src/github.com/palantir/godel
-  docker:
-    - image: nmiyake/go:brew-go-t135
+version: 2.1
 
-darwin-linux-no-cgo: &darwin-linux-no-cgo
-  working_directory: /go/src/github.com/palantir/godel
-  docker:
-    - image: nmiyake/go:go-darwin-linux-no-cgo-1.11.1-t135
-      environment:
-        CGO_ENABLED: 0
+orbs:
+  go: palantir/go@0.0.5
+  godel: palantir/godel@0.0.4
 
-### Shared cache steps ###
-godel-linuxbrew-cache-restore: &godel-linuxbrew-cache-restore
-  restore_cache:
-    keys:
-      - godel-linuxbrew-cache-{{ checksum "godelw" }}-{{ checksum "godel/config/godel.yml" }}-v1
-godel-linuxbrew-cache-save: &godel-linuxbrew-cache-save
-  save_cache:
-    key: godel-linuxbrew-cache-{{ checksum "godelw" }}-{{ checksum "godel/config/godel.yml" }}-v1
-    paths:
-      - /home/linuxbrew/.godel
+executors:
+  alpine-go:
+    parameters:
+      version:
+        description: |
+          The version of the palantirtechnologies/go:alpine-go Docker image to use.
+        type: string
+    working_directory: /go/src/github.com/palantir/godel
+    environment:
+      CGO_ENABLED: 0
+    docker:
+      - image: palantirtechnologies/go:alpine-go-<< parameters.version >>-t2
+  brew-go:
+    working_directory: /go/src/github.com/palantir/godel
+    docker:
+      - image: palantirtechnologies/go:brew-go-t2
 
-godel-root-cache-restore: &godel-root-cache-restore
-  restore_cache:
-    keys:
-      - godel-root-cache-{{ checksum "godelw" }}-{{ checksum "godel/config/godel.yml" }}-v1
-godel-root-cache-save: &godel-root-cache-save
-  save_cache:
-    key: godel-root-cache-{{ checksum "godelw" }}-{{ checksum "godel/config/godel.yml" }}-v1
-    paths:
-      - ~/.godel
-
-### Shared test steps ###
-define-tests-dir: &define-tests-dir
-  run: echo "export TESTS_DIR=/tmp/test-results/${CIRCLE_PROJECT_REPONAME}-${TAG_NAME}-tests" >> $BASH_ENV
-
-mkdir-tests-dir: &mkdir-tests-dir
-  run: mkdir -p "${TESTS_DIR}"
-
-run-tests: &run-tests
-  run: ./godelw test --tags="$TAG_NAME" --junit-output="$TESTS_DIR/tests.xml"
-
-store-test-results: &store-test-results
-  type: test-results-store
-  path: /tmp/test-results
-
-### Other shared steps ###
-go-install-packages: &go-install-packages
-  run: go install $(./godelw packages)
-
-go-version: &go-version
-  run: go version
-
-godel-version: &godel-version
-  run: ./godelw version
-
-godel-dist-product: &godel-dist-product
-  run: ./godelw dist "$PRODUCT_NAME"
-
-store-artifacts: &store-artifacts
-  type: artifacts-store
-  path: /tmp/test-results
-  destination: test-results
-
-test_steps: &test_steps
-  - setup_remote_docker
-  - checkout
-  - *go-version
-  - *godel-root-cache-restore
-  - *godel-version
-  - *godel-root-cache-save
-  - *go-install-packages
-  - *define-tests-dir
-  - *mkdir-tests-dir
-  - *godel-dist-product
-  - *run-tests
-  - *store-test-results
-  - *store-artifacts
-
-### Jobs ###
-version: 2
 jobs:
-  ### Verify ###
-  verify:
-    <<: *darwin-linux-no-cgo
-    steps:
-      - checkout
-      - *go-version
-      - *godel-root-cache-restore
-      - *godel-version
-      - *godel-root-cache-save
-      - *go-install-packages
-      - run: ./godelw verify --apply=false --skip-test
-
-  ### Base tests ###
-  godel:
-    <<: *darwin-linux-no-cgo
-    environment:
-      PRODUCT_NAME: godel
-      TAG_NAME: none
-    steps: *test_steps
-
-  ### Integration tests ###
-  integration-alpine-go-curr:
-    <<: *alpine-go-curr
-    environment:
-      PRODUCT_NAME: godel
-      TAG_NAME: integration
-      CGO_ENABLED: 0
-    steps: *test_steps
-
-  integration-alpine-go-prev:
-    <<: *alpine-go-prev
-    environment:
-      PRODUCT_NAME: godel
-      TAG_NAME: integration
-      CGO_ENABLED: 0
-    steps: *test_steps
-
-  integration-brew:
-    <<: *brew-go
-    environment:
-      PRODUCT_NAME: godel
-      TAG_NAME: integration
-    # define custom steps because image runs with non-root user
-    steps:
-      - checkout
-      - *go-version
-      - *godel-linuxbrew-cache-restore
-      - *godel-version
-      - *godel-linuxbrew-cache-save
-      - *go-install-packages
-      - *define-tests-dir
-      - *mkdir-tests-dir
-      - *godel-dist-product
-      - *run-tests
-      - *store-test-results
-      - *store-artifacts
-
-  integration-std:
-    <<: *darwin-linux-no-cgo
-    environment:
-      PRODUCT_NAME: godel
-      TAG_NAME: integration
-    steps: *test_steps
-
-  ### Docs ###
   wiki:
-    <<: *darwin-linux-no-cgo
+    <<: *executor
     steps:
       - checkout
-      - *go-version
-      - *godel-root-cache-restore
-      - *godel-version
-      - *godel-root-cache-save
+      - godel/setup
       - run: ./godelw github-wiki --docs-dir docs --repository=git@github.com:palantir/godel.wiki.git
-
-  ### Dist/Publish ###
-  dist:
-    <<: *darwin-linux-no-cgo
-    steps:
-      - checkout
-      - *go-version
-      - *godel-root-cache-restore
-      - *godel-version
-      - *godel-root-cache-save
-      - run: ./godelw dist
-      - save_cache:
-          key: dist-{{ .Environment.CIRCLE_WORKFLOW_ID }}-{{ .Environment.CIRCLE_SHA1 }}-v1
-          paths:
-            - dist
-  publish:
-    <<: *darwin-linux-no-cgo
-    steps:
-      - checkout
-      - *go-version
-      - *godel-root-cache-restore
-      - *godel-version
-      - *godel-root-cache-save
-      - restore_cache:
-          keys:
-            - dist-{{ .Environment.CIRCLE_WORKFLOW_ID }}-{{ .Environment.CIRCLE_SHA1 }}-v1
-      - run: ./godelw publish bintray --url https://api.bintray.com --subject palantir --repository releases --username "$BINTRAY_USER" --password "$BINTRAY_PASSWORD" --publish --downloads-list godel
-
-### Workflows ###
-requires_products: &requires_products
-  - verify
-  - dist
-  - godel
-  - integration-alpine-go-curr
-  - integration-alpine-go-prev
-  - integration-brew
-  - integration-std
 
 all-tags-filter: &all-tags-filter
   filters:
     tags:
       only: /.*/
 
+requires_products: &requires_products
+  - verify
+  - test
+  - integration-std
+  - integration-alpine-go-curr
+  - integration-alpine-go-prev
+  - integration-brew
+  - dist
+
 workflows:
   version: 2
-  build-publish:
+  verify-test-dist-publish:
     jobs:
-      - verify:
+      - godel/verify:
+          name: verify
+          <<: *executor
           <<: *all-tags-filter
-      - dist:
+      - godel/test:
+          name: test
+          tags: none
+          <<: *executor
           <<: *all-tags-filter
-      - godel:
+      - godel/test:
+          name: integration-std
+          tags: integration
+          <<: *executor
           <<: *all-tags-filter
-      - integration-alpine-go-curr:
+      - godel/test:
+          name: integration-alpine-go-curr
+          tags: integration
+          executor:
+            name: alpine-go
+            version: 1.11.4
           <<: *all-tags-filter
-      - integration-alpine-go-prev:
+      - godel/test:
+          name: integration-alpine-go-prev
+          tags: integration
+          executor:
+            name: alpine-go
+            version: 1.10.7
           <<: *all-tags-filter
-      - integration-brew:
+      - godel/test:
+          name: integration-brew
+          tags: integration
+          executor: brew-go
+          cache-steps:
+            - restore_cache:
+                keys:
+                  - godel-linuxbrew-cache-{{ checksum "godelw" }}-{{ checksum "godel/config/godel.yml" }}-v1
+            - run: ./godelw version
+            - save_cache:
+                key: godel-linuxbrew-cache-{{ checksum "godelw" }}-{{ checksum "godel/config/godel.yml" }}-v1
+                paths:
+                  - /home/linuxbrew/.godel
           <<: *all-tags-filter
-      - integration-std:
+      - godel/dist:
+          name: dist
+          <<: *executor
           <<: *all-tags-filter
       - wiki:
           requires: *requires_products
           filters:
             branches:
               only: /^master$/
-      - publish:
+      - godel/bintray-publish:
+          name: publish
+          <<: *executor
+          bintray-subject: palantir
+          bintray-repo: releases
+          bintray-product: godel
           requires: *requires_products
           filters:
             tags:
