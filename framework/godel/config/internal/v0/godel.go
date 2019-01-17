@@ -27,6 +27,9 @@ type GodelConfig struct {
 	// TasksConfigProviders specifies the providers used to load provided task configuration.
 	TasksConfigProviders TasksConfigProvidersConfig `yaml:"tasks-config-providers,omitempty"`
 
+	// Environment specifies the environment variables that are set by gödel when it is run.
+	Environment map[string]string `yaml:"environment,omitempty"`
+
 	// TasksConfig contains the configuration for the tasks (default and plugin).
 	TasksConfig `yaml:",inline,omitempty"`
 

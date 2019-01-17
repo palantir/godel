@@ -108,6 +108,8 @@ default-tasks:
       assets:
       - locator:
           id: com.palantir.godel-okgo-asset-nobadfuncs:nobadfuncs-asset:1.0.0-rc2
+environment:
+  GO111MODULE: on
 exclude:
   names:
     - "\\..+"
@@ -132,6 +134,8 @@ default-tasks:
       assets:
       - locator:
           id: com.palantir.godel-okgo-asset-nobadfuncs:nobadfuncs-asset:1.0.0-rc2
+environment:
+  GO111MODULE: on
 exclude:
   names:
     - "\\..+"
