@@ -40,13 +40,13 @@ import (
 // that already exists in the distribution directory and a download occurs, the existing distribution will be
 // overwritten by the newly downloaded one. Returns the version of the distribution that was installed.
 func install(src godelgetter.PkgSrc, stdout io.Writer) (string, error) {
-	gödelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
+	godelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to create SpecDir for gödel home")
 	}
-	gödelHome := gödelHomeSpecDir.Root()
+	godelHome := godelHomeSpecDir.Root()
 
-	downloadsDir := gödelHomeSpecDir.Path(layout.DownloadsDir)
+	downloadsDir := godelHomeSpecDir.Path(layout.DownloadsDir)
 	tgzFilePath, err := godelgetter.DownloadIntoDirectory(src, downloadsDir, stdout)
 	if err != nil {
 		return "", err
@@ -59,23 +59,23 @@ func install(src godelgetter.PkgSrc, stdout io.Writer) (string, error) {
 
 	// create temporary directory in gödel home in which downloaded tgz is expanded. If verification is successful,
 	// the expanded directory will be moved to the destination.
-	tmpDir, cleanup, err := dirs.TempDir(gödelHome, "")
+	tmpDir, cleanup, err := dirs.TempDir(godelHome, "")
 	defer cleanup()
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to create temporary directory rooted at %s", gödelHome)
+		return "", errors.Wrapf(err, "failed to create temporary directory rooted at %s", godelHome)
 	}
 
 	if err := archiver.TarGz.Open(tgzFilePath, tmpDir); err != nil {
 		return "", errors.Wrapf(err, "failed to extract archive %s to %s", tgzFilePath, tmpDir)
 	}
 
-	expandedGödelDir := path.Join(tmpDir, layout.AppName+"-"+tgzVersion)
-	expandedGödelApp, err := layout.AppSpecDir(expandedGödelDir, tgzVersion)
+	expandedGodelDir := path.Join(tmpDir, layout.AppName+"-"+tgzVersion)
+	expandedGodelApp, err := layout.AppSpecDir(expandedGodelDir, tgzVersion)
 	if err != nil {
 		return "", errors.Wrapf(err, "extracted archive layout did not match expected gödel layout")
 	}
 
-	version, err := getExecutableVersion(expandedGödelApp)
+	version, err := getExecutableVersion(expandedGodelApp)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to get version of downloaded gödel package")
 	}
@@ -84,25 +84,25 @@ func install(src godelgetter.PkgSrc, stdout io.Writer) (string, error) {
 		return "", errors.Errorf("version reported by executable does not match version specified by tgz: expected %s, was %s", tgzVersion, version)
 	}
 
-	gödelDist, err := layout.GodelDistLayout(version, specdir.Create)
+	godelDist, err := layout.GodelDistLayout(version, specdir.Create)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to create distribution directory")
 	}
-	gödelDirDestPath := gödelDist.Path(layout.AppDir)
+	godelDirDestPath := godelDist.Path(layout.AppDir)
 
 	// delete destination directory if it already exists
-	if _, err := os.Stat(gödelDirDestPath); !os.IsNotExist(err) {
+	if _, err := os.Stat(godelDirDestPath); !os.IsNotExist(err) {
 		if err != nil {
-			return "", errors.Wrapf(err, "failed to stat %s", gödelDirDestPath)
+			return "", errors.Wrapf(err, "failed to stat %s", godelDirDestPath)
 		}
 
-		if err := os.RemoveAll(gödelDirDestPath); err != nil {
-			return "", errors.Wrapf(err, "failed to remove %s", gödelDirDestPath)
+		if err := os.RemoveAll(godelDirDestPath); err != nil {
+			return "", errors.Wrapf(err, "failed to remove %s", godelDirDestPath)
 		}
 	}
 
-	if err := os.Rename(expandedGödelDir, gödelDirDestPath); err != nil {
-		return "", errors.Wrapf(err, "failed to rename %s to %s", expandedGödelDir, gödelDirDestPath)
+	if err := os.Rename(expandedGodelDir, godelDirDestPath); err != nil {
+		return "", errors.Wrapf(err, "failed to rename %s to %s", expandedGodelDir, godelDirDestPath)
 	}
 
 	return version, nil
@@ -110,8 +110,8 @@ func install(src godelgetter.PkgSrc, stdout io.Writer) (string, error) {
 
 // getExecutableVersion gets the version of gödel contained in the provided root gödel directory. Invokes the executable
 // for the current platform with the "version" task and returns the version determined by that output.
-func getExecutableVersion(gödelApp specdir.SpecDir) (string, error) {
-	executablePath := gödelApp.Path(layout.AppExecutable)
+func getExecutableVersion(godelApp specdir.SpecDir) (string, error) {
+	executablePath := godelApp.Path(layout.AppExecutable)
 	cmd := exec.Command(executablePath, "version")
 	output, err := cmd.Output()
 	if err != nil {

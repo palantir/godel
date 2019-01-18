@@ -59,20 +59,20 @@ func GodelDistLayout(version string, mode s.Mode) (s.SpecDir, error) {
 	}
 
 	values := s.TemplateValues{
-		gödelHomeTemplate: path.Base(rootDir),
+		godelHomeTemplate: path.Base(rootDir),
 		versionTemplate:   version,
 	}
 	for key, value := range AppSpecTemplate(version) {
 		values[key] = value
 	}
 
-	return s.New(rootDir, gödelHomeSpec([]s.FileNodeProvider{AppSpec()}), values, mode)
+	return s.New(rootDir, godelHomeSpec([]s.FileNodeProvider{AppSpec()}), values, mode)
 }
 
 const (
-	gödelHomeTemplate = "gödel-home"
-	gödelHomeEnvVar   = "GODEL_HOME"
-	defaultGödelHome  = ".godel"
+	godelHomeTemplate = "godel-home"
+	godelHomeEnvVar   = "GODEL_HOME"
+	defaultGodelHome  = ".godel"
 
 	AssetsDir    = "assets"
 	CacheDir     = "cache"
@@ -83,15 +83,15 @@ const (
 )
 
 // GodelHomePath returns the path to the gödel home directory. If $GODEL_HOME is set as an environment variable, that
-// value is used. Otherwise, the value is "$HOME/{{defaultGödelHome}}"
+// value is used. Otherwise, the value is "$HOME/{{defaultGodelHome}}"
 func GodelHomePath() (string, error) {
 	// check the environment variable
-	if gödelHomeDir := os.Getenv(gödelHomeEnvVar); gödelHomeDir != "" {
-		return gödelHomeDir, nil
+	if godelHomeDir := os.Getenv(godelHomeEnvVar); godelHomeDir != "" {
+		return godelHomeDir, nil
 	}
 	// if not present, create from home directory
 	if userHomeDir := os.Getenv("HOME"); userHomeDir != "" {
-		return path.Join(userHomeDir, defaultGödelHome), nil
+		return path.Join(userHomeDir, defaultGodelHome), nil
 	}
 	return "", fmt.Errorf("failed to get %s home directory", AppName)
 }
@@ -102,19 +102,19 @@ func GodelHomeSpecDir(mode s.Mode) (s.SpecDir, error) {
 		return nil, err
 	}
 	values := s.TemplateValues{
-		gödelHomeTemplate: path.Base(rootDir),
+		godelHomeTemplate: path.Base(rootDir),
 	}
 
 	return s.New(rootDir, GodelHomeSpec(), values, mode)
 }
 
 func GodelHomeSpec() s.LayoutSpec {
-	return gödelHomeSpec(nil)
+	return godelHomeSpec(nil)
 }
 
-func gödelHomeSpec(providers []s.FileNodeProvider) s.LayoutSpec {
+func godelHomeSpec(providers []s.FileNodeProvider) s.LayoutSpec {
 	return s.NewLayoutSpec(
-		s.Dir(s.TemplateName(gödelHomeTemplate), "",
+		s.Dir(s.TemplateName(godelHomeTemplate), "",
 			s.Dir(s.LiteralName("assets"), AssetsDir),
 			s.Dir(s.LiteralName("cache"), CacheDir),
 			s.Dir(s.LiteralName("configs"), ConfigsDir),

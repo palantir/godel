@@ -50,7 +50,7 @@ echo $@
 func TestPlugins(t *testing.T) {
 	pluginName := fmt.Sprintf("tester-integration-%d-%d-plugin", time.Now().Unix(), rand.Int())
 
-	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 	src := `package main
 
 import "fmt"
@@ -143,7 +143,7 @@ func TestPluginsWithAssets(t *testing.T) {
 	pluginName := fmt.Sprintf("tester-integration-%d-%d-plugin", time.Now().Unix(), rand.Int())
 	assetName := pluginName + "-asset"
 
-	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 	src := `package main
 
 import "fmt"
@@ -231,9 +231,9 @@ plugins:
 		regexp.QuoteMeta(fmt.Sprintf(`Getting package from %s/repo/com/palantir/%s/1.0.0/%s-%s-1.0.0.tgz...`, testProjectDir, assetName, assetName, osarch.Current()))
 	assert.Regexp(t, wantOutput, gotOutput)
 
-	gödelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.SpecOnly)
+	godelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.SpecOnly)
 	require.NoError(t, err)
-	assetsDir := gödelHomeSpecDir.Path(layout.AssetsDir)
+	assetsDir := godelHomeSpecDir.Path(layout.AssetsDir)
 	assetPath := path.Join(assetsDir, "com.palantir-"+assetName+"-1.0.0")
 
 	gotOutput = execCommand(t, testProjectDir, "./godelw", "echo-task", "foo", "--bar", "baz")
