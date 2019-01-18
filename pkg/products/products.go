@@ -25,11 +25,11 @@ import (
 
 // List returns a slice that contains all of the products in the project.
 func List() ([]string, error) {
-	gödelw, err := newGodelwRunner()
+	godelw, err := newGodelwRunner()
 	if err != nil {
 		return nil, err
 	}
-	products, err := gödelw.run("products")
+	products, err := godelw.run("products")
 	if err != nil {
 		return nil, err
 	}

@@ -30,8 +30,8 @@ import (
 	"github.com/palantir/godel/framework/builtintasks/installupdate/layout"
 )
 
-func setUpGödelTestAndDownload(t *testing.T, testRootDir, gödelTGZ string, version string) string {
-	testProjectDir, server := setUpGödelTest(t, testRootDir, gödelTGZ, version)
+func setUpGodelTestAndDownload(t *testing.T, testRootDir, godelTGZ string, version string) string {
+	testProjectDir, server := setUpGodelTest(t, testRootDir, godelTGZ, version)
 	defer server.Close()
 
 	cmd := exec.Command("./godelw", "--version")
@@ -42,23 +42,23 @@ func setUpGödelTestAndDownload(t *testing.T, testRootDir, gödelTGZ string, ver
 	return testProjectDir
 }
 
-func setUpGödelTest(t *testing.T, testRootDir, gödelTGZ, version string) (string, *httptest.Server) {
+func setUpGodelTest(t *testing.T, testRootDir, godelTGZ, version string) (string, *httptest.Server) {
 	testProjectDir, err := ioutil.TempDir(testRootDir, "")
 	require.NoError(t, err)
 
-	installGödel(t, testProjectDir, gödelTGZ, version)
-	server := createTGZServer(t, gödelTGZ)
-	updateGödelProperties(t, testProjectDir, server.URL)
+	installGodel(t, testProjectDir, godelTGZ, version)
+	server := createTGZServer(t, godelTGZ)
+	updateGodelProperties(t, testProjectDir, server.URL)
 
 	return testProjectDir, server
 }
 
-func createTGZServer(t *testing.T, gödelTGZ string) *httptest.Server {
-	_, err := os.Stat(gödelTGZ)
+func createTGZServer(t *testing.T, godelTGZ string) *httptest.Server {
+	_, err := os.Stat(godelTGZ)
 	require.NoError(t, err)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		bytes, err := ioutil.ReadFile(gödelTGZ)
+		bytes, err := ioutil.ReadFile(godelTGZ)
 		require.NoError(t, err)
 		_, err = w.Write(bytes)
 		require.NoError(t, err)
@@ -66,8 +66,8 @@ func createTGZServer(t *testing.T, gödelTGZ string) *httptest.Server {
 	return ts
 }
 
-func installGödel(t *testing.T, testProjectDir, gödelTGZ, version string) {
-	specDir, err := layout.AppSpecDir(strings.TrimSuffix(gödelTGZ, ".tgz"), version)
+func installGodel(t *testing.T, testProjectDir, godelTGZ, version string) {
+	specDir, err := layout.AppSpecDir(strings.TrimSuffix(godelTGZ, ".tgz"), version)
 	require.NoError(t, err)
 
 	err = layout.CopyFile(specDir.Path(layout.WrapperScriptFile), path.Join(testProjectDir, "godelw"))
@@ -76,7 +76,7 @@ func installGödel(t *testing.T, testProjectDir, gödelTGZ, version string) {
 	require.NoError(t, err)
 }
 
-func updateGödelProperties(t *testing.T, testProjectDir, url string) {
+func updateGodelProperties(t *testing.T, testProjectDir, url string) {
 	contents := fmt.Sprintf("distributionURL=%v\n", url)
 	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "godel.properties"), []byte(contents), 0644)
 	require.NoError(t, err)

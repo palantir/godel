@@ -33,7 +33,7 @@ import (
 )
 
 var (
-	gödelTGZ    string
+	godelTGZ    string
 	testRootDir string
 	version     string
 )
@@ -47,13 +47,13 @@ func runTestMain(m *testing.M) int {
 	if err != nil {
 		panic(err)
 	}
-	gödelProjectDir := path.Join(wd, "..")
-	version, err = git.ProjectVersion(gödelProjectDir)
+	godelProjectDir := path.Join(wd, "..")
+	version, err = git.ProjectVersion(godelProjectDir)
 	if err != nil {
-		panic(fmt.Sprintf("Failed to get version from directory %s: %v", gödelProjectDir, err))
+		panic(fmt.Sprintf("Failed to get version from directory %s: %v", godelProjectDir, err))
 	}
 
-	gödelTGZ, err = products.Dist("godel")
+	godelTGZ, err = products.Dist("godel")
 	if err != nil {
 		panic(fmt.Sprintf("Failed create distribution: %v", err))
 	}
@@ -69,7 +69,7 @@ func runTestMain(m *testing.M) int {
 }
 
 func TestVersion(t *testing.T) {
-	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 
 	output := execCommand(t, testProjectDir, "./godelw", "--version")
 	assert.Equal(t, fmt.Sprintf("godel version %v\n", version), string(output))
@@ -85,7 +85,7 @@ func TestProjectVersion(t *testing.T) {
 	err = ioutil.WriteFile(path.Join(tmpDir, "random.txt"), []byte(""), 0644)
 	require.NoError(t, err)
 
-	testProjectDir := setUpGödelTestAndDownload(t, tmpDir, gödelTGZ, version)
+	testProjectDir := setUpGodelTestAndDownload(t, tmpDir, godelTGZ, version)
 	output := execCommand(t, testProjectDir, "./godelw", "project-version")
 	assert.Equal(t, "testTag.dirty\n", string(output))
 }
@@ -96,7 +96,7 @@ func TestGitHooksSuccess(t *testing.T) {
 	defer cleanup()
 	require.NoError(t, err)
 
-	testProjectDir := setUpGödelTestAndDownload(t, tmp, gödelTGZ, version)
+	testProjectDir := setUpGodelTestAndDownload(t, tmp, godelTGZ, version)
 
 	// initialize git repository
 	gittest.InitGitDir(t, testProjectDir)
@@ -122,7 +122,7 @@ func TestGitHooksFail(t *testing.T) {
 	defer cleanup()
 	require.NoError(t, err)
 
-	testProjectDir := setUpGödelTestAndDownload(t, tmp, gödelTGZ, version)
+	testProjectDir := setUpGodelTestAndDownload(t, tmp, godelTGZ, version)
 
 	// initialize git repository
 	gittest.InitGitDir(t, testProjectDir)
@@ -149,7 +149,7 @@ fmt.Println("foo")
 }
 
 func TestProducts(t *testing.T) {
-	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 
 	distYml := `
 products:
@@ -183,7 +183,7 @@ products:
 }
 
 func TestTest(t *testing.T) {
-	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 	src := `package foo_test
 	import "testing"
 
@@ -197,7 +197,7 @@ func TestTest(t *testing.T) {
 // Run "../godelw check" and ensure that it works (command supports being invoked from subdirectory). The action should
 // execute with the subdirectory as the working directory.
 func TestCheckFromNestedDirectory(t *testing.T) {
-	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 
 	// write Go file to root directory of project
 	badSrc := `package main`
@@ -221,7 +221,7 @@ func TestCheckFromNestedDirectory(t *testing.T) {
 }
 
 func TestDebugFlagPrintsStackTrace(t *testing.T) {
-	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 
 	cmd := exec.Command("./godelw", "install", "foo")
 	cmd.Dir = testProjectDir

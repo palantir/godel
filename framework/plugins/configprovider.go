@@ -44,12 +44,12 @@ import (
 //
 // Returns all of the unmarshaled configurations.
 func LoadProvidedConfigurations(taskConfigProvidersParam godellauncher.TasksConfigProvidersParam, stdout io.Writer) ([]config.TasksConfig, error) {
-	gödelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
+	godelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create gödel home directory")
 	}
-	configsDir := gödelHomeSpecDir.Path(layout.ConfigsDir)
-	downloadsDir := gödelHomeSpecDir.Path(layout.DownloadsDir)
+	configsDir := godelHomeSpecDir.Path(layout.ConfigsDir)
+	downloadsDir := godelHomeSpecDir.Path(layout.DownloadsDir)
 	return resolveConfigProviders(configsDir, downloadsDir, taskConfigProvidersParam, stdout)
 }
 

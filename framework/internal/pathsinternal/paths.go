@@ -38,9 +38,9 @@ func ConfigProviderFileName(locator artifactresolver.Locator) string {
 }
 
 func ResourceDirs() (pluginsDir string, assetsDir string, downloadsDir string, rErr error) {
-	gödelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
+	godelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
 	if err != nil {
 		return "", "", "", errors.Wrapf(err, "failed to create gödel home directory")
 	}
-	return gödelHomeSpecDir.Path(layout.PluginsDir), gödelHomeSpecDir.Path(layout.AssetsDir), gödelHomeSpecDir.Path(layout.DownloadsDir), nil
+	return godelHomeSpecDir.Path(layout.PluginsDir), godelHomeSpecDir.Path(layout.AssetsDir), godelHomeSpecDir.Path(layout.DownloadsDir), nil
 }

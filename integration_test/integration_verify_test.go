@@ -39,7 +39,7 @@ header: |
 )
 
 func TestVerify(t *testing.T) {
-	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 
 	specs := []gofiles.GoFileSpec{
 		{
@@ -92,7 +92,7 @@ func TestFoo(t *testing.T) {
 }
 
 func TestVerifyApply(t *testing.T) {
-	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 
 	specs := []gofiles.GoFileSpec{
 		{
@@ -188,7 +188,7 @@ func TestFoo(t *testing.T) {
 }
 
 func TestVerifyWithJUnitOutput(t *testing.T) {
-	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 	src := `package main
 	import "fmt"
 	func main() {
@@ -216,7 +216,7 @@ func TestVerifyWithJUnitOutput(t *testing.T) {
 }
 
 func TestVerifyTestTags(t *testing.T) {
-	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 	specs := []gofiles.GoFileSpec{
 		{
 			RelPath: "main.go",

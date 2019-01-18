@@ -53,8 +53,8 @@ func TestAppSpecLayoutValidationFail(t *testing.T) {
 	defer cleanup()
 	require.NoError(t, err)
 
-	gödelDir := path.Join(tmpDir, "godel-0.0.1")
-	err = os.Mkdir(gödelDir, 0755)
+	godelDir := path.Join(tmpDir, "godel-0.0.1")
+	err = os.Mkdir(godelDir, 0755)
 	require.NoError(t, err)
 
 	for i, currCase := range []struct {
@@ -66,7 +66,7 @@ func TestAppSpecLayoutValidationFail(t *testing.T) {
 			wantError: `testRoot is not a path to godel-0.0.1`,
 		},
 		{
-			rootName:  gödelDir,
+			rootName:  godelDir,
 			wantError: `godel-0.0.1/bin does not exist`,
 		},
 	} {

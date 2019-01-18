@@ -33,7 +33,7 @@ import (
 // * Set current directory to test project inside the symlink
 // * Verify that "./godelw check" works in sym-linked path
 func TestCheckInGoPathSymLink(t *testing.T) {
-	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 	src := `package foo_test
 	import "testing"
 
@@ -86,7 +86,7 @@ cd %v
 // * Verify that "./godelw check" works in sym-linked path
 // * Restore $GOPATH to original value
 func TestCheckInGoPathSymLinkGoPathSymLink(t *testing.T) {
-	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 	src := `package foo_test
 	import "testing"
 
@@ -147,7 +147,7 @@ cd %v
 // * Verify that "./godelw check" works in real path
 // * Restore $GOPATH to original value
 func TestCheckInGoPathNonSymLinkWhenGoPathIsSymLink(t *testing.T) {
-	testProjectDir := setUpGödelTestAndDownload(t, testRootDir, gödelTGZ, version)
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 	src := `package foo_test
 	import "testing"
 

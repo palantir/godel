@@ -24,11 +24,11 @@ import (
 
 // List returns a slice that contains all of the products in the project.
 func List() ([]string, error) {
-	gödelw, err := newGödelwRunner()
+	godelw, err := newGodelwRunner()
 	if err != nil {
 		return nil, err
 	}
-	products, err := gödelw.run("products")
+	products, err := godelw.run("products")
 	if err != nil {
 		return nil, err
 	}
@@ -38,22 +38,22 @@ func List() ([]string, error) {
 // Bin returns the path to the executable for the given product for the current OS/Architecture, building the executable
 // using "godelw build" if the executable does not already exist or is not up-to-date.
 func Bin(product string) (string, error) {
-	gödelw, err := newGödelwRunner()
+	godelw, err := newGodelwRunner()
 	if err != nil {
 		return "", err
 	}
 	productBuildID := product + "." + runtime.GOOS + "-" + runtime.GOARCH
 
-	requiresBuildOutput, err := gödelw.run("artifacts", "build", "--absolute", "--requires-build", productBuildID)
+	requiresBuildOutput, err := godelw.run("artifacts", "build", "--absolute", "--requires-build", productBuildID)
 	if err != nil {
 		return "", err
 	}
 	if requiresBuildOutput != "" {
-		if _, err := gödelw.run("build", productBuildID); err != nil {
+		if _, err := godelw.run("build", productBuildID); err != nil {
 			return "", err
 		}
 	}
-	binPath, err := gödelw.run("artifacts", "build", "--absolute", productBuildID)
+	binPath, err := godelw.run("artifacts", "build", "--absolute", productBuildID)
 	if err != nil {
 		return "", err
 	}
@@ -66,25 +66,25 @@ func Bin(product string) (string, error) {
 // Dist builds the distribution for the specified product using the "godelw dist" command and returns the path to the
 // created distribution artifact.
 func Dist(product string) (string, error) {
-	gödelw, err := newGödelwRunner()
+	godelw, err := newGodelwRunner()
 	if err != nil {
 		return "", err
 	}
-	if _, err := gödelw.run("dist", product); err != nil {
+	if _, err := godelw.run("dist", product); err != nil {
 		return "", err
 	}
-	return gödelw.run("artifacts", "dist", "--absolute", product)
+	return godelw.run("artifacts", "dist", "--absolute", product)
 }
 
-type gödelwRunner interface {
+type godelwRunner interface {
 	run(args ...string) (string, error)
 }
 
-type gödelwRunnerStruct struct {
+type godelwRunnerStruct struct {
 	path string
 }
 
-func (g *gödelwRunnerStruct) run(args ...string) (string, error) {
+func (g *godelwRunnerStruct) run(args ...string) (string, error) {
 	cmd := exec.Command(g.path, args...)
 	output, err := cmd.CombinedOutput()
 	outputStr := strings.TrimSpace(string(output))
@@ -94,17 +94,17 @@ func (g *gödelwRunnerStruct) run(args ...string) (string, error) {
 	return outputStr, err
 }
 
-func newGödelwRunner() (gödelwRunner, error) {
-	path, err := gödelwPath()
+func newGodelwRunner() (godelwRunner, error) {
+	path, err := godelwPath()
 	if err != nil {
 		return nil, err
 	}
-	return &gödelwRunnerStruct{
+	return &godelwRunnerStruct{
 		path: path,
 	}, nil
 }
 
-func gödelwPath() (string, error) {
+func godelwPath() (string, error) {
 	projectDir, err := projectDir()
 	if err != nil {
 		return "", err
