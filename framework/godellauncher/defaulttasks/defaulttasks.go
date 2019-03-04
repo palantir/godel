@@ -88,28 +88,28 @@ var defaultPluginsConfig = config.PluginsConfig{
 			Assets: config.ToLocatorWithResolverConfigs([]config.LocatorWithResolverConfig{
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-compiles:compiles-asset:1.2.2",
+						ID: "com.palantir.godel-okgo-asset-compiles:compiles-asset:1.3.0",
 						Checksums: map[string]string{
-							"darwin-amd64": "a0a8aac0ea80ac012242255f82ad9975f9beed5bf6b4f9d8c4a14a0972592b1d",
-							"linux-amd64":  "f2089613c3f2561c330d753534de369178ca802540ec7d4df19d5e62cc56e677",
+							"darwin-amd64": "a42a0461c56f7c5de60ad7d3c85f8d32a3817ed3a31d0db74edfb01144ee6528",
+							"linux-amd64":  "bfdd670706468b7d3746d1c2f4a6a01699617dd4320734b9ba293c38f55c26ed",
 						},
 					}),
 				},
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-deadcode:deadcode-asset:1.2.1",
+						ID: "com.palantir.godel-okgo-asset-deadcode:deadcode-asset:1.3.0",
 						Checksums: map[string]string{
-							"darwin-amd64": "982287591aa0fc5ff8085299602dc8cbeb7cbbc6df49932b93bb014293156645",
-							"linux-amd64":  "cf52e9da69c92f7d4a5e68649458201250d2ac59fef31bff671c11e01b3d3d74",
+							"darwin-amd64": "73784237d1a0a6bc4eb2130a20adb27312cac7b507f9ceb1b1ecdb7dad9664be",
+							"linux-amd64":  "9bbb6bd3c8a2be5dd73ae0d952025c9865f2527d805854fe35fc0d4fcb1d7c40",
 						},
 					}),
 				},
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-errcheck:errcheck-asset:1.3.1",
+						ID: "com.palantir.godel-okgo-asset-errcheck:errcheck-asset:1.4.0",
 						Checksums: map[string]string{
-							"darwin-amd64": "9848a7668cfc9fa39b0017e2714abc6a3a8a29d10972f121f1a70f8bf217c63f",
-							"linux-amd64":  "e297a4c8e564ef9ce25dd3292dc984214ba10991636a0ddc5858b0eee5f3c3f5",
+							"darwin-amd64": "b919f328e339328df732d6ffd8be9516b25c70e1760302a5ee0fbddd3ace55fa",
+							"linux-amd64":  "8955b27817f08d31d27ff8575fc7008f384408220e56cc963fc0f83bdc261949",
 						},
 					}),
 				},
@@ -151,28 +151,28 @@ var defaultPluginsConfig = config.PluginsConfig{
 				},
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-outparamcheck:outparamcheck-asset:1.3.1",
+						ID: "com.palantir.godel-okgo-asset-outparamcheck:outparamcheck-asset:1.4.0",
 						Checksums: map[string]string{
-							"darwin-amd64": "683088d5216a01fb6a3a66c6c0c0af7b176e018af42a0ccdb24840411546a47f",
-							"linux-amd64":  "cfe47fbc3d19c2f64340cd946918dad83dec0876519ce120b847ffc534a587ca",
+							"darwin-amd64": "4f14a0d36d0c5ae110be378c91d4169b2d92cc09d3ba0dedd09e74c2d92dfdb1",
+							"linux-amd64":  "736b8964286f53e6c6650a1c7d4dcf77d666ffb6b11876bbeae0840a0c3921ef",
 						},
 					}),
 				},
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-unconvert:unconvert-asset:1.3.0",
+						ID: "com.palantir.godel-okgo-asset-unconvert:unconvert-asset:1.4.0",
 						Checksums: map[string]string{
-							"darwin-amd64": "4e26ec04ff39fc07ce994dd3446e14acd7b1b69d56ab33c3a80a7f44362bad1e",
-							"linux-amd64":  "d7587376b26c35655fdb421b9208ae86896d0c2e2fde6a3d34a87bf7e04b7c2f",
+							"darwin-amd64": "7c4747af08edbe79737be38cebfc93e47132094add38ea71346f370adcf28431",
+							"linux-amd64":  "dd9d0b1e42424d608581a1c935c8c29021e5591f21064c8aa48707997a85b7de",
 						},
 					}),
 				},
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-varcheck:varcheck-asset:1.2.0",
+						ID: "com.palantir.godel-okgo-asset-varcheck:varcheck-asset:1.3.0",
 						Checksums: map[string]string{
-							"darwin-amd64": "594d801fcb90174a9dc6959835699569ee4977112137249d8195d1b944a36f0c",
-							"linux-amd64":  "00e239bb6c20588c0f900bac4a4e353b4ad9f7bed54505c756b5a398096ce209",
+							"darwin-amd64": "1c920ee44db304dcb936677648246d22f4a547515eccc15952f1fc83c3df1a3c",
+							"linux-amd64":  "2ff5dcbebd1ba2402ce691c2e5cd40865d66b4f6d42d35b1c399d74f9bcd354c",
 						},
 					}),
 				},
