@@ -76,6 +76,8 @@ type PluginsConfig struct {
 type SinglePluginConfig struct {
 	// LocatorWithResolverConfig stores the locator and the resolver for the plugin.
 	LocatorWithResolverConfig `yaml:",inline,omitempty"`
+	// LocatorWithResolverConfig stores the locator and the resolver for the plugin.
+	Override bool `yaml:"override,omitempty"`
 	// Assets stores the locators and resolvers for the assets for this plugin.
 	Assets []LocatorWithResolverConfig `yaml:"assets,omitempty"`
 }

@@ -174,6 +174,8 @@ func (c *SinglePluginConfig) ToParam() (godellauncher.SinglePluginParam, error) 
 	}
 	return godellauncher.SinglePluginParam{
 		LocatorWithResolverParam: locatorWithResolverParam,
-		Assets: assets,
+		Assets:           assets,
+		Override:         c.Override,
+		FromPluginConfig: true,
 	}, nil
 }

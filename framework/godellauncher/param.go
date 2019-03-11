@@ -38,7 +38,9 @@ type PluginsParam struct {
 
 type SinglePluginParam struct {
 	artifactresolver.LocatorWithResolverParam
-	Assets []artifactresolver.LocatorWithResolverParam
+	Assets           []artifactresolver.LocatorWithResolverParam
+	Override         bool
+	FromPluginConfig bool
 }
 
 // ConfigDirPath returns the path to the gödel configuration directory given the path to the project directory. Returns

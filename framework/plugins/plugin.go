@@ -109,7 +109,8 @@ func LoadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer)
 func resolvePlugins(pluginsDir, assetsDir, downloadsDir string, osArch osarch.OSArch, pluginsParam godellauncher.PluginsParam, stdout io.Writer) (map[artifactresolver.Locator]pluginInfoWithAssets, error) {
 	plugins := make(map[artifactresolver.Locator]pluginInfoWithAssets)
 	pluginErrors := make(map[artifactresolver.Locator]error)
-	for _, currPlugin := range pluginsParam.Plugins {
+	pluginList := dedupePlugins(pluginsParam.Plugins)
+	for _, currPlugin := range pluginList {
 		currPluginLocator, ok := pluginsinternal.ResolveAndVerify(
 			currPlugin.LocatorWithResolverParam,
 			pluginErrors,
@@ -157,6 +158,51 @@ func resolvePlugins(pluginsDir, assetsDir, downloadsDir string, osArch osarch.OS
 		errStringsParts = append(errStringsParts, pluginErrors[k].Error())
 	}
 	return nil, errors.New(strings.Join(errStringsParts, "\n"+strings.Repeat(" ", pluginsinternal.IndentSpaces)))
+}
+
+func groupByProductAndGroup(plugins []godellauncher.SinglePluginParam) map[string][]godellauncher.SinglePluginParam {
+	pluginByGroupAndProduct := make(map[string][]godellauncher.SinglePluginParam)
+	for _, currPlugin := range plugins {
+		groupKey := currPlugin.LocatorWithChecksums.GroupAndProductString()
+		_, ok := pluginByGroupAndProduct[groupKey]
+		if !ok {
+			pluginByGroupAndProduct[groupKey] = make([]godellauncher.SinglePluginParam, 0)
+		}
+		singlePluginList := pluginByGroupAndProduct[groupKey]
+		pluginByGroupAndProduct[groupKey] = append(singlePluginList, currPlugin)
+	}
+	return pluginByGroupAndProduct
+}
+
+// dedupePlugins will remove any plugins that added by the configuration provider iff there is a plugin
+// present from the pluging portion of configuration that contains the same group and product name
+func dedupePlugins(plugins []godellauncher.SinglePluginParam) []godellauncher.SinglePluginParam {
+	var allPlugins []godellauncher.SinglePluginParam
+	pluginMap := groupByProductAndGroup(plugins)
+	for _, pluginsForProductAndGroup := range pluginMap {
+		noOverride := noOverridePresent(pluginsForProductAndGroup)
+		if noOverride {
+			for _, singlePlugin := range pluginsForProductAndGroup {
+				allPlugins = append(allPlugins, singlePlugin)
+			}
+			continue
+		}
+		for _, singlePlugin := range pluginsForProductAndGroup {
+			if singlePlugin.FromPluginConfig {
+				allPlugins = append(allPlugins, singlePlugin)
+			}
+		}
+	}
+	return allPlugins
+}
+
+func noOverridePresent(plugins []godellauncher.SinglePluginParam) bool {
+	for _, currPlugin := range plugins {
+		if currPlugin.Override {
+			return false
+		}
+	}
+	return true
 }
 
 // Verifies that the plugins in the provided map are compatible with one another. Specifically, ensures that:
@@ -208,7 +254,7 @@ func verifySinglePluginCompatibility(plugin artifactresolver.Locator, plugins ma
 		if otherPlugin == plugin {
 			continue
 		}
-		if otherPlugin.Group == plugin.Group && otherPlugin.Product == plugin.Product {
+		if otherPlugin.GroupAndProductString() == plugin.GroupAndProductString() {
 			errs[otherPlugin] = fmt.Errorf("different version of the same plugin")
 			continue
 		}

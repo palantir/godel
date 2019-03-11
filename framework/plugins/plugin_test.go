@@ -309,6 +309,19 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 	}
 }
 
+func TestDedupePlugins(t *testing.T) {
+	locatorWithResolverParam := artifactresolver.LocatorWithResolverParam{
+		LocatorWithChecksums: artifactresolver.LocatorParam{Locator: artifactresolver.Locator{}},
+	}
+	plugins := []godellauncher.SinglePluginParam{
+		{Override: true, FromPluginConfig: true, LocatorWithResolverParam: locatorWithResolverParam},
+		{Override: false, FromPluginConfig: true, LocatorWithResolverParam: locatorWithResolverParam},
+		{LocatorWithResolverParam: locatorWithResolverParam},
+	}
+	actual := dedupePlugins(plugins)
+	assert.Equal(t, []godellauncher.SinglePluginParam{plugins[0], plugins[1]}, actual)
+}
+
 func newPluginName() string {
 	return fmt.Sprintf("tester-%d-plugin", time.Now().Unix())
 }
