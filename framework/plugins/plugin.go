@@ -172,6 +172,7 @@ func groupByGroupAndProduct(plugins []godellauncher.SinglePluginParam) map[strin
 // dedupePlugins will remove any plugins that added by the configuration provider iff there is a plugin
 // present from the plugin portion of configuration that contains the same group and product name
 func dedupePlugins(plugins []godellauncher.SinglePluginParam) []godellauncher.SinglePluginParam {
+	fmt.Println("RUNNING DEDUPE")
 	var allPlugins []godellauncher.SinglePluginParam
 	pluginMap := groupByGroupAndProduct(plugins)
 	for _, pluginsForProductAndGroup := range pluginMap {

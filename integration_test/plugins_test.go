@@ -254,3 +254,125 @@ Running echo-task...
 `, testProjectDir, testProjectDir, testProjectDir, pluginName, assetPath)
 	assert.Equal(t, wantOutput, gotOutput)
 }
+
+func TestPlugins2(t *testing.T) {
+	pluginName := fmt.Sprintf("tester-integration-%d-%d-plugin", time.Now().Unix(), rand.Int())
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
+	writeDefaultPluginContent(t, testProjectDir)
+
+	cfg, err := config.ReadGodelConfigFromProjectDir(testProjectDir)
+	require.NoError(t, err)
+
+	innerContent := fmt.Sprintf(`
+plugins:
+  resolvers:
+    - %s/repo/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}.tgz
+  plugins:
+    - locator:
+        id: "com.palantir:%s:2.0.0"
+`, testProjectDir, pluginName)
+	err = os.MkdirAll(path.Join(testProjectDir, "a", "b"), os.ModePerm)
+	assert.NoError(t, err)
+	resolverLocation := path.Join(testProjectDir, "a", "b", "1.0.0.yml")
+	err = ioutil.WriteFile(resolverLocation, []byte(innerContent), 0755)
+	assert.NoError(t, err)
+	cfgContent := fmt.Sprintf(`
+tasks-config-providers:
+  resolvers:
+    - %s/{{GroupPath}}/{{Product}}/{{Version}}.yml
+  providers:
+    - locator:
+        id: "a:b:1.0.0"
+plugins:
+  resolvers:
+    - %s/repo/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}.tgz
+  plugins:
+    - locator:
+        id: "com.palantir:%s:1.0.0"
+      override: true
+`, testProjectDir, testProjectDir, pluginName)
+	fmt.Println(cfgContent)
+	err = yaml.Unmarshal([]byte(cfgContent), &cfg)
+	require.NoError(t, err)
+	writeDefaultPlugin(t, testProjectDir, pluginName, "1.0.0")
+	writeDefaultPlugin(t, testProjectDir, pluginName, "2.0.0")
+	cfgBytes, err := yaml.Marshal(cfg)
+	require.NoError(t, err)
+	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
+	require.NoError(t, err)
+
+	// plugin is resolved on first run
+	gotOutput := execCommand(t, testProjectDir, "./godelw", "version")
+	wantOutput := "(?s)" + regexp.QuoteMeta(fmt.Sprintf(`Getting package from %s/repo/com/palantir/%s/1.0.0/%s-%s-1.0.0.tgz...`, testProjectDir, pluginName, pluginName, osarch.Current())) + ".+"
+	assert.Regexp(t, wantOutput, gotOutput)
+
+	gotOutput = execCommand(t, testProjectDir, "./godelw", "echo-task", "foo", "--bar", "baz")
+	wantOutput = fmt.Sprintf("--project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml echo foo --bar baz\n", testProjectDir, testProjectDir, testProjectDir, pluginName)
+	assert.Equal(t, wantOutput, gotOutput)
+
+	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-check", "--skip-license", "--skip-test")
+	wantOutput = fmt.Sprintf(`Running format...
+Running echo-task...
+--project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml echo
+`, testProjectDir, testProjectDir, testProjectDir, pluginName)
+	assert.Equal(t, wantOutput, gotOutput)
+
+	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-check", "--skip-license", "--skip-test", "--apply=false")
+	wantOutput = fmt.Sprintf(`Running format...
+Running echo-task...
+--project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml echo --verify
+`, testProjectDir, testProjectDir, testProjectDir, pluginName)
+	assert.Equal(t, wantOutput, gotOutput)
+}
+
+func writeDefaultPluginContent(t *testing.T, testProjectDir string) {
+	src := `package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("hello, world!")
+}
+`
+	err := ioutil.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
+	require.NoError(t, err)
+}
+
+func writeDefaultPlugin(t *testing.T, testProjectDir, pluginName, pluginVersion string) {
+	pluginDir := path.Join(testProjectDir, "repo", "com", "palantir", pluginName, pluginVersion)
+	err := os.MkdirAll(pluginDir, 0755)
+	require.NoError(t, err)
+	pluginInfo := getDefaultPlugin(pluginName, pluginVersion)
+	pluginInfoJSON, err := json.Marshal(pluginInfo)
+	require.NoError(t, err)
+
+	pluginScript := path.Join(pluginDir, fmt.Sprintf("%s-%s", pluginName, pluginVersion))
+	err = ioutil.WriteFile(pluginScript, []byte(fmt.Sprintf(echoPluginTmpl, string(pluginInfoJSON))), 0755)
+	require.NoError(t, err)
+
+	pluginTGZPath := path.Join(pluginDir, fmt.Sprintf("%s-%s-%s.tgz", pluginName, osarch.Current(), pluginVersion))
+	err = archiver.TarGz.Make(pluginTGZPath, []string{pluginScript})
+	require.NoError(t, err)
+}
+
+func getDefaultPlugin(pluginName, pluginVersion string) pluginapi.PluginInfo {
+	return pluginapi.MustNewPluginInfo("com.palantir", pluginName, pluginVersion,
+		pluginapi.PluginInfoUsesConfigFile(),
+		pluginapi.PluginInfoGlobalFlagOptions(
+			pluginapi.GlobalFlagOptionsParamDebugFlag("--debug"),
+			pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"),
+			pluginapi.GlobalFlagOptionsParamGodelConfigFlag("--godel-config"),
+			pluginapi.GlobalFlagOptionsParamConfigFlag("--config"),
+		),
+		pluginapi.PluginInfoTaskInfo(
+			"echo-task",
+			"Echoes input",
+			pluginapi.TaskInfoCommand("echo"),
+			pluginapi.TaskInfoVerifyOptions(
+				pluginapi.VerifyOptionsApplyFalseArgs("--verify"),
+			),
+		),
+	)
+}
