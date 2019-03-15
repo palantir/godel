@@ -140,7 +140,7 @@ Running echo-task...
 }
 
 func TestPluginsWithAssets(t *testing.T) {
-	pluginName := fmt.Sprintf("tester-integration-%d-%d-plugin", time.Now().Unix(), rand.Int())
+	pluginName := fmt.Sprintf("tester-integration-1-plugin")
 	assetName := pluginName + "-asset"
 
 	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
