@@ -140,7 +140,7 @@ Running echo-task...
 }
 
 func TestPluginsWithAssets(t *testing.T) {
-	pluginName := fmt.Sprintf("tester-integration-1-plugin")
+	pluginName := fmt.Sprintf("tester-integration-%d-%d-plugin", time.Now().Unix(), rand.Int())
 	assetName := pluginName + "-asset"
 
 	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
@@ -256,7 +256,7 @@ Running echo-task...
 }
 
 func TestPlugins2(t *testing.T) {
-	pluginName := fmt.Sprintf("tester-integration-%d-%d-plugin", time.Now().Unix(), rand.Int())
+	pluginName := fmt.Sprintf("tester-integration-1-plugin")
 	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 	writeDefaultPluginContent(t, testProjectDir)
 
