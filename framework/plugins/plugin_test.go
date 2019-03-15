@@ -310,16 +310,60 @@ func TestVerifyPluginCompatibility(t *testing.T) {
 }
 
 func TestDedupePlugins(t *testing.T) {
-	locatorWithResolverParam := artifactresolver.LocatorWithResolverParam{
-		LocatorWithChecksums: artifactresolver.LocatorParam{Locator: artifactresolver.Locator{}},
+	locatorWithResolverParam1 := artifactresolver.LocatorWithResolverParam{
+		LocatorWithChecksums: artifactresolver.LocatorParam{Locator: artifactresolver.Locator{Group: "group1", Product: "product1"}},
 	}
-	plugins := []godellauncher.SinglePluginParam{
-		{Override: true, FromPluginConfig: true, LocatorWithResolverParam: locatorWithResolverParam},
-		{Override: false, FromPluginConfig: true, LocatorWithResolverParam: locatorWithResolverParam},
-		{LocatorWithResolverParam: locatorWithResolverParam},
+	locatorWithResolverParam2 := artifactresolver.LocatorWithResolverParam{
+		LocatorWithChecksums: artifactresolver.LocatorParam{Locator: artifactresolver.Locator{Group: "group2", Product: "product2"}},
 	}
-	actual := dedupePlugins(plugins)
-	assert.Equal(t, []godellauncher.SinglePluginParam{plugins[0], plugins[1]}, actual)
+	for _, tc := range []struct {
+		name    string
+		plugins []godellauncher.SinglePluginParam
+		want    []godellauncher.SinglePluginParam
+	}{
+		{
+			name: "override provider plugin",
+			plugins: []godellauncher.SinglePluginParam{
+				{Override: true, FromPluginConfig: true, LocatorWithResolverParam: locatorWithResolverParam1},
+				{LocatorWithResolverParam: locatorWithResolverParam1},
+			},
+			want: []godellauncher.SinglePluginParam{
+				{Override: true, FromPluginConfig: true, LocatorWithResolverParam: locatorWithResolverParam1},
+			},
+		},
+		{
+			name: "wont remove plugins with different group and product",
+			plugins: []godellauncher.SinglePluginParam{
+				{Override: true, FromPluginConfig: true, LocatorWithResolverParam: locatorWithResolverParam1},
+				{LocatorWithResolverParam: locatorWithResolverParam2},
+			},
+			want: []godellauncher.SinglePluginParam{
+				{Override: true, FromPluginConfig: true, LocatorWithResolverParam: locatorWithResolverParam1},
+				{LocatorWithResolverParam: locatorWithResolverParam2},
+			},
+		},
+		{
+			name: "keeps 2 plugins if they both were from FromPluginConfig",
+			plugins: []godellauncher.SinglePluginParam{
+				{Override: true, FromPluginConfig: true, LocatorWithResolverParam: locatorWithResolverParam1},
+				{Override: false, FromPluginConfig: true, LocatorWithResolverParam: locatorWithResolverParam1},
+				{LocatorWithResolverParam: locatorWithResolverParam1},
+			},
+			want: []godellauncher.SinglePluginParam{
+				{Override: true, FromPluginConfig: true, LocatorWithResolverParam: locatorWithResolverParam1},
+				{Override: false, FromPluginConfig: true, LocatorWithResolverParam: locatorWithResolverParam1},
+			},
+		},
+	} {
+
+		t.Run(tc.name, func(t *testing.T) {
+			actual := dedupePlugins(tc.plugins)
+			assert.Equal(t, len(tc.want), len(actual))
+			for _, singleActual := range actual {
+				assert.Contains(t, tc.want, singleActual)
+			}
+		})
+	}
 }
 
 func newPluginName() string {

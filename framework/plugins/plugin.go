@@ -160,35 +160,24 @@ func resolvePlugins(pluginsDir, assetsDir, downloadsDir string, osArch osarch.OS
 	return nil, errors.New(strings.Join(errStringsParts, "\n"+strings.Repeat(" ", pluginsinternal.IndentSpaces)))
 }
 
-func groupByProductAndGroup(plugins []godellauncher.SinglePluginParam) map[string][]godellauncher.SinglePluginParam {
+func groupByGroupAndProduct(plugins []godellauncher.SinglePluginParam) map[string][]godellauncher.SinglePluginParam {
 	pluginByGroupAndProduct := make(map[string][]godellauncher.SinglePluginParam)
 	for _, currPlugin := range plugins {
 		groupKey := currPlugin.LocatorWithChecksums.GroupAndProductString()
-		_, ok := pluginByGroupAndProduct[groupKey]
-		if !ok {
-			pluginByGroupAndProduct[groupKey] = make([]godellauncher.SinglePluginParam, 0)
-		}
-		singlePluginList := pluginByGroupAndProduct[groupKey]
-		pluginByGroupAndProduct[groupKey] = append(singlePluginList, currPlugin)
+		pluginByGroupAndProduct[groupKey] = append(pluginByGroupAndProduct[groupKey], currPlugin)
 	}
 	return pluginByGroupAndProduct
 }
 
 // dedupePlugins will remove any plugins that added by the configuration provider iff there is a plugin
-// present from the pluging portion of configuration that contains the same group and product name
+// present from the plugin portion of configuration that contains the same group and product name
 func dedupePlugins(plugins []godellauncher.SinglePluginParam) []godellauncher.SinglePluginParam {
 	var allPlugins []godellauncher.SinglePluginParam
-	pluginMap := groupByProductAndGroup(plugins)
+	pluginMap := groupByGroupAndProduct(plugins)
 	for _, pluginsForProductAndGroup := range pluginMap {
 		noOverride := noOverridePresent(pluginsForProductAndGroup)
-		if noOverride {
-			for _, singlePlugin := range pluginsForProductAndGroup {
-				allPlugins = append(allPlugins, singlePlugin)
-			}
-			continue
-		}
 		for _, singlePlugin := range pluginsForProductAndGroup {
-			if singlePlugin.FromPluginConfig {
+			if noOverride || singlePlugin.FromPluginConfig {
 				allPlugins = append(allPlugins, singlePlugin)
 			}
 		}
