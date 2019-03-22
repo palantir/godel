@@ -37,5 +37,9 @@ type Locator struct {
 }
 
 func (l Locator) String() string {
-	return fmt.Sprintf("%s:%s:%s", l.Group, l.Product, l.Version)
+	return fmt.Sprintf("%s:%s", l.GroupAndProductString(), l.Version)
+}
+
+func (l Locator) GroupAndProductString() string {
+	return fmt.Sprintf("%s:%s", l.Group, l.Product)
 }

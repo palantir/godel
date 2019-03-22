@@ -69,6 +69,8 @@ func LoadProvidedConfigurations(taskConfigProvidersParam godellauncher.TasksConf
 //   matches the specified checksum
 // * Unmarshal the downloaded YML as godellauncher.TasksConfig
 //   * If the unmarshal fails, return an error
+//   * If the TaskConfig contains a plugin configuration that specifies an "override" parameter, return an error
+//     (configuration providers are not allowed to set overrides)
 func resolveConfigProviders(configsDir, downloadsDir string, taskConfigProvidersParam godellauncher.TasksConfigProvidersParam, stdout io.Writer) ([]config.TasksConfig, error) {
 	var configs []config.TasksConfig
 	providerErrors := make(map[artifactresolver.Locator]error)
@@ -90,6 +92,19 @@ func resolveConfigProviders(configsDir, downloadsDir string, taskConfigProviders
 			providerErrors[currProviderLocator] = err
 			continue
 		}
+
+		var pluginsWithOverrides []string
+		for _, pluginCfg := range tasksCfg.Plugins.Plugins {
+			if !pluginCfg.Override {
+				continue
+			}
+			pluginsWithOverrides = append(pluginsWithOverrides, pluginCfg.Locator.ID)
+		}
+		if len(pluginsWithOverrides) > 0 {
+			providerErrors[currProviderLocator] = fmt.Errorf("plugins specify override property as 'true', which is not supported in config providers")
+			continue
+		}
+
 		configs = append(configs, tasksCfg)
 	}
 

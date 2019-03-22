@@ -254,6 +254,140 @@ Running echo-task...
 	assert.Equal(t, wantOutput, gotOutput)
 }
 
+func TestConfigProviderCannotSpecifyOverride(t *testing.T) {
+	pluginName := fmt.Sprintf("tester-integration-%d-%d-plugin", time.Now().Unix(), rand.Int())
+
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
+	writeMainFile(t, testProjectDir)
+
+	cfg, err := config.ReadGodelConfigFromProjectDir(testProjectDir)
+	require.NoError(t, err)
+
+	cfgProviderContent := fmt.Sprintf(`
+plugins:
+  resolvers:
+    - %s/repo/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}.tgz
+  plugins:
+    - locator:
+        id: "com.palantir:%s:1.0.0"
+      override: true
+`, testProjectDir, pluginName)
+
+	configProviderName := fmt.Sprintf("tester-integration-config-provider-%d-%d", time.Now().Unix(), rand.Int())
+	err = os.MkdirAll(path.Join(testProjectDir, "com", "palantir", configProviderName), os.ModePerm)
+	assert.NoError(t, err)
+	resolverLocation := path.Join(testProjectDir, "com", "palantir", configProviderName, "1.0.0.yml")
+	err = ioutil.WriteFile(resolverLocation, []byte(cfgProviderContent), 0755)
+	assert.NoError(t, err)
+
+	cfgContent := fmt.Sprintf(`
+tasks-config-providers:
+  resolvers:
+    - %s/{{GroupPath}}/{{Product}}/{{Version}}.yml
+  providers:
+    - locator:
+        id: "com.palantir:%s:1.0.0"
+`, testProjectDir, configProviderName)
+	err = yaml.Unmarshal([]byte(cfgContent), &cfg)
+	require.NoError(t, err)
+
+	writeDefaultPlugin(t, testProjectDir, pluginName, "1.0.0")
+
+	cfgBytes, err := yaml.Marshal(cfg)
+	require.NoError(t, err)
+	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
+	require.NoError(t, err)
+
+	// configuration provider should fail to load because it has a plugin that specifies an "override" property
+	gotOutput := execCommandExpectError(t, testProjectDir, "./godelw", "version")
+	wantOutput := "(?s).+" + regexp.QuoteMeta(fmt.Sprintf(`Error: failed to resolve 1 configuration provider(s):`)) + ".+" + regexp.QuoteMeta(`plugins specify override property as 'true', which is not supported in config providers`) + ".+"
+	assert.Regexp(t, wantOutput, gotOutput)
+}
+
+// TestOverrideResolverPlugin tests that plugins provided by a config provider can be overridden by local plugin
+// configuration using an "override" property.
+func TestOverrideResolverPlugin(t *testing.T) {
+	pluginName := fmt.Sprintf("tester-integration-%d-%d-plugin", time.Now().Unix(), rand.Int())
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
+	writeMainFile(t, testProjectDir)
+
+	cfg, err := config.ReadGodelConfigFromProjectDir(testProjectDir)
+	require.NoError(t, err)
+
+	cfgProviderContent := fmt.Sprintf(`
+plugins:
+  resolvers:
+    - %s/repo/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}.tgz
+  plugins:
+    - locator:
+        id: "com.palantir:%s:2.0.0"
+`, testProjectDir, pluginName)
+
+	configProviderName := fmt.Sprintf("tester-integration-config-provider-%d-%d", time.Now().Unix(), rand.Int())
+	err = os.MkdirAll(path.Join(testProjectDir, "com", "palantir", configProviderName), os.ModePerm)
+	assert.NoError(t, err)
+	resolverLocation := path.Join(testProjectDir, "com", "palantir", configProviderName, "1.0.0.yml")
+	err = ioutil.WriteFile(resolverLocation, []byte(cfgProviderContent), 0755)
+	assert.NoError(t, err)
+	cfgContent := fmt.Sprintf(`
+tasks-config-providers:
+  resolvers:
+    - %s/{{GroupPath}}/{{Product}}/{{Version}}.yml
+  providers:
+    - locator:
+        id: "com.palantir:%s:1.0.0"
+plugins:
+  resolvers:
+    - %s/repo/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}.tgz
+  plugins:
+    - locator:
+        id: "com.palantir:%s:1.0.0"
+      override: true
+`, testProjectDir, configProviderName, testProjectDir, pluginName)
+	err = yaml.Unmarshal([]byte(cfgContent), &cfg)
+	require.NoError(t, err)
+
+	// write version 1.0.0 of plugin
+	writePlugin(t, testProjectDir, pluginName, "1.0.0", fmt.Sprintf(`#!/bin/sh
+if [ "$1" = "%s" ]; then
+    echo '%s'
+    exit 0
+fi
+
+echo "1.0.0: $@"
+`, pluginapi.PluginInfoCommandName, `%s`))
+
+	// write version 2.0.0 of plugin
+	writePlugin(t, testProjectDir, pluginName, "2.0.0", fmt.Sprintf(`#!/bin/sh
+if [ "$1" = "%s" ]; then
+    echo '%s'
+    exit 0
+fi
+
+echo "2.0.0: $@"
+`, pluginapi.PluginInfoCommandName, `%s`))
+
+	writeDefaultPlugin(t, testProjectDir, pluginName, "2.0.0")
+	cfgBytes, err := yaml.Marshal(cfg)
+	require.NoError(t, err)
+	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
+	require.NoError(t, err)
+	err = ioutil.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
+	require.NoError(t, err)
+
+	// plugin is resolved on first run
+	gotOutput := execCommand(t, testProjectDir, "./godelw", "version")
+	wantOutput := "(?s)" + regexp.QuoteMeta(fmt.Sprintf(`Getting package from %s/repo/com/palantir/%s/1.0.0/%s-%s-1.0.0.tgz...`, testProjectDir, pluginName, pluginName, osarch.Current())) + ".+"
+	assert.Regexp(t, wantOutput, gotOutput)
+
+	// verify that overridden version (version 1.0.0) is used
+	gotOutput = execCommand(t, testProjectDir, "./godelw", "echo-task", "foo", "--bar", "baz")
+	wantOutput = fmt.Sprintf("1.0.0: --project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml echo foo --bar baz\n", testProjectDir, testProjectDir, testProjectDir, pluginName)
+	assert.Equal(t, wantOutput, gotOutput)
+}
+
 func writeMainFile(t *testing.T, testProjectDir string) {
 	src := `package main
 
