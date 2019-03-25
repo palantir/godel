@@ -103,7 +103,7 @@ func VerifyTask(tasks []godellauncher.Task) godellauncher.Task {
 					taskGlobal.Task = task.Name
 					taskGlobal.TaskArgs = taskFlagArgs
 
-					fmt.Fprintf(stdout, "Running %s...\n", task.Name)
+					_, _ = fmt.Fprintf(stdout, "Running %s...\n", task.Name)
 					if err := task.Run(taskGlobal, stdout); err != nil {
 						var applyArgs []string
 						if *applyVar {
@@ -121,7 +121,7 @@ func VerifyTask(tasks []godellauncher.Task) godellauncher.Task {
 					for _, check := range failedChecks {
 						msgParts = append(msgParts, "\t"+check)
 					}
-					fmt.Fprintln(stdout, strings.Join(msgParts, "\n"))
+					_, _ = fmt.Fprintln(stdout, strings.Join(msgParts, "\n"))
 					return fmt.Errorf("")
 				}
 				return nil

@@ -44,7 +44,7 @@ func PackagesTask() godellauncher.Task {
 			if err != nil {
 				return err
 			}
-			fmt.Fprintln(cmd.OutOrStdout(), strings.Join(pkgs, "\n"))
+			_, _ = fmt.Fprintln(cmd.OutOrStdout(), strings.Join(pkgs, "\n"))
 			return nil
 		},
 	}, &globalCfg)

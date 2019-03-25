@@ -23,11 +23,11 @@ executors:
     environment:
       CGO_ENABLED: 0
     docker:
-      - image: palantirtechnologies/go:alpine-go-<< parameters.version >>-t2
+      - image: palantirtechnologies/go:alpine-go-<< parameters.version >>-t10
   brew-go:
     working_directory: /go/src/github.com/palantir/godel
     docker:
-      - image: palantirtechnologies/go:brew-go-t2
+      - image: palantirtechnologies/go:brew-go-t10
 
 jobs:
   wiki:
@@ -74,14 +74,14 @@ workflows:
           tags: integration
           executor:
             name: alpine-go
-            version: 1.11.4
+            version: 1.12.1
           <<: *all-tags-filter
       - godel/test:
           name: integration-alpine-go-prev
           tags: integration
           executor:
             name: alpine-go
-            version: 1.10.7
+            version: 1.11.6
           <<: *all-tags-filter
       - godel/test:
           name: integration-brew

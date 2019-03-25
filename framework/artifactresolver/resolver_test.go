@@ -61,7 +61,7 @@ func TestResolverLocal(t *testing.T) {
 func TestResolverURL(t *testing.T) {
 	const content = "file content\n"
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, content)
+		_, _ = fmt.Fprint(w, content)
 	}))
 	defer ts.Close()
 

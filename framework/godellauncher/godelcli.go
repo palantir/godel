@@ -131,7 +131,7 @@ func versionFlagTask() Task {
 		Name:        "version",
 		Description: fmt.Sprintf("print %s version", godel.AppName),
 		RunImpl: func(t *Task, global GlobalConfig, stdout io.Writer) error {
-			fmt.Fprintln(stdout, godel.VersionOutput())
+			_, _ = fmt.Fprintln(stdout, godel.VersionOutput())
 			return nil
 		},
 	}

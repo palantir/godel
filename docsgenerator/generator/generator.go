@@ -47,7 +47,7 @@ func Generate(inputDir, outputDir, baseImage string, params Params, stdout io.Wr
 		return err
 	}
 
-	fmt.Fprintf(stdout, "Found %d template file(s)\n", len(inputFiles))
+	_, _ = fmt.Fprintf(stdout, "Found %d template file(s)\n", len(inputFiles))
 	startIdx := 0
 	if params.StartStep != -1 {
 		startIdx = findIdxWithOrdering(params.StartStep, inputFiles)
@@ -65,7 +65,7 @@ func Generate(inputDir, outputDir, baseImage string, params Params, stdout io.Wr
 
 	numFiles := endIdx - startIdx + 1
 	currCount := 1
-	fmt.Fprintf(stdout, "Processing %d template file(s) starting at number %d and ending at number %d\n", numFiles, inputFiles[startIdx].Ordering, inputFiles[endIdx].Ordering)
+	_, _ = fmt.Fprintf(stdout, "Processing %d template file(s) starting at number %d and ending at number %d\n", numFiles, inputFiles[startIdx].Ordering, inputFiles[endIdx].Ordering)
 
 	for idx, inputFile := range inputFiles {
 		if idx < startIdx || idx > endIdx {
@@ -73,7 +73,7 @@ func Generate(inputDir, outputDir, baseImage string, params Params, stdout io.Wr
 		}
 
 		err := func() error {
-			fmt.Fprintf(stdout, "Processing %s (%d/%d)\n", inputFile.TemplateFileName, currCount, numFiles)
+			_, _ = fmt.Fprintf(stdout, "Processing %s (%d/%d)\n", inputFile.TemplateFileName, currCount, numFiles)
 
 			var fromImage string
 			if idx == 0 {
@@ -86,7 +86,7 @@ func Generate(inputDir, outputDir, baseImage string, params Params, stdout io.Wr
 				return errors.Wrapf(err, "failed to read template file")
 			}
 
-			fmt.Fprintln(stdout, "Writing output files...")
+			_, _ = fmt.Fprintln(stdout, "Writing output files...")
 			currOutputDir, err := writeOutputFiles(outputDir, fileWithContent, fromImage)
 			if err != nil {
 				return errors.Wrapf(err, "failed to write output files for %s", inputFile.TemplateFileName)
@@ -113,7 +113,7 @@ func Generate(inputDir, outputDir, baseImage string, params Params, stdout io.Wr
 				if !params.RunDockerBuild {
 					return nil
 				}
-				fmt.Fprintln(stdout, "Running Docker build...")
+				_, _ = fmt.Fprintln(stdout, "Running Docker build...")
 				dockerBuildOutput, err := runDockerBuild(currOutputDir, inputFile.DockerTag(params.TagPrefix), params.SuppressDockerOutput, stdout)
 				if err != nil {
 					return errors.Wrapf(err, "docker build failed for %s", inputFile.TemplateFileName)

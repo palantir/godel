@@ -87,9 +87,9 @@ func NewPluginInfo(group, product, version string, params ...PluginInfoParam) (P
 
 	return pluginInfoImpl{
 		PluginSchemaVersionVar: CurrentSchemaVersion,
-		IDVar:             id,
-		ConfigFileNameVar: configFileName,
-		TasksVar:          builder.tasks,
+		IDVar:                  id,
+		ConfigFileNameVar:      configFileName,
+		TasksVar:               builder.tasks,
 	}, nil
 }
 

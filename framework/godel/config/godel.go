@@ -16,7 +16,7 @@ package config
 
 import (
 	"github.com/palantir/godel/framework/artifactresolver"
-	"github.com/palantir/godel/framework/godel/config/internal/v0"
+	v0 "github.com/palantir/godel/framework/godel/config/internal/v0"
 	"github.com/palantir/godel/framework/godellauncher"
 	"github.com/palantir/godel/framework/internal/pluginsinternal"
 )
@@ -174,6 +174,6 @@ func (c *SinglePluginConfig) ToParam() (godellauncher.SinglePluginParam, error) 
 	}
 	return godellauncher.SinglePluginParam{
 		LocatorWithResolverParam: locatorWithResolverParam,
-		Assets: assets,
+		Assets:                   assets,
 	}, nil
 }

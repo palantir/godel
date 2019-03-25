@@ -126,11 +126,11 @@ func runUpgradeConfig(
 
 func dryRunPrintln(w io.Writer, dryRun bool, content string) {
 	if !dryRun {
-		fmt.Fprintln(w, content)
+		_, _ = fmt.Fprintln(w, content)
 		return
 	}
 	const dryRunPrefix = "[DRY RUN] "
-	fmt.Fprintln(w, dryRunPrefix+content)
+	_, _ = fmt.Fprintln(w, dryRunPrefix+content)
 }
 
 func printUpgradedConfig(cfgFile string, upgradedCfgBytes []byte, dryRun, printContent bool, stdout io.Writer) {

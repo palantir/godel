@@ -47,26 +47,26 @@ func VerifyProject(wd string, apply bool, stdout io.Writer) error {
 			// compiled GOROOT does not exist: get GOROOT from "go env GOROOT"
 			goEnvRoot := goEnvRoot()
 
-			fmt.Fprintln(stdout, "GOROOT environment variable is not set and the value provided in the compiled code does not exist locally.")
+			_, _ = fmt.Fprintln(stdout, "GOROOT environment variable is not set and the value provided in the compiled code does not exist locally.")
 
 			if goEnvRoot != "" {
 				shellCfgFiles := getShellCfgFiles()
 				if !apply {
-					fmt.Fprintf(stdout, "'go env' reports that GOROOT is %s. Suggested fix:\n", goEnvRoot)
-					fmt.Fprintf(stdout, "  export GOROOT=%s\n", goEnvRoot)
+					_, _ = fmt.Fprintf(stdout, "'go env' reports that GOROOT is %s. Suggested fix:\n", goEnvRoot)
+					_, _ = fmt.Fprintf(stdout, "  export GOROOT=%s\n", goEnvRoot)
 					for _, currCfgFile := range shellCfgFiles {
-						fmt.Fprintf(stdout, "  echo \"export GOROOT=%s\" >> %q \n", goEnvRoot, currCfgFile)
+						_, _ = fmt.Fprintf(stdout, "  echo \"export GOROOT=%s\" >> %q \n", goEnvRoot, currCfgFile)
 					}
 				} else {
 					for _, currCfgFile := range shellCfgFiles {
-						fmt.Fprintf(stdout, "Adding \"export GOROOT=%s\" to %s...\n", goEnvRoot, currCfgFile)
+						_, _ = fmt.Fprintf(stdout, "Adding \"export GOROOT=%s\" to %s...\n", goEnvRoot, currCfgFile)
 						if err := appendToFile(currCfgFile, fmt.Sprintf("export GOROOT=%v\n", goEnvRoot)); err != nil {
-							fmt.Fprintf(stdout, "Failed to add \"export GOROOT=%s\" in %s\n", goEnvRoot, currCfgFile)
+							_, _ = fmt.Fprintf(stdout, "Failed to add \"export GOROOT=%s\" in %s\n", goEnvRoot, currCfgFile)
 						}
 					}
 				}
 			} else {
-				fmt.Fprintln(stdout, "Unable to determine GOROOT using 'go env GOROOT'. Ensure that Go was installed properly with source files.")
+				_, _ = fmt.Fprintln(stdout, "Unable to determine GOROOT using 'go env GOROOT'. Ensure that Go was installed properly with source files.")
 			}
 		}
 	}
@@ -85,15 +85,15 @@ func VerifyProject(wd string, apply bool, stdout io.Writer) error {
 
 	dstPath := path.Join(gopath, "src", pkgPath)
 	if srcPath == dstPath {
-		fmt.Fprintln(stdout, "Project appears to be in the correct location")
+		_, _ = fmt.Fprintln(stdout, "Project appears to be in the correct location")
 		return nil
 	}
 	dstPathParentDir := path.Dir(dstPath)
 
-	fmt.Fprintf(stdout, "Project path %q differs from expected path %q\n", srcPath, dstPath)
+	_, _ = fmt.Fprintf(stdout, "Project path %q differs from expected path %q\n", srcPath, dstPath)
 	if _, err := os.Stat(dstPath); !os.IsNotExist(err) {
-		fmt.Fprintf(stdout, "Expected destination path %q already exists.\n", dstPath)
-		fmt.Fprintln(stdout, "If this project is known to be the correct one, remove or rename the file or directory at the destination path and run this command again.")
+		_, _ = fmt.Fprintf(stdout, "Expected destination path %q already exists.\n", dstPath)
+		_, _ = fmt.Fprintln(stdout, "If this project is known to be the correct one, remove or rename the file or directory at the destination path and run this command again.")
 		return nil
 	}
 
@@ -101,15 +101,15 @@ func VerifyProject(wd string, apply bool, stdout io.Writer) error {
 	var fixOpMessage string
 	if pathsOnSameDevice(srcPath, gopath) {
 		if !apply {
-			fmt.Fprintln(stdout, "Project and GOPATH are on same device. Suggested fix:")
-			fmt.Fprintf(stdout, "  mkdir -p %q && mv %q %q\n", dstPathParentDir, srcPath, dstPath)
+			_, _ = fmt.Fprintln(stdout, "Project and GOPATH are on same device. Suggested fix:")
+			_, _ = fmt.Fprintf(stdout, "  mkdir -p %q && mv %q %q\n", dstPathParentDir, srcPath, dstPath)
 		}
 		fixOpMessage = fmt.Sprintf("Moving %q to %q...", wd, dstPath)
 		fixOperation = os.Rename
 	} else {
 		if !apply {
-			fmt.Fprintln(stdout, "Project and GOPATH are on different devices. Suggested fix:")
-			fmt.Fprintf(stdout, "  mkdir -p %q && cp -r %q %q\n", dstPathParentDir, srcPath, dstPath)
+			_, _ = fmt.Fprintln(stdout, "Project and GOPATH are on different devices. Suggested fix:")
+			_, _ = fmt.Fprintf(stdout, "  mkdir -p %q && cp -r %q %q\n", dstPathParentDir, srcPath, dstPath)
 		}
 		fixOpMessage = fmt.Sprintf("Copying %q to %q...", wd, dstPath)
 		fixOperation = func(srcPath, dstPath string) error {
@@ -118,13 +118,13 @@ func VerifyProject(wd string, apply bool, stdout io.Writer) error {
 	}
 
 	if !apply {
-		fmt.Fprintf(stdout, "%s found issues. Run the following godel command to implement suggested fixes:\n", CmdName)
-		fmt.Fprintf(stdout, "  %s --%s\n", CmdName, ApplyFlagName)
+		_, _ = fmt.Fprintf(stdout, "%s found issues. Run the following godel command to implement suggested fixes:\n", CmdName)
+		_, _ = fmt.Fprintf(stdout, "  %s --%s\n", CmdName, ApplyFlagName)
 	} else {
 		if err := os.MkdirAll(dstPathParentDir, 0755); err != nil {
 			return errors.Errorf("Failed to create path to %q: %v", dstPathParentDir, err)
 		}
-		fmt.Fprintln(stdout, fixOpMessage)
+		_, _ = fmt.Fprintln(stdout, fixOpMessage)
 		if err := fixOperation(srcPath, dstPath); err != nil {
 			return err
 		}
