@@ -78,10 +78,10 @@ var defaultPluginsConfig = config.PluginsConfig{
 		{
 			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.okgo:check-plugin:1.5.0",
+					ID: "com.palantir.okgo:check-plugin:1.6.0",
 					Checksums: map[string]string{
-						"darwin-amd64": "ff92a09dcefc9f49d17e852389cffee9046f8d96356f80b5b0b40ef5d5b1c7a4",
-						"linux-amd64":  "cfbaca6ddce977131e9b294d3fc1d02e6fceb2bfae510088996346d837f08d92",
+						"darwin-amd64": "f8745ea59eba8fb6810d7aee7d4eefb533200221e39b1f5c14ef038120e3edbe",
+						"linux-amd64":  "2ada4158af454dc839c11debbd79f3462d83761bacd736c0c589021a881aa6c1",
 					},
 				}),
 			}),
