@@ -20,7 +20,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/palantir/godel/framework/artifactresolver"
-	"github.com/palantir/godel/framework/godel/config/internal/v0"
+	v0 "github.com/palantir/godel/framework/godel/config/internal/v0"
 	"github.com/palantir/godel/pkg/osarch"
 )
 
