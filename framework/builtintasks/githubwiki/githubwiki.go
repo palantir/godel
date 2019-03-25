@@ -165,14 +165,14 @@ func SyncGitHubWiki(p Params, stdout io.Writer) error {
 	// apply templating to commit message
 	msg := p.Msg
 	if gitTemplateParams, err := createGitTemplateParams(p.DocsDir); err != nil {
-		fmt.Fprintf(stdout, "Failed to determine Git properties of documents directory %s: %v.\n", p.DocsDir, err)
-		fmt.Fprintln(stdout, "Continuing with templating disabled. To fix this issue, ensure that the directory is in a Git repository.")
+		_, _ = fmt.Fprintf(stdout, "Failed to determine Git properties of documents directory %s: %v.\n", p.DocsDir, err)
+		_, _ = fmt.Fprintln(stdout, "Continuing with templating disabled. To fix this issue, ensure that the directory is in a Git repository.")
 	} else if t, err := template.New("message").Parse(p.Msg); err != nil {
-		fmt.Fprintf(stdout, "Failed to parse message %s as a template: %v. Using message as a string literal instead.\n", p.Msg, err)
+		_, _ = fmt.Fprintf(stdout, "Failed to parse message %s as a template: %v. Using message as a string literal instead.\n", p.Msg, err)
 	} else {
 		buf := &bytes.Buffer{}
 		if err := t.Execute(buf, gitTemplateParams); err != nil {
-			fmt.Fprintf(stdout, "Failed to execute template %s: %v. Using message as a string literal instead.\n", p.Msg, err)
+			_, _ = fmt.Fprintf(stdout, "Failed to execute template %s: %v. Using message as a string literal instead.\n", p.Msg, err)
 		} else {
 			msg = buf.String()
 		}
@@ -224,6 +224,6 @@ func SyncGitHubWiki(p Params, stdout io.Writer) error {
 		return err
 	}
 
-	fmt.Fprintf(stdout, "Pushing content of %s to %s...\n", p.DocsDir, p.Repo)
+	_, _ = fmt.Fprintf(stdout, "Pushing content of %s to %s...\n", p.DocsDir, p.Repo)
 	return g.push()
 }

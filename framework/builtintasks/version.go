@@ -30,7 +30,7 @@ func VersionTask() godellauncher.Task {
 		Use:   "version",
 		Short: fmt.Sprintf("Print %s version", godel.AppName),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Fprintln(cmd.OutOrStdout(), godel.VersionOutput())
+			_, _ = fmt.Fprintln(cmd.OutOrStdout(), godel.VersionOutput())
 			return nil
 		},
 	}, nil)

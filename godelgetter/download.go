@@ -107,7 +107,7 @@ func Download(pkgSrc PkgSrc, dstFilePath string, w io.Writer) (rErr error) {
 	h := sha256.New()
 	mw := io.MultiWriter(h, dstFile)
 
-	fmt.Fprintf(w, "Getting package from %v...\n", pkgSrc.Path())
+	_, _ = fmt.Fprintf(w, "Getting package from %v...\n", pkgSrc.Path())
 	if err := copyWithProgress(mw, r, size, w); err != nil {
 		return errors.Wrapf(err, "failed to copy package %s to %s", pkgSrc.Path(), dstFilePath)
 	}

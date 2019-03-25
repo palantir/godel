@@ -70,6 +70,6 @@ func infoAction(info PluginInfo, w io.Writer) error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal plugin info: %v", err)
 	}
-	fmt.Fprint(w, string(bytes))
+	_, _ = fmt.Fprint(w, string(bytes))
 	return nil
 }
