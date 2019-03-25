@@ -16,6 +16,7 @@ package godellauncher
 
 import (
 	"io"
+	"strconv"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
@@ -90,6 +91,8 @@ func (f VerifyFlag) AddFlag(fset *pflag.FlagSet) (interface{}, error) {
 	switch f.Type {
 	case StringFlag:
 		return fset.String(f.Name, "", f.Description), nil
+	case BoolFlag:
+		return fset.Bool(f.Name, false, f.Description), nil
 	default:
 		return nil, errors.Errorf("unrecognized flag type: %v", f.Type)
 	}
@@ -105,6 +108,12 @@ func (f VerifyFlag) ToFlagArgs(flagVal interface{}) ([]string, error) {
 			return nil, nil
 		}
 		return []string{"--" + f.Name, *flagValStr}, nil
+	case BoolFlag:
+		flagValBool := flagVal.(*bool)
+		if flagValBool == nil {
+			return nil, nil
+		}
+		return []string{"--" + f.Name + "=" + strconv.FormatBool(*flagValBool)}, nil
 	default:
 		return nil, errors.Errorf("unrecognized flag type: %v", f.Type)
 	}
@@ -115,6 +124,7 @@ type FlagType int
 
 const (
 	StringFlag FlagType = iota
+	BoolFlag
 )
 
 func (t *Task) Run(global GlobalConfig, stdout io.Writer) error {
