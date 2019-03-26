@@ -51,16 +51,7 @@ func TestPlugins(t *testing.T) {
 	pluginName := fmt.Sprintf("tester-integration-%d-%d-plugin", time.Now().Unix(), rand.Int())
 
 	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
-	src := `package main
-
-import "fmt"
-
-func main() {
-	fmt.Println("hello, world!")
-}
-`
-	err := ioutil.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
-	require.NoError(t, err)
+	writeMainFile(t, testProjectDir)
 
 	cfg, err := config.ReadGodelConfigFromProjectDir(testProjectDir)
 	require.NoError(t, err)
@@ -80,33 +71,7 @@ plugins:
 	err = os.MkdirAll(pluginDir, 0755)
 	require.NoError(t, err)
 
-	pluginInfo := pluginapi.MustNewPluginInfo("com.palantir", pluginName, "1.0.0",
-		pluginapi.PluginInfoUsesConfigFile(),
-		pluginapi.PluginInfoGlobalFlagOptions(
-			pluginapi.GlobalFlagOptionsParamDebugFlag("--debug"),
-			pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"),
-			pluginapi.GlobalFlagOptionsParamGodelConfigFlag("--godel-config"),
-			pluginapi.GlobalFlagOptionsParamConfigFlag("--config"),
-		),
-		pluginapi.PluginInfoTaskInfo(
-			"echo-task",
-			"Echoes input",
-			pluginapi.TaskInfoCommand("echo"),
-			pluginapi.TaskInfoVerifyOptions(
-				pluginapi.VerifyOptionsApplyFalseArgs("--verify"),
-			),
-		),
-	)
-	pluginInfoJSON, err := json.Marshal(pluginInfo)
-	require.NoError(t, err)
-
-	pluginScript := path.Join(pluginDir, pluginName+"-1.0.0")
-	err = ioutil.WriteFile(pluginScript, []byte(fmt.Sprintf(echoPluginTmpl, string(pluginInfoJSON))), 0755)
-	require.NoError(t, err)
-
-	pluginTGZPath := path.Join(pluginDir, fmt.Sprintf("%s-%s-1.0.0.tgz", pluginName, osarch.Current()))
-	err = archiver.TarGz.Make(pluginTGZPath, []string{pluginScript})
-	require.NoError(t, err)
+	writeDefaultPlugin(t, testProjectDir, pluginName, "1.0.0")
 
 	cfgBytes, err := yaml.Marshal(cfg)
 	require.NoError(t, err)
@@ -144,16 +109,7 @@ func TestPluginsWithAssets(t *testing.T) {
 	assetName := pluginName + "-asset"
 
 	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
-	src := `package main
-
-import "fmt"
-
-func main() {
-	fmt.Println("hello, world!")
-}
-`
-	err := ioutil.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
-	require.NoError(t, err)
+	writeMainFile(t, testProjectDir)
 
 	cfg, err := config.ReadGodelConfigFromProjectDir(testProjectDir)
 	require.NoError(t, err)
@@ -180,33 +136,7 @@ plugins:
 	err = os.MkdirAll(assetDir, 0755)
 	require.NoError(t, err)
 
-	pluginInfo := pluginapi.MustNewPluginInfo("com.palantir", pluginName, "1.0.0",
-		pluginapi.PluginInfoUsesConfigFile(),
-		pluginapi.PluginInfoGlobalFlagOptions(
-			pluginapi.GlobalFlagOptionsParamDebugFlag("--debug"),
-			pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"),
-			pluginapi.GlobalFlagOptionsParamGodelConfigFlag("--godel-config"),
-			pluginapi.GlobalFlagOptionsParamConfigFlag("--config"),
-		),
-		pluginapi.PluginInfoTaskInfo(
-			"echo-task",
-			"Echoes input",
-			pluginapi.TaskInfoCommand("echo"),
-			pluginapi.TaskInfoVerifyOptions(
-				pluginapi.VerifyOptionsApplyFalseArgs("--verify"),
-			),
-		),
-	)
-	pluginInfoJSON, err := json.Marshal(pluginInfo)
-	require.NoError(t, err)
-
-	pluginScript := path.Join(pluginDir, pluginName+"-1.0.0")
-	err = ioutil.WriteFile(pluginScript, []byte(fmt.Sprintf(echoPluginTmpl, string(pluginInfoJSON))), 0755)
-	require.NoError(t, err)
-
-	pluginTGZPath := path.Join(pluginDir, fmt.Sprintf("%s-%s-1.0.0.tgz", pluginName, osarch.Current()))
-	err = archiver.TarGz.Make(pluginTGZPath, []string{pluginScript})
-	require.NoError(t, err)
+	writeDefaultPlugin(t, testProjectDir, pluginName, "1.0.0")
 
 	assetFile := path.Join(assetDir, assetName+"-1.0.0")
 	err = ioutil.WriteFile(assetFile, []byte("asset content"), 0644)
@@ -259,16 +189,7 @@ func TestConfigProvider(t *testing.T) {
 	pluginName := fmt.Sprintf("tester-integration-%d-%d-plugin", time.Now().Unix(), rand.Int())
 
 	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
-	src := `package main
-
-import "fmt"
-
-func main() {
-	fmt.Println("hello, world!")
-}
-`
-	err := ioutil.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
-	require.NoError(t, err)
+	writeMainFile(t, testProjectDir)
 
 	cfg, err := config.ReadGodelConfigFromProjectDir(testProjectDir)
 	require.NoError(t, err)
@@ -300,37 +221,7 @@ tasks-config-providers:
 	err = yaml.Unmarshal([]byte(cfgContent), &cfg)
 	require.NoError(t, err)
 
-	pluginDir := path.Join(testProjectDir, "repo", "com", "palantir", pluginName, "1.0.0")
-	err = os.MkdirAll(pluginDir, 0755)
-	require.NoError(t, err)
-
-	pluginInfo := pluginapi.MustNewPluginInfo("com.palantir", pluginName, "1.0.0",
-		pluginapi.PluginInfoUsesConfigFile(),
-		pluginapi.PluginInfoGlobalFlagOptions(
-			pluginapi.GlobalFlagOptionsParamDebugFlag("--debug"),
-			pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"),
-			pluginapi.GlobalFlagOptionsParamGodelConfigFlag("--godel-config"),
-			pluginapi.GlobalFlagOptionsParamConfigFlag("--config"),
-		),
-		pluginapi.PluginInfoTaskInfo(
-			"echo-task",
-			"Echoes input",
-			pluginapi.TaskInfoCommand("echo"),
-			pluginapi.TaskInfoVerifyOptions(
-				pluginapi.VerifyOptionsApplyFalseArgs("--verify"),
-			),
-		),
-	)
-	pluginInfoJSON, err := json.Marshal(pluginInfo)
-	require.NoError(t, err)
-
-	pluginScript := path.Join(pluginDir, pluginName+"-1.0.0")
-	err = ioutil.WriteFile(pluginScript, []byte(fmt.Sprintf(echoPluginTmpl, string(pluginInfoJSON))), 0755)
-	require.NoError(t, err)
-
-	pluginTGZPath := path.Join(pluginDir, fmt.Sprintf("%s-%s-1.0.0.tgz", pluginName, osarch.Current()))
-	err = archiver.TarGz.Make(pluginTGZPath, []string{pluginScript})
-	require.NoError(t, err)
+	writeDefaultPlugin(t, testProjectDir, pluginName, "1.0.0")
 
 	cfgBytes, err := yaml.Marshal(cfg)
 	require.NoError(t, err)
@@ -361,4 +252,60 @@ Running echo-task...
 --project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml echo --verify
 `, testProjectDir, testProjectDir, testProjectDir, pluginName)
 	assert.Equal(t, wantOutput, gotOutput)
+}
+
+func writeMainFile(t *testing.T, testProjectDir string) {
+	src := `package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("hello, world!")
+}
+`
+	err := ioutil.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
+	require.NoError(t, err)
+}
+
+func writeDefaultPlugin(t *testing.T, testProjectDir, pluginName, pluginVersion string) {
+	writePlugin(t, testProjectDir, pluginName, pluginVersion, echoPluginTmpl)
+}
+
+func writePlugin(t *testing.T, testProjectDir, pluginName, pluginVersion, pluginContent string) {
+	pluginDir := path.Join(testProjectDir, "repo", "com", "palantir", pluginName, pluginVersion)
+	err := os.MkdirAll(pluginDir, 0755)
+	require.NoError(t, err)
+	pluginInfoJSON := getDefaultPluginInfoJSON(t, pluginName, pluginVersion)
+
+	pluginScript := path.Join(pluginDir, fmt.Sprintf("%s-%s", pluginName, pluginVersion))
+	err = ioutil.WriteFile(pluginScript, []byte(fmt.Sprintf(pluginContent, string(pluginInfoJSON))), 0755)
+	require.NoError(t, err)
+
+	pluginTGZPath := path.Join(pluginDir, fmt.Sprintf("%s-%s-%s.tgz", pluginName, osarch.Current(), pluginVersion))
+	err = archiver.TarGz.Make(pluginTGZPath, []string{pluginScript})
+	require.NoError(t, err)
+}
+
+func getDefaultPluginInfoJSON(t *testing.T, pluginName, pluginVersion string) []byte {
+	pluginInfo := pluginapi.MustNewPluginInfo("com.palantir", pluginName, pluginVersion,
+		pluginapi.PluginInfoUsesConfigFile(),
+		pluginapi.PluginInfoGlobalFlagOptions(
+			pluginapi.GlobalFlagOptionsParamDebugFlag("--debug"),
+			pluginapi.GlobalFlagOptionsParamProjectDirFlag("--project-dir"),
+			pluginapi.GlobalFlagOptionsParamGodelConfigFlag("--godel-config"),
+			pluginapi.GlobalFlagOptionsParamConfigFlag("--config"),
+		),
+		pluginapi.PluginInfoTaskInfo(
+			"echo-task",
+			"Echoes input",
+			pluginapi.TaskInfoCommand("echo"),
+			pluginapi.TaskInfoVerifyOptions(
+				pluginapi.VerifyOptionsApplyFalseArgs("--verify"),
+			),
+		),
+	)
+
+	pluginInfoJSON, err := json.Marshal(pluginInfo)
+	require.NoError(t, err)
+	return pluginInfoJSON
 }
