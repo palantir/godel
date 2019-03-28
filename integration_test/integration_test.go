@@ -243,3 +243,11 @@ func execCommand(t *testing.T, dir, cmdName string, args ...string) string {
 	require.NoError(t, err, "Command %v failed. Output:\n%v", cmd.Args, string(output))
 	return string(output)
 }
+
+func execCommandExpectError(t *testing.T, dir, cmdName string, args ...string) string {
+	cmd := exec.Command(cmdName, args...)
+	cmd.Dir = dir
+	output, err := cmd.CombinedOutput()
+	require.Error(t, err)
+	return string(output)
+}

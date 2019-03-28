@@ -21,7 +21,7 @@ import (
 
 func UpgradeConfig(cfgBytes []byte) ([]byte, error) {
 	var cfg GodelConfig
-	if err := yaml.UnmarshalStrict(cfgBytes, &cfg); err != nil {
+	if err := yaml.Unmarshal(cfgBytes, &cfg); err != nil {
 		return nil, errors.Wrapf(err, "failed to unmarshal godel v0 configuration")
 	}
 	return cfgBytes, nil

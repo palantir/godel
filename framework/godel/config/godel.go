@@ -46,6 +46,7 @@ func (c *TasksConfig) Combine(configs ...TasksConfig) {
 		c.DefaultTasks.Tasks = make(map[string]v0.SingleDefaultTaskConfig)
 	}
 
+	var pluginsFromConfigs []v0.SinglePluginConfig
 	for _, cfg := range configs {
 		// DefaultTask resolvers are appended and uniquified
 		c.DefaultTasks.DefaultResolvers = pluginsinternal.Uniquify(append(c.DefaultTasks.DefaultResolvers, cfg.DefaultTasks.DefaultResolvers...))
@@ -55,10 +56,51 @@ func (c *TasksConfig) Combine(configs ...TasksConfig) {
 			c.DefaultTasks.Tasks[k] = v
 		}
 
-		// Plugin resolvers and definitions are appended and uniquified
+		// Plugin resolvers are appended and uniquified
 		c.Plugins.DefaultResolvers = pluginsinternal.Uniquify(append(c.Plugins.DefaultResolvers, cfg.Plugins.DefaultResolvers...))
-		c.Plugins.Plugins = append(c.Plugins.Plugins, cfg.Plugins.Plugins...)
+
+		// Append provided plugins to "pluginsFromConfigs" list
+		pluginsFromConfigs = append(pluginsFromConfigs, cfg.Plugins.Plugins...)
 	}
+
+	// determine all of the provided plugins that specify overrides
+	pluginsFromConfigsWithOverride := matchingPluginConfigs(pluginsFromConfigs, func(in v0.SinglePluginConfig) bool { return in.Override })
+
+	// remove any of the original plugins that match override locators (because they will be overridden)
+	var originalConfigsWithoutOverridenPlugins []v0.SinglePluginConfig
+	for _, originalCfg := range c.Plugins.Plugins {
+		locatorCfg := LocatorConfig(originalCfg.Locator)
+		if locatorParam, err := locatorCfg.ToParam(); err == nil {
+			// if locator can be parsed and matches a plugin for which an override was specified, omit it (it will be overridden)
+			if _, ok := pluginsFromConfigsWithOverride[locatorParam.GroupAndProductString()]; ok {
+				continue
+			}
+		}
+		// plugin was not overridden or locator could not be parsed: keep it
+		originalConfigsWithoutOverridenPlugins = append(originalConfigsWithoutOverridenPlugins, originalCfg)
+	}
+
+	// update plugins list. Any of the original plugins that match an override from an input plugin will be removed.
+	// Note that no deduplication/override processing is done for the provided configurations -- if the input
+	// configurations specifies duplicate plugins, that will be handled later when determining plugin compatibility.
+	c.Plugins.Plugins = append(originalConfigsWithoutOverridenPlugins, pluginsFromConfigs...)
+}
+
+func matchingPluginConfigs(in []v0.SinglePluginConfig, predicate func(v0.SinglePluginConfig) bool) map[string]struct{} {
+	matches := make(map[string]struct{})
+	for _, pluginCfg := range in {
+		if predicate == nil || !predicate(pluginCfg) {
+			continue
+		}
+		locatorCfg := LocatorConfig(pluginCfg.Locator)
+		locatorParam, err := locatorCfg.ToParam()
+		if err != nil {
+			// if locator cannot be parsed, do not process as override (will error later anyway)
+			continue
+		}
+		matches[locatorParam.GroupAndProductString()] = struct{}{}
+	}
+	return matches
 }
 
 type DefaultTasksConfig v0.DefaultTasksConfig
