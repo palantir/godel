@@ -4,13 +4,15 @@ owner-repo: &owner-repo
 excutor: &executor
   executor:
     name: go/darwin-linux-no-cgo
+    version: 1.12.1-t10
+    module: false
     <<: *owner-repo
 
 version: 2.1
 
 orbs:
-  go: palantir/go@0.0.5
-  godel: palantir/godel@0.0.4
+  go: palantir/go@0.0.11
+  godel: palantir/godel@0.0.11
 
 executors:
   alpine-go:
@@ -59,16 +61,20 @@ workflows:
           name: verify
           <<: *executor
           <<: *all-tags-filter
+          mod-cache: false
+          parallel: false
       - godel/test:
           name: test
           tags: none
           <<: *executor
           <<: *all-tags-filter
+          mod-cache: false
       - godel/test:
           name: integration-std
           tags: integration
           <<: *executor
           <<: *all-tags-filter
+          mod-cache: false
       - godel/test:
           name: integration-alpine-go-curr
           tags: integration
@@ -76,6 +82,7 @@ workflows:
             name: alpine-go
             version: 1.12.1
           <<: *all-tags-filter
+          mod-cache: false
       - godel/test:
           name: integration-alpine-go-prev
           tags: integration
@@ -83,6 +90,7 @@ workflows:
             name: alpine-go
             version: 1.11.6
           <<: *all-tags-filter
+          mod-cache: false
       - godel/test:
           name: integration-brew
           tags: integration
@@ -101,6 +109,7 @@ workflows:
           name: dist
           <<: *executor
           <<: *all-tags-filter
+          mod-cache: false
       - wiki:
           requires: *requires_products
           filters:
@@ -118,3 +127,4 @@ workflows:
               only: /^v?[0-9]+(\.[0-9]+)+(-rc[0-9]+)?(-alpha[0-9]+)?$/
             branches:
               ignore: /.*/
+          mod-cache: false
