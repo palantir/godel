@@ -93,6 +93,45 @@
   version = "v1.2.0"
 
 [[projects]]
+  digest = "1:dd425ec98c4e300af64e0ec8a597b83603eb751039aa97d422eca2a98ab0ee23"
+  name = "github.com/palantir/godel"
+  packages = [
+    "docsgenerator/cmd",
+    "docsgenerator/generator",
+    "framework/artifactresolver",
+    "framework/builtintasks",
+    "framework/builtintasks/checkpath",
+    "framework/builtintasks/githooks",
+    "framework/builtintasks/githubwiki",
+    "framework/builtintasks/idea",
+    "framework/builtintasks/installupdate",
+    "framework/builtintasks/installupdate/layout",
+    "framework/builtintasks/packages",
+    "framework/godel",
+    "framework/godel/config",
+    "framework/godel/config/internal/v0",
+    "framework/godellauncher",
+    "framework/godellauncher/defaulttasks",
+    "framework/internal/pathsinternal",
+    "framework/internal/pluginsinternal",
+    "framework/pluginapi",
+    "framework/pluginapi/v2/pluginapi",
+    "framework/pluginapitester",
+    "framework/plugins",
+    "framework/verifyorder",
+    "godelgetter",
+    "godelinit/cmd",
+    "pkg/dirchecksum",
+    "pkg/osarch",
+    "pkg/products",
+    "pkg/products/v2/products",
+    "pkg/versionedconfig",
+  ]
+  pruneopts = "UT"
+  revision = "3410152fb9e7ba34206a144c5c26a7829d52b488"
+  version = "v2.16.0"
+
+[[projects]]
   digest = "1:a43b6962789b5fd8cce3145d7f4885b3063f0eb8517a90da8973cac12f456021"
   name = "github.com/palantir/pkg"
   packages = [
@@ -205,6 +244,36 @@
     "github.com/nmiyake/pkg/errorstringer",
     "github.com/nmiyake/pkg/gofiles",
     "github.com/palantir/distgo/pkg/git",
+    "github.com/palantir/godel/docsgenerator/cmd",
+    "github.com/palantir/godel/docsgenerator/generator",
+    "github.com/palantir/godel/framework/artifactresolver",
+    "github.com/palantir/godel/framework/builtintasks",
+    "github.com/palantir/godel/framework/builtintasks/checkpath",
+    "github.com/palantir/godel/framework/builtintasks/githooks",
+    "github.com/palantir/godel/framework/builtintasks/githubwiki",
+    "github.com/palantir/godel/framework/builtintasks/idea",
+    "github.com/palantir/godel/framework/builtintasks/installupdate",
+    "github.com/palantir/godel/framework/builtintasks/installupdate/layout",
+    "github.com/palantir/godel/framework/builtintasks/packages",
+    "github.com/palantir/godel/framework/godel",
+    "github.com/palantir/godel/framework/godel/config",
+    "github.com/palantir/godel/framework/godel/config/internal/v0",
+    "github.com/palantir/godel/framework/godellauncher",
+    "github.com/palantir/godel/framework/godellauncher/defaulttasks",
+    "github.com/palantir/godel/framework/internal/pathsinternal",
+    "github.com/palantir/godel/framework/internal/pluginsinternal",
+    "github.com/palantir/godel/framework/pluginapi",
+    "github.com/palantir/godel/framework/pluginapi/v2/pluginapi",
+    "github.com/palantir/godel/framework/pluginapitester",
+    "github.com/palantir/godel/framework/plugins",
+    "github.com/palantir/godel/framework/verifyorder",
+    "github.com/palantir/godel/godelgetter",
+    "github.com/palantir/godel/godelinit/cmd",
+    "github.com/palantir/godel/pkg/dirchecksum",
+    "github.com/palantir/godel/pkg/osarch",
+    "github.com/palantir/godel/pkg/products",
+    "github.com/palantir/godel/pkg/products/v2/products",
+    "github.com/palantir/godel/pkg/versionedconfig",
     "github.com/palantir/pkg/cobracli",
     "github.com/palantir/pkg/gittest",
     "github.com/palantir/pkg/matcher",
