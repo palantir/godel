@@ -192,10 +192,10 @@ var defaultPluginsConfig = config.PluginsConfig{
 		{
 			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.godel-test-plugin:test-plugin:1.2.0",
+					ID: "com.palantir.godel-test-plugin:test-plugin:1.3.0",
 					Checksums: map[string]string{
-						"darwin-amd64": "e3347edac0627c6bfe46d37d88b2985f104d8102092d0919ce5d94207e8ad52e",
-						"linux-amd64":  "aff46ea480264fab0dbb69405b3d27b4ff90e3b68afe7d383fda2ffee2ebbced",
+						"darwin-amd64": "25474251b4253be163bdbfa79652d850395612508019c459bf6eb3d8aad1544c",
+						"linux-amd64":  "0bba9663738714e68a684a91eac4ee67b7a0e0966b9712f153c7238deefce469",
 					},
 				}),
 			}),
