@@ -88,10 +88,10 @@ var defaultPluginsConfig = config.PluginsConfig{
 			Assets: config.ToLocatorWithResolverConfigs([]config.LocatorWithResolverConfig{
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-compiles:compiles-asset:1.3.0",
+						ID: "com.palantir.godel-okgo-asset-compiles:compiles-asset:1.4.0",
 						Checksums: map[string]string{
-							"darwin-amd64": "a42a0461c56f7c5de60ad7d3c85f8d32a3817ed3a31d0db74edfb01144ee6528",
-							"linux-amd64":  "bfdd670706468b7d3746d1c2f4a6a01699617dd4320734b9ba293c38f55c26ed",
+							"darwin-amd64": "185967b490d92b8bc9e2cf037470a5874bef19567741cef0caa56b0cfa2fb26b",
+							"linux-amd64":  "58f234b614442a1851e59818e64c31240332d10fdfc40def60962cf389590070",
 						},
 					}),
 				},
