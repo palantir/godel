@@ -21,6 +21,7 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/nmiyake/pkg/dirs"
@@ -180,6 +181,26 @@ products:
 	require.NoError(t, err)
 
 	execCommand(t, testProjectDir, "./godelw", "products")
+}
+
+func TestExec(t *testing.T) {
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
+
+	currGodelYML, err := ioutil.ReadFile(path.Join(testProjectDir, "godel", "config", "godel.yml"))
+	require.NoError(t, err)
+
+	updatedGodelYML := string(currGodelYML) + `
+environment:
+  MY_ENV_VAR: "FOO"
+`
+	err = ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "godel.yml"), []byte(updatedGodelYML), 0644)
+	require.NoError(t, err)
+
+	out := execCommand(t, testProjectDir, "./godelw", "exec", "env")
+	idx := strings.Index(out, "MY_ENV_VAR=FOO\n")
+
+	// do not print content of "out" on failure, as it may contain sensitive environment variables
+	assert.True(t, idx != -1, "did not find expected environment variable in output")
 }
 
 func TestTest(t *testing.T) {
