@@ -4,7 +4,7 @@ owner-repo: &owner-repo
 excutor: &executor
   executor:
     name: go/darwin-linux-no-cgo
-    version: 1.13-t23
+    version: 1.13.1-t25
     module: false
     <<: *owner-repo
 
