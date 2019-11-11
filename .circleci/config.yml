@@ -4,8 +4,7 @@ owner-repo: &owner-repo
 excutor: &executor
   executor:
     name: go/darwin-linux-no-cgo
-    version: 1.13.1-t25
-    module: false
+    version: 1.13.4-t28
     <<: *owner-repo
 
 version: 2.1
@@ -25,11 +24,11 @@ executors:
     environment:
       CGO_ENABLED: 0
     docker:
-      - image: palantirtechnologies/go:alpine-go-<< parameters.version >>-t23
+      - image: palantirtechnologies/go:alpine-go-<< parameters.version >>-t28
   brew-go:
     working_directory: /go/src/github.com/palantir/godel
     docker:
-      - image: palantirtechnologies/go:brew-go-t23
+      - image: palantirtechnologies/go:brew-go-t28
 
 jobs:
   wiki:
@@ -61,36 +60,31 @@ workflows:
           name: verify
           <<: *executor
           <<: *all-tags-filter
-          mod-cache: false
           parallel: false
       - godel/test:
           name: test
           tags: none
           <<: *executor
           <<: *all-tags-filter
-          mod-cache: false
       - godel/test:
           name: integration-std
           tags: integration
           <<: *executor
           <<: *all-tags-filter
-          mod-cache: false
       - godel/test:
           name: integration-alpine-go-curr
           tags: integration
           executor:
             name: alpine-go
-            version: "1.13"
+            version: 1.13.4
           <<: *all-tags-filter
-          mod-cache: false
       - godel/test:
           name: integration-alpine-go-prev
           tags: integration
           executor:
             name: alpine-go
-            version: 1.12.9
+            version: 1.12.13
           <<: *all-tags-filter
-          mod-cache: false
       - godel/test:
           name: integration-brew
           tags: integration
@@ -109,7 +103,6 @@ workflows:
           name: dist
           <<: *executor
           <<: *all-tags-filter
-          mod-cache: false
       - wiki:
           requires: *requires_products
           filters:
@@ -127,4 +120,3 @@ workflows:
               only: /^v?[0-9]+(\.[0-9]+)+(-rc[0-9]+)?(-alpha[0-9]+)?$/
             branches:
               ignore: /.*/
-          mod-cache: false
