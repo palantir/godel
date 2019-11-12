@@ -1,0 +1,5 @@
+type: feature
+feature:
+  description: Update module version to v2
+  links:
+  - https://github.com/palantir/godel/pull/480
