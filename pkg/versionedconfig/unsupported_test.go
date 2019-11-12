@@ -20,7 +20,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/godel/pkg/versionedconfig"
+	"github.com/palantir/godel/v2/pkg/versionedconfig"
 )
 
 func TestConfigNotSupported(t *testing.T) {

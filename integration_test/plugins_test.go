@@ -31,11 +31,11 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
 
-	"github.com/palantir/godel/framework/builtintasks/installupdate/layout"
-	"github.com/palantir/godel/framework/godel/config"
-	"github.com/palantir/godel/framework/godellauncher"
-	"github.com/palantir/godel/framework/pluginapi/v2/pluginapi"
-	"github.com/palantir/godel/pkg/osarch"
+	"github.com/palantir/godel/v2/framework/builtintasks/installupdate/layout"
+	"github.com/palantir/godel/v2/framework/godel/config"
+	"github.com/palantir/godel/v2/framework/godellauncher"
+	"github.com/palantir/godel/v2/framework/pluginapi/v2/pluginapi"
+	"github.com/palantir/godel/v2/pkg/osarch"
 )
 
 var echoPluginTmpl = fmt.Sprintf(`#!/bin/sh

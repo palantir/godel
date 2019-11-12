@@ -21,7 +21,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/framework/builtintasks/installupdate/layout"
+	"github.com/palantir/godel/v2/framework/builtintasks/installupdate/layout"
 )
 
 var hooks = map[string]string{

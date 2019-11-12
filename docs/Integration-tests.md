@@ -73,7 +73,7 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/palantir/godel/pkg/products/v2/products"
+	"github.com/palantir/godel/v2/pkg/products/v2/products"
 )
 
 func TestInvalidType(t *testing.T) {
@@ -164,7 +164,7 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/palantir/godel/pkg/products/v2/products"
+	"github.com/palantir/godel/v2/pkg/products/v2/products"
 )
 
 func TestInvalidType(t *testing.T) {

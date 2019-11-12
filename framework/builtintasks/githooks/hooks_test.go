@@ -26,7 +26,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/godel/framework/builtintasks/githooks"
+	"github.com/palantir/godel/v2/framework/builtintasks/githooks"
 )
 
 func TestInstallGitHooks(t *testing.T) {

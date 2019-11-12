@@ -24,12 +24,12 @@ import (
 	"github.com/nmiyake/pkg/errorstringer"
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/framework/builtintasks"
-	"github.com/palantir/godel/framework/godel"
-	"github.com/palantir/godel/framework/godel/config"
-	"github.com/palantir/godel/framework/godellauncher"
-	"github.com/palantir/godel/framework/godellauncher/defaulttasks"
-	"github.com/palantir/godel/framework/plugins"
+	"github.com/palantir/godel/v2/framework/builtintasks"
+	"github.com/palantir/godel/v2/framework/godel"
+	"github.com/palantir/godel/v2/framework/godel/config"
+	"github.com/palantir/godel/v2/framework/godellauncher"
+	"github.com/palantir/godel/v2/framework/godellauncher/defaulttasks"
+	"github.com/palantir/godel/v2/framework/plugins"
 )
 
 func main() {

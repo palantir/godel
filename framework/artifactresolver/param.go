@@ -17,7 +17,7 @@ package artifactresolver
 import (
 	"fmt"
 
-	"github.com/palantir/godel/pkg/osarch"
+	"github.com/palantir/godel/v2/pkg/osarch"
 )
 
 type LocatorWithResolverParam struct {

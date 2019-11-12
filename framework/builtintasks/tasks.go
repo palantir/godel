@@ -15,8 +15,8 @@
 package builtintasks
 
 import (
-	"github.com/palantir/godel/framework/godel/config"
-	"github.com/palantir/godel/framework/godellauncher"
+	"github.com/palantir/godel/v2/framework/godel/config"
+	"github.com/palantir/godel/v2/framework/godellauncher"
 )
 
 func Tasks(tasksCfgInfo config.TasksConfigInfo) []godellauncher.Task {

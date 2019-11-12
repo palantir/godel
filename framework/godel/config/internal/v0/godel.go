@@ -17,7 +17,7 @@ package v0
 import (
 	"github.com/palantir/pkg/matcher"
 
-	"github.com/palantir/godel/pkg/versionedconfig"
+	"github.com/palantir/godel/v2/pkg/versionedconfig"
 )
 
 type GodelConfig struct {

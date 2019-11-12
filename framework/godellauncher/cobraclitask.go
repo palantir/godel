@@ -22,7 +22,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/palantir/godel/framework/godel"
+	"github.com/palantir/godel/v2/framework/godel"
 )
 
 // CobraCLITask creates a new Task that runs the provided *cobra.Command. The runner for the task does the following:

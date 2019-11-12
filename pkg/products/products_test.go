@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/godel/pkg/products"
+	"github.com/palantir/godel/v2/pkg/products"
 )
 
 func TestList(t *testing.T) {
@@ -32,9 +32,6 @@ func TestList(t *testing.T) {
 }
 
 func TestBin(t *testing.T) {
-	// Do not test v1 API on current project because it uses v2 godel.
-	t.SkipNow()
-
 	bin, err := products.Bin("godel")
 	require.NoError(t, err)
 	cmd := exec.Command(bin, "version")

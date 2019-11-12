@@ -30,11 +30,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/godel/framework/artifactresolver"
-	"github.com/palantir/godel/framework/godellauncher"
-	"github.com/palantir/godel/framework/internal/pathsinternal"
-	"github.com/palantir/godel/framework/pluginapi/v2/pluginapi"
-	"github.com/palantir/godel/pkg/osarch"
+	"github.com/palantir/godel/v2/framework/artifactresolver"
+	"github.com/palantir/godel/v2/framework/godellauncher"
+	"github.com/palantir/godel/v2/framework/internal/pathsinternal"
+	"github.com/palantir/godel/v2/framework/pluginapi/v2/pluginapi"
+	"github.com/palantir/godel/v2/pkg/osarch"
 )
 
 var pluginScriptTmpl = fmt.Sprintf(`#!/usr/bin/env bash

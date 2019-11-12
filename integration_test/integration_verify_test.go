@@ -21,6 +21,7 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
+	"strings"
 	"testing"
 	"time"
 
@@ -250,6 +251,12 @@ func TestFooIntegration(t *testing.T) {}
 	}
 	files, err := gofiles.Write(testProjectDir, specs)
 	require.NoError(t, err)
+
+	// update import path to include module version
+	for k, v := range files {
+		v.ImportPath = strings.Replace(v.ImportPath, "github.com/palantir/godel/", "github.com/palantir/godel/v2/", 1)
+		files[k] = v
+	}
 
 	err = ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "test-plugin.yml"), []byte(`tags:
   integration:

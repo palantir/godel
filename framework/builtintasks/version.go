@@ -19,8 +19,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/palantir/godel/framework/godel"
-	"github.com/palantir/godel/framework/godellauncher"
+	"github.com/palantir/godel/v2/framework/godel"
+	"github.com/palantir/godel/v2/framework/godellauncher"
 )
 
 var Version = "unspecified"

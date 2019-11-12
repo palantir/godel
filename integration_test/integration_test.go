@@ -30,7 +30,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/godel/pkg/products"
+	"github.com/palantir/godel/v2/pkg/products"
 )
 
 var (
@@ -254,7 +254,7 @@ func TestDebugFlagPrintsStackTrace(t *testing.T) {
 	cmd.Dir = testProjectDir
 	output, err = cmd.CombinedOutput()
 	require.Error(t, err)
-	assert.Regexp(t, `(?s)^Error: foo does not exist.+`+regexp.QuoteMeta(`github.com/palantir/godel/godelgetter.(*localFilePkg).Reader`)+`.+failed to install from foo into .+`, string(output))
+	assert.Regexp(t, `(?s)^Error: foo does not exist.+`+regexp.QuoteMeta(`github.com/palantir/godel/v2/godelgetter.(*localFilePkg).Reader`)+`.+failed to install from foo into .+`, string(output))
 }
 
 func execCommand(t *testing.T, dir, cmdName string, args ...string) string {

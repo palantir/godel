@@ -1,4 +1,4 @@
-module github.com/palantir/godel
+module github.com/palantir/godel/v2
 
 go 1.13
 

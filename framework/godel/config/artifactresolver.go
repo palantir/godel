@@ -19,9 +19,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/framework/artifactresolver"
-	v0 "github.com/palantir/godel/framework/godel/config/internal/v0"
-	"github.com/palantir/godel/pkg/osarch"
+	"github.com/palantir/godel/v2/framework/artifactresolver"
+	v0 "github.com/palantir/godel/v2/framework/godel/config/internal/v0"
+	"github.com/palantir/godel/v2/pkg/osarch"
 )
 
 type LocatorWithResolverConfig v0.LocatorWithResolverConfig

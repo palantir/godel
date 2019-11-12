@@ -19,7 +19,6 @@ import (
 	"os/exec"
 	"path"
 	"runtime"
-	"strconv"
 	"strings"
 )
 
@@ -43,27 +42,18 @@ func Bin(product string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	productBuildID := product + "." + runtime.GOOS + "-" + runtime.GOARCH
 
-	// return error if version is too new
-	majorVersion, err := majorVersion(godelw)
-	if err != nil {
-		return "", err
-	}
-	if majorVersion >= 2 {
-		return "", fmt.Errorf("this package does not support godel with major version >=2, but was %d: use v2 of the library instead", majorVersion)
-	}
-
-	currOSArchFlag := fmt.Sprintf("--os-arch=%s-%s", runtime.GOOS, runtime.GOARCH)
-	requiresBuildOutput, err := godelw.run("artifacts", "build", "--absolute", currOSArchFlag, "--requires-build", product)
+	requiresBuildOutput, err := godelw.run("artifacts", "build", "--absolute", "--requires-build", productBuildID)
 	if err != nil {
 		return "", err
 	}
 	if requiresBuildOutput != "" {
-		if _, err := godelw.run("build", currOSArchFlag, product); err != nil {
+		if _, err := godelw.run("build", productBuildID); err != nil {
 			return "", err
 		}
 	}
-	binPath, err := godelw.run("artifacts", "build", "--absolute", currOSArchFlag, product)
+	binPath, err := godelw.run("artifacts", "build", "--absolute", productBuildID)
 	if err != nil {
 		return "", err
 	}
@@ -112,26 +102,6 @@ func newGodelwRunner() (godelwRunner, error) {
 	return &godelwRunnerStruct{
 		path: path,
 	}, nil
-}
-
-func majorVersion(r godelwRunner) (int, error) {
-	versionOutput, err := r.run("version")
-	if err != nil {
-		return -1, err
-	}
-	parts := strings.Split(versionOutput, " ")
-	if len(parts) < 3 {
-		return -1, fmt.Errorf("output of version must have at least 3 ' '-separated parts, but was %q", versionOutput)
-	}
-	versionParts := strings.Split(parts[2], ".")
-	if len(versionParts) < 3 {
-		return -1, fmt.Errorf("version must have at least 3 '.'-separated parts, but was %q", parts[2])
-	}
-	majorVersion, err := strconv.Atoi(versionParts[0])
-	if err != nil {
-		return -1, fmt.Errorf("unable to parse %q as integer: %v", versionParts[0], err)
-	}
-	return majorVersion, nil
 }
 
 func godelwPath() (string, error) {

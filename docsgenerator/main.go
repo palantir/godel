@@ -17,7 +17,7 @@ package main
 import (
 	"os"
 
-	"github.com/palantir/godel/docsgenerator/cmd"
+	"github.com/palantir/godel/v2/docsgenerator/cmd"
 )
 
 func main() {
