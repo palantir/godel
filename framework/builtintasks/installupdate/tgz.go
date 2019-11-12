@@ -25,7 +25,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/framework/builtintasks/installupdate/layout"
+	"github.com/palantir/godel/v2/framework/builtintasks/installupdate/layout"
 )
 
 func verifyPackageTgz(tgzFile string) (string, error) {

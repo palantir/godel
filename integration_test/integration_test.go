@@ -30,7 +30,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/godel/pkg/products"
+	"github.com/palantir/godel/v2/pkg/products"
 )
 
 var (

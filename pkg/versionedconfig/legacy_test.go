@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
 
-	"github.com/palantir/godel/pkg/versionedconfig"
+	"github.com/palantir/godel/v2/pkg/versionedconfig"
 )
 
 func TestTrimLegacyPrefix(t *testing.T) {

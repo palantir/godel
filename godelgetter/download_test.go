@@ -30,7 +30,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/godel/godelgetter"
+	"github.com/palantir/godel/v2/godelgetter"
 )
 
 func TestDownloadIntoDirectory(t *testing.T) {

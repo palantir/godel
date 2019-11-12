@@ -2,7 +2,7 @@ products:
   godel:
     build:
       main-pkg: .
-      version-var: github.com/palantir/godel/framework/godel.Version
+      version-var: github.com/palantir/godel/v2/framework/godel.Version
       environment:
         CGO_ENABLED: "0"
       os-archs:

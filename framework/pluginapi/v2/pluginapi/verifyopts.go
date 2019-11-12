@@ -15,8 +15,8 @@
 package pluginapi
 
 import (
-	"github.com/palantir/godel/framework/godellauncher"
-	"github.com/palantir/godel/framework/verifyorder"
+	"github.com/palantir/godel/v2/framework/godellauncher"
+	"github.com/palantir/godel/v2/framework/verifyorder"
 )
 
 // VerifyOptions is a JSON-serializable interface that can be translated into a godellauncher.VerifyOptions. Refer to

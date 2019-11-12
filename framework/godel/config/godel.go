@@ -15,10 +15,10 @@
 package config
 
 import (
-	"github.com/palantir/godel/framework/artifactresolver"
-	v0 "github.com/palantir/godel/framework/godel/config/internal/v0"
-	"github.com/palantir/godel/framework/godellauncher"
-	"github.com/palantir/godel/framework/internal/pluginsinternal"
+	"github.com/palantir/godel/v2/framework/artifactresolver"
+	v0 "github.com/palantir/godel/v2/framework/godel/config/internal/v0"
+	"github.com/palantir/godel/v2/framework/godellauncher"
+	"github.com/palantir/godel/v2/framework/internal/pluginsinternal"
 )
 
 type GodelConfig v0.GodelConfig

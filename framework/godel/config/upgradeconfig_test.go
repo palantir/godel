@@ -17,7 +17,7 @@ package config_test
 import (
 	"testing"
 
-	"github.com/palantir/godel/framework/pluginapitester"
+	"github.com/palantir/godel/v2/framework/pluginapitester"
 )
 
 func TestUpgradeConfig(t *testing.T) {

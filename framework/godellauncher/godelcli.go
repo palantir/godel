@@ -21,7 +21,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/framework/godel"
+	"github.com/palantir/godel/v2/framework/godel"
 )
 
 // ParseAppArgs parses the arguments provided to the gödel launcher application into a GlobalConfig struct. Returns an

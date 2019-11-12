@@ -27,7 +27,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/godel/framework/godellauncher"
+	"github.com/palantir/godel/v2/framework/godellauncher"
 )
 
 func TestListProjectPaths(t *testing.T) {

@@ -17,7 +17,7 @@ package main
 import (
 	"os"
 
-	"github.com/palantir/godel/godelinit/cmd"
+	"github.com/palantir/godel/v2/godelinit/cmd"
 )
 
 func main() {

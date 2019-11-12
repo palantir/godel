@@ -15,7 +15,7 @@
 package pluginapi
 
 import (
-	"github.com/palantir/godel/framework/godellauncher"
+	"github.com/palantir/godel/v2/framework/godellauncher"
 )
 
 // GlobalFlagOptions is a JSON-serializable interface that can be translated into a godellauncher.GlobalFlagOptions.

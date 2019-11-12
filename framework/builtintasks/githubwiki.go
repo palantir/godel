@@ -18,8 +18,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/palantir/godel/framework/builtintasks/githubwiki"
-	"github.com/palantir/godel/framework/godellauncher"
+	"github.com/palantir/godel/v2/framework/builtintasks/githubwiki"
+	"github.com/palantir/godel/v2/framework/godellauncher"
 )
 
 func GitHubWikiTask() godellauncher.Task {

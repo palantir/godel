@@ -23,7 +23,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/palantir/godel/framework/godellauncher"
+	"github.com/palantir/godel/v2/framework/godellauncher"
 )
 
 func VerifyTask(tasks []godellauncher.Task) godellauncher.Task {

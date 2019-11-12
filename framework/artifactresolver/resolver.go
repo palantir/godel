@@ -26,7 +26,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/pkg/osarch"
+	"github.com/palantir/godel/v2/pkg/osarch"
 )
 
 type Resolver interface {

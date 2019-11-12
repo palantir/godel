@@ -17,8 +17,8 @@ package defaulttasks
 import (
 	"io"
 
-	"github.com/palantir/godel/framework/godel/config"
-	"github.com/palantir/godel/framework/godellauncher"
+	"github.com/palantir/godel/v2/framework/godel/config"
+	"github.com/palantir/godel/v2/framework/godellauncher"
 )
 
 func BuiltinUpgradeConfigTasks() []godellauncher.UpgradeConfigTask {

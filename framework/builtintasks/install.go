@@ -18,9 +18,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/palantir/godel/framework/builtintasks/installupdate"
-	"github.com/palantir/godel/framework/godellauncher"
-	"github.com/palantir/godel/godelgetter"
+	"github.com/palantir/godel/v2/framework/builtintasks/installupdate"
+	"github.com/palantir/godel/v2/framework/godellauncher"
+	"github.com/palantir/godel/v2/godelgetter"
 )
 
 func InstallTask() godellauncher.Task {

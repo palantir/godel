@@ -26,9 +26,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/godel/framework/builtintasks"
-	"github.com/palantir/godel/framework/godellauncher"
-	"github.com/palantir/godel/framework/pluginapi/v2/pluginapi"
+	"github.com/palantir/godel/v2/framework/builtintasks"
+	"github.com/palantir/godel/v2/framework/godellauncher"
+	"github.com/palantir/godel/v2/framework/pluginapi/v2/pluginapi"
 )
 
 var echoPluginTmpl = fmt.Sprintf(`#!/bin/sh

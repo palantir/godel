@@ -26,8 +26,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/godel/framework/godel/config"
-	v0 "github.com/palantir/godel/framework/godel/config/internal/v0"
+	"github.com/palantir/godel/v2/framework/godel/config"
+	v0 "github.com/palantir/godel/v2/framework/godel/config/internal/v0"
 )
 
 func TestReadGodelConfigFromFile(t *testing.T) {

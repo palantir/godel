@@ -18,7 +18,7 @@ import (
 	"github.com/palantir/pkg/cobracli"
 	"github.com/spf13/cobra"
 
-	"github.com/palantir/godel/docsgenerator/generator"
+	"github.com/palantir/godel/v2/docsgenerator/generator"
 )
 
 var (

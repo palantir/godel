@@ -22,8 +22,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/framework/godellauncher"
-	v1 "github.com/palantir/godel/framework/pluginapi"
+	"github.com/palantir/godel/v2/framework/godellauncher"
+	v1 "github.com/palantir/godel/v2/framework/pluginapi"
 )
 
 const (

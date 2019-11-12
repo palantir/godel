@@ -26,8 +26,8 @@ import (
 	"github.com/palantir/pkg/specdir"
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/framework/builtintasks/installupdate/layout"
-	"github.com/palantir/godel/godelgetter"
+	"github.com/palantir/godel/v2/framework/builtintasks/installupdate/layout"
+	"github.com/palantir/godel/v2/godelgetter"
 )
 
 // Copies and installs the gödel package from the provided PkgSrc. If the PkgSrc includes a checksum, this

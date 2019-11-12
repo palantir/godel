@@ -22,8 +22,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/palantir/godel/godelgetter"
-	"github.com/palantir/godel/pkg/osarch"
+	"github.com/palantir/godel/v2/godelgetter"
+	"github.com/palantir/godel/v2/pkg/osarch"
 )
 
 func NewTemplateResolver(tmpl string) (Resolver, error) {

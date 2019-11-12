@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/godel/framework/builtintasks/idea"
+	"github.com/palantir/godel/v2/framework/builtintasks/idea"
 )
 
 func TestCreateIdeaFiles(t *testing.T) {

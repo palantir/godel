@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/palantir/godel/pkg/dirchecksum"
+	"github.com/palantir/godel/v2/pkg/dirchecksum"
 )
 
 func TestChecksumsForMatchingPaths(t *testing.T) {
