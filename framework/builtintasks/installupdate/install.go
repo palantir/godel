@@ -21,7 +21,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/mholt/archiver"
+	"github.com/mholt/archiver/v3"
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/pkg/specdir"
 	"github.com/pkg/errors"
@@ -65,7 +65,7 @@ func install(src godelgetter.PkgSrc, stdout io.Writer) (string, error) {
 		return "", errors.Wrapf(err, "failed to create temporary directory rooted at %s", godelHome)
 	}
 
-	if err := archiver.TarGz.Open(tgzFilePath, tmpDir); err != nil {
+	if err := archiver.DefaultTarGz.Unarchive(tgzFilePath, tmpDir); err != nil {
 		return "", errors.Wrapf(err, "failed to extract archive %s to %s", tgzFilePath, tmpDir)
 	}
 

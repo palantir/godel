@@ -25,7 +25,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mholt/archiver"
+	"github.com/mholt/archiver/v3"
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -169,7 +169,7 @@ func createTestPlugin(t *testing.T, tmpDir string) (artifactresolver.Locator, ar
 	require.NoError(t, err)
 
 	testProductTGZPath := path.Join(testProductDir, pluginName+"-darwin-amd64-1.0.0.tgz")
-	err = archiver.TarGz.Make(testProductTGZPath, []string{testProductPath})
+	err = archiver.DefaultTarGz.Archive([]string{testProductPath}, testProductTGZPath)
 	require.NoError(t, err)
 
 	tmpDirAbs, err := filepath.Abs(tmpDir)

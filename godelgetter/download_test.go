@@ -25,7 +25,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/mholt/archiver"
+	"github.com/mholt/archiver/v3"
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -79,7 +79,7 @@ func TestDownloadIntoDirectory(t *testing.T) {
 			fileName, err := godelgetter.DownloadIntoDirectory(godelgetter.NewPkgSrc(srcPath, ""), downloadsDir, outBytes)
 			require.NoError(t, err, "Case %d", i)
 
-			err = archiver.TarGz.Open(fileName, tmpDir)
+			err = archiver.DefaultTarGz.Unarchive(fileName, tmpDir)
 			require.NoError(t, err, "Case %d", i)
 
 			fileBytes, err := ioutil.ReadFile(path.Join(tmpDir, "test.txt"))
@@ -151,6 +151,6 @@ func writeSimpleTestTgz(t *testing.T, filePath string) {
 	err = ioutil.WriteFile(testFilePath, []byte("Test file\n"), 0644)
 	require.NoError(t, err)
 
-	err = archiver.TarGz.Make(filePath, []string{testFilePath})
+	err = archiver.DefaultTarGz.Archive([]string{testFilePath}, filePath)
 	require.NoError(t, err)
 }
