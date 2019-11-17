@@ -25,7 +25,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mholt/archiver"
+	"github.com/mholt/archiver/v3"
 	"github.com/palantir/pkg/specdir"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -143,7 +143,7 @@ plugins:
 	require.NoError(t, err)
 
 	assetTGZPath := path.Join(assetDir, fmt.Sprintf("%s-%s-1.0.0.tgz", assetName, osarch.Current()))
-	err = archiver.TarGz.Make(assetTGZPath, []string{assetFile})
+	err = archiver.DefaultTarGz.Archive([]string{assetFile}, assetTGZPath)
 	require.NoError(t, err)
 
 	cfgBytes, err := yaml.Marshal(cfg)
@@ -416,8 +416,10 @@ func writePlugin(t *testing.T, testProjectDir, pluginName, pluginVersion, plugin
 	require.NoError(t, err)
 
 	pluginTGZPath := path.Join(pluginDir, fmt.Sprintf("%s-%s-%s.tgz", pluginName, osarch.Current(), pluginVersion))
-	err = archiver.TarGz.Make(pluginTGZPath, []string{pluginScript})
-	require.NoError(t, err)
+	if _, err := os.Stat(pluginTGZPath); os.IsNotExist(err) {
+		err = archiver.DefaultTarGz.Archive([]string{pluginScript}, pluginTGZPath)
+		require.NoError(t, err)
+	}
 }
 
 func getDefaultPluginInfoJSON(t *testing.T, pluginName, pluginVersion string) []byte {

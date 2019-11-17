@@ -1,27 +1,43 @@
+# github.com/andybalholm/brotli v0.0.0-20190621154722-5f990b63d2d6
+github.com/andybalholm/brotli
 # github.com/davecgh/go-spew v1.1.0
 github.com/davecgh/go-spew/spew
-# github.com/dsnet/compress v0.0.0-20171208185109-cc9eb1d7ad76
+# github.com/dsnet/compress v0.0.1
 github.com/dsnet/compress
 github.com/dsnet/compress/bzip2
 github.com/dsnet/compress/bzip2/internal/sais
 github.com/dsnet/compress/internal
 github.com/dsnet/compress/internal/errors
 github.com/dsnet/compress/internal/prefix
+# github.com/golang/gddo v0.0.0-20190419222130-af0f2af80721
+github.com/golang/gddo/httputil
+github.com/golang/gddo/httputil/header
+# github.com/golang/snappy v0.0.1
+github.com/golang/snappy
 # github.com/google/go-github v15.0.0+incompatible
 github.com/google/go-github/github
 # github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135
 github.com/google/go-querystring/query
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
+# github.com/klauspost/compress v1.9.2
+github.com/klauspost/compress/flate
+github.com/klauspost/compress/fse
+github.com/klauspost/compress/huff0
+github.com/klauspost/compress/snappy
+github.com/klauspost/compress/zstd
+github.com/klauspost/compress/zstd/internal/xxhash
+# github.com/klauspost/pgzip v1.2.1
+github.com/klauspost/pgzip
 # github.com/mattn/go-runewidth v0.0.2
 github.com/mattn/go-runewidth
-# github.com/mholt/archiver v2.0.0+incompatible
-github.com/mholt/archiver
+# github.com/mholt/archiver/v3 v3.3.0
+github.com/mholt/archiver/v3
 # github.com/nmiyake/pkg v0.0.0-20170627000939-b64318170fde
 github.com/nmiyake/pkg/dirs
 github.com/nmiyake/pkg/errorstringer
 github.com/nmiyake/pkg/gofiles
-# github.com/nwaples/rardecode v0.0.0-20171029023500-e06696f847ae
+# github.com/nwaples/rardecode v1.0.0
 github.com/nwaples/rardecode
 # github.com/palantir/distgo v1.2.0
 github.com/palantir/distgo/pkg/git
@@ -32,7 +48,10 @@ github.com/palantir/pkg/matcher
 github.com/palantir/pkg/pkgpath
 github.com/palantir/pkg/signals
 github.com/palantir/pkg/specdir
-# github.com/pkg/errors v0.8.0
+# github.com/pierrec/lz4 v2.0.5+incompatible
+github.com/pierrec/lz4
+github.com/pierrec/lz4/internal/xxh32
+# github.com/pkg/errors v0.8.1
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
@@ -40,19 +59,21 @@ github.com/pmezard/go-difflib/difflib
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.0
 github.com/spf13/pflag
-# github.com/stretchr/testify v1.2.1
+# github.com/stretchr/testify v1.4.0
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # github.com/termie/go-shutil v0.0.0-20140729215957-bcacb06fecae
 github.com/termie/go-shutil
-# github.com/ulikunitz/xz v0.5.4
+# github.com/ulikunitz/xz v0.5.6
 github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/hash
 github.com/ulikunitz/xz/internal/xlog
 github.com/ulikunitz/xz/lzma
+# github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
+github.com/xi2/xz
 # golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223
 golang.org/x/sys/unix
 # gopkg.in/cheggaaa/pb.v1 v1.0.22
 gopkg.in/cheggaaa/pb.v1
-# gopkg.in/yaml.v2 v2.1.1
+# gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2

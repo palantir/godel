@@ -1,0 +1,5 @@
+type: fix
+fix:
+  description: Update github.com/mholt/archiver module dependency
+  links:
+  - https://github.com/palantir/godel/pull/481

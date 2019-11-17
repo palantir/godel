@@ -25,7 +25,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mholt/archiver"
+	"github.com/mholt/archiver/v3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
@@ -94,7 +94,7 @@ echo ${GODEL_TEST_ENV_VAR}
 	require.NoError(t, err)
 
 	pluginTGZPath := path.Join(pluginDir, fmt.Sprintf("%s-%s-1.0.0.tgz", pluginName, osarch.Current()))
-	err = archiver.TarGz.Make(pluginTGZPath, []string{pluginScript})
+	err = archiver.DefaultTarGz.Archive([]string{pluginScript}, pluginTGZPath)
 	require.NoError(t, err)
 
 	cfgBytes, err := yaml.Marshal(cfg)
