@@ -1,0 +1,5 @@
+type: fix
+fix:
+  description: Update github.com/spf13/cobra module dependency
+  links:
+  - https://github.com/palantir/godel/pull/486
