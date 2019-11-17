@@ -33,8 +33,12 @@ github.com/mattn/go-runewidth v0.0.2 h1:UnlwIPBGaTZfPQ6T1IGzPI0EkYAQmT9fAEJ/poFC
 github.com/mattn/go-runewidth v0.0.2/go.mod h1:LwmH8dsx7+W8Uxz3IHJYH5QSwggIsqBzpuz5H//U1FU=
 github.com/mholt/archiver/v3 v3.3.0 h1:vWjhY8SQp5yzM9P6OJ/eZEkmi3UAbRrxCq48MxjAzig=
 github.com/mholt/archiver/v3 v3.3.0/go.mod h1:YnQtqsp+94Rwd0D/rk5cnLrxusUBUXg+08Ebtr1Mqao=
-github.com/nmiyake/pkg v0.0.0-20170627000939-b64318170fde h1:mbX9O6OxpIoONUqof/PJ7sE+XALNCHwDg8fdYfwZLbU=
-github.com/nmiyake/pkg v0.0.0-20170627000939-b64318170fde/go.mod h1:1mqQ24p9iRljD6gKVkWOwMJRvbzgbyAtb0zALIt0lis=
+github.com/nmiyake/pkg/dirs v1.0.0 h1:pYeIw1wH7jh5/ew8naGE4Q56byJG7Uyi8PwwhVe/MTg=
+github.com/nmiyake/pkg/dirs v1.0.0/go.mod h1:r6/PkZ3CA1szGfQkxcHheEjBWi6Zu6jLb+lQmRXEyvM=
+github.com/nmiyake/pkg/errorstringer v1.0.0 h1:i8VFMHpy2orAs8Lsoi7wOdQ6ipxOUe9GRzimcNCEzBk=
+github.com/nmiyake/pkg/errorstringer v1.0.0/go.mod h1:M7rsuKy+fiW7j812cNTScqf7kixe7k/ETY/+cbaqzRw=
+github.com/nmiyake/pkg/gofiles v1.0.0 h1:I/0ZHRThFID/qpt3xySNV7AkEGyg1QABQrMT00vwXmw=
+github.com/nmiyake/pkg/gofiles v1.0.0/go.mod h1:F+0i7sA0xTtovYCTcEutbEbFbW2vAQMm2cyHcXFpAok=
 github.com/nwaples/rardecode v1.0.0 h1:r7vGuS5akxOnR4JQSkko62RJ1ReCMXxQRPtxsiFMBOs=
 github.com/nwaples/rardecode v1.0.0/go.mod h1:5DzqNKiOdpKKBH87u8VlvAnPZMXcGRhxWkRpHbbfGS0=
 github.com/palantir/distgo v1.2.0 h1:QOJRP3NvFqSBrkoSrwmSwD9tQ+pVQ3z/mJF7oliOEE4=

@@ -52,11 +52,7 @@ func SetGoEnvVariables() error {
 	if resolvedGoRoot, err := filepath.EvalSymlinks(goroot); err == nil {
 		goroot = resolvedGoRoot
 	}
-	if err := os.Setenv("GOROOT", goroot); err != nil {
-		return err
-	}
-
-	return nil
+	return os.Setenv("GOROOT", goroot)
 }
 
 // GoRoot returns the value for GOROOT for the current system. Similar to runtime.GOROOT(), but if the GOROOT
