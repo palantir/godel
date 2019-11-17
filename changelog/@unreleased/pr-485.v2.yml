@@ -1,0 +1,5 @@
+type: fix
+fix:
+  description: Update pb module dependency
+  links:
+  - https://github.com/palantir/godel/pull/485
