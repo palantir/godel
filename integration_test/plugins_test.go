@@ -416,8 +416,10 @@ func writePlugin(t *testing.T, testProjectDir, pluginName, pluginVersion, plugin
 	require.NoError(t, err)
 
 	pluginTGZPath := path.Join(pluginDir, fmt.Sprintf("%s-%s-%s.tgz", pluginName, osarch.Current(), pluginVersion))
-	err = archiver.DefaultTarGz.Archive([]string{pluginScript}, pluginTGZPath)
-	require.NoError(t, err)
+	if _, err := os.Stat(pluginTGZPath); os.IsNotExist(err) {
+		err = archiver.DefaultTarGz.Archive([]string{pluginScript}, pluginTGZPath)
+		require.NoError(t, err)
+	}
 }
 
 func getDefaultPluginInfoJSON(t *testing.T, pluginName, pluginVersion string) []byte {
