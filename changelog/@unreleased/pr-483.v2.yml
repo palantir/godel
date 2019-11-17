@@ -1,0 +1,5 @@
+type: fix
+fix:
+  description: Update github.com/nmiyake/pkg module dependencies
+  links:
+  - https://github.com/palantir/godel/pull/483
