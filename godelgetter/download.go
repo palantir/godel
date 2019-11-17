@@ -23,8 +23,8 @@ import (
 	"os"
 	"path"
 
+	"github.com/cheggaaa/pb/v3"
 	"github.com/pkg/errors"
-	"gopkg.in/cheggaaa/pb.v1"
 )
 
 // DownloadIntoDirectory downloads the provided package into the specified output directory. The output directory must
@@ -123,14 +123,14 @@ func Download(pkgSrc PkgSrc, dstFilePath string, w io.Writer) (rErr error) {
 }
 
 func copyWithProgress(w io.Writer, r io.Reader, dataLen int64, stdout io.Writer) error {
-	bar := pb.New64(dataLen).SetUnits(pb.U_BYTES)
+	bar := pb.New64(dataLen)
+	mw := bar.NewProxyWriter(w)
 	bar.SetMaxWidth(120)
-	bar.Output = stdout
+	bar.SetWriter(stdout)
 	bar.Start()
 	defer func() {
 		bar.Finish()
 	}()
-	mw := io.MultiWriter(w, bar)
 	_, err := io.Copy(mw, r)
 	return err
 }

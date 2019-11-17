@@ -3,11 +3,10 @@ module github.com/palantir/godel/v2
 go 1.13
 
 require (
-	github.com/fatih/color v1.7.0 // indirect
+	github.com/cheggaaa/pb/v3 v3.0.2
 	github.com/google/go-github/v28 v28.1.1
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/mattn/go-colorable v0.1.4 // indirect
-	github.com/mattn/go-runewidth v0.0.2 // indirect
 	github.com/mholt/archiver/v3 v3.3.0
 	github.com/nmiyake/pkg/dirs v1.0.0
 	github.com/nmiyake/pkg/errorstringer v1.0.0
@@ -19,6 +18,5 @@ require (
 	github.com/spf13/pflag v1.0.0
 	github.com/stretchr/testify v1.4.0
 	github.com/termie/go-shutil v0.0.0-20140729215957-bcacb06fecae
-	gopkg.in/cheggaaa/pb.v1 v1.0.22
 	gopkg.in/yaml.v2 v2.2.2
 )
