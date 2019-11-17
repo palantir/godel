@@ -33,9 +33,11 @@ github.com/klauspost/pgzip
 github.com/mattn/go-runewidth
 # github.com/mholt/archiver/v3 v3.3.0
 github.com/mholt/archiver/v3
-# github.com/nmiyake/pkg v0.0.0-20170627000939-b64318170fde
+# github.com/nmiyake/pkg/dirs v1.0.0
 github.com/nmiyake/pkg/dirs
+# github.com/nmiyake/pkg/errorstringer v1.0.0
 github.com/nmiyake/pkg/errorstringer
+# github.com/nmiyake/pkg/gofiles v1.0.0
 github.com/nmiyake/pkg/gofiles
 # github.com/nwaples/rardecode v1.0.0
 github.com/nwaples/rardecode
