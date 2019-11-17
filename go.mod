@@ -4,8 +4,7 @@ go 1.13
 
 require (
 	github.com/fatih/color v1.7.0 // indirect
-	github.com/google/go-github v15.0.0+incompatible
-	github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135 // indirect
+	github.com/google/go-github/v28 v28.1.1
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-runewidth v0.0.2 // indirect
