@@ -24,10 +24,9 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/pkg/errors"
-
 	"github.com/palantir/godel/v2/framework/godellauncher"
 	"github.com/palantir/godel/v2/framework/pluginapi/v2/pluginapi"
+	"github.com/pkg/errors"
 )
 
 // RunPlugin runs a plugin with the specified arguments. The plugin is loaded in the same manner that it would be for

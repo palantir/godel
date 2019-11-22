@@ -26,9 +26,8 @@ import (
 	"time"
 
 	"github.com/nmiyake/pkg/dirs"
-	"github.com/pkg/errors"
-
 	"github.com/palantir/godel/v2/framework/builtintasks/installupdate/layout"
+	"github.com/pkg/errors"
 )
 
 type Params struct {

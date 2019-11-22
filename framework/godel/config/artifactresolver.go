@@ -17,11 +17,10 @@ package config
 import (
 	"strings"
 
-	"github.com/pkg/errors"
-
 	"github.com/palantir/godel/v2/framework/artifactresolver"
 	v0 "github.com/palantir/godel/v2/framework/godel/config/internal/v0"
 	"github.com/palantir/godel/v2/pkg/osarch"
+	"github.com/pkg/errors"
 )
 
 type LocatorWithResolverConfig v0.LocatorWithResolverConfig

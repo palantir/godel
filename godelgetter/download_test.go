@@ -27,10 +27,9 @@ import (
 
 	"github.com/mholt/archiver/v3"
 	"github.com/nmiyake/pkg/dirs"
+	"github.com/palantir/godel/v2/godelgetter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/palantir/godel/v2/godelgetter"
 )
 
 func TestDownloadIntoDirectory(t *testing.T) {

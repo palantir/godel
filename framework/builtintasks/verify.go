@@ -21,9 +21,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/spf13/cobra"
-
 	"github.com/palantir/godel/v2/framework/godellauncher"
+	"github.com/spf13/cobra"
 )
 
 func VerifyTask(tasks []godellauncher.Task) godellauncher.Task {

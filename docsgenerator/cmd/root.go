@@ -15,10 +15,9 @@
 package cmd
 
 import (
+	"github.com/palantir/godel/v2/docsgenerator/generator"
 	"github.com/palantir/pkg/cobracli"
 	"github.com/spf13/cobra"
-
-	"github.com/palantir/godel/v2/docsgenerator/generator"
 )
 
 var (

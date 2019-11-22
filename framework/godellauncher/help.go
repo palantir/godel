@@ -20,10 +20,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/palantir/godel/v2/framework/godel"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-
-	"github.com/palantir/godel/v2/framework/godel"
 )
 
 type flagDescProvider interface {

@@ -23,9 +23,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/pkg/errors"
-
 	"github.com/palantir/godel/v2/framework/godellauncher"
+	"github.com/pkg/errors"
 )
 
 // TaskInfo is a JSON-serializable interface that can be translated into a godellauncher.Task. Refer to that struct for

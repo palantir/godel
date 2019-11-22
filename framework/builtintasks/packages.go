@@ -18,11 +18,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/spf13/cobra"
-
 	"github.com/palantir/godel/v2/framework/builtintasks/packages"
 	"github.com/palantir/godel/v2/framework/godel/config"
 	"github.com/palantir/godel/v2/framework/godellauncher"
+	"github.com/spf13/cobra"
 )
 
 func PackagesTask() godellauncher.Task {

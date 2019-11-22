@@ -17,8 +17,6 @@ package pluginapitester
 import (
 	"bytes"
 
-	"github.com/pkg/errors"
-
 	"github.com/palantir/godel/v2/framework/artifactresolver"
 	"github.com/palantir/godel/v2/framework/godel/config"
 	"github.com/palantir/godel/v2/framework/godellauncher"
@@ -26,6 +24,7 @@ import (
 	"github.com/palantir/godel/v2/framework/internal/pluginsinternal"
 	"github.com/palantir/godel/v2/framework/plugins"
 	"github.com/palantir/godel/v2/pkg/osarch"
+	"github.com/pkg/errors"
 )
 
 type PluginProvider interface {

@@ -23,12 +23,11 @@ import (
 	"testing"
 
 	"github.com/nmiyake/pkg/dirs"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"github.com/palantir/godel/v2/framework/builtintasks"
 	"github.com/palantir/godel/v2/framework/godellauncher"
 	"github.com/palantir/godel/v2/framework/pluginapi/v2/pluginapi"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var echoPluginTmpl = fmt.Sprintf(`#!/bin/sh

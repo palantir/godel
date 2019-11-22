@@ -19,10 +19,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/palantir/godel/v2/pkg/products"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/palantir/godel/v2/pkg/products"
 )
 
 func TestList(t *testing.T) {

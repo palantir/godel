@@ -23,11 +23,10 @@ import (
 
 	"github.com/mholt/archiver/v3"
 	"github.com/nmiyake/pkg/dirs"
-	"github.com/palantir/pkg/specdir"
-	"github.com/pkg/errors"
-
 	"github.com/palantir/godel/v2/framework/builtintasks/installupdate/layout"
 	"github.com/palantir/godel/v2/godelgetter"
+	"github.com/palantir/pkg/specdir"
+	"github.com/pkg/errors"
 )
 
 // Copies and installs the gödel package from the provided PkgSrc. If the PkgSrc includes a checksum, this

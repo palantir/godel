@@ -28,14 +28,13 @@ import (
 	"testing"
 
 	"github.com/nmiyake/pkg/dirs"
-	"github.com/pkg/errors"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"github.com/palantir/godel/v2/framework/builtintasks"
 	"github.com/palantir/godel/v2/framework/godellauncher"
 	"github.com/palantir/godel/v2/framework/godellauncher/defaulttasks"
 	"github.com/palantir/godel/v2/framework/pluginapi/v2/pluginapi"
+	"github.com/pkg/errors"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // RunUpgradeConfig runs the "upgrade-config" task with the provided plugin and assets loaded. The plugin is loaded in

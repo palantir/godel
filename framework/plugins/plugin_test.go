@@ -27,14 +27,13 @@ import (
 
 	"github.com/mholt/archiver/v3"
 	"github.com/nmiyake/pkg/dirs"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"github.com/palantir/godel/v2/framework/artifactresolver"
 	"github.com/palantir/godel/v2/framework/godellauncher"
 	"github.com/palantir/godel/v2/framework/internal/pathsinternal"
 	"github.com/palantir/godel/v2/framework/pluginapi/v2/pluginapi"
 	"github.com/palantir/godel/v2/pkg/osarch"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var pluginScriptTmpl = fmt.Sprintf(`#!/usr/bin/env bash

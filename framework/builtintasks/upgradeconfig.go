@@ -25,13 +25,12 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/palantir/godel/v2/framework/godel/config"
+	"github.com/palantir/godel/v2/framework/godellauncher"
 	"github.com/palantir/pkg/matcher"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
-
-	"github.com/palantir/godel/v2/framework/godel/config"
-	"github.com/palantir/godel/v2/framework/godellauncher"
 )
 
 func UpgradeConfigTask(upgradeTasks []godellauncher.UpgradeConfigTask) godellauncher.Task {

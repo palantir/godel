@@ -22,9 +22,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/pkg/errors"
-
 	"github.com/palantir/godel/v2/framework/godellauncher"
+	"github.com/pkg/errors"
 )
 
 // UpgradeConfigTaskInfo is a JSON-serializable interface that can be translated into a godellauncher.UpgradeConfigTask.
