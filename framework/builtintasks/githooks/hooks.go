@@ -19,9 +19,8 @@ import (
 	"io/ioutil"
 	"path"
 
-	"github.com/pkg/errors"
-
 	"github.com/palantir/godel/v2/framework/builtintasks/installupdate/layout"
+	"github.com/pkg/errors"
 )
 
 var hooks = map[string]string{

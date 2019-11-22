@@ -20,10 +20,9 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/pkg/errors"
-
 	"github.com/palantir/godel/v2/godelgetter"
 	"github.com/palantir/godel/v2/pkg/osarch"
+	"github.com/pkg/errors"
 )
 
 func NewTemplateResolver(tmpl string) (Resolver, error) {

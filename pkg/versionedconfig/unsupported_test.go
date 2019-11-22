@@ -17,10 +17,9 @@ package versionedconfig_test
 import (
 	"testing"
 
+	"github.com/palantir/godel/v2/pkg/versionedconfig"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/palantir/godel/v2/pkg/versionedconfig"
 )
 
 func TestConfigNotSupported(t *testing.T) {

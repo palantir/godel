@@ -21,11 +21,10 @@ import (
 	"testing"
 
 	"github.com/nmiyake/pkg/dirs"
+	"github.com/palantir/godel/v2/framework/builtintasks/installupdate/layout"
 	"github.com/palantir/pkg/specdir"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/palantir/godel/v2/framework/builtintasks/installupdate/layout"
 )
 
 func TestWrapperLayoutNoValidation(t *testing.T) {

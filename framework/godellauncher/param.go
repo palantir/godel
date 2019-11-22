@@ -15,11 +15,10 @@
 package godellauncher
 
 import (
-	"github.com/palantir/pkg/specdir"
-	"github.com/pkg/errors"
-
 	"github.com/palantir/godel/v2/framework/artifactresolver"
 	"github.com/palantir/godel/v2/framework/builtintasks/installupdate/layout"
+	"github.com/palantir/pkg/specdir"
+	"github.com/pkg/errors"
 )
 
 const (

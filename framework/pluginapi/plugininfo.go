@@ -19,9 +19,8 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/pkg/errors"
-
 	"github.com/palantir/godel/v2/framework/godellauncher"
+	"github.com/pkg/errors"
 )
 
 const (

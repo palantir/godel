@@ -22,10 +22,9 @@ import (
 	"testing"
 
 	"github.com/nmiyake/pkg/dirs"
+	"github.com/palantir/godel/v2/framework/builtintasks/idea"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/palantir/godel/v2/framework/builtintasks/idea"
 )
 
 func TestCreateIdeaFiles(t *testing.T) {

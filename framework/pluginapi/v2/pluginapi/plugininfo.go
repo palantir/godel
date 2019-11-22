@@ -20,10 +20,9 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/pkg/errors"
-
 	"github.com/palantir/godel/v2/framework/godellauncher"
 	v1 "github.com/palantir/godel/v2/framework/pluginapi"
+	"github.com/pkg/errors"
 )
 
 const (

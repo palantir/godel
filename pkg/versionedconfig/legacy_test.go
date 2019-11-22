@@ -17,11 +17,10 @@ package versionedconfig_test
 import (
 	"testing"
 
+	"github.com/palantir/godel/v2/pkg/versionedconfig"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
-
-	"github.com/palantir/godel/v2/pkg/versionedconfig"
 )
 
 func TestTrimLegacyPrefix(t *testing.T) {

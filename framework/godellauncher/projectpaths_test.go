@@ -23,11 +23,10 @@ import (
 
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/nmiyake/pkg/gofiles"
+	"github.com/palantir/godel/v2/framework/godellauncher"
 	"github.com/palantir/pkg/matcher"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/palantir/godel/v2/framework/godellauncher"
 )
 
 func TestListProjectPaths(t *testing.T) {

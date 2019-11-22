@@ -15,10 +15,9 @@
 package config
 
 import (
-	"github.com/pkg/errors"
-
 	v0 "github.com/palantir/godel/v2/framework/godel/config/internal/v0"
 	"github.com/palantir/godel/v2/pkg/versionedconfig"
+	"github.com/pkg/errors"
 )
 
 func UpgradeConfig(cfgBytes []byte) ([]byte, error) {

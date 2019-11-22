@@ -15,11 +15,10 @@
 package builtintasks
 
 import (
-	"github.com/pkg/errors"
-	"github.com/spf13/cobra"
-
 	"github.com/palantir/godel/v2/framework/builtintasks/githubwiki"
 	"github.com/palantir/godel/v2/framework/godellauncher"
+	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
 )
 
 func GitHubWikiTask() godellauncher.Task {

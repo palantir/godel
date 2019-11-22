@@ -17,10 +17,9 @@ package defaulttasks
 import (
 	"testing"
 
+	"github.com/palantir/godel/v2/framework/godel/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/palantir/godel/v2/framework/godel/config"
 )
 
 func testDefaultPluginsConfig() config.PluginsConfig {

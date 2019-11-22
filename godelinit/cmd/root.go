@@ -19,12 +19,11 @@ import (
 	"path"
 	"time"
 
+	"github.com/palantir/godel/v2/framework/builtintasks/installupdate"
+	"github.com/palantir/godel/v2/godelgetter"
 	"github.com/palantir/pkg/cobracli"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-
-	"github.com/palantir/godel/v2/framework/builtintasks/installupdate"
-	"github.com/palantir/godel/v2/godelgetter"
 )
 
 var (

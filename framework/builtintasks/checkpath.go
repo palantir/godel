@@ -15,10 +15,9 @@
 package builtintasks
 
 import (
-	"github.com/spf13/cobra"
-
 	"github.com/palantir/godel/v2/framework/builtintasks/checkpath"
 	"github.com/palantir/godel/v2/framework/godellauncher"
+	"github.com/spf13/cobra"
 )
 
 func CheckPathTask() godellauncher.Task {

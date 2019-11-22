@@ -17,10 +17,9 @@ package builtintasks
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
-
 	"github.com/palantir/godel/v2/framework/godel"
 	"github.com/palantir/godel/v2/framework/godellauncher"
+	"github.com/spf13/cobra"
 )
 
 var Version = "unspecified"

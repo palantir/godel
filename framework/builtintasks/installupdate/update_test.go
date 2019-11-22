@@ -18,9 +18,8 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/palantir/godel/v2/framework/builtintasks/installupdate"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestUpdateUsesPathFromExecutable(t *testing.T) {

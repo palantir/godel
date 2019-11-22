@@ -28,11 +28,10 @@ import (
 
 	"github.com/google/go-github/v28/github"
 	"github.com/nmiyake/pkg/dirs"
-	"github.com/palantir/pkg/specdir"
-	"github.com/pkg/errors"
-
 	"github.com/palantir/godel/v2/framework/builtintasks/installupdate/layout"
 	"github.com/palantir/godel/v2/godelgetter"
+	"github.com/palantir/pkg/specdir"
+	"github.com/pkg/errors"
 )
 
 // NewInstall performs a new installation of gödel in the specified directory using the specified package as the source.

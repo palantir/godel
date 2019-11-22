@@ -22,11 +22,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/pkg/errors"
-
 	"github.com/palantir/godel/v2/framework/artifactresolver"
 	"github.com/palantir/godel/v2/framework/internal/pathsinternal"
 	"github.com/palantir/godel/v2/pkg/osarch"
+	"github.com/pkg/errors"
 )
 
 const (

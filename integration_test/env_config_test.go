@@ -26,14 +26,13 @@ import (
 	"time"
 
 	"github.com/mholt/archiver/v3"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v2"
-
 	"github.com/palantir/godel/v2/framework/godel/config"
 	"github.com/palantir/godel/v2/framework/godellauncher"
 	"github.com/palantir/godel/v2/framework/pluginapi/v2/pluginapi"
 	"github.com/palantir/godel/v2/pkg/osarch"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v2"
 )
 
 // TestEnvironmentConfig verifies that the "environment" value in the godel configuration is used.

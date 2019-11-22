@@ -26,11 +26,10 @@ import (
 
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/distgo/pkg/git"
+	"github.com/palantir/godel/v2/pkg/products"
 	"github.com/palantir/pkg/gittest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/palantir/godel/v2/pkg/products"
 )
 
 var (

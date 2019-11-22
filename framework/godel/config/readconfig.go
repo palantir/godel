@@ -19,11 +19,10 @@ import (
 	"os"
 	"path"
 
+	"github.com/palantir/godel/v2/framework/godellauncher"
 	"github.com/palantir/pkg/matcher"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
-
-	"github.com/palantir/godel/v2/framework/godellauncher"
 )
 
 // ReadGodelConfigFromProjectDir reads the gödel configuration from the "godel.yml" file in the configuration directory
