@@ -52,14 +52,19 @@ github.com/nmiyake/pkg/errorstringer
 github.com/nmiyake/pkg/gofiles
 # github.com/nwaples/rardecode v1.0.0
 github.com/nwaples/rardecode
-# github.com/palantir/distgo v1.2.0
+# github.com/palantir/distgo/pkg/git v1.0.0
 github.com/palantir/distgo/pkg/git
-# github.com/palantir/pkg v0.0.0-20181230161202-d12f4064ff8e
+# github.com/palantir/pkg/cobracli v1.0.0
 github.com/palantir/pkg/cobracli
+# github.com/palantir/pkg/gittest v1.0.0
 github.com/palantir/pkg/gittest
+# github.com/palantir/pkg/matcher v1.0.0
 github.com/palantir/pkg/matcher
+# github.com/palantir/pkg/pkgpath v1.0.0
 github.com/palantir/pkg/pkgpath
+# github.com/palantir/pkg/signals v1.0.0
 github.com/palantir/pkg/signals
+# github.com/palantir/pkg/specdir v1.0.0
 github.com/palantir/pkg/specdir
 # github.com/pierrec/lz4 v2.0.5+incompatible
 github.com/pierrec/lz4
@@ -94,5 +99,5 @@ golang.org/x/crypto/openpgp/packet
 golang.org/x/crypto/openpgp/s2k
 # golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223
 golang.org/x/sys/unix
-# gopkg.in/yaml.v2 v2.2.2
+# gopkg.in/yaml.v2 v2.2.5
 gopkg.in/yaml.v2
