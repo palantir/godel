@@ -10,8 +10,8 @@ excutor: &executor
 version: 2.1
 
 orbs:
-  go: palantir/go@0.0.12
-  godel: palantir/godel@0.0.11
+  go: palantir/go@0.0.18
+  godel: palantir/godel@0.0.18
 
 executors:
   alpine-go:
@@ -98,6 +98,7 @@ workflows:
                 key: godel-linuxbrew-cache-{{ checksum "godelw" }}-{{ checksum "godel/config/godel.yml" }}-v1
                 paths:
                   - /home/linuxbrew/.godel
+          build-cache-path: /home/linuxbrew/.cache/go-build
           <<: *all-tags-filter
       - godel/dist:
           name: dist
