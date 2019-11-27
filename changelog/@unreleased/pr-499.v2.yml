@@ -1,0 +1,5 @@
+type: fix
+fix:
+  description: Empty commit to allow release to fix tag issue
+  links:
+  - https://github.com/palantir/godel/pull/499
