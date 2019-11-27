@@ -1,0 +1,5 @@
+type: fix
+fix:
+  description: Use github.com/palantir/godel/pkg/products/v2 module
+  links:
+  - https://github.com/palantir/godel/pull/500
