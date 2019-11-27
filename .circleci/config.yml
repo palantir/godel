@@ -51,6 +51,7 @@ requires_products: &requires_products
   - integration-alpine-go-prev
   - integration-brew
   - dist
+  - pkg-products-verify-test
 
 workflows:
   version: 2
@@ -99,6 +100,15 @@ workflows:
                 paths:
                   - /home/linuxbrew/.godel
           build-cache-path: /home/linuxbrew/.cache/go-build
+          <<: *all-tags-filter
+      - godel/verify:
+          name: pkg-products-verify-test
+          checkout-path: /go/src/github.com/palantir/godel
+          include-tests: true
+          executor:
+            name: go/golang
+            version: 1.13.4
+            owner-repo: palantir/godel/pkg/products/v2
           <<: *all-tags-filter
       - godel/dist:
           name: dist
