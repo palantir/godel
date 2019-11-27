@@ -35,8 +35,16 @@ var fullDescribeRegexp = regexp.MustCompile(`^(.+)-([0-9]+)-g([0-9a-f]{40})$`)
 // 'v' followed by a digit (0-9), then the leading 'v' is trimmed. Returns "unspecified" if the current commit cannot be
 // described.
 func ProjectVersion(gitDir string) (string, error) {
+	return ProjectVersionWithPrefix(gitDir, "")
+}
+
+// ProjectVersionWithPrefix works in the same manner as ProjectVersion, but only matches tags that begin with the
+// provided tagPrefix. This can be useful in scenarios where a single repository contains multiple projects and tag
+// prefixes (such as "@org/product@") are used to distinguish between releases of different products. The returned
+// version includes the prefix.
+func ProjectVersionWithPrefix(gitDir, tagPrefix string) (string, error) {
 	// use "--long" and "--abbrev=40" to ensure that output is always of the form [tag]-[0-9]+-g[0-9a-f]{40}
-	result, err := CmdOutput(gitDir, "describe", "--tags", "--first-parent", "--long", "--abbrev=40")
+	result, err := CmdOutput(gitDir, "describe", "--tags", "--first-parent", "--long", "--abbrev=40", fmt.Sprintf("--match=%s*", tagPrefix))
 	if err != nil {
 		if strings.HasPrefix(strings.TrimSpace(result), "fatal:") {
 			// if output starts with "fatal: ", treat as a Git error ("fatal: No names found, cannot describe anything.",
