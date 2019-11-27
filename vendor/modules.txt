@@ -54,6 +54,8 @@ github.com/nmiyake/pkg/gofiles
 github.com/nwaples/rardecode
 # github.com/palantir/distgo/pkg/git v1.0.0
 github.com/palantir/distgo/pkg/git
+# github.com/palantir/godel/pkg/products/v2 v2.0.0
+github.com/palantir/godel/pkg/products/v2
 # github.com/palantir/pkg/cobracli v1.0.0
 github.com/palantir/pkg/cobracli
 # github.com/palantir/pkg/gittest v1.0.0
