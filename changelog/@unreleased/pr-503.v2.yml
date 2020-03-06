@@ -1,0 +1,10 @@
+type: fix
+fix:
+  description: |-
+    Handle unicode line breaks when determining version
+
+    Map all unicode line break runes to "\n" before splitting on
+    newlines. Fixes an issue where the version output would sometimes
+    not be parsed properly due to unicode linebreaks being used.
+  links:
+  - https://github.com/palantir/godel/pull/503

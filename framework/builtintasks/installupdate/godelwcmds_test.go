@@ -1,0 +1,75 @@
+// Copyright 2020 Palantir Technologies, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package installupdate
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+// Verifies that getLastLine properly splits on unicode line breaks.
+func TestGetLastLine(t *testing.T) {
+	for i, tc := range []struct {
+		in   string
+		want string
+	}{
+		{
+			"",
+			"",
+		},
+		{
+			`first line
+second line`,
+			"second line",
+		},
+		{
+			fmt.Sprint("first line", string('\u000A'), "second line"),
+			"second line",
+		},
+		{
+			fmt.Sprint("first line", string('\u000B'), "second line"),
+			"second line",
+		},
+		{
+			fmt.Sprint("first line", string('\u000C'), "second line"),
+			"second line",
+		},
+		{
+			fmt.Sprint("first line", string('\u000D'), "second line"),
+			"second line",
+		},
+		{
+			fmt.Sprint("first line", string('\u0085'), "second line"),
+			"second line",
+		},
+		{
+			fmt.Sprint("first line", string('\u2028'), "second line"),
+			"second line",
+		},
+		{
+			fmt.Sprint("first line", string('\u2029'), "second line"),
+			"second line",
+		},
+	} {
+		t.Run(fmt.Sprintf("Case %d", i), func(t *testing.T) {
+			got, err := getLastLine(tc.in)
+			require.NoError(t, err)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}

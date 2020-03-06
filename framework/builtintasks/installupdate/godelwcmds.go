@@ -51,13 +51,12 @@ func getGodelVersion(projectDir string) (godelVersion, error) {
 		return godelVersion{}, errors.Wrapf(err, "failed to execute command %v: %s", cmd.Args, string(output))
 	}
 
-	// split input on newlines and only consider final line. Do this in case invoking "godelw" causes assets to be
+	// split input on line breaks and only consider final line. Do this in case invoking "godelw" causes assets to be
 	// downloaded (in which case download messages will be in output before version is printed).
-	outputLines := strings.Split(strings.TrimSpace(string(output)), "\n")
-	if len(outputLines) == 0 {
-		return godelVersion{}, errors.Wrapf(err, "no elements found when splitting output %q on newlines", string(output))
+	outputString, err := getLastLine(string(output))
+	if err != nil {
+		return godelVersion{}, err
 	}
-	outputString := outputLines[len(outputLines)-1]
 
 	parts := strings.Split(outputString, " ")
 	if len(parts) != 3 {
@@ -68,4 +67,24 @@ func getGodelVersion(projectDir string) (godelVersion, error) {
 		return godelVersion{}, errors.Wrapf(err, "failed to create version from output")
 	}
 	return v, nil
+}
+
+func getLastLine(in string) (string, error) {
+	outputLines := strings.Split(unicodeLineBreaksToNewlines(strings.TrimSpace(in)), "\n")
+	if len(outputLines) == 0 {
+		return "", errors.Errorf("no elements found when splitting output %q on newlines", in)
+
+	}
+	return outputLines[len(outputLines)-1], nil
+}
+
+func unicodeLineBreaksToNewlines(s string) string {
+	return strings.Map(func(r rune) rune {
+		switch r {
+		case 0x000A, 0x000B, 0x000C, 0x000D, 0x0085, 0x2028, 0x2029:
+			return '\n'
+		default:
+			return r
+		}
+	}, s)
 }
