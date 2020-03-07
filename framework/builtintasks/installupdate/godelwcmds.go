@@ -60,7 +60,7 @@ func getGodelVersion(projectDir string) (godelVersion, error) {
 
 	parts := strings.Split(outputString, " ")
 	if len(parts) != 3 {
-		return godelVersion{}, errors.Errorf(`expected output %s to have 3 parts when split by " ", but was %v`, outputString, parts)
+		return godelVersion{}, errors.Errorf(`expected output %q to have 3 parts when split by " ", but was %v`, outputString, parts)
 	}
 	v, err := newGodelVersion(parts[2])
 	if err != nil {

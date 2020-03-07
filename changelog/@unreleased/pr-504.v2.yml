@@ -1,0 +1,8 @@
+type: fix
+fix:
+  description: |-
+    Include quoted output in parse error
+
+    If parsing parts fails, output quoted version of input.
+  links:
+  - https://github.com/palantir/godel/pull/504
