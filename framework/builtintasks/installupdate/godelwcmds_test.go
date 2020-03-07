@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Verifies that getLastLine properly splits on unicode line breaks.
+// Verifies that getLastLine properly splits on both \r and \n.
 func TestGetLastLine(t *testing.T) {
 	for i, tc := range []struct {
 		in   string
@@ -38,31 +38,7 @@ second line`,
 			"second line",
 		},
 		{
-			fmt.Sprint("first line", string('\u000A'), "second line"),
-			"second line",
-		},
-		{
-			fmt.Sprint("first line", string('\u000B'), "second line"),
-			"second line",
-		},
-		{
-			fmt.Sprint("first line", string('\u000C'), "second line"),
-			"second line",
-		},
-		{
-			fmt.Sprint("first line", string('\u000D'), "second line"),
-			"second line",
-		},
-		{
-			fmt.Sprint("first line", string('\u0085'), "second line"),
-			"second line",
-		},
-		{
-			fmt.Sprint("first line", string('\u2028'), "second line"),
-			"second line",
-		},
-		{
-			fmt.Sprint("first line", string('\u2029'), "second line"),
+			fmt.Sprint("first line", "\r", "second line"),
 			"second line",
 		},
 	} {

@@ -125,6 +125,8 @@ func Download(pkgSrc PkgSrc, dstFilePath string, w io.Writer) (rErr error) {
 func copyWithProgress(w io.Writer, r io.Reader, dataLen int64, stdout io.Writer) error {
 	bar := pb.New64(dataLen)
 	mw := bar.NewProxyWriter(w)
+	// explicitly set so that returns are written even in non-terminal mode
+	bar.Set(pb.ReturnSymbol, "\r")
 	bar.SetMaxWidth(120)
 	bar.SetWriter(stdout)
 	bar.Start()

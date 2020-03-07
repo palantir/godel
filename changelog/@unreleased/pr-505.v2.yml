@@ -1,0 +1,13 @@
+type: fix
+fix:
+  description: |-
+    Always output newlines after progress
+
+    Explicitly set the return symbol for progress bars so that
+    returns and newlines are always added, even when not in terminal
+    mode.
+
+    Also changes splitting logic to only split on "\r" and "\n" rather
+    than on all Unicode line break characters.
+  links:
+  - https://github.com/palantir/godel/pull/505
