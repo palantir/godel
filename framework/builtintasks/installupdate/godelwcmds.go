@@ -70,21 +70,10 @@ func getGodelVersion(projectDir string) (godelVersion, error) {
 }
 
 func getLastLine(in string) (string, error) {
-	outputLines := strings.Split(unicodeLineBreaksToNewlines(strings.TrimSpace(in)), "\n")
+	outputLines := strings.Split(strings.Replace(strings.TrimSpace(in), "\r", "\n", -1), "\n")
 	if len(outputLines) == 0 {
 		return "", errors.Errorf("no elements found when splitting output %q on newlines", in)
 
 	}
 	return outputLines[len(outputLines)-1], nil
-}
-
-func unicodeLineBreaksToNewlines(s string) string {
-	return strings.Map(func(r rune) rune {
-		switch r {
-		case 0x000A, 0x000B, 0x000C, 0x000D, 0x0085, 0x2028, 0x2029:
-			return '\n'
-		default:
-			return r
-		}
-	}, s)
 }
