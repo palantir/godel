@@ -1,0 +1,8 @@
+type: improvement
+improvement:
+  description: |-
+    Update Go versions to 1.14
+
+    Updates Go version used to build godel to 1.14.
+  links:
+  - https://github.com/palantir/godel/pull/508
