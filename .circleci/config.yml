@@ -4,7 +4,7 @@ owner-repo: &owner-repo
 excutor: &executor
   executor:
     name: go/darwin-linux-no-cgo
-    version: 1.13.4-t28
+    version: 1.14-t41
     <<: *owner-repo
 
 version: 2.1
@@ -24,11 +24,11 @@ executors:
     environment:
       CGO_ENABLED: 0
     docker:
-      - image: palantirtechnologies/go:alpine-go-<< parameters.version >>-t28
+      - image: palantirtechnologies/go:alpine-go-<< parameters.version >>-t41
   brew-go:
     working_directory: /go/src/github.com/palantir/godel
     docker:
-      - image: palantirtechnologies/go:brew-go-t28
+      - image: palantirtechnologies/go:brew-go-t41
 
 jobs:
   wiki:
@@ -77,14 +77,14 @@ workflows:
           tags: integration
           executor:
             name: alpine-go
-            version: 1.13.4
+            version: "1.14"
           <<: *all-tags-filter
       - godel/test:
           name: integration-alpine-go-prev
           tags: integration
           executor:
             name: alpine-go
-            version: 1.12.13
+            version: 1.13.8
           <<: *all-tags-filter
       - godel/test:
           name: integration-brew
@@ -107,7 +107,7 @@ workflows:
           include-tests: true
           executor:
             name: go/golang
-            version: 1.13.4
+            version: "1.14"
             owner-repo: palantir/godel/pkg/products/v2
           <<: *all-tags-filter
       - godel/dist:
