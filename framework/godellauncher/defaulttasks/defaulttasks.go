@@ -35,8 +35,8 @@ var defaultPluginsConfig = config.PluginsConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
 					ID: "com.palantir.distgo:dist-plugin:1.20.3",
 					Checksums: map[string]string{
-						"darwin-amd64": "684d6f64e5f4cd57072c44027df1b04b7c7d5103db75f245ef3780c5f54a5bcd",
-						"linux-amd64":  "59f8088dbd2dfe02d26a3e8a35202a89148d1b212d05b48a7a835b761018c883",
+						"darwin-amd64": "5740f3e75fd79ab423fffb0664fa2751060ddd970722cf40570738f1392406bf",
+						"linux-amd64":  "06a3e38d1c92baf03cce637b70f4e47b47c7715372cea1dda8cb15a8f336f09b",
 					},
 				}),
 			}),
