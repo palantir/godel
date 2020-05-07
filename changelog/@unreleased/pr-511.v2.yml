@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Update distgo plugin to v1.20.3
+  links:
+  - https://github.com/palantir/godel/pull/511
