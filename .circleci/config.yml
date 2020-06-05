@@ -86,7 +86,7 @@ workflows:
           tags: integration
           executor:
             name: alpine-go
-            version: 1.13.8
+            version: 1.13.12
           <<: *all-tags-filter
       - godel/test:
           name: integration-brew
