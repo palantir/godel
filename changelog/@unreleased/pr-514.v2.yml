@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Update go version used to build to 1.14.4.
+  links:
+  - https://github.com/palantir/godel/pull/514
