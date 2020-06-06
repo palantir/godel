@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Update plugins and assets to versions built with Go 1.14.4.
+  links:
+  - https://github.com/palantir/godel/pull/515
