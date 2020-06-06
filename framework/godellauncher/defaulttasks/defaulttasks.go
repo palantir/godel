@@ -36,7 +36,7 @@ var defaultPluginsConfig = config.PluginsConfig{
 					ID: "com.palantir.distgo:dist-plugin:1.21.0",
 					Checksums: map[string]string{
 						"darwin-amd64": "a6d97b81e21c7b66cfbaacb9dcf32c1a9b239195558a370d5a14e1ae29c3b3f4",
-						"linux-amd64":  "a6d97b81e21c7b66cfbaacb9dcf32c1a9b239195558a370d5a14e1ae29c3b3f4",
+						"linux-amd64":  "e0785618eabbdd37bc594d47f8b3ab2bba397a67fe9f05acd7849f15742fc0d9",
 					},
 				}),
 			}),
