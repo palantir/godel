@@ -4,6 +4,8 @@ github.com/nmiyake/pkg/dirs v1.0.0 h1:pYeIw1wH7jh5/ew8naGE4Q56byJG7Uyi8PwwhVe/MT
 github.com/nmiyake/pkg/dirs v1.0.0/go.mod h1:r6/PkZ3CA1szGfQkxcHheEjBWi6Zu6jLb+lQmRXEyvM=
 github.com/nmiyake/pkg/gofiles v1.0.0 h1:I/0ZHRThFID/qpt3xySNV7AkEGyg1QABQrMT00vwXmw=
 github.com/nmiyake/pkg/gofiles v1.0.0/go.mod h1:F+0i7sA0xTtovYCTcEutbEbFbW2vAQMm2cyHcXFpAok=
+github.com/palantir/pkg v1.0.1 h1:ZbGUcc14N7xcZSY9cehQoiHHTm/BAZO5RJdlsNEtSbk=
+github.com/palantir/pkg v1.0.1/go.mod h1:Eo6Jl0UXfT+65sLXJOcU9duu0WPvKsWFXCb0dE5VWZs=
 github.com/palantir/pkg/matcher v1.0.0 h1:NTixoiNq/Rm+PYP6NK2kJ7HOOrVLN2tcwoOKlBCqTLA=
 github.com/palantir/pkg/matcher v1.0.0/go.mod h1:QCvRrP7D1ZwHguKkovtcPbr0i2L8GYXQxq9EUn/ME6s=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
