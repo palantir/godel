@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Update Go version used to build godel to 1.15
+  links:
+  - https://github.com/palantir/godel/pull/520
