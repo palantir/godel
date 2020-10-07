@@ -72,6 +72,7 @@ approval_rules:
           - "^settings.gradle$"
           - "^godelw$"
           - "^godel/config/godel.properties$"
+          - "^godel/config/godel.yml$"
           - "^versions.props$"
           - "^versions.lock$"
 
