@@ -1,0 +1,8 @@
+type: improvement
+improvement:
+  description: Removes brew-go environment in CircleCI from integration tests. Now
+    that most projects use Go modules, GOPATH and GOROOT have much less significance
+    and specifically testing in an environment where go is installed using `brew`
+    is less imoprtant.
+  links:
+  - https://github.com/palantir/godel/pull/525
