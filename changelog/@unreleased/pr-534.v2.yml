@@ -1,0 +1,10 @@
+type: fix
+fix:
+  description: |-
+    Fixes issue where artifact resolution could fail if multiple copies of godel were resolving artifacts concurrently. Note that, in order for this fix to work, all of the copies of godel that are running concurrently must have this fix.
+
+    Uses file locks to perform operations that involve downloading, checksumming
+    and extracting artifacts to ensure that running the operations from
+    multiple different copies of godel do not conflict.
+  links:
+  - https://github.com/palantir/godel/pull/534
