@@ -21,11 +21,11 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
 	"github.com/palantir/godel/v2/pkg/osarch"
 	"github.com/pkg/errors"
+	"github.com/rogpeppe/go-internal/lockedfile"
 )
 
 type Resolver interface {
@@ -91,7 +91,7 @@ func ResolveArtifact(locatorWithResolver LocatorWithResolverParam, defaultResolv
 }
 
 func pluginTGZFileContentHash(tgzPath string) (string, error) {
-	f, err := os.Open(tgzPath)
+	f, err := lockedfile.Open(tgzPath)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to open %s", tgzPath)
 	}
@@ -151,7 +151,8 @@ func CopySingleFileTGZContent(dst io.Writer, tgzContentReader io.Reader) error {
 }
 
 func SHA256ChecksumFile(fPath string) (string, error) {
-	f, err := os.Open(fPath)
+	// used lockedfile.Open to ensure file is safe to checksum
+	f, err := lockedfile.Open(fPath)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to open %s for reading", f.Name())
 	}
