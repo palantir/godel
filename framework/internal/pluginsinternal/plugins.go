@@ -109,7 +109,7 @@ func ResolveAndVerify(
 			}
 			defer func() {
 				if err := tgzFile.Close(); err != nil {
-					rErr = errors.Wrapf(err, "failed to close file %s", tgzFile)
+					rErr = errors.Wrapf(err, "failed to close file %s", tgzDstPath)
 				}
 			}()
 
