@@ -1,0 +1,10 @@
+type: fix
+fix:
+  description: |-
+    Fixes issue where godel could fail if multiple instances were performing plugin and/or asset resolution at the same time.
+
+    Introduces a new "godel-resolver.lock" file in the godel plugins
+    directory that must be locked while plugin and asset resolution
+    is performed.
+  links:
+  - https://github.com/palantir/godel/pull/537
