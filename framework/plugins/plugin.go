@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"io"
 	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -28,6 +29,7 @@ import (
 	"github.com/palantir/godel/v2/framework/pluginapi/v2/pluginapi"
 	"github.com/palantir/godel/v2/pkg/osarch"
 	"github.com/pkg/errors"
+	"github.com/rogpeppe/go-internal/lockedfile"
 )
 
 // pluginInfoWithAssets bundles a pluginapi.Info with the locators of all the assets specified for it.
@@ -87,7 +89,10 @@ func LoadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer)
 
 // resolvePlugins resolves all of the plugins defined in the provided params for the specified osArch using the provided
 // plugins and downloads directories. Returns a map that contains all of the information for the valid plugins. If
-// errors were encountered while trying to resolve plugins, returns an error that summarizes the errors.
+// errors were encountered while trying to resolve plugins, returns an error that summarizes the errors. This function
+// locks the "godel-resolver.lock" file in the plugins directory (creating it if it does not exist) for the duration of
+// the function, which ensures that only one instance of this function will run at a given time (both within and across
+// godel processes) and eliminates race conditions around different godel processes resolving plugins concurrently.
 //
 // For each plugin defined in the parameters:
 //
@@ -106,6 +111,15 @@ func LoadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer)
 // * If the plugin specifies assets, resolve all of the assets
 //   * Asset resolution uses a process that is analogous to plugin resolution, but performs it in the assets directory
 func resolvePlugins(pluginsDir, assetsDir, downloadsDir string, osArch osarch.OSArch, pluginsParam godellauncher.PluginsParam, stdout io.Writer) (map[artifactresolver.Locator]pluginInfoWithAssets, error) {
+	// lock global resolver file while performing resolution
+	pluginResolverLockFilePath := filepath.Join(pluginsDir, "godel-resolver.lock")
+	pluginResolverLock := lockedfile.MutexAt(pluginResolverLockFilePath)
+	unlock, err := pluginResolverLock.Lock()
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to lock resolver mutex file")
+	}
+	defer unlock()
+
 	plugins := make(map[artifactresolver.Locator]pluginInfoWithAssets)
 	pluginErrors := make(map[artifactresolver.Locator]error)
 	for _, currPlugin := range pluginsParam.Plugins {
