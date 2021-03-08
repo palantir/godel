@@ -26,7 +26,6 @@ import (
 	"github.com/palantir/godel/v2/framework/internal/pathsinternal"
 	"github.com/palantir/godel/v2/pkg/osarch"
 	"github.com/pkg/errors"
-	"github.com/rogpeppe/go-internal/lockedfile"
 )
 
 const (
@@ -94,8 +93,7 @@ func ResolveAndVerify(
 		}
 
 		if err := func() (rErr error) {
-			// use lockedfile.OpenFile to ensure that destination is not written to by multiple processes
-			pluginFile, err := lockedfile.OpenFile(currDstPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+			pluginFile, err := os.OpenFile(currDstPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 			if err != nil {
 				return errors.Wrapf(err, "failed to create file %s", currDstPath)
 			}
@@ -105,8 +103,7 @@ func ResolveAndVerify(
 				}
 			}()
 
-			// use lockedfile.Open to ensure that file is safe to read
-			tgzFile, err := lockedfile.Open(tgzDstPath)
+			tgzFile, err := os.Open(tgzDstPath)
 			if err != nil {
 				return errors.Wrapf(err, "failed to open %s for reading", tgzDstPath)
 			}
