@@ -23,7 +23,6 @@ import (
 	"github.com/palantir/godel/v2/framework/godellauncher"
 	v1 "github.com/palantir/godel/v2/framework/pluginapi"
 	"github.com/pkg/errors"
-	"github.com/rogpeppe/go-internal/lockedfile"
 )
 
 const (
@@ -260,16 +259,6 @@ func (infoImpl pluginInfoImpl) private() {}
 // InfoFromPlugin returns the Info for the plugin at the specified path. Does so by invoking the InfoCommand on the
 // plugin and parsing the output.
 func InfoFromPlugin(pluginPath string) (PluginInfo, error) {
-	// use lockedfile.Open on plugin to ensure that it is not overwritten when called
-	pluginFile, err := lockedfile.Open(pluginPath)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to read plugin file %s", pluginPath)
-	}
-	defer func() {
-		// close file to return lock
-		_ = pluginFile.Close()
-	}()
-
 	cmd := exec.Command(pluginPath, PluginInfoCommandName)
 	bytes, err := cmd.CombinedOutput()
 	if err != nil {
