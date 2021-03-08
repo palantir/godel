@@ -1,0 +1,5 @@
+type: fix
+fix:
+  description: Fixes bug where artifact resolution logic would open a TGZ file to read but would not close the file.
+  links:
+  - https://github.com/palantir/godel/pull/532

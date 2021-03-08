@@ -107,6 +107,11 @@ func ResolveAndVerify(
 			if err != nil {
 				return errors.Wrapf(err, "failed to open %s for reading", tgzDstPath)
 			}
+			defer func() {
+				if err := tgzFile.Close(); err != nil {
+					rErr = errors.Wrapf(err, "failed to close file %s", tgzDstPath)
+				}
+			}()
 
 			if err := artifactresolver.CopySingleFileTGZContent(pluginFile, tgzFile); err != nil {
 				return errors.Wrapf(err, "failed to copy file out of TGZ from %s to %s", tgzDstPath, currDstPath)
