@@ -25,6 +25,7 @@ import (
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/pkg/errors"
+	"github.com/rogpeppe/go-internal/lockedfile"
 )
 
 // DownloadIntoDirectory downloads the provided package into the specified output directory. The output directory must
@@ -94,7 +95,8 @@ func Download(pkgSrc PkgSrc, dstFilePath string, w io.Writer) (rErr error) {
 	}()
 
 	// create new file for package (overwrite any existing file)
-	dstFile, err := os.Create(dstFilePath)
+	// Uses lockedfile to ensure that multiple processes do not write to the file at the same time.
+	dstFile, err := lockedfile.Create(dstFilePath)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create file %s", dstFilePath)
 	}
