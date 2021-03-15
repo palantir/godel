@@ -162,18 +162,18 @@ GODEL_BASE_DIR=${GODEL_HOME:-$HOME/.godel}
 OS=""
 EXPECTED_CHECKSUM=""
 case "$(uname)" in
-  Darwin*)
-    OS=darwin
-    EXPECTED_CHECKSUM=$DARWIN_CHECKSUM
-    ;;
-  Linux*)
-    OS=linux
-    EXPECTED_CHECKSUM=$LINUX_CHECKSUM
-    ;;
-  *)
-    echo "Unsupported operating system: $(uname)"
-    exit 1
-    ;;
+    Darwin*)
+        OS=darwin
+        EXPECTED_CHECKSUM=$DARWIN_CHECKSUM
+        ;;
+    Linux*)
+        OS=linux
+        EXPECTED_CHECKSUM=$LINUX_CHECKSUM
+        ;;
+    *)
+        echo "Unsupported operating system: $(uname)"
+        exit 1
+        ;;
 esac
 
 # path to godel binary
@@ -213,7 +213,7 @@ if [ ! -f "$CMD" ]; then
 
     # if destination directory for distribution already exists, remove it
     if [ -d "$GODEL_BASE_DIR/dists/godel-$VERSION" ]; then
-          rm -rf "$GODEL_BASE_DIR/dists/godel-$VERSION"
+        rm -rf "$GODEL_BASE_DIR/dists/godel-$VERSION"
     fi
 
     # ensure that parent directory of destination exists
