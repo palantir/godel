@@ -1,0 +1,5 @@
+type: fix
+fix:
+  description: Fixes issue where concurrent invocations of godelw could fail when the godel distribution did not already exist.
+  links:
+  - https://github.com/palantir/godel/pull/541
