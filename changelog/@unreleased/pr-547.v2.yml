@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Build using Go 1.16
+  links:
+  - https://github.com/palantir/godel/pull/547

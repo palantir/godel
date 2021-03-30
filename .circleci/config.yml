@@ -1,13 +1,14 @@
 owner-repo: &owner-repo
   owner-repo: palantir/godel
 
+go-version-current: &go-version-current "1.16.2"
+go-version-prev: &go-version-prev "1.15.10"
+
 excutor: &executor
   executor:
-    name: go/darwin-linux-no-cgo
-    version: 1.15-t57
+    name: go/golang
+    version: *go-version-current
     <<: *owner-repo
-
-go-version: &go-version "1.15"
 
 version: 2.1
 
@@ -19,14 +20,13 @@ executors:
   alpine-go:
     parameters:
       version:
-        description: |
-          The version of the palantirtechnologies/go:alpine-go Docker image to use.
+        description: The Go version for the Docker image
         type: string
     working_directory: /go/src/github.com/palantir/godel
     environment:
       CGO_ENABLED: 0
     docker:
-      - image: palantirtechnologies/go:alpine-go-<< parameters.version >>-t57
+      - image: golang:<< parameters.version >>
 
 jobs:
   wiki:
@@ -74,14 +74,14 @@ workflows:
           tags: integration
           executor:
             name: alpine-go
-            version: *go-version
+            version: *go-version-current
           <<: *all-tags-filter
       - godel/test:
           name: integration-alpine-go-prev
           tags: integration
           executor:
             name: alpine-go
-            version: 1.14.7
+            version: *go-version-prev
           <<: *all-tags-filter
       - godel/verify:
           name: pkg-products-verify-test
@@ -89,7 +89,7 @@ workflows:
           include-tests: true
           executor:
             name: go/golang
-            version: *go-version
+            version: *go-version-current
             owner-repo: palantir/godel/pkg/products/v2
           <<: *all-tags-filter
       - godel/dist:
