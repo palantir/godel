@@ -140,6 +140,22 @@ func TestRenderResolve(t *testing.T) {
 			},
 			"/foo/a/b/c/Product-darwin-amd64-Version",
 		},
+		{
+			"group parts",
+			ts.URL + "/{{index GroupParts 1}}/{{index GroupParts 2}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}",
+			LocatorParam{
+				Locator: Locator{
+					Group:   "a.b.c",
+					Product: "Product",
+					Version: "Version",
+				},
+			},
+			osarch.OSArch{
+				OS:   "darwin",
+				Arch: "amd64",
+			},
+			"/b/c/Product-darwin-amd64-Version",
+		},
 	} {
 		r, err := NewTemplateResolver(tc.template)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
@@ -147,6 +163,5 @@ func TestRenderResolve(t *testing.T) {
 		err = r.Resolve(tc.locator, tc.osArch, dstFile, buf)
 		require.NoError(t, err, "Case %d: %s", i, tc.name)
 		assert.Equal(t, tc.want, got, "Case %d: %s", i, tc.name)
-		fmt.Println(buf.String())
 	}
 }
