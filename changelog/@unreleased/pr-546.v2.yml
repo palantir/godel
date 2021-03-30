@@ -1,0 +1,8 @@
+type: improvement
+improvement:
+  description: |-
+    Adds a "GroupParts" template function to the resolver template
+    that returns the dot-delimited parts of the "Group" field of
+    a locator's "Group" field as an array.
+  links:
+  - https://github.com/palantir/godel/pull/546
