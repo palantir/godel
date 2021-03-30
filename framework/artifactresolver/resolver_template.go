@@ -62,6 +62,9 @@ func funcMap(locator LocatorParam, osArch osarch.OSArch) template.FuncMap {
 		"GroupPath": func() string {
 			return strings.Replace(locator.Group, ".", "/", -1)
 		},
+		"GroupParts": func() []string {
+			return strings.Split(locator.Group, ".")
+		},
 		"Product": func() string {
 			return locator.Product
 		},
