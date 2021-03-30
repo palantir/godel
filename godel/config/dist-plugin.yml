@@ -90,7 +90,7 @@ products:
                     REPO="releases"
                 fi
                 PROPERTIES_FILE="$wrapper_dir/godel/config/godel.properties"
-                URL="https://palantir.bintray.com/${REPO}/com/palantir/godel/godel/${VERSION}/godel-${VERSION}.tgz"
+                URL="https://github.com/palantir/godel/releases/download/v${VERSION}/godel-${VERSION}.tgz"
                 substitute_variable "{{URL}}" "$URL" "$PROPERTIES_FILE"
             }
 
