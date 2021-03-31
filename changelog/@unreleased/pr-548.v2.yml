@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Publish godel releases to GitHub releases rather than Bintray and update resolver link in godel.properties
+  links:
+  - https://github.com/palantir/godel/pull/548
