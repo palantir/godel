@@ -17,15 +17,11 @@ jobs:
             ~/go/pkg/mod
             ~/.cache/go-build
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
       - uses: actions/cache@v2
         with:
           path: |
             ~/.godel
           key: ${{ runner.os }}-godel-${{ hashFiles('godelw', 'godel/config/godel.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-godel-
       - run: ./godelw dist
         env:
           GOPATH: "/home/runner/go"
