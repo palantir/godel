@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Update distgo to 1.26.0
+  links:
+  - https://github.com/palantir/godel/pull/551
