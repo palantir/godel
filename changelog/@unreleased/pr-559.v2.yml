@@ -1,0 +1,5 @@
+type: fix
+fix:
+  description: Makes it so that the "install" and "update" operation can be run concurrently across different godel processes safely.
+  links:
+  - https://github.com/palantir/godel/pull/559
