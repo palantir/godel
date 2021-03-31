@@ -15,10 +15,12 @@
 package installupdate
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/mholt/archiver/v3"
@@ -27,6 +29,7 @@ import (
 	"github.com/palantir/godel/v2/godelgetter"
 	"github.com/palantir/pkg/specdir"
 	"github.com/pkg/errors"
+	"github.com/rogpeppe/go-internal/lockedfile"
 )
 
 // Copies and installs the gödel package from the provided PkgSrc. If the PkgSrc includes a checksum, this
@@ -38,6 +41,9 @@ import (
 // "{{layout.GodelHomePath()}}/dists/{{layout.AppName}}-{{version}}". If the downloaded distribution matches a version
 // that already exists in the distribution directory and a download occurs, the existing distribution will be
 // overwritten by the newly downloaded one. Returns the version of the distribution that was installed.
+//
+// Locks on a file in the Godel Home "downloads" directory with a file name derived based on the provided PkgSrc to
+// ensure that this operation does not run concurrently for the same package.
 func install(src godelgetter.PkgSrc, stdout io.Writer) (string, error) {
 	godelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
 	if err != nil {
@@ -46,6 +52,15 @@ func install(src godelgetter.PkgSrc, stdout io.Writer) (string, error) {
 	godelHome := godelHomeSpecDir.Root()
 
 	downloadsDir := godelHomeSpecDir.Path(layout.DownloadsDir)
+
+	installPkgLockFilePath := filepath.Join(downloadsDir, fmt.Sprintf("install-%s.lock", src.Name()))
+	installMutex := lockedfile.MutexAt(installPkgLockFilePath)
+	unlockFn, err := installMutex.Lock()
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to lock mutex for installing package")
+	}
+	defer unlockFn()
+
 	tgzFilePath, err := godelgetter.DownloadIntoDirectory(src, downloadsDir, stdout)
 	if err != nil {
 		return "", err
