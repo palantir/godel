@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Fixes issue where `godelinit` or `./godelw update` could fail due to GitHub API rate limits.
+  links:
+  - https://github.com/palantir/godel/pull/561
