@@ -15,7 +15,6 @@
 package installupdate
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -26,7 +25,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-github/v28/github"
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/godel/v2/framework/builtintasks/installupdate/layout"
 	"github.com/palantir/godel/v2/godelgetter"
@@ -125,8 +123,8 @@ func downloadedTGZForVersion(version string) (string, string, error) {
 	return downloadedTGZ, checksum, nil
 }
 
-// latestGodelVersion returns the latest version of gödel. Does so by querying the GitHub API or looking up the value
-// from cache. If a cache value is within the timeframe of the provided duration (time.Now - cacheExpiration), it is
+// latestGodelVersion returns the latest version of gödel. Does so by querying GitHub or looking up the value from
+// cache. If a cache value is within the timeframe of the provided duration (time.Now - cacheExpiration), it is
 // returned.
 func latestGodelVersion(cacheExpiration time.Duration) (string, error) {
 	if cacheExpiration != 0 {
@@ -135,12 +133,13 @@ func latestGodelVersion(cacheExpiration time.Duration) (string, error) {
 			return versionCfg.LatestVersion, nil
 		}
 	}
-	client := github.NewClient(http.DefaultClient)
-	rel, _, err := client.Repositories.GetLatestRelease(context.Background(), "palantir", "godel")
+	resp, err := http.Get("https://github.com/palantir/godel/releases/latest")
 	if err != nil {
 		return "", errors.Wrap(err, "failed to determine latest release")
+	} else if resp.StatusCode != http.StatusOK {
+		return "", errors.Errorf("failed to determine latest release: received status code %d", resp.StatusCode)
 	}
-	latestVersion := *rel.TagName
+	latestVersion := path.Base(resp.Request.URL.String())
 	if len(latestVersion) >= 2 && latestVersion[0] == 'v' && latestVersion[1] >= '0' && latestVersion[1] <= '9' {
 		// if version begins with 'v' and is followed by a digit, trim the leading 'v'
 		latestVersion = latestVersion[1:]

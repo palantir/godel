@@ -4,7 +4,6 @@ go 1.13
 
 require (
 	github.com/cheggaaa/pb/v3 v3.0.2
-	github.com/google/go-github/v28 v28.1.1
 	github.com/mholt/archiver/v3 v3.3.0
 	github.com/nmiyake/pkg/dirs v1.0.0
 	github.com/nmiyake/pkg/errorstringer v1.0.0
