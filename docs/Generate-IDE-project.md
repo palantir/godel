@@ -5,7 +5,7 @@ with "File Watchers" plugin configuration that runs `./godelw format` on modifie
 
 Tutorial start state
 --------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 
@@ -34,14 +34,14 @@ ignores these files:
 *.iws' > .gitignore
 ➜ git add .gitignore
 ➜ git commit -m "Add .gitignore file"
-[master 0028157] Add .gitignore file
+[master 84769ed] Add .gitignore file
  1 file changed, 3 insertions(+)
  create mode 100644 .gitignore
 ```
 
 Tutorial end state
 ------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files

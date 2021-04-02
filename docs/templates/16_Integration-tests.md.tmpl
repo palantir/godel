@@ -5,7 +5,7 @@ artifacts of a product and test tags can be used to define test sets for integra
 
 Tutorial start state
 --------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -20,8 +20,6 @@ Tutorial start state
 * `godel/config/generate-plugin.yml` is configured to generate string function
 * `godel/config/godel.yml` is configured to ignore all `.+_string.go` files
 
-([Link]())
-
 Write tests that run using build artifacts
 ------------------------------------------
 `echgo2` currently has unit tests that test the contracts of the `echgo` package. Unit tests are a great way to test the
@@ -34,32 +32,15 @@ based on flags and ultimately prints the output to the console. If we want to te
 invalid values are supplied as flags, how multiple command-line arguments are parsed or the exit codes of the program,
 there is not a straightforward way to write that test.
 
-The `github.com/palantir/godel/pkg/products` packages provides functionality that makes it easy to write such tests for
+The `github.com/palantir/godel/pkg/products/v2` module provides functionality that makes it easy to write such tests for
 projects that use gödel to build their products. The `products` package provides functions that ensure that specified
 products are built using the build configuration defined for the product and provides a path to the built executable
 that can be used for testing.
 
-We need to add `github.com/palantir/godel/pkg/products` as a vendored dependency for the project. Start by getting the
-gödel project:
+We need to add `github.com/palantir/godel/pkg/products/v2` as a module dependency for the project.
 
 ```START_TUTORIAL_CODE
-mkdir -p ${GOPATH}/src/github.com/palantir && cd $_
-```END_TUTORIAL_CODE
-```START_TUTORIAL_CODE
-go get -u github.com/palantir/godel
-```END_TUTORIAL_CODE
-
-There are multiple different ways to vendor dependencies. For the purposes of this tutorial, we will forego formal
-vendoring and vendor the dependency manually.
-
-```START_TUTORIAL_CODE
-cd ${GOPATH}/src/${PROJECT_PATH}
-```END_TUTORIAL_CODE
-```START_TUTORIAL_CODE
-mkdir -p vendor/github.com/palantir/godel/pkg/products/v2/products
-```END_TUTORIAL_CODE
-```START_TUTORIAL_CODE
-cp ${GOPATH}/src/github.com/palantir/godel/pkg/products/v2/products/* vendor/github.com/palantir/godel/pkg/products/v2/products
+go get github.com/palantir/godel/pkg/products/v2
 ```END_TUTORIAL_CODE
 
 Run the following to define a test that tests the behavior of invoking echgo2 with an invalid echo type and run the test
@@ -70,7 +51,7 @@ it):
 mkdir -p integration_test
 ```END_TUTORIAL_CODE
 ```START_TUTORIAL_CODE
-echo '// Copyright (c) 2018 Author Name. All rights reserved.
+echo '// Copyright (c) 2021 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -81,7 +62,7 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/palantir/godel/v2/pkg/products/v2/products"
+	"github.com/palantir/godel/pkg/products/v2"
 )
 
 func TestInvalidType(t *testing.T) {
@@ -113,7 +94,7 @@ code, which should cause `cmd.CombinedOutput` to return an error.
 Fix the bug by updating `main.go` and then re-run the test:
 
 ```START_TUTORIAL_CODE
-SRC='// Copyright (c) 2018 Author Name. All rights reserved.
+SRC='// Copyright (c) 2021 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -155,7 +136,7 @@ We can see that the test now fails as expected. Since this is the expected behav
 happens and run the test again:
 
 ```START_TUTORIAL_CODE
-echo '// Copyright (c) 2018 Author Name. All rights reserved.
+echo '// Copyright (c) 2021 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -165,7 +146,7 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/palantir/godel/v2/pkg/products/v2/products"
+	"github.com/palantir/godel/pkg/products/v2"
 )
 
 func TestInvalidType(t *testing.T) {
@@ -206,7 +187,7 @@ go build ./integration_test
 We can work around this by adding a `doc.go` file to the directory to act as a placeholder:
 
 ```START_TUTORIAL_CODE
-echo '// Copyright (c) 2018 Author Name. All rights reserved.
+echo '// Copyright (c) 2021 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -249,7 +230,7 @@ that do not match any tags.
 Commit these changes by running the following:
 
 ```START_TUTORIAL_CODE
-git add godel main.go integration_test vendor
+git add godel go.mod go.sum main.go integration_test
 ```END_TUTORIAL_CODE
 ```START_TUTORIAL_CODE
 git commit -m "Add integration tests"
@@ -257,7 +238,7 @@ git commit -m "Add integration tests"
 
 Tutorial end state
 ------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files

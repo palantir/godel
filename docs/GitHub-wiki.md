@@ -4,7 +4,7 @@ The `github-wiki` task can be used to sync a particular directory with the GitHu
 
 Tutorial start state
 --------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -33,7 +33,7 @@ Run the following to create a "docs" directory and add some documentation and co
 ➜ echo 'echgo2 is a tool that echoes the input provided by the user.' > docs/Home.md
 ➜ git add docs
 ➜ git commit -m "Add documentation"
-[master c469655] Add documentation
+[master 2913942] Add documentation
  2 files changed, 2 insertions(+)
  create mode 100644 docs/Home.md
  create mode 100644 docs/_Sidebar.md
@@ -57,7 +57,7 @@ This commits the contents of the `docs` directory to the GitHub wiki repository:
 
 Tutorial end state
 ------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files

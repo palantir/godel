@@ -4,7 +4,7 @@ Summary
 
 Tutorial start state
 --------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -100,7 +100,7 @@ Refer to the "More" sections below for examples of configuring the checks in dif
 
 Tutorial end state
 ------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -304,12 +304,12 @@ For example, we can add the [nobadfuncs check](https://github.com/palantir/go-no
 ```START_TUTORIAL_CODE
 echo 'default-tasks:
   resolvers:
-    - https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz
+    - https://github.com/{{index GroupParts 1}}/{{index GroupParts 2}}/releases/download/v{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz
   tasks:
     com.palantir.okgo:check-plugin:
       assets:
         - locator:
-            id: "com.palantir.godel-okgo-asset-nobadfuncs:nobadfuncs-asset:1.0.0"
+            id: "com.palantir.godel-okgo-asset-nobadfuncs:nobadfuncs-asset:1.5.0"
 exclude:
   names:
     - "\\\\..+"
@@ -331,7 +331,7 @@ removes the `novendor` check entirely:
 ```START_TUTORIAL_CODE
 echo 'default-tasks:
   resolvers:
-    - https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz
+    - https://github.com/{{index GroupParts 1}}/{{index GroupParts 2}}/releases/download/v{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz
   tasks:
     com.palantir.okgo:check-plugin:
       exclude-default-assets:

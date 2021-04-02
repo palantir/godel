@@ -5,7 +5,7 @@ we will add it as a plugin task.
 
 Tutorial start state
 --------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -19,19 +19,19 @@ Tutorial start state
 
 Add the `go generate` plugin
 ----------------------------
-The [go-generate](https://github.com/palantir/go-generate) tool provides a gödel plugin that allows `go generate` tasks
-to be defined, run and verified. The plugin identifier is "com.palantir.godel-generate-plugin:generate-plugin:1.0.0", and it
-is available on Bintray.
+The [gödel generate plugin](https://github.com/palantir/godel-generate-plugin) is a gödel plugin that allows
+`go generate` tasks to be defined, run and verified. The plugin identifier is
+"com.palantir.godel-generate-plugin:generate-plugin:1.2.0", and it is available on GitHub.
 
 Add the plugin definition to `godel/config/godel.yml`:
 
 ```
 ➜ echo 'plugins:
   resolvers:
-    - "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
+    - "https://github.com/{{index GroupParts 1}}/{{index GroupParts 2}}/releases/download/v{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
   plugins:
     - locator:
-        id: "com.palantir.godel-generate-plugin:generate-plugin:1.0.0"
+        id: "com.palantir.godel-generate-plugin:generate-plugin:1.2.0"
 exclude:
   names:
     - "\\\\..+"
@@ -45,8 +45,8 @@ the plugin:
 
 ```
 ➜ ./godelw
-Getting package from https://palantir.bintray.com/releases/com/palantir/godel-generate-plugin/generate-plugin/1.0.0/generate-plugin-1.0.0-linux-amd64.tgz...
- 0 B / 3.29 MiB    0.00% 256.00 KiB / 3.29 MiB    7.60% 2s 768.00 KiB / 3.29 MiB   22.80% 1s 836.88 KiB / 3.29 MiB   24.85% 1s 1.14 MiB / 3.29 MiB   34.77% 1s 1.25 MiB / 3.29 MiB   38.01% 1s 1.65 MiB / 3.29 MiB   50.29% 1s 2.14 MiB / 3.29 MiB   65.11% 2.97 MiB / 3.29 MiB   90.38% 3.29 MiB / 3.29 MiB  100.00% 1s
+Getting package from https://github.com/palantir/godel-generate-plugin/releases/download/v1.2.0/generate-plugin-1.2.0-linux-amd64.tgz...
+188.29 KiB / 3.65 MiB [--->____________________________________________________________] 5.03% ? p/s637.83 KiB / 3.65 MiB [---------->____________________________________________________] 17.05% ? p/s2.10 MiB / 3.65 MiB [------------------------------------->___________________________] 57.54% ? p/s3.65 MiB / 3.65 MiB [---------------------------------------------------------] 100.00% 6.44 MiB p/s
 Usage:
   godel [command]
 
@@ -58,6 +58,7 @@ Available Commands:
   clean           Remove the build and dist outputs for products
   dist            Create distributions for products
   docker          Create or push Docker images for products
+  exec            Executes given shell command using godel
   format          Format files
   generate        Run generate task
   git-hooks       Install git commit hooks that verify that Go files are properly formatted before commit
@@ -101,7 +102,7 @@ and we will use `go generate` to invoke `stringer` to create the string represen
 Run the following to update the `echo` implementation:
 
 ```
-➜ echo '// Copyright (c) 2018 Author Name. All rights reserved.
+➜ echo '// Copyright (c) 2021 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -164,7 +165,7 @@ func (e *reverseEchoer) Echo(in string) string {
 	}
 	return string(out)
 }' > echo/echo.go
-➜ SRC='// Copyright (c) 2018 Author Name. All rights reserved.
+➜ SRC='// Copyright (c) 2021 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -190,7 +191,7 @@ func TestEcho(t *testing.T) {
 		}
 	}
 }' && SRC=${SRC//PROJECT_PATH/$PROJECT_PATH} && echo "$SRC" > echo/echo_test.go
-➜ SRC='// Copyright (c) 2018 Author Name. All rights reserved.
+➜ SRC='// Copyright (c) 2021 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -247,13 +248,17 @@ We can address this by using `go generate` and the `stringer` tool to generate t
 Run the following to ensure that you have the `stringer` tool:
 
 ```
-➜ go get -u golang.org/x/tools/cmd/stringer
+➜ go install golang.org/x/tools/cmd/stringer@latest
+go: downloading golang.org/x/tools v0.1.0
+go: downloading golang.org/x/sys v0.0.0-20210119212857-b64e53b001e4
+go: downloading golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
+go: downloading golang.org/x/mod v0.3.0
 ```
 
 Now, update `echo.go` to have a `go generate` line that invokes `stringer`:
 
 ```
-➜ echo '// Copyright (c) 2018 Author Name. All rights reserved.
+➜ echo '// Copyright (c) 2021 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -354,6 +359,15 @@ package echo
 
 import "strconv"
 
+func _() {
+	// An "invalid array index" compiler error signifies that the constant values have changed.
+	// Re-run the stringer command to generate them again.
+	var x [1]struct{}
+	_ = x[Simple-0]
+	_ = x[Reverse-1]
+	_ = x[end-2]
+}
+
 const _Type_name = "SimpleReverseend"
 
 var _Type_index = [...]uint8{0, 6, 13, 16}
@@ -370,7 +384,7 @@ We can see that `echo/type_string.go` was generated and provides an implementati
 Now that this exists, we can remove the one we wrote manually in `echo.go`:
 
 ```
-➜ echo '// Copyright (c) 2018 Author Name. All rights reserved.
+➜ echo '// Copyright (c) 2021 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -446,10 +460,10 @@ exclude block of `godel/config/godel.yml` to reflect this and specify that the f
 ```
 ➜ echo 'plugins:
   resolvers:
-    - "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
+    - "https://github.com/{{index GroupParts 1}}/{{index GroupParts 2}}/releases/download/v{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
   plugins:
     - locator:
-        id: "com.palantir.godel-generate-plugin:generate-plugin:1.0.0"
+        id: "com.palantir.godel-generate-plugin:generate-plugin:1.2.0"
 exclude:
   names:
     - "\\\\..+"
@@ -466,214 +480,15 @@ We can now commit the changes:
 ```
 ➜ git add echo godel main.go
 ➜ git commit -m "Add support for echo types"
-[master 972dd35] Add support for echo types
- 6 files changed, 78 insertions(+), 4 deletions(-)
+[master 232fd7a] Add support for echo types
+ 6 files changed, 87 insertions(+), 4 deletions(-)
  create mode 100644 echo/type_string.go
  create mode 100644 godel/config/generate-plugin.yml
 ```
 
-Many Go projects would consider this sufficient -- they would document the requirement that developers must run
-`go get golang.org/x/tools/cmd/stringer` locally to in order to run "generate" and also ensure that this same action is
-performed in their CI environment. However, this introduces an external dependency on the ability to get and install
-`stringer`. Furthermore, the version of `stringer` is not defined/locked in anywhere -- the `go get` action will fetch
-whatever version is the latest at that time. This may not be an issue for tools that have a completely mature API, but
-if there are behavior changes between versions of the tools it can lead to the generation tasks creating inconsistent
-output.
-
-For that reason, if the `generate` task is running a Go program, we have found it helpful to vendor the entire program
-within the project and to run it using `go run` to ensure that the `generate` task does not have any external
-dependencies. We will use this construction for this project.
-
-Run the following to create a new directory for the generator and create a `vendor` directory within that directory:
-
-```
-➜ mkdir -p generator/vendor
-```
-
-Putting the `vendor` directory within `generator` ensures that the code we vendor will only be accessible within the
-`generator` directory. We will now vendor the `stringer` program. In a real workflow, you would use the vendoring tool
-of your choice to do so. For the purposes of this tutorial, we will handle our vendoring manually by copying the code we
-need to the expected location:
-
-```
-➜ mkdir -p generator/vendor/golang.org/x/tools/cmd/stringer
-➜ cp $(find $GOPATH/src/golang.org/x/tools/cmd/stringer -name '*.go' -not -name '*_test.go' -maxdepth 1 -type f) generator/vendor/golang.org/x/tools/cmd/stringer/
-```
-
-Note: the `find` command above performs some pruning to copy only the buildable Go files that will be used -- if you
-don't care about pulling in extra unneeded files (such as tests and testdata files), you can run
-`cp -r $GOPATH/src/golang.org/x/tools/cmd/stringer/* generator/vendor/golang.org/x/tools/cmd/stringer/` instead.
-
-We will now define a generator that invokes this:
-
-```
-➜ echo '// Copyright (c) 2018 Author Name. All rights reserved.
-// Use of this source code is governed by the Apache License, Version 2.0
-// that can be found in the LICENSE file.
-
-//go:generate -command runstringer go run vendor/golang.org/x/tools/cmd/stringer/stringer.go vendor/golang.org/x/tools/cmd/stringer/importer18.go
-
-//go:generate runstringer -type=Type ../echo
-
-package generator' > generator/generate.go
-```
-
-This generator now runs `stringer` directly from the vendor directory. If we had other packages on which we wanted to
-invoke `stringer`, we could simply update this file to do so.
-
-Update the previous code to remove its generation logic:
-
-```
-➜ echo '// Copyright (c) 2018 Author Name. All rights reserved.
-// Use of this source code is governed by the Apache License, Version 2.0
-// that can be found in the LICENSE file.
-
-package echo
-
-import (
-	"fmt"
-	"strings"
-)
-
-type Type int
-
-const (
-	Simple Type = iota
-	Reverse
-	end
-)
-
-var echoers = []Echoer{
-	Simple:  &simpleEchoer{},
-	Reverse: &reverseEchoer{},
-}
-
-func NewEchoer(typ Type) Echoer {
-	return echoers[typ]
-}
-
-func TypeFrom(typ string) (Type, error) {
-	for curr := Simple; curr < end; curr++ {
-		if strings.ToLower(typ) == strings.ToLower(curr.String()) {
-			return curr, nil
-		}
-	}
-	return end, fmt.Errorf("unrecognized type: %s", typ)
-}
-
-type simpleEchoer struct{}
-
-func (e *simpleEchoer) Echo(in string) string {
-	return in
-}
-
-type reverseEchoer struct{}
-
-func (e *reverseEchoer) Echo(in string) string {
-	out := make([]byte, len(in))
-	for i := 0; i < len(out); i++ {
-		out[i] = in[len(in)-1-i]
-	}
-	return string(out)
-}' > echo/echo.go
-```
-
-Update the `generate-plugin.yml` configuration:
-
-```
-➜ echo 'generators:
-  stringer:
-    go-generate-dir: generator
-    gen-paths:
-      paths:
-        - echo/type_string.go' > godel/config/generate-plugin.yml
-```
-
-Run the `generate` task to verify that it still succeeds:
-
-```
-➜ ./godelw generate
-```
-
-Run the `check` command to verify that the project is still valid:
-
-```
-➜ ./godelw check
-[extimport]     Running extimport...
-[compiles]      Running compiles...
-[deadcode]      Running deadcode...
-[errcheck]      Running errcheck...
-[extimport]     Finished extimport
-[golint]        Running golint...
-[golint]        Finished golint
-[govet]         Running govet...
-[govet]         Finished govet
-[importalias]   Running importalias...
-[importalias]   Finished importalias
-[ineffassign]   Running ineffassign...
-[ineffassign]   Finished ineffassign
-[novendor]      Running novendor...
-[novendor]      golang.org/x/tools
-[novendor]      Finished novendor
-[outparamcheck] Running outparamcheck...
-[deadcode]      Finished deadcode
-[unconvert]     Running unconvert...
-[compiles]      Finished compiles
-[varcheck]      Running varcheck...
-[errcheck]      Finished errcheck
-[outparamcheck] Finished outparamcheck
-[unconvert]     Finished unconvert
-[varcheck]      Finished varcheck
-Check(s) produced output: [novendor]
-```
-
-You can see that the `novendor` check now fails. This is because the `golang.org/x/tools` package is present in the
-`vendor` directory, but no packages in the project are importing its packages and the `novendor` check has identified
-it as an unused vendored project. However, in this instance we know that this is valid because we call the code directly
-from `go generate`. Update the `godel/config/check.yml` configuration to reflect this:
-
-```
-➜ echo 'checks:
-  golint:
-    filters:
-      - value: "should have comment or be unexported"
-      - value: "or a comment on this block"
-  novendor:
-    config:
-      ignore-pkgs:
-        - "./generator/vendor/golang.org/x/tools"' > godel/config/check-plugin.yml
-```
-
-Run `check novendor` to verify that the check now passes:
-
-```
-➜ ./godelw check novendor
-Running novendor...
-Finished novendor
-```
-
-Commit these changes by running the following:
-
-```
-➜ git add echo generator godel
-➜ git commit -m "Update generator code"
-[master 117733e] Update generator code
- 8 files changed, 719 insertions(+), 4 deletions(-)
- create mode 100644 generator/generate.go
- create mode 100644 generator/vendor/golang.org/x/tools/cmd/stringer/importer18.go
- create mode 100644 generator/vendor/golang.org/x/tools/cmd/stringer/importer19.go
- create mode 100644 generator/vendor/golang.org/x/tools/cmd/stringer/stringer.go
-```
-
-Although vendoring the program and running it directly is an approach that works, it is heavyweight and can be a pain to
-maintain -- for example, updating the generator program requires updating the contents of the vendor directory. If a
-generator task is used often across projects, consider implementing a gödel plugin to perform the task instead: this
-allows the logic to be versioned and maintained in a separate plugin instead and provides the power of the abstractions
-provided by gödel.
-
 Tutorial end state
 ------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -701,7 +516,7 @@ verify that developers properly ran `generate`.
 To demonstrate this, update `echo/echo.go` to add another echo type:
 
 ```
-➜ echo '// Copyright (c) 2018 Author Name. All rights reserved.
+➜ echo '// Copyright (c) 2021 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -779,7 +594,7 @@ Now, run the generate task with the `--verify` flag:
 ➜ ./godelw generate --verify
 Generators produced output that differed from what already exists: [stringer]
   stringer:
-    echo/type_string.go: previously had checksum 3029c612cac515bcfee843ab766d550cee29fb89995a0ac143db2de9fc8b5eec, now has checksum b7d6ccbb07cb0267f6af7cdfa2d2a038b71fcaa65261e9e9472f45e1427dc303
+    echo/type_string.go: previously had checksum 12aa70bee990397e6a8f08cdd4b5524f86d1f50cc5c33294e14e0aba9b5208f7, now has checksum 648a980df503433b06c37b23b0e4e4b2a2c7b8686beeade8baaddde335e2d01f
 ```
 
 As you can see, the task determined that the `generate` task changed a file that was specified in the `gen-paths`

@@ -4,7 +4,7 @@ Summary
 
 Tutorial start state
 --------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -26,7 +26,7 @@ Observe the default behavior by removing the configuration in the `godel/config/
 ➜ echo '' > godel/config/dist-plugin.yml
 ➜ ./godelw dist
 Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1.dirty/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.203s)
+Finished building echgo2 for linux-amd64 (0.179s)
 Creating distribution for echgo2 at out/dist/echgo2/0.0.1.dirty/os-arch-bin/echgo2-0.0.1.dirty-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
@@ -68,7 +68,7 @@ Run `./godelw dist` to verify that the distributions are built:
 ```
 ➜ ./godelw dist
 Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1.dirty/darwin-amd64/echgo2
-Finished building echgo2 for darwin-amd64 (0.207s)
+Finished building echgo2 for darwin-amd64 (0.307s)
 Creating distribution for echgo2 at out/dist/echgo2/0.0.1.dirty/os-arch-bin/echgo2-0.0.1.dirty-darwin-amd64.tgz, out/dist/echgo2/0.0.1.dirty/os-arch-bin/echgo2-0.0.1.dirty-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
@@ -83,7 +83,7 @@ Commit this update:
 ```
 ➜ git add godel/config/dist-plugin.yml
 ➜ git commit -m "Specify dist configuration"
-[master 2dcd00b] Specify dist configuration
+[master 90aff7a] Specify dist configuration
  1 file changed, 9 insertions(+)
 ```
 
@@ -93,7 +93,7 @@ to have the logic for creating distributions centrally managed in the configurat
 
 Tutorial end state
 ------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -119,11 +119,11 @@ Run `./godelw dist` to generate the dist artifacts. This run will build and dist
 
 ```
 ➜ ./godelw dist
-Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-g2dcd00b/darwin-amd64/echgo2
-Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-g2dcd00b/linux-amd64/echgo2
-Finished building echgo2 for darwin-amd64 (0.251s)
-Finished building echgo2 for linux-amd64 (0.254s)
-Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g2dcd00b/os-arch-bin/echgo2-0.0.1-1-g2dcd00b-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-g2dcd00b/os-arch-bin/echgo2-0.0.1-1-g2dcd00b-linux-amd64.tgz
+Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-g90aff7a/darwin-amd64/echgo2
+Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-g90aff7a/linux-amd64/echgo2
+Finished building echgo2 for darwin-amd64 (0.212s)
+Finished building echgo2 for linux-amd64 (0.216s)
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g90aff7a/os-arch-bin/echgo2-0.0.1-1-g90aff7a-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-g90aff7a/os-arch-bin/echgo2-0.0.1-1-g90aff7a-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
 
@@ -138,7 +138,7 @@ out of date:
 
 ```
 ➜ ./godelw dist --force
-Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g2dcd00b/os-arch-bin/echgo2-0.0.1-1-g2dcd00b-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-g2dcd00b/os-arch-bin/echgo2-0.0.1-1-g2dcd00b-linux-amd64.tgz
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g90aff7a/os-arch-bin/echgo2-0.0.1-1-g90aff7a-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-g90aff7a/os-arch-bin/echgo2-0.0.1-1-g90aff7a-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
 
@@ -178,13 +178,13 @@ Verify that running `./godelw dist --force` generates both distributions:
 
 ```
 ➜ ./godelw dist --force
-Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-g2dcd00b.dirty/darwin-amd64/echgo2
-Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-g2dcd00b.dirty/linux-amd64/echgo2
-Finished building echgo2 for darwin-amd64 (0.241s)
-Finished building echgo2 for linux-amd64 (0.249s)
-Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g2dcd00b.dirty/bin/echgo2-0.0.1-1-g2dcd00b.dirty.tgz
+Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-g90aff7a.dirty/linux-amd64/echgo2
+Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-g90aff7a.dirty/darwin-amd64/echgo2
+Finished building echgo2 for darwin-amd64 (0.215s)
+Finished building echgo2 for linux-amd64 (0.224s)
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g90aff7a.dirty/bin/echgo2-0.0.1-1-g90aff7a.dirty.tgz
 Finished creating bin distribution for echgo2
-Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g2dcd00b.dirty/os-arch-bin/echgo2-0.0.1-1-g2dcd00b.dirty-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-g2dcd00b.dirty/os-arch-bin/echgo2-0.0.1-1-g2dcd00b.dirty-linux-amd64.tgz
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g90aff7a.dirty/os-arch-bin/echgo2-0.0.1-1-g90aff7a.dirty-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-g90aff7a.dirty/os-arch-bin/echgo2-0.0.1-1-g90aff7a.dirty-linux-amd64.tgz
 Finished creating os-arch-bin distribution for echgo2
 ```
 
@@ -196,7 +196,7 @@ A specific dister for a product can be run using the `<product>.<name>` syntax. 
 
 ```
 ➜ ./godelw dist --force echgo2.bin
-Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g2dcd00b.dirty/bin/echgo2-0.0.1-1-g2dcd00b.dirty.tgz
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g90aff7a.dirty/bin/echgo2-0.0.1-1-g90aff7a.dirty.tgz
 Finished creating bin distribution for echgo2
 ```
 
@@ -244,11 +244,11 @@ Run the `dist` command:
 
 ```
 ➜ ./godelw dist --force
-Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-g2dcd00b.dirty/darwin-amd64/echgo2
-Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-g2dcd00b.dirty/linux-amd64/echgo2
-Finished building echgo2 for linux-amd64 (0.239s)
-Finished building echgo2 for darwin-amd64 (0.240s)
-Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g2dcd00b.dirty/bin/echgo2-0.0.1-1-g2dcd00b.dirty.tgz
+Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-g90aff7a.dirty/darwin-amd64/echgo2
+Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-g90aff7a.dirty/linux-amd64/echgo2
+Finished building echgo2 for linux-amd64 (0.215s)
+Finished building echgo2 for darwin-amd64 (0.224s)
+Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g90aff7a.dirty/bin/echgo2-0.0.1-1-g90aff7a.dirty.tgz
 Finished creating bin distribution for echgo2
 ```
 
@@ -258,16 +258,16 @@ Verify that `timestamp.txt` was created in the distribution directory:
 ➜ tree out/dist
 out/dist
 `-- echgo2
-    `-- 0.0.1-1-g2dcd00b.dirty
+    `-- 0.0.1-1-g90aff7a.dirty
         `-- bin
-            |-- echgo2-0.0.1-1-g2dcd00b.dirty
+            |-- echgo2-0.0.1-1-g90aff7a.dirty
             |   |-- bin
             |   |   |-- darwin-amd64
             |   |   |   `-- echgo2
             |   |   `-- linux-amd64
             |   |       `-- echgo2
             |   `-- timestamp.txt
-            `-- echgo2-0.0.1-1-g2dcd00b.dirty.tgz
+            `-- echgo2-0.0.1-1-g90aff7a.dirty.tgz
 
 7 directories, 4 files
 ```
@@ -285,13 +285,13 @@ performing them:
 
 ```
 ➜ ./godelw dist --force --dry-run
-[DRY RUN] Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-g2dcd00b/linux-amd64/echgo2
-[DRY RUN] Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-g2dcd00b/darwin-amd64/echgo2
-[DRY RUN] Run: /usr/local/go/bin/go build -o /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g2dcd00b/darwin-amd64/echgo2 -ldflags -X main.version=0.0.1-1-g2dcd00b ./. with additional environment variables [GOOS=darwin GOARCH=amd64]
-[DRY RUN] Run: /usr/local/go/bin/go build -o /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g2dcd00b/linux-amd64/echgo2 -ldflags -X main.version=0.0.1-1-g2dcd00b ./. with additional environment variables [GOOS=linux GOARCH=amd64]
-[DRY RUN] Finished building echgo2 for linux-amd64 (0.001s)
-[DRY RUN] Finished building echgo2 for darwin-amd64 (0.001s)
-[DRY RUN] Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g2dcd00b/os-arch-bin/echgo2-0.0.1-1-g2dcd00b-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-g2dcd00b/os-arch-bin/echgo2-0.0.1-1-g2dcd00b-linux-amd64.tgz
+[DRY RUN] Building echgo2 for darwin-amd64 at out/build/echgo2/0.0.1-1-g90aff7a/darwin-amd64/echgo2
+[DRY RUN] Building echgo2 for linux-amd64 at out/build/echgo2/0.0.1-1-g90aff7a/linux-amd64/echgo2
+[DRY RUN] Run: /usr/local/go/bin/go build -o /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g90aff7a/darwin-amd64/echgo2 -ldflags -X main.version=0.0.1-1-g90aff7a ./. with additional environment variables [GOOS=darwin GOARCH=amd64]
+[DRY RUN] Finished building echgo2 for darwin-amd64 (0.000s)
+[DRY RUN] Run: /usr/local/go/bin/go build -o /go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.1-1-g90aff7a/linux-amd64/echgo2 -ldflags -X main.version=0.0.1-1-g90aff7a ./. with additional environment variables [GOOS=linux GOARCH=amd64]
+[DRY RUN] Finished building echgo2 for linux-amd64 (0.000s)
+[DRY RUN] Creating distribution for echgo2 at out/dist/echgo2/0.0.1-1-g90aff7a/os-arch-bin/echgo2-0.0.1-1-g90aff7a-darwin-amd64.tgz, out/dist/echgo2/0.0.1-1-g90aff7a/os-arch-bin/echgo2-0.0.1-1-g90aff7a-linux-amd64.tgz
 [DRY RUN] Finished creating os-arch-bin distribution for echgo2
 ```
 
@@ -306,7 +306,7 @@ would add this dister:
 ```yaml
 default-tasks:
   resolvers:
-    - https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz
+    - https://github.com/{{index GroupParts 1}}/{{index GroupParts 2}}/releases/download/v{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz
   tasks:
     com.palantir.distgo:dist-plugin:
       assets:

@@ -4,7 +4,7 @@ The version of gödel used by a project can be updated by running `./godelw upda
 
 Tutorial start state
 --------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -46,7 +46,7 @@ available. This ensures that all gödel operations are always using the correct 
 
 Tutorial end state
 ------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -69,7 +69,7 @@ Tutorial end state
 
 Tutorial next step
 ------------------
-[Update legacy gödel](https://github.com/palantir/godel/wiki/Update-legacy-godel)
+[Other commands](https://github.com/palantir/godel/wiki/Other-commands)
 
 More
 ----

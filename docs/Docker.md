@@ -4,7 +4,7 @@ Summary
 
 Tutorial start state
 --------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -161,7 +161,7 @@ Commit the changes that were made to the repository:
 ```
 ➜ git add dockerctx godel/config/dist-plugin.yml
 ➜ git commit -m "Add Docker build configuration"
-[master 4e54a51] Add Docker build configuration
+[master 16a6dcd] Add Docker build configuration
  3 files changed, 15 insertions(+)
  create mode 100644 dockerctx/.gitignore
  create mode 100644 dockerctx/Dockerfile
@@ -175,13 +175,13 @@ to observe how the Docker image would be pushed:
 ```
 ➜ ./godelw docker push --dry-run
 [DRY RUN] Running Docker push for configuration echgo2 of product echgo2...
-[DRY RUN] Run [docker push echgo2:0.0.2-1-g4e54a51]
+[DRY RUN] Run [docker push echgo2:0.0.2-1-g16a6dcd]
 [DRY RUN] Run [docker push echgo2:latest]
 ```
 
 Tutorial end state
 ------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files

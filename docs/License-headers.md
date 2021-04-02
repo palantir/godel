@@ -4,7 +4,7 @@ Summary
 
 Tutorial start state
 --------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -26,7 +26,7 @@ First, add the license as a license file:
 ➜ curl http://www.apache.org/licenses/LICENSE-2.0.txt | sed '/./,$!d' > LICENSE
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 11358  100 11358    0     0  35792      0 --:--:-- --:--:-- --:--:-- 35716
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100 11358  100 11358    0     0  45798      0 --:--:-- --:--:-- --:--:-- 45983
 ```
 
 Run the following to configure a license header:
@@ -66,7 +66,7 @@ Untracked files:
 
 no changes added to commit (use "git add" and/or "git commit -a")
 ➜ cat echo/echo.go
-// Copyright (c) 2018 Author Name. All rights reserved.
+// Copyright (c) 2021 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -84,7 +84,7 @@ func (e *simpleEchoer) Echo(in string) string {
 ```
 
 Note that the "{{YEAR}}" in the license header was automatically replaced with the year at the time that the operation
-is run (in this case, 2018). This template is rendered once when adding the license and is not otherwise modified
+is run (in this case, 2021). This template is rendered once when adding the license and is not otherwise modified
 (and thus the license year will generally match the creation year for the file).
 
 Commit the changes to the repository:
@@ -92,14 +92,14 @@ Commit the changes to the repository:
 ```
 ➜ git add LICENSE echo godel main.go
 ➜ git commit -m "Add LICENSE and license headers"
-[master 2187646] Add LICENSE and license headers
+[master e8b2126] Add LICENSE and license headers
  6 files changed, 221 insertions(+)
  create mode 100644 LICENSE
 ```
 
 Tutorial end state
 ------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -200,7 +200,7 @@ following to apply the license and verify that it behaved as expected:
 ```
 ➜ ./godelw license
 ➜ cat echo/echo.go
-// Copyright 2018 Author Name. All rights reserved.
+// Copyright 2021 Author Name. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root
 // for license information.
 
@@ -216,7 +216,7 @@ func (e *simpleEchoer) Echo(in string) string {
 	return in
 }
 ➜ cat main.go
-// Copyright (c) 2018 Author Name. All rights reserved.
+// Copyright (c) 2021 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 

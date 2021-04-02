@@ -5,7 +5,7 @@ artifacts of a product and test tags can be used to define test sets for integra
 
 Tutorial start state
 --------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -20,8 +20,6 @@ Tutorial start state
 * `godel/config/generate-plugin.yml` is configured to generate string function
 * `godel/config/godel.yml` is configured to ignore all `.+_string.go` files
 
-([Link]())
-
 Write tests that run using build artifacts
 ------------------------------------------
 `echgo2` currently has unit tests that test the contracts of the `echgo` package. Unit tests are a great way to test the
@@ -34,26 +32,17 @@ based on flags and ultimately prints the output to the console. If we want to te
 invalid values are supplied as flags, how multiple command-line arguments are parsed or the exit codes of the program,
 there is not a straightforward way to write that test.
 
-The `github.com/palantir/godel/pkg/products` packages provides functionality that makes it easy to write such tests for
+The `github.com/palantir/godel/pkg/products/v2` module provides functionality that makes it easy to write such tests for
 projects that use gödel to build their products. The `products` package provides functions that ensure that specified
 products are built using the build configuration defined for the product and provides a path to the built executable
 that can be used for testing.
 
-We need to add `github.com/palantir/godel/pkg/products` as a vendored dependency for the project. Start by getting the
-gödel project:
+We need to add `github.com/palantir/godel/pkg/products/v2` as a module dependency for the project.
 
 ```
-➜ mkdir -p ${GOPATH}/src/github.com/palantir && cd $_
-➜ go get -u github.com/palantir/godel
-```
-
-There are multiple different ways to vendor dependencies. For the purposes of this tutorial, we will forego formal
-vendoring and vendor the dependency manually.
-
-```
-➜ cd ${GOPATH}/src/${PROJECT_PATH}
-➜ mkdir -p vendor/github.com/palantir/godel/pkg/products/v2/products
-➜ cp ${GOPATH}/src/github.com/palantir/godel/pkg/products/v2/products/* vendor/github.com/palantir/godel/pkg/products/v2/products
+➜ go get github.com/palantir/godel/pkg/products/v2
+go: downloading github.com/palantir/godel/pkg/products/v2 v2.0.0
+go get: added github.com/palantir/godel/pkg/products/v2 v2.0.0
 ```
 
 Run the following to define a test that tests the behavior of invoking echgo2 with an invalid echo type and run the test
@@ -62,7 +51,7 @@ it):
 
 ```
 ➜ mkdir -p integration_test
-➜ echo '// Copyright (c) 2018 Author Name. All rights reserved.
+➜ echo '// Copyright (c) 2021 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -73,7 +62,7 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/palantir/godel/v2/pkg/products/v2/products"
+	"github.com/palantir/godel/pkg/products/v2"
 )
 
 func TestInvalidType(t *testing.T) {
@@ -92,9 +81,9 @@ func TestInvalidType(t *testing.T) {
 ➜ go test -v ./integration_test
 === RUN   TestInvalidType
 "invalid echo type: invalid\n"
---- PASS: TestInvalidType (2.35s)
+--- PASS: TestInvalidType (1.55s)
 PASS
-ok  	github.com/nmiyake/echgo2/integration_test	2.350s
+ok  	github.com/nmiyake/echgo2/integration_test	1.558s
 ```
 
 The `products.Bin("echgo2")` call uses gödel to build the echgo2 product (if needed) and returns a path to the binary
@@ -108,7 +97,7 @@ code, which should cause `cmd.CombinedOutput` to return an error.
 Fix the bug by updating `main.go` and then re-run the test:
 
 ```
-➜ SRC='// Copyright (c) 2018 Author Name. All rights reserved.
+➜ SRC='// Copyright (c) 2021 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -143,18 +132,19 @@ func main() {
 }' && SRC=${SRC//PROJECT_PATH/$PROJECT_PATH} && echo "$SRC" > main.go
 ➜ go test -v ./integration_test
 === RUN   TestInvalidType
+    integration_test.go:23: cmd [/go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.2-4-gcaab74f.dirty/linux-amd64/echgo2 -type invalid foo] failed with error exit status 1. Output: invalid echo type: invalid
 "invalid echo type: invalid\n"
---- FAIL: TestInvalidType (2.41s)
-	integration_test.go:23: cmd [/go/src/github.com/nmiyake/echgo2/out/build/echgo2/0.0.2-5-g66ac7a5.dirty/linux-amd64/echgo2 -type invalid foo] failed with error exit status 1. Output: invalid echo type: invalid
+--- FAIL: TestInvalidType (1.60s)
 FAIL
-FAIL	github.com/nmiyake/echgo2/integration_test	2.408s
+FAIL	github.com/nmiyake/echgo2/integration_test	1.602s
+FAIL
 ```
 
 We can see that the test now fails as expected. Since this is the expected behavior, update the test to pass when this
 happens and run the test again:
 
 ```
-➜ echo '// Copyright (c) 2018 Author Name. All rights reserved.
+➜ echo '// Copyright (c) 2021 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -164,7 +154,7 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/palantir/godel/v2/pkg/products/v2/products"
+	"github.com/palantir/godel/pkg/products/v2"
 )
 
 func TestInvalidType(t *testing.T) {
@@ -190,9 +180,9 @@ func TestInvalidType(t *testing.T) {
 }' > integration_test/integration_test.go
 ➜ go test -v ./integration_test
 === RUN   TestInvalidType
---- PASS: TestInvalidType (1.43s)
+--- PASS: TestInvalidType (0.98s)
 PASS
-ok  	github.com/nmiyake/echgo2/integration_test	1.429s
+ok  	github.com/nmiyake/echgo2/integration_test	0.986s
 ```
 
 We can see that the test now passes. The test will now run when `./godelw test` is invoked.
@@ -208,7 +198,7 @@ go build github.com/nmiyake/echgo2/integration_test: no non-test Go files in /go
 We can work around this by adding a `doc.go` file to the directory to act as a placeholder:
 
 ```
-➜ echo '// Copyright (c) 2018 Author Name. All rights reserved.
+➜ echo '// Copyright (c) 2021 Author Name. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
 
@@ -227,9 +217,8 @@ Run `./godelw test` to verify that this test is run:
 ```
 ➜ ./godelw test
 ?   	github.com/nmiyake/echgo2                 	[no test files]
-ok  	github.com/nmiyake/echgo2/echo            	0.002s
-?   	github.com/nmiyake/echgo2/generator       	[no test files]
-ok  	github.com/nmiyake/echgo2/integration_test	1.398s
+ok  	github.com/nmiyake/echgo2/echo            	0.003s
+ok  	github.com/nmiyake/echgo2/integration_test	0.986s
 ```
 
 The configuration in `godel/config/test.yml` can be used to group tests into tags. Update the configuration as follows:
@@ -256,19 +245,18 @@ that do not match any tags.
 Commit these changes by running the following:
 
 ```
-➜ git add godel main.go integration_test vendor
+➜ git add godel go.mod go.sum main.go integration_test
 ➜ git commit -m "Add integration tests"
-[master b92f55e] Add integration tests
- 6 files changed, 217 insertions(+), 1 deletion(-)
+[master a144ffc] Add integration tests
+ 6 files changed, 52 insertions(+), 1 deletion(-)
+ create mode 100644 go.sum
  create mode 100644 integration_test/doc.go
  create mode 100644 integration_test/integration_test.go
- create mode 100644 vendor/github.com/palantir/godel/pkg/products/v2/products/products.go
- create mode 100644 vendor/github.com/palantir/godel/pkg/products/v2/products/products_test.go
 ```
 
 Tutorial end state
 ------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files

@@ -4,7 +4,7 @@ Install and run `godelinit` to add gödel to a project.
 
 Tutorial start state
 --------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 
 Add gödel to a project
 ----------------------
@@ -14,7 +14,7 @@ gödel and installs it into the current directory, downloading it if needed.
 Install the `godelinit` program using `go get` and run the program to install gödel:
 
 ```START_TUTORIAL_CODE
-go get github.com/palantir/godel/godelinit
+go install github.com/palantir/godel/v2/godelinit@latest
 ```END_TUTORIAL_CODE
 ```START_TUTORIAL_CODE
 godelinit
@@ -36,8 +36,8 @@ cat godel/config/godel.properties
 ```END_TUTORIAL_CODE
 
 If we are concerned about integrity, we can specify the expected checksum for the package when using godelinit. The
-expected checksums for gödel releases can be found on its [Bintray](https://bintray.com/palantir/releases/godel) page.
-Install the distribution using the checksum:
+expected checksum should be computed based on a trusted distribution such as the
+[GitHub release](https://github.com/palantir/godel/releases). Install the distribution using the checksum:
 
 ```START_TUTORIAL_CODE
 godelinit --checksum ${GODEL_CHECKSUM}
@@ -62,7 +62,7 @@ gödel has now been added to the project and is ready to use.
 
 Tutorial end state
 ------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 
 Tutorial next step
@@ -80,7 +80,7 @@ Download the distribution into a temporary directory and expand it:
 mkdir -p download
 ```END_TUTORIAL_CODE
 ```START_TUTORIAL_CODE
-curl -L "https://palantir.bintray.com/releases/com/palantir/godel/godel/${GODEL_VERSION}/godel-${GODEL_VERSION}.tgz" -o download/godel-"${GODEL_VERSION}".tgz
+curl -L "https://github.com/palantir/godel/releases/download/v${GODEL_VERSION}/godel-${GODEL_VERSION}.tgz" -o download/godel-"${GODEL_VERSION}".tgz
 ```END_TUTORIAL_CODE
 ```START_TUTORIAL_CODE
 tar -xf download/godel-"${GODEL_VERSION}".tgz -C download
@@ -107,11 +107,11 @@ do not have a checksum set in `godel/config/godel.properties`:
 cat godel/config/godel.properties
 ```END_TUTORIAL_CODE
 
-For completeness, set the checksum. The expected checksums for releases are listed on the download page at
-https://bintray.com/palantir/releases/godel.
+For completeness, set the checksum. The checksum should be computed based on the distribution available at
+https://github.com/palantir/godel/releases.
 
 ```START_TUTORIAL_CODE
-DIST_URL='distributionURL=https://palantir.bintray.com/releases/com/palantir/godel/godel/GODEL_VERSION/godel-GODEL_VERSION.tgz
+DIST_URL='distributionURL=https://github.com/palantir/godel/releases/download/vGODEL_VERSION/godel-GODEL_VERSION.tgz
 distributionSHA256=GODEL_CHECKSUM'; DIST_URL="${DIST_URL//GODEL_VERSION/$GODEL_VERSION}"; DIST_URL="${DIST_URL//GODEL_CHECKSUM/$GODEL_CHECKSUM}"
 ```END_TUTORIAL_CODE
 ```START_TUTORIAL_CODE
@@ -190,10 +190,9 @@ the `update` task for a given version can find a download of the distribution in
 checksum, it will be used to update the version of gödel (otherwise, the `update` task will always download the
 distribution from the specified distribution URL).
 
-The checksum is the SHA-256 checksum of the `.tgz` archive of the product. The checksum can be obtained from the
-Bintray page for the distribution:
-
-![SHA checksum](images/tutorial/sha_checksum.png)
+The checksum is the SHA-256 checksum of the `.tgz` archive of the product. The checksum is the SHA-256 digest of the TGZ
+distribution. It can be computed on a trusted distribution such as the distribution from the
+[GitHub Release](https://github.com/palantir/godel/releases).
 
 If a user has obtained a trusted distribution locally, it is also possible to manually compute the checksum.
 
@@ -203,7 +202,7 @@ Download the distribution by running the following:
 mkdir -p download
 ```END_TUTORIAL_CODE
 ```START_TUTORIAL_CODE
-curl -L "https://palantir.bintray.com/releases/com/palantir/godel/godel/${GODEL_VERSION}/godel-${GODEL_VERSION}.tgz" -o download/godel-"${GODEL_VERSION}".tgz
+curl -L "https://github.com/palantir/godel/releases/download/v${GODEL_VERSION}/godel-${GODEL_VERSION}.tgz" -o download/godel-"${GODEL_VERSION}".tgz
 ```END_TUTORIAL_CODE
 
 The checksum can be computed using `openssl` or `shasum` as follows:

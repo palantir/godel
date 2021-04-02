@@ -4,7 +4,7 @@ Summary
 
 Tutorial start state
 --------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -52,14 +52,14 @@ Commit the test to the repository:
 ```
 ➜ git add echo
 ➜ git commit -m "Add tests for echo package"
-[master 362ea06] Add tests for echo package
+[master 17a256c] Add tests for echo package
  1 file changed, 22 insertions(+)
  create mode 100644 echo/echo_test.go
 ```
 
 Tutorial end state
 ------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -102,7 +102,7 @@ Verify that this operation wrote a JUnit report:
 <testsuites>
 	<testsuite tests="1" failures="0" time="0.002" name="github.com/nmiyake/echgo2/echo">
 		<properties>
-			<property name="go.version" value="go1.10.1"></property>
+			<property name="go.version" value="go1.16"></property>
 		</properties>
 		<testcase classname="echo" name="TestEcho" time="0.000"></testcase>
 	</testsuite>
@@ -128,13 +128,13 @@ For example, the following command prints the output as JSON:
 
 ```
 ➜ ./godelw test -- -json
-{"Time":"2018-08-22T16:25:14.6287415Z","Action":"output","Package":"github.com/nmiyake/echgo2","Output":"?   \tgithub.com/nmiyake/echgo2\t[no test files]\n"}
-{"Time":"2018-08-22T16:25:14.6295891Z","Action":"skip","Package":"github.com/nmiyake/echgo2","Elapsed":0.001}
-{"Time":"2018-08-22T16:25:14.6315847Z","Action":"run","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho"}
-{"Time":"2018-08-22T16:25:14.6316225Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho","Output":"=== RUN   TestEcho\n"}
-{"Time":"2018-08-22T16:25:14.6316415Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho","Output":"--- PASS: TestEcho (0.00s)\n"}
-{"Time":"2018-08-22T16:25:14.6316551Z","Action":"pass","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho","Elapsed":0}
-{"Time":"2018-08-22T16:25:14.631668Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Output":"PASS\n"}
-{"Time":"2018-08-22T16:25:14.6316795Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Output":"ok  \tgithub.com/nmiyake/echgo2/echo\t(cached)\n"}
-{"Time":"2018-08-22T16:25:14.6317011Z","Action":"pass","Package":"github.com/nmiyake/echgo2/echo","Elapsed":0}
+{"Time":"2021-04-02T05:57:03.8307725Z","Action":"output","Package":"github.com/nmiyake/echgo2","Output":"?   \tgithub.com/nmiyake/echgo2\t[no test files]\n"}
+{"Time":"2021-04-02T05:57:03.8309352Z","Action":"skip","Package":"github.com/nmiyake/echgo2","Elapsed":0}
+{"Time":"2021-04-02T05:57:03.8892473Z","Action":"run","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho"}
+{"Time":"2021-04-02T05:57:03.8893115Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho","Output":"=== RUN   TestEcho\n"}
+{"Time":"2021-04-02T05:57:03.8893335Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho","Output":"--- PASS: TestEcho (0.00s)\n"}
+{"Time":"2021-04-02T05:57:03.8893573Z","Action":"pass","Package":"github.com/nmiyake/echgo2/echo","Test":"TestEcho","Elapsed":0}
+{"Time":"2021-04-02T05:57:03.8893753Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Output":"PASS\n"}
+{"Time":"2021-04-02T05:57:03.8900363Z","Action":"output","Package":"github.com/nmiyake/echgo2/echo","Output":"ok  \tgithub.com/nmiyake/echgo2/echo\t0.003s\n"}
+{"Time":"2021-04-02T05:57:03.8910913Z","Action":"pass","Package":"github.com/nmiyake/echgo2/echo","Elapsed":0.004}
 ```

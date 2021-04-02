@@ -28,7 +28,6 @@ The tutorial consists of the following steps:
 * [Verify project](https://github.com/palantir/godel/wiki/Verify)
 * [Set up CI to run tasks](https://github.com/palantir/godel/wiki/CI-setup)
 * [Update gödel](https://github.com/palantir/godel/wiki/Update-g%C3%B6del)
-* [Update legacy gödel](https://github.com/palantir/godel/wiki/Update-legacy-godel)
 * [Other commands](https://github.com/palantir/godel/wiki/Other-commands)
 * [Conclusion](https://github.com/palantir/godel/wiki/Tutorial-conclusion)
 
@@ -48,69 +47,20 @@ Start the tutorial by building the Docker image:
 ```
 ➜ cd ${GOPATH}/src/github.com/palantir/godel/docs/templates/baseimage
 ➜ ./build.sh
-Sending build context to Docker daemon  3.584kB
-Step 1/9 : FROM golang:1.10.2
- ---> 6b369f7eed80
-Step 2/9 : ENV GODEL_VERSION 2.4.0
- ---> Running in 547cd20e3b9d
-Removing intermediate container 547cd20e3b9d
- ---> e71eeff7a9d3
-Step 3/9 : ENV GODEL_CHECKSUM 48e50289db0acfce7f8a68b12f8ab433a2fcbf67e80b7658dfc1e105228228c1
- ---> Running in a12624ef6c18
-Removing intermediate container a12624ef6c18
- ---> 4a6c208a2564
-Step 4/9 : ENV PROJECT_PATH github.com/nmiyake/echgo2
- ---> Running in 8ba493bc138c
-Removing intermediate container 8ba493bc138c
- ---> 867c9d408573
-Step 5/9 : ENV GIT_USERNAME "Tutorial User"
- ---> Running in 3afbcfcbbfd0
-Removing intermediate container 3afbcfcbbfd0
- ---> e3a677672529
-Step 6/9 : ENV GIT_EMAIL "tutorial@tutorial-user.com"
- ---> Running in 2fad3751d74d
-Removing intermediate container 2fad3751d74d
- ---> 37a208d68bf4
-Step 7/9 : RUN apt-get update && apt-get install -y tree
- ---> Running in aae3f8b8b1a7
-Get:1 http://security.debian.org/debian-security stretch/updates InRelease [94.3 kB]
-Ign:2 http://deb.debian.org/debian stretch InRelease
-Get:3 http://deb.debian.org/debian stretch-updates InRelease [91.0 kB]
-Get:4 http://deb.debian.org/debian stretch Release [118 kB]
-Get:5 http://deb.debian.org/debian stretch Release.gpg [2434 B]
-Get:6 http://security.debian.org/debian-security stretch/updates/main amd64 Packages [488 kB]
-Get:7 http://deb.debian.org/debian stretch-updates/main amd64 Packages [5476 B]
-Get:8 http://deb.debian.org/debian stretch/main amd64 Packages [9500 kB]
-Fetched 10.3 MB in 3s (3170 kB/s)
-Reading package lists...
-Reading package lists...
-Building dependency tree...
-Reading state information...
-The following NEW packages will be installed:
-  tree
-0 upgraded, 1 newly installed, 0 to remove and 30 not upgraded.
-Need to get 46.1 kB of archives.
-After this operation, 106 kB of additional disk space will be used.
-Get:1 http://deb.debian.org/debian stretch/main amd64 tree amd64 1.7.0-5 [46.1 kB]
-debconf: delaying package configuration, since apt-utils is not installed
-Fetched 46.1 kB in 0s (368 kB/s)
-Selecting previously unselected package tree.
-(Reading database ... 15055 files and directories currently installed.)
-Preparing to unpack .../tree_1.7.0-5_amd64.deb ...
-Unpacking tree (1.7.0-5) ...
-Setting up tree (1.7.0-5) ...
-Removing intermediate container aae3f8b8b1a7
- ---> 4b6736bd5793
-Step 8/9 : RUN git config --global user.name "${GIT_USERNAME}" &&     git config --global user.email "${GIT_EMAIL}" &&     mkdir -p ${GOPATH}/src/${PROJECT_PATH}
- ---> Running in 148d6b5b593d
-Removing intermediate container 148d6b5b593d
- ---> 075039d532f0
-Step 9/9 : WORKDIR /go/src/${PROJECT_PATH}
- ---> Running in 6337686c6dfd
-Removing intermediate container 6337686c6dfd
- ---> 7bc4deeef8cb
-Successfully built 7bc4deeef8cb
-Successfully tagged godeltutorial:setup
+[+] Building 7.0s (8/8) FINISHED
+ => [internal] load build definition from Dockerfile                                                                  0.0s
+ => => transferring dockerfile: 40B                                                                                   0.0s
+ => [internal] load .dockerignore                                                                                     0.0s
+ => => transferring context: 2B                                                                                       0.0s
+ => [internal] load metadata for docker.io/library/golang:1.16.2                                                      1.4s
+ => CACHED [1/4] FROM docker.io/library/golang:1.16.2@sha256:31447e84d4af01c218cf158072028ada82d49248fd067d1b7228857  0.0s
+ => [2/4] RUN apt-get update && apt-get install -y tree                                                               5.0s
+ => [3/4] RUN git config --global user.name "Tutorial User" &&     git config --global user.email "tutorial@tutorial  0.3s
+ => [4/4] WORKDIR /go/src/github.com/nmiyake/echgo2                                                                   0.0s
+ => exporting to image                                                                                                0.1s
+ => => exporting layers                                                                                               0.1s
+ => => writing image sha256:d3bc3e6f4335f5f9c94c1d259f3b28a9814fa30078e916a09c99a794b90c7942                          0.0s
+ => => naming to docker.io/library/godeltutorial:setup                                                                0.0s
 ```
 
 Now, run the Docker image interactively:
@@ -139,14 +89,25 @@ Initialized empty Git repository in /go/src/github.com/nmiyake/echgo2/.git/
 ➜ echo 'echgo2 is a program that echoes input provided by the user.' > README.md
 ➜ git add README.md
 ➜ git commit -m "Initial commit"
-[master (root-commit) 58cb4f5] Initial commit
+[master (root-commit) 711897e] Initial commit
  1 file changed, 1 insertion(+)
  create mode 100644 README.md
 ```
 
+Finally, define a `go.mod` file so that a module is defined for this project:
+
+```
+➜ echo 'module github.com/nmiyake/echgo2' > go.mod
+➜ git add go.mod
+➜ git commit -m "Add module definition"
+[master 9b2b6e9] Add module definition
+ 1 file changed, 1 insertion(+)
+ create mode 100644 go.mod
+```
+
 Tutorial end state
 ------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 
 Tutorial next step
 ------------------
