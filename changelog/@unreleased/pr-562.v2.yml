@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Updates the internal resolver used for builtin tasks to use the GitHub resolvers and updates all plugin and asset versions to use versions that have an artifact published in GitHub.
+  links:
+  - https://github.com/palantir/godel/pull/562
