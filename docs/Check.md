@@ -4,7 +4,7 @@ Summary
 
 Tutorial start state
 --------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -58,31 +58,27 @@ on the project:
 
 ```
 ➜ ./godelw check
-[deadcode]      Running deadcode...
-[extimport]     Running extimport...
 [compiles]      Running compiles...
-[errcheck]      Running errcheck...
-[extimport]     Finished extimport
-[golint]        Running golint...
-[golint]        echo/echo.go:9:1: receiver name should not be an underscore, omit the name if it is unused
-[golint]        Finished golint
-[govet]         Running govet...
-[govet]         Finished govet
 [importalias]   Running importalias...
+[errcheck]      Running errcheck...
+[golint]        Running golint...
+[deadcode]      Running deadcode...
+[govet]         Running govet...
 [importalias]   Finished importalias
 [ineffassign]   Running ineffassign...
-[ineffassign]   Finished ineffassign
-[novendor]      Running novendor...
-[novendor]      Finished novendor
+[golint]        echo/echo.go:9:1: receiver name should not be an underscore, omit the name if it is unused
+[golint]        Finished golint
 [outparamcheck] Running outparamcheck...
-[compiles]      Finished compiles
+[ineffassign]   Finished ineffassign
 [unconvert]     Running unconvert...
-[errcheck]      Finished errcheck
 [deadcode]      Finished deadcode
 [varcheck]      Running varcheck...
-[outparamcheck] Finished outparamcheck
 [unconvert]     Finished unconvert
 [varcheck]      Finished varcheck
+[outparamcheck] Finished outparamcheck
+[compiles]      Finished compiles
+[errcheck]      Finished errcheck
+[govet]         Finished govet
 Check(s) produced output: [golint]
 ```
 
@@ -107,30 +103,26 @@ Run `./godelw check` again to verify that the issue has been resolved:
 
 ```
 ➜ ./godelw check
-[errcheck]      Running errcheck...
-[extimport]     Running extimport...
+[govet]         Running govet...
 [compiles]      Running compiles...
 [deadcode]      Running deadcode...
-[extimport]     Finished extimport
-[golint]        Running golint...
-[golint]        Finished golint
-[govet]         Running govet...
-[govet]         Finished govet
 [importalias]   Running importalias...
+[golint]        Running golint...
+[errcheck]      Running errcheck...
 [importalias]   Finished importalias
 [ineffassign]   Running ineffassign...
 [ineffassign]   Finished ineffassign
-[novendor]      Running novendor...
-[novendor]      Finished novendor
 [outparamcheck] Running outparamcheck...
-[deadcode]      Finished deadcode
+[golint]        Finished golint
 [unconvert]     Running unconvert...
-[errcheck]      Finished errcheck
-[compiles]      Finished compiles
+[govet]         Finished govet
+[deadcode]      Finished deadcode
 [varcheck]      Running varcheck...
-[outparamcheck] Finished outparamcheck
 [unconvert]     Finished unconvert
 [varcheck]      Finished varcheck
+[compiles]      Finished compiles
+[errcheck]      Finished errcheck
+[outparamcheck] Finished outparamcheck
 ```
 
 Commit the changes to the repository:
@@ -138,7 +130,7 @@ Commit the changes to the repository:
 ```
 ➜ git add main.go echo
 ➜ git commit -m "Add echoer interface"
-[master 626c0ec] Add echoer interface
+[master b931784] Add echoer interface
  3 files changed, 14 insertions(+), 2 deletions(-)
  create mode 100644 echo/echoer.go
 ```
@@ -147,7 +139,7 @@ Refer to the "More" sections below for examples of configuring the checks in dif
 
 Tutorial end state
 ------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -176,31 +168,27 @@ Running `./godelw check` flags the following:
 
 ```
 ➜ ./godelw check
-[errcheck]      Running errcheck...
-[extimport]     Running extimport...
-[deadcode]      Running deadcode...
 [compiles]      Running compiles...
-[extimport]     Finished extimport
-[golint]        Running golint...
-[golint]        echo/echoer.go:3:1: comment on exported type Echoer should be of the form "Echoer ..." (with optional leading article)
-[golint]        Finished golint
-[govet]         Running govet...
-[govet]         Finished govet
 [importalias]   Running importalias...
+[deadcode]      Running deadcode...
+[golint]        Running golint...
+[errcheck]      Running errcheck...
+[govet]         Running govet...
 [importalias]   Finished importalias
 [ineffassign]   Running ineffassign...
 [ineffassign]   Finished ineffassign
-[novendor]      Running novendor...
-[novendor]      Finished novendor
+[golint]        echo/echoer.go:3:1: comment on exported type Echoer should be of the form "Echoer ..." (with optional leading article)
+[golint]        Finished golint
 [outparamcheck] Running outparamcheck...
-[compiles]      Finished compiles
 [unconvert]     Running unconvert...
+[govet]         Finished govet
 [deadcode]      Finished deadcode
 [varcheck]      Running varcheck...
-[errcheck]      Finished errcheck
-[outparamcheck] Finished outparamcheck
-[varcheck]      Finished varcheck
 [unconvert]     Finished unconvert
+[varcheck]      Finished varcheck
+[outparamcheck] Finished outparamcheck
+[compiles]      Finished compiles
+[errcheck]      Finished errcheck
 Check(s) produced output: [golint]
 ```
 
@@ -236,30 +224,26 @@ reported:
 
 ```
 ➜ ./godelw check
+[importalias]   Running importalias...
 [compiles]      Running compiles...
+[golint]        Running golint...
+[govet]         Running govet...
 [errcheck]      Running errcheck...
 [deadcode]      Running deadcode...
-[extimport]     Running extimport...
-[extimport]     Finished extimport
-[golint]        Running golint...
-[golint]        Finished golint
-[govet]         Running govet...
-[govet]         Finished govet
-[importalias]   Running importalias...
 [importalias]   Finished importalias
 [ineffassign]   Running ineffassign...
 [ineffassign]   Finished ineffassign
-[novendor]      Running novendor...
-[novendor]      Finished novendor
+[golint]        Finished golint
 [outparamcheck] Running outparamcheck...
-[compiles]      Finished compiles
 [unconvert]     Running unconvert...
 [deadcode]      Finished deadcode
+[govet]         Finished govet
 [varcheck]      Running varcheck...
-[errcheck]      Finished errcheck
-[outparamcheck] Finished outparamcheck
-[varcheck]      Finished varcheck
 [unconvert]     Finished unconvert
+[varcheck]      Finished varcheck
+[compiles]      Finished compiles
+[outparamcheck] Finished outparamcheck
+[errcheck]      Finished errcheck
 ```
 
 Revert the local changes by running the following:
@@ -320,27 +304,23 @@ Run `./godelw check` with the updated configuration to verify that the `golint` 
 ```
 ➜ ./godelw check
 [compiles]      Running compiles...
-[extimport]     Running extimport...
-[deadcode]      Running deadcode...
-[errcheck]      Running errcheck...
-[extimport]     Finished extimport
-[govet]         Running govet...
-[govet]         Finished govet
 [importalias]   Running importalias...
-[importalias]   Finished importalias
 [ineffassign]   Running ineffassign...
+[errcheck]      Running errcheck...
+[govet]         Running govet...
+[deadcode]      Running deadcode...
 [ineffassign]   Finished ineffassign
-[novendor]      Running novendor...
-[novendor]      Finished novendor
+[importalias]   Finished importalias
 [outparamcheck] Running outparamcheck...
-[deadcode]      Finished deadcode
 [unconvert]     Running unconvert...
-[compiles]      Finished compiles
+[deadcode]      Finished deadcode
 [varcheck]      Running varcheck...
-[errcheck]      Finished errcheck
-[outparamcheck] Finished outparamcheck
+[govet]         Finished govet
 [unconvert]     Finished unconvert
 [varcheck]      Finished varcheck
+[outparamcheck] Finished outparamcheck
+[errcheck]      Finished errcheck
+[compiles]      Finished compiles
 ```
 
 Revert the local changes by running the following:
@@ -364,8 +344,8 @@ For example, the following runs only `deadcode` and `govet`:
 ➜ ./godelw check deadcode govet
 [govet]    Running govet...
 [deadcode] Running deadcode...
-[govet]    Finished govet
 [deadcode] Finished deadcode
+[govet]    Finished govet
 ```
 
 ### Run an underlying check directly
@@ -383,7 +363,7 @@ For example, `errcheck` can be invoked directly as follows:
 
 ```
 ➜ ./godelw run-check errcheck -- --help
-Usage of /root/.godel/assets/com.palantir.godel-okgo-asset-errcheck-errcheck-asset-1.1.1:
+Usage of /root/.godel/assets/com.palantir.godel-okgo-asset-errcheck-errcheck-asset-1.8.0:
   -abspath
     	print absolute paths to files
   -asserts
@@ -394,7 +374,9 @@ Usage of /root/.godel/assets/com.palantir.godel-okgo-asset-errcheck-errcheck-ass
     	Path to a file containing a list of functions to exclude from checking
   -ignore value
     	[deprecated] comma-separated list of pairs of the form pkg:regex
-    	            the regex is used to ignore names within pkg. (default "fmt:.*")
+    	            the regex is used to ignore names within pkg.
+  -ignoregenerated
+    	if true, checking of files with generated code is disabled
   -ignorepkg string
     	comma-separated list of package paths to ignore
   -ignoretests
@@ -419,7 +401,7 @@ Flags:
   -h, --help   help for errcheck
 
 Global Flags:
-      --assets stringSlice    path(s) to the plugin asset(s)
+      --assets strings        path(s) to the plugin asset(s)
       --config string         path to the plugin configuration file
       --debug                 run in debug mode
       --godel-config string   path to the godel.yml configuration file
@@ -437,8 +419,6 @@ Running deadcode...
 Finished deadcode
 Running errcheck...
 Finished errcheck
-Running extimport...
-Finished extimport
 Running golint...
 Finished golint
 Running govet...
@@ -447,8 +427,6 @@ Running importalias...
 Finished importalias
 Running ineffassign...
 Finished ineffassign
-Running novendor...
-Finished novendor
 Running outparamcheck...
 Finished outparamcheck
 Running unconvert...
@@ -488,12 +466,12 @@ For example, we can add the [nobadfuncs check](https://github.com/palantir/go-no
 ```
 ➜ echo 'default-tasks:
   resolvers:
-    - https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz
+    - https://github.com/{{index GroupParts 1}}/{{index GroupParts 2}}/releases/download/v{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz
   tasks:
     com.palantir.okgo:check-plugin:
       assets:
         - locator:
-            id: "com.palantir.godel-okgo-asset-nobadfuncs:nobadfuncs-asset:1.0.0"
+            id: "com.palantir.godel-okgo-asset-nobadfuncs:nobadfuncs-asset:1.5.0"
 exclude:
   names:
     - "\\\\..+"
@@ -506,8 +484,8 @@ This adds the asset, which makes it available as a check:
 
 ```
 ➜ ./godelw check nobadfuncs
-Getting package from https://palantir.bintray.com/releases/com/palantir/godel-okgo-asset-nobadfuncs/nobadfuncs-asset/1.0.0/nobadfuncs-asset-1.0.0-linux-amd64.tgz...
- 0 B / 3.80 MiB    0.00% 670.23 KiB / 3.80 MiB   17.23% 1.15 MiB / 3.80 MiB   30.38% 1.50 MiB / 3.80 MiB   39.49% 1.69 MiB / 3.80 MiB   44.60% 1s 1.75 MiB / 3.80 MiB   46.07% 1s 2.03 MiB / 3.80 MiB   53.46% 1s 2.98 MiB / 3.80 MiB   78.53% 3.80 MiB / 3.80 MiB  100.00% 1s
+Getting package from https://github.com/palantir/godel-okgo-asset-nobadfuncs/releases/download/v1.5.0/nobadfuncs-asset-1.5.0-linux-amd64.tgz...
+221.18 KiB / 4.76 MiB [-->_____________________________________________________________] 4.54% ? p/s1.65 MiB / 4.76 MiB [---------------------->__________________________________________] 34.69% ? p/s3.70 MiB / 4.76 MiB [-------------------------------------------------->______________] 77.70% ? p/s4.76 MiB / 4.76 MiB [---------------------------------------------------------] 100.00% 9.23 MiB p/s
 Running nobadfuncs...
 Finished nobadfuncs
 ```
@@ -519,7 +497,7 @@ removes the `novendor` check entirely:
 ```
 ➜ echo 'default-tasks:
   resolvers:
-    - https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz
+    - https://github.com/{{index GroupParts 1}}/{{index GroupParts 2}}/releases/download/v{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz
   tasks:
     com.palantir.okgo:check-plugin:
       exclude-default-assets:
@@ -536,7 +514,7 @@ Verify that `novendor` is no longer present as a check:
 
 ```
 ➜ ./godelw check novendor
-Error: provided checker type(s) [novendor] not valid: valid values are [compiles deadcode errcheck extimport golint govet importalias ineffassign outparamcheck unconvert varcheck]
+Error: provided checker type(s) [novendor] not valid: valid values are [compiles deadcode errcheck golint govet importalias ineffassign outparamcheck unconvert varcheck]
 ```
 
 Revert the local changes by running the following:

@@ -6,7 +6,7 @@ to be a Git repository).
 
 Tutorial start state
 --------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 
 Create Git commit hook
@@ -54,7 +54,7 @@ to format the file and then verify that adding and committing the file works:
 ➜ ./godelw format
 ➜ git add main.go
 ➜ git commit -m "Add main.go"
-[master 0ab66be] Add main.go
+[master d461fb7] Add main.go
  1 file changed, 11 insertions(+)
  create mode 100644 main.go
 ```
@@ -64,7 +64,7 @@ all of the code we check in for our program will be properly formatted.
 
 Tutorial end state
 ------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 

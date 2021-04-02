@@ -4,7 +4,7 @@ The exclude block in `godel/config/godel.yml` specifies patterns for paths and n
 
 Tutorial start state
 --------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -30,10 +30,10 @@ Examine the current state of `godel/config/godel.yml`:
 ➜ cat godel/config/godel.yml
 plugins:
   resolvers:
-    - "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
+    - "https://github.com/{{index GroupParts 1}}/{{index GroupParts 2}}/releases/download/v{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
   plugins:
     - locator:
-        id: "com.palantir.godel-generate-plugin:generate-plugin:1.0.0"
+        id: "com.palantir.godel-generate-plugin:generate-plugin:1.2.0"
 exclude:
   names:
     - "\\..+"
@@ -54,10 +54,10 @@ update the configuration:
 ```
 ➜ echo 'plugins:
   resolvers:
-    - "https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
+    - "https://github.com/{{index GroupParts 1}}/{{index GroupParts 2}}/releases/download/v{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz"
   plugins:
     - locator:
-        id: "com.palantir.godel-generate-plugin:generate-plugin:1.0.0"
+        id: "com.palantir.godel-generate-plugin:generate-plugin:1.2.0"
 exclude:
   names:
     - "\\\\..+"
@@ -80,13 +80,13 @@ Check in the changes:
 ```
 ➜ git add godel/config/godel.yml
 ➜ git commit -m "Update exclude configuration in godel.yml"
-[master 66ac7a5] Update exclude configuration in godel.yml
+[master caab74f] Update exclude configuration in godel.yml
  1 file changed, 1 insertion(+), 1 deletion(-)
 ```
 
 Tutorial end state
 ------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files

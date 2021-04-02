@@ -4,7 +4,7 @@ gödel tasks can be configured to run in a CI environment to verify, build and p
 
 Tutorial start state
 --------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
@@ -174,7 +174,7 @@ Commit the changes to the repository by running the following:
 ```
 ➜ git add .circleci
 ➜ git commit -m "Add CircleCI configuration"
-[master 85ede1a] Add CircleCI configuration
+[master acf45d9] Add CircleCI configuration
  1 file changed, 24 insertions(+)
  create mode 100644 .circleci/config.yml
 ```
@@ -211,7 +211,7 @@ Although this example was for CircleCI 2.0, the general principles/steps should 
 
 Tutorial end state
 ------------------
-* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository
+* `${GOPATH}/src/${PROJECT_PATH}` exists, is the working directory and is initialized as a Git repository and Go module
 * Project contains `godel` and `godelw`
 * Project contains `main.go`
 * Project contains `.gitignore` that ignores GoLand files
