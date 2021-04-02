@@ -5,7 +5,6 @@
 gödel
 =====
 
-[![Bintray](https://img.shields.io/bintray/v/palantir/releases/godel.svg)](https://bintray.com/palantir/releases/godel/_latestVersion)
 [![CircleCI](https://circleci.com/gh/palantir/godel.svg?style=shield)](https://circleci.com/gh/palantir/godel)
 
 gödel is a Go build tool that provides tasks for configuring, formatting, checking, testing, building and publishing Go
