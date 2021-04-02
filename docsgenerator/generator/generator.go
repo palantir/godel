@@ -156,6 +156,7 @@ func Generate(inputDir, outputDir, baseImage string, params Params, stdout io.Wr
 
 func runDockerBuild(workDir, tag string, suppressDockerOutput bool, stdout io.Writer) (string, error) {
 	cmd := exec.Command("docker", "build", "--no-cache", "-t", tag, ".")
+	cmd.Env = append(os.Environ(), "DOCKER_BUILDKIT=0")
 	cmd.Dir = workDir
 
 	outputBuf := &bytes.Buffer{}
