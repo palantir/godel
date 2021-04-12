@@ -1,0 +1,5 @@
+type: fix
+fix:
+  description: Update godel version to 2.36.0
+  links:
+  - https://github.com/palantir/godel/pull/567
