@@ -5,7 +5,7 @@ the latest version of gödel to the working directory.
 
 Installation
 ------------
-`go get github.com/palantir/godel/godelinit`
+`go install github.com/palantir/godel/v2/godelinit@latest`
 
 Usage
 -----
