@@ -8,8 +8,12 @@ products:
       os-archs:
       - os: darwin
         arch: amd64
+      - os: darwin
+        arch: arm64
       - os: linux
         arch: amd64
+      - os: linux
+        arch: arm64
     dist:
       disters:
         bin:
@@ -52,6 +56,7 @@ products:
                 local os_arch=$1
                 local file=$2
                 local checksum=$(compute_sha256 "$DIST_WORK_DIR/bin/$os_arch/godel")
+                echo "Substituting checksum $os_arch $file $checksum"
                 substitute_variable "{{CHECKSUM_$os_arch}}" "$checksum" "$file"
             }
 
@@ -81,6 +86,8 @@ products:
                 # substitute checksums for godelw
                 substitute_checksum darwin-amd64 "$wrapper_dir/godelw"
                 substitute_checksum linux-amd64 "$wrapper_dir/godelw"
+                substitute_checksum darwin-arm64 "$wrapper_dir/godelw"
+                substitute_checksum linux-arm64 "$wrapper_dir/godelw"
 
                 # substitute the URL in the properties file
                 REPO=""
