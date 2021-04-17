@@ -6,10 +6,12 @@ products:
       environment:
         CGO_ENABLED: "0"
       os-archs:
-      - os: darwin
-        arch: amd64
-      - os: linux
-        arch: amd64
+        - os: darwin
+          arch: amd64
+        - os: linux
+          arch: amd64
+        - os: linux
+          arch: arm64
     dist:
       disters:
         bin:
