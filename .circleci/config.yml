@@ -46,7 +46,7 @@ requires_products: &requires_products
   - test
   - integration-std
   - integration-alpine-go-curr
-  - integration-alpine-go-prev
+  #- integration-alpine-go-prev
   - dist
   - pkg-products-verify-test
 
@@ -76,13 +76,13 @@ workflows:
             name: alpine-go
             version: *go-version-current
           <<: *all-tags-filter
-      - godel/test:
-          name: integration-alpine-go-prev
-          tags: integration
-          executor:
-            name: alpine-go
-            version: *go-version-prev
-          <<: *all-tags-filter
+      #- godel/test:
+      #    name: integration-alpine-go-prev
+      #    tags: integration
+      #    executor:
+      #      name: alpine-go
+      #      version: *go-version-prev
+      #    <<: *all-tags-filter
       - godel/verify:
           name: pkg-products-verify-test
           checkout-path: /go/src/github.com/palantir/godel

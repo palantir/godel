@@ -56,7 +56,6 @@ products:
                 local os_arch=$1
                 local file=$2
                 local checksum=$(compute_sha256 "$DIST_WORK_DIR/bin/$os_arch/godel")
-                echo "Substituting checksum $os_arch $file $checksum"
                 substitute_variable "{{CHECKSUM_$os_arch}}" "$checksum" "$file"
             }
 

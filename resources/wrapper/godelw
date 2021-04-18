@@ -164,13 +164,13 @@ GODEL_BASE_DIR=${GODEL_HOME:-$HOME/.godel}
 # determine OS
 OS=""
 EXPECTED_CHECKSUM=""
-case "$(uname)-$(arch)" in
-    Darwin*-x86_64)
+case "$(uname)-$(uname -m)" in
+    Darwin-x86_64)
         OS=darwin
         ARCH=amd64
         EXPECTED_CHECKSUM=$DARWIN_AMD64_CHECKSUM
         ;;
-    Darwin*-aarch64)
+    Darwin-aarch64)
         OS=darwin
         ARCH=arm64
         EXPECTED_CHECKSUM=$DARWIN_ARM64_CHECKSUM
@@ -186,7 +186,7 @@ case "$(uname)-$(arch)" in
         EXPECTED_CHECKSUM=$LINUX_ARM64_CHECKSUM
         ;;
     *)
-        echo "Unsupported operating system-architecture: $(uname)-$(arch)"
+        echo "Unsupported operating system-architecture: $(uname)-$(uname -m)"
         exit 1
         ;;
 esac
