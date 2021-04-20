@@ -170,7 +170,7 @@ case "$(uname)-$(uname -m)" in
         ARCH=amd64
         EXPECTED_CHECKSUM=$DARWIN_AMD64_CHECKSUM
         ;;
-    Darwin-aarch64)
+    Darwin-arm64)
         OS=darwin
         ARCH=arm64
         EXPECTED_CHECKSUM=$DARWIN_ARM64_CHECKSUM
