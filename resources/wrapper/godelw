@@ -5,8 +5,8 @@ set -euo pipefail
 # Version and checksums for godel. Values are populated by the godel "dist" task.
 VERSION={{VERSION}}
 DARWIN_AMD64_CHECKSUM={{CHECKSUM_darwin-amd64}}
-LINUX_AMD64_CHECKSUM={{CHECKSUM_linux-amd64}}
 DARWIN_ARM64_CHECKSUM={{CHECKSUM_darwin-arm64}}
+LINUX_AMD64_CHECKSUM={{CHECKSUM_linux-amd64}}
 LINUX_ARM64_CHECKSUM={{CHECKSUM_linux-arm64}}
 
 # Downloads file at URL to destination path using wget or curl. Prints an error and exits if wget or curl is not present.
@@ -110,7 +110,7 @@ function verify_dist_tgz_valid {
     local tgz_path=$1
     local version=$2
 
-    local expected_paths=("godel-$version/" "godel-$version/bin/darwin-amd64/godel" "godel-$version/bin/linux-amd64/godel" "godel-$version/bin/darwin-arm64/godel" "godel-$version/bin/linux-arm64/godel" "godel-$version/wrapper/godelw" "godel-$version/wrapper/godel/config/")
+    local expected_paths=("godel-$version/" "godel-$version/bin/darwin-amd64/godel" "godel-$version/bin/darwin-arm64/godel" "godel-$version/bin/linux-amd64/godel" "godel-$version/bin/linux-arm64/godel" "godel-$version/wrapper/godelw" "godel-$version/wrapper/godel/config/")
     local files=($(tar -tf "$tgz_path"))
 
     # this is a double-for loop, but fine since $expected_paths is small and bash doesn't have good primitives for set/map/list manipulation

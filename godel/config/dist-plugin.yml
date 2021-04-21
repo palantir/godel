@@ -84,8 +84,8 @@ products:
 
                 # substitute checksums for godelw
                 substitute_checksum darwin-amd64 "$wrapper_dir/godelw"
-                substitute_checksum linux-amd64 "$wrapper_dir/godelw"
                 substitute_checksum darwin-arm64 "$wrapper_dir/godelw"
+                substitute_checksum linux-amd64 "$wrapper_dir/godelw"
                 substitute_checksum linux-arm64 "$wrapper_dir/godelw"
 
                 # substitute the URL in the properties file
