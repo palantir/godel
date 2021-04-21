@@ -26,7 +26,6 @@ func Tasks(tasksCfgInfo config.TasksConfigInfo) []godellauncher.Task {
 		UpdateTask(),
 		InfoTask(),
 		ExecTask(),
-		CheckPathTask(),
 		GitHooksTask(),
 		GitHubWikiTask(),
 		IDEATask(),
