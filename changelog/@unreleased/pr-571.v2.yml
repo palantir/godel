@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Adds support for arm64 architecture for darwin and linux
+  links:
+  - https://github.com/palantir/godel/pull/571
