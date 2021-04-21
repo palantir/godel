@@ -1,0 +1,7 @@
+type: improvement
+improvement:
+  description: |-
+    Removes the "check-path" task, as it is no longer relevant
+    with Go modules.
+  links:
+  - https://github.com/palantir/godel/pull/580
