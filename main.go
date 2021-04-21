@@ -20,7 +20,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/nmiyake/pkg/dirs"
 	"github.com/nmiyake/pkg/errorstringer"
 	"github.com/palantir/godel/v2/framework/builtintasks"
 	"github.com/palantir/godel/v2/framework/godel"
@@ -28,13 +27,9 @@ import (
 	"github.com/palantir/godel/v2/framework/godellauncher"
 	"github.com/palantir/godel/v2/framework/godellauncher/defaulttasks"
 	"github.com/palantir/godel/v2/framework/plugins"
-	"github.com/pkg/errors"
 )
 
 func main() {
-	if err := dirs.SetGoEnvVariables(); err != nil {
-		printErrAndExit(errors.Wrapf(err, "failed to set Go environment variables"), false)
-	}
 	os.Exit(runGodelApp(os.Args))
 }
 
