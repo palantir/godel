@@ -2,7 +2,11 @@ owner-repo: &owner-repo
   owner-repo: palantir/godel
 
 go-version-current: &go-version-current "1.16.2"
-go-version-prev: &go-version-prev "1.15.10"
+# set go-version-prev to 1.16.2 because integration tests require building darwin-arm64
+# binary and support for doing so is only available starting in Go 1.16. This means that
+# tests will not run on Go 1.15 for now. This will be correct once Go 1.17 becomes the
+# current version.
+go-version-prev: &go-version-prev "1.16.2"
 
 executor: &executor
   executor:

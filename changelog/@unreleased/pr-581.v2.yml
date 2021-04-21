@@ -1,0 +1,7 @@
+type: improvement
+improvement:
+  description: |-
+    Remove go code that attempts to set GOROOT and GOPATH environment
+    variables on start. Should not be necessary with go modules.
+  links:
+  - https://github.com/palantir/godel/pull/581

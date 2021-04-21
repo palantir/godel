@@ -46,7 +46,11 @@ the plugin:
 ```
 ➜ ./godelw
 Getting package from https://github.com/palantir/godel-generate-plugin/releases/download/v1.2.0/generate-plugin-1.2.0-linux-amd64.tgz...
-188.29 KiB / 3.65 MiB [--->____________________________________________________________] 5.03% ? p/s637.83 KiB / 3.65 MiB [---------->____________________________________________________] 17.05% ? p/s2.10 MiB / 3.65 MiB [------------------------------------->___________________________] 57.54% ? p/s3.65 MiB / 3.65 MiB [---------------------------------------------------------] 100.00% 6.44 MiB p/s
+
+188.29 KiB / 3.65 MiB [--->____________________________________________________________] 5.03% ? p/s
+637.83 KiB / 3.65 MiB [---------->____________________________________________________] 17.05% ? p/s
+2.10 MiB / 3.65 MiB [------------------------------------->___________________________] 57.54% ? p/s
+3.65 MiB / 3.65 MiB [---------------------------------------------------------] 100.00% 6.44 MiB p/s
 Usage:
   godel [command]
 
@@ -54,7 +58,6 @@ Available Commands:
   artifacts       Print the artifacts for products
   build           Build the executables for products
   check           Run checks (runs all checks if none are specified)
-  check-path      Verify that the Go environment is set up properly and that the project is in the proper location
   clean           Remove the build and dist outputs for products
   dist            Create distributions for products
   docker          Create or push Docker images for products

@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Updates versions of plugins and assets used in default tasks to versions that publish artifacts for arm64 architectures for darwin and linux and add checksums for those architectures as well.
+  links:
+  - https://github.com/palantir/godel/pull/578
