@@ -18,7 +18,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -54,7 +53,7 @@ func CopyDir(src, dst string) error {
 		return errors.Wrapf(err, "failed to create destination directory %s", dst)
 	}
 
-	files, err := ioutil.ReadDir(src)
+	files, err := os.ReadDir(src)
 	if err != nil {
 		return errors.Wrapf(err, "failed to read directory %s", src)
 	}
@@ -130,13 +129,13 @@ func CopyFile(src, dst string) (rErr error) {
 func SyncDir(srcDir, dstDir string, skip []string) (bool, error) {
 	modified := false
 
-	srcFiles, err := ioutil.ReadDir(srcDir)
+	srcFiles, err := os.ReadDir(srcDir)
 	if err != nil {
 		return modified, errors.Wrapf(err, "failed to read directory %s", srcDir)
 	}
 	srcFilesMap := toMap(srcFiles)
 
-	dstFiles, err := ioutil.ReadDir(dstDir)
+	dstFiles, err := os.ReadDir(dstDir)
 	if err != nil {
 		return modified, errors.Wrapf(err, "failed to read directory %s", dstDir)
 	}
@@ -228,8 +227,8 @@ func toSet(input []string) map[string]struct{} {
 	return s
 }
 
-func toMap(input []os.FileInfo) map[string]os.FileInfo {
-	m := make(map[string]os.FileInfo, len(input))
+func toMap(input []os.DirEntry) map[string]os.DirEntry {
+	m := make(map[string]os.DirEntry, len(input))
 	for _, curr := range input {
 		m[curr.Name()] = curr
 	}
@@ -251,7 +250,7 @@ func Checksum(p string) (string, error) {
 // SyncDirAdditive copies all of the files and directories in src that are not in dst. Directories that are present in
 // both are handled recursively. Basically a recursive merge with source preservation.
 func SyncDirAdditive(src, dst string) error {
-	srcInfos, err := ioutil.ReadDir(src)
+	srcInfos, err := os.ReadDir(src)
 	if err != nil {
 		return errors.Wrapf(err, "failed to open %s", src)
 	}

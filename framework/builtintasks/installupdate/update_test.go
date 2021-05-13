@@ -15,7 +15,7 @@
 package installupdate_test
 
 import (
-	"io/ioutil"
+	"io"
 	"testing"
 
 	"github.com/palantir/godel/v2/framework/builtintasks/installupdate"
@@ -23,6 +23,6 @@ import (
 )
 
 func TestUpdateUsesPathFromExecutable(t *testing.T) {
-	err := installupdate.Update("invalid-path", nil, ioutil.Discard)
+	err := installupdate.Update("invalid-path", nil, io.Discard)
 	assert.EqualError(t, err, "update failed: invalid-path is not a valid wrapper directory: invalid-path/godelw does not exist")
 }

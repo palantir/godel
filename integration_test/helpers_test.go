@@ -16,7 +16,6 @@ package integration_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -42,7 +41,7 @@ func setUpGodelTestAndDownload(t *testing.T, testRootDir, godelTGZ string, versi
 }
 
 func setUpGodelTest(t *testing.T, testRootDir, godelTGZ, version string) (string, *httptest.Server) {
-	testProjectDir, err := ioutil.TempDir(testRootDir, "")
+	testProjectDir, err := os.MkdirTemp(testRootDir, "")
 	require.NoError(t, err)
 
 	installGodel(t, testProjectDir, godelTGZ, version)
@@ -57,7 +56,7 @@ func createTGZServer(t *testing.T, godelTGZ string) *httptest.Server {
 	require.NoError(t, err)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		bytes, err := ioutil.ReadFile(godelTGZ)
+		bytes, err := os.ReadFile(godelTGZ)
 		require.NoError(t, err)
 		_, err = w.Write(bytes)
 		require.NoError(t, err)
@@ -77,6 +76,6 @@ func installGodel(t *testing.T, testProjectDir, godelTGZ, version string) {
 
 func updateGodelProperties(t *testing.T, testProjectDir, url string) {
 	contents := fmt.Sprintf("distributionURL=%v\n", url)
-	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "godel.properties"), []byte(contents), 0644)
+	err := os.WriteFile(path.Join(testProjectDir, "godel", "config", "godel.properties"), []byte(contents), 0644)
 	require.NoError(t, err)
 }

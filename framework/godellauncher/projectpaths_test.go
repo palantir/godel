@@ -15,7 +15,6 @@
 package godellauncher_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -137,7 +136,7 @@ func TestListProjectPaths(t *testing.T) {
 			},
 		},
 	} {
-		projectDir, err := ioutil.TempDir(tmpDir, "project")
+		projectDir, err := os.MkdirTemp(tmpDir, "project")
 		require.NoError(t, err)
 		projectDir, err = filepath.EvalSymlinks(projectDir)
 		require.NoError(t, err)

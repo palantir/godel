@@ -16,7 +16,6 @@ package dirchecksum
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -92,7 +91,7 @@ func ChecksumsForDirAfterAction(dir string, action func(dir string) error) (Chec
 }
 
 func createTmpDirPath(parentDir string) (string, error) {
-	tmpDir, err := ioutil.TempDir(parentDir, "amalgomate-verify-")
+	tmpDir, err := os.MkdirTemp(parentDir, "amalgomate-verify-")
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary directory: %v", err)
 	}

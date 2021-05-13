@@ -16,7 +16,7 @@ package githooks_test
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"path"
 	"regexp"
@@ -46,7 +46,7 @@ func TestInstallGitHooks(t *testing.T) {
 			},
 			validate: func(projectDir string, caseNum int, err error) {
 				require.NoError(t, err, "Case %d", caseNum)
-				bytes, err := ioutil.ReadFile(path.Join(projectDir, ".git/hooks/pre-commit"))
+				bytes, err := os.ReadFile(path.Join(projectDir, ".git/hooks/pre-commit"))
 				require.NoError(t, err, "Case %d", caseNum)
 				assert.Regexp(t, regexp.MustCompile(`(?s).+\./godelw format --verify \$gofiles.+`), string(bytes), "Case %d", caseNum)
 			},
@@ -58,7 +58,7 @@ func TestInstallGitHooks(t *testing.T) {
 			},
 		},
 	} {
-		projectDir, err := ioutil.TempDir(tmpDir, "")
+		projectDir, err := os.MkdirTemp(tmpDir, "")
 		require.NoError(t, err, "Case %d", i)
 
 		if currCase.setup != nil {

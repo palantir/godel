@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -147,7 +146,7 @@ func printUpgradedConfig(cfgFile string, upgradedCfgBytes []byte, dryRun, printC
 
 func upgradeConfigFile(task godellauncher.UpgradeConfigTask, global godellauncher.GlobalConfig, configDir string, backup, dryRun bool, stdout io.Writer) (bool, []byte, error) {
 	configFile := path.Join(configDir, task.ConfigFile)
-	origConfigBytes, err := ioutil.ReadFile(configFile)
+	origConfigBytes, err := os.ReadFile(configFile)
 	if err != nil {
 		return false, nil, errors.Wrapf(err, "failed to read config file")
 	}
@@ -165,7 +164,7 @@ func upgradeConfigFile(task godellauncher.UpgradeConfigTask, global godellaunche
 		}
 	}
 	if !dryRun {
-		if err := ioutil.WriteFile(configFile, upgradedConfigBytes, 0644); err != nil {
+		if err := os.WriteFile(configFile, upgradedConfigBytes, 0644); err != nil {
 			return false, nil, errors.Wrapf(err, "failed to write upgraded configuration")
 		}
 	}
@@ -314,7 +313,7 @@ var hardCodedLegacyUpgraders = []hardCodedLegacyUpgrader{
 				// if legacy file does not exist, there is no upgrade to be performed
 				return nil
 			}
-			legacyConfigBytes, err := ioutil.ReadFile(legacyExcludeFilePath)
+			legacyConfigBytes, err := os.ReadFile(legacyExcludeFilePath)
 			if err != nil {
 				return errors.Wrapf(err, "failed to read legacy configuration file")
 			}
@@ -384,7 +383,7 @@ var hardCodedLegacyUpgraders = []hardCodedLegacyUpgrader{
 			}
 			if !dryRun {
 				// write migrated configuration
-				if err := ioutil.WriteFile(godelYMLPath, upgradedCfgBytes, 0644); err != nil {
+				if err := os.WriteFile(godelYMLPath, upgradedCfgBytes, 0644); err != nil {
 					return errors.Wrapf(err, "failed to write upgraded configuration")
 				}
 			}
@@ -395,7 +394,7 @@ var hardCodedLegacyUpgraders = []hardCodedLegacyUpgrader{
 }
 
 func dirYMLFiles(inputDir string) ([]string, error) {
-	fis, err := ioutil.ReadDir(inputDir)
+	fis, err := os.ReadDir(inputDir)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to read input directory")
 	}
@@ -435,7 +434,7 @@ func upgradeLegacyConfig(upgradeTask godellauncher.UpgradeConfigTask, configDirP
 		// if legacy file does not exist, there is no upgrade to be performed
 		return nil
 	}
-	legacyConfigBytes, err := ioutil.ReadFile(legacyConfigFilePath)
+	legacyConfigBytes, err := os.ReadFile(legacyConfigFilePath)
 	if err != nil {
 		return errors.Wrapf(err, "failed to read legacy configuration file")
 	}
@@ -483,7 +482,7 @@ func upgradeLegacyConfig(upgradeTask godellauncher.UpgradeConfigTask, configDirP
 
 	if !dryRun {
 		// write migrated configuration
-		if err := ioutil.WriteFile(dstFilePath, upgradedCfgBytes, 0644); err != nil {
+		if err := os.WriteFile(dstFilePath, upgradedCfgBytes, 0644); err != nil {
 			return errors.Wrapf(err, "failed to write upgraded configuration")
 		}
 	}
@@ -499,7 +498,7 @@ func processUnhandledYMLFiles(configDir string, unknownYMLFiles []string, backup
 	var unknownNonEmptyFiles []string
 	for _, currUnknownFile := range unknownYMLFiles {
 		currPath := path.Join(configDir, currUnknownFile)
-		bytes, err := ioutil.ReadFile(currPath)
+		bytes, err := os.ReadFile(currPath)
 		if err != nil {
 			return errors.Wrapf(err, "failed to read configuration file")
 		}

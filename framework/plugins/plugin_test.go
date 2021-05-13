@@ -17,7 +17,6 @@ package plugins
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -67,7 +66,7 @@ func TestInfoFromResolved(t *testing.T) {
 
 	pluginName := newPluginName()
 	pluginFile := path.Join(tmpDir, fmt.Sprintf("com.palantir-%s-1.0.0", pluginName))
-	err = ioutil.WriteFile(pluginFile, []byte(fmt.Sprintf(pluginScriptTmpl, pluginName)), 0755)
+	err = os.WriteFile(pluginFile, []byte(fmt.Sprintf(pluginScriptTmpl, pluginName)), 0755)
 	require.NoError(t, err)
 
 	gotInfo, err := pluginapi.InfoFromPlugin(path.Join(tmpDir, pathsinternal.PluginFileName(artifactresolver.Locator{
@@ -94,7 +93,7 @@ func TestInfoFromResolvedError(t *testing.T) {
 
 	pluginName := newPluginName()
 	pluginFile := path.Join(tmpDir, fmt.Sprintf("com.palantir-%s-1.0.0", pluginName))
-	err = ioutil.WriteFile(pluginFile, []byte(`#!/usr/bin/env bash
+	err = os.WriteFile(pluginFile, []byte(`#!/usr/bin/env bash
 
 exit 1
 `), 0755)
@@ -164,7 +163,7 @@ func createTestPlugin(t *testing.T, tmpDir string) (artifactresolver.Locator, ar
 	require.NoError(t, err)
 
 	testProductPath := path.Join(testProductDir, pluginName)
-	err = ioutil.WriteFile(testProductPath, []byte(fmt.Sprintf(pluginScriptTmpl, pluginName)), 0755)
+	err = os.WriteFile(testProductPath, []byte(fmt.Sprintf(pluginScriptTmpl, pluginName)), 0755)
 	require.NoError(t, err)
 
 	testProductTGZPath := path.Join(testProductDir, pluginName+"-darwin-amd64-1.0.0.tgz")

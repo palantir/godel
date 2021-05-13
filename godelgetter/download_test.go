@@ -17,7 +17,7 @@ package godelgetter_test
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -39,7 +39,7 @@ func TestDownloadIntoDirectory(t *testing.T) {
 		{
 			func(t *testing.T, repoTGZFile string) (srcPath string, cleanup func()) {
 				ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					bytes, err := ioutil.ReadFile(repoTGZFile)
+					bytes, err := os.ReadFile(repoTGZFile)
 					require.NoError(t, err)
 					_, err = w.Write(bytes)
 					require.NoError(t, err)
@@ -81,7 +81,7 @@ func TestDownloadIntoDirectory(t *testing.T) {
 			err = archiver.DefaultTarGz.Unarchive(fileName, tmpDir)
 			require.NoError(t, err, "Case %d", i)
 
-			fileBytes, err := ioutil.ReadFile(path.Join(tmpDir, "test.txt"))
+			fileBytes, err := os.ReadFile(path.Join(tmpDir, "test.txt"))
 			require.NoError(t, err, "Case %d", i)
 
 			assert.Equal(t, "Test file\n", string(fileBytes), "Case %d", i)
@@ -97,13 +97,13 @@ func TestDownloadSameFileOK(t *testing.T) {
 
 	testFile := path.Join(tmpDir, "test.txt")
 	const content = "test content"
-	err = ioutil.WriteFile(testFile, []byte(content), 0644)
+	err = os.WriteFile(testFile, []byte(content), 0644)
 	require.NoError(t, err)
 
-	_, err = godelgetter.DownloadIntoDirectory(godelgetter.NewPkgSrc(testFile, ""), tmpDir, ioutil.Discard)
+	_, err = godelgetter.DownloadIntoDirectory(godelgetter.NewPkgSrc(testFile, ""), tmpDir, io.Discard)
 	require.NoError(t, err)
 
-	gotContent, err := ioutil.ReadFile(testFile)
+	gotContent, err := os.ReadFile(testFile)
 	require.NoError(t, err)
 
 	assert.Equal(t, content, string(gotContent))
@@ -127,7 +127,7 @@ func TestFailedReaderDoesNotOverwriteDestinationFile(t *testing.T) {
 	// write content in destination file
 	dstFile := path.Join(dstDir, fileName)
 	const content = "destination content"
-	err = ioutil.WriteFile(dstFile, []byte(content), 0644)
+	err = os.WriteFile(dstFile, []byte(content), 0644)
 	require.NoError(t, err)
 
 	srcFile := path.Join(srcDir, fileName)
@@ -136,7 +136,7 @@ func TestFailedReaderDoesNotOverwriteDestinationFile(t *testing.T) {
 	assert.EqualError(t, err, fmt.Sprintf("%s does not exist", srcFile))
 
 	// destination file should still exist (should not have been truncated by download with failed source reader)
-	gotContent, err := ioutil.ReadFile(dstFile)
+	gotContent, err := os.ReadFile(dstFile)
 	require.NoError(t, err)
 	assert.Equal(t, content, string(gotContent))
 }
@@ -147,7 +147,7 @@ func writeSimpleTestTgz(t *testing.T, filePath string) {
 	require.NoError(t, err)
 
 	testFilePath := path.Join(tmpDir, "test.txt")
-	err = ioutil.WriteFile(testFilePath, []byte("Test file\n"), 0644)
+	err = os.WriteFile(testFilePath, []byte("Test file\n"), 0644)
 	require.NoError(t, err)
 
 	err = archiver.DefaultTarGz.Archive([]string{testFilePath}, filePath)

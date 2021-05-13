@@ -17,7 +17,6 @@ package integration_test
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"path"
@@ -48,7 +47,7 @@ func main() {
 	fmt.Println("hello, world!")
 }
 `
-	err := ioutil.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
+	err := os.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
 	cfg, err := config.ReadGodelConfigFromProjectDir(testProjectDir)
@@ -82,7 +81,7 @@ plugins:
 	require.NoError(t, err)
 
 	pluginScript := path.Join(pluginDir, pluginName+"-1.0.0")
-	err = ioutil.WriteFile(pluginScript, []byte(fmt.Sprintf(fmt.Sprintf(`#!/bin/sh
+	err = os.WriteFile(pluginScript, []byte(fmt.Sprintf(fmt.Sprintf(`#!/bin/sh
 if [ "$1" = "%s" ]; then
     echo '%s'
     exit 0
@@ -100,7 +99,7 @@ echo ${GODEL_TEST_ENV_VAR}
 	require.NoError(t, err)
 	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
 	require.NoError(t, err)
-	err = ioutil.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
+	err = os.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
 	require.NoError(t, err)
 
 	// plugin is resolved on first run

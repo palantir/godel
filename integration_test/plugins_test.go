@@ -17,7 +17,6 @@ package integration_test
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"path"
@@ -76,7 +75,7 @@ plugins:
 	require.NoError(t, err)
 	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
 	require.NoError(t, err)
-	err = ioutil.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
+	err = os.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
 	require.NoError(t, err)
 
 	// plugin is resolved on first run
@@ -138,7 +137,7 @@ plugins:
 	writeDefaultPlugin(t, testProjectDir, pluginName, "1.0.0")
 
 	assetFile := path.Join(assetDir, assetName+"-1.0.0")
-	err = ioutil.WriteFile(assetFile, []byte("asset content"), 0644)
+	err = os.WriteFile(assetFile, []byte("asset content"), 0644)
 	require.NoError(t, err)
 
 	assetTGZPath := path.Join(assetDir, fmt.Sprintf("%s-%s-1.0.0.tgz", assetName, osarch.Current()))
@@ -149,7 +148,7 @@ plugins:
 	require.NoError(t, err)
 	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
 	require.NoError(t, err)
-	err = ioutil.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
+	err = os.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
 	require.NoError(t, err)
 
 	// plugin and asset is resolved on first run
@@ -206,7 +205,7 @@ plugins:
 	err = os.MkdirAll(path.Join(testProjectDir, "com", "palantir", configProviderName), os.ModePerm)
 	assert.NoError(t, err)
 	resolverLocation := path.Join(testProjectDir, "com", "palantir", configProviderName, "1.0.0.yml")
-	err = ioutil.WriteFile(resolverLocation, []byte(cfgProviderContent), 0755)
+	err = os.WriteFile(resolverLocation, []byte(cfgProviderContent), 0755)
 	assert.NoError(t, err)
 
 	cfgContent := fmt.Sprintf(`
@@ -226,7 +225,7 @@ tasks-config-providers:
 	require.NoError(t, err)
 	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
 	require.NoError(t, err)
-	err = ioutil.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
+	err = os.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
 	require.NoError(t, err)
 
 	// plugin is resolved on first run
@@ -276,7 +275,7 @@ plugins:
 	err = os.MkdirAll(path.Join(testProjectDir, "com", "palantir", configProviderName), os.ModePerm)
 	assert.NoError(t, err)
 	resolverLocation := path.Join(testProjectDir, "com", "palantir", configProviderName, "1.0.0.yml")
-	err = ioutil.WriteFile(resolverLocation, []byte(cfgProviderContent), 0755)
+	err = os.WriteFile(resolverLocation, []byte(cfgProviderContent), 0755)
 	assert.NoError(t, err)
 
 	cfgContent := fmt.Sprintf(`
@@ -296,7 +295,7 @@ tasks-config-providers:
 	require.NoError(t, err)
 	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
 	require.NoError(t, err)
-	err = ioutil.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
+	err = os.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
 	require.NoError(t, err)
 
 	// configuration provider should fail to load because it has a plugin that specifies an "override" property
@@ -328,7 +327,7 @@ plugins:
 	err = os.MkdirAll(path.Join(testProjectDir, "com", "palantir", configProviderName), os.ModePerm)
 	assert.NoError(t, err)
 	resolverLocation := path.Join(testProjectDir, "com", "palantir", configProviderName, "1.0.0.yml")
-	err = ioutil.WriteFile(resolverLocation, []byte(cfgProviderContent), 0755)
+	err = os.WriteFile(resolverLocation, []byte(cfgProviderContent), 0755)
 	assert.NoError(t, err)
 	cfgContent := fmt.Sprintf(`
 tasks-config-providers:
@@ -373,7 +372,7 @@ echo "2.0.0: $@"
 	require.NoError(t, err)
 	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
 	require.NoError(t, err)
-	err = ioutil.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
+	err = os.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
 	require.NoError(t, err)
 
 	// plugin is resolved on first run
@@ -396,7 +395,7 @@ func main() {
 	fmt.Println("hello, world!")
 }
 `
-	err := ioutil.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
+	err := os.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
 	require.NoError(t, err)
 }
 
@@ -411,7 +410,7 @@ func writePlugin(t *testing.T, testProjectDir, pluginName, pluginVersion, plugin
 	pluginInfoJSON := getDefaultPluginInfoJSON(t, pluginName, pluginVersion)
 
 	pluginScript := path.Join(pluginDir, fmt.Sprintf("%s-%s", pluginName, pluginVersion))
-	err = ioutil.WriteFile(pluginScript, []byte(fmt.Sprintf(pluginContent, string(pluginInfoJSON))), 0755)
+	err = os.WriteFile(pluginScript, []byte(fmt.Sprintf(pluginContent, string(pluginInfoJSON))), 0755)
 	require.NoError(t, err)
 
 	pluginTGZPath := path.Join(pluginDir, fmt.Sprintf("%s-%s-%s.tgz", pluginName, osarch.Current(), pluginVersion))

@@ -16,7 +16,6 @@ package integration_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -71,7 +70,7 @@ func TestFoo(t *testing.T) {
 	_, err := gofiles.Write(testProjectDir, specs)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "license-plugin.yml"), []byte(licenseYML), 0644)
+	err = os.WriteFile(path.Join(testProjectDir, "godel", "config", "license-plugin.yml"), []byte(licenseYML), 0644)
 	require.NoError(t, err)
 
 	for i, currCase := range []struct {
@@ -86,7 +85,7 @@ func TestFoo(t *testing.T) {
 	} {
 		err = os.MkdirAll(path.Join(testProjectDir, "gen"), 0755)
 		require.NoError(t, err)
-		err = ioutil.WriteFile(path.Join(testProjectDir, "gen", "output.txt"), []byte("bar-output"), 0644)
+		err = os.WriteFile(path.Join(testProjectDir, "gen", "output.txt"), []byte("bar-output"), 0644)
 		require.NoError(t, err)
 
 		cmd := exec.Command("./godelw", append([]string{"verify", "--apply=false"}, currCase.args...)...)
@@ -169,7 +168,7 @@ func TestFoo(t *testing.T) {
 }
 `, time.Now().Year())
 	)
-	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "license-plugin.yml"), []byte(licenseYML), 0644)
+	err := os.WriteFile(path.Join(testProjectDir, "godel", "config", "license-plugin.yml"), []byte(licenseYML), 0644)
 	require.NoError(t, err)
 
 	for i, currCase := range []struct {
@@ -192,7 +191,7 @@ func TestFoo(t *testing.T) {
 		require.Error(t, err, fmt.Sprintf("Case %d", i))
 		assert.Regexp(t, regexp.MustCompile(currCase.want), string(output), "Case %d", i)
 
-		bytes, err := ioutil.ReadFile(path.Join(testProjectDir, "main_test.go"))
+		bytes, err := os.ReadFile(path.Join(testProjectDir, "main_test.go"))
 		require.NoError(t, err, "Case %d", i)
 		assert.Equal(t, currCase.wantTestSrc, string(bytes), "Case %d", i)
 	}
@@ -205,13 +204,13 @@ func TestVerifyWithJUnitOutput(t *testing.T) {
 	func main() {
 		fmt.Println("hello, world!")
 	}`
-	err := ioutil.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
+	err := os.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
 	require.NoError(t, err)
 	testSrc := `package main_test
 	import "testing"
 	func TestFoo(t *testing.T) {
 	}`
-	err = ioutil.WriteFile(path.Join(testProjectDir, "main_test.go"), []byte(testSrc), 0644)
+	err = os.WriteFile(path.Join(testProjectDir, "main_test.go"), []byte(testSrc), 0644)
 	require.NoError(t, err)
 
 	junitOutputFile := "test-output.xml"
@@ -273,7 +272,7 @@ func TestFooIntegration(t *testing.T) {}
 		files[k] = v
 	}
 
-	err = ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "test-plugin.yml"), []byte(`tags:
+	err = os.WriteFile(path.Join(testProjectDir, "godel", "config", "test-plugin.yml"), []byte(`tags:
   integration:
     names:
       - "integration_tests"

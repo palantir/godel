@@ -16,7 +16,7 @@ package config_test
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"testing"
 	"time"
@@ -69,7 +69,7 @@ exclude:
 		},
 	} {
 		inputFile := path.Join(testDir, fmt.Sprintf("test_%d.yml", i))
-		err := ioutil.WriteFile(inputFile, []byte(tc.ymlInput), 0644)
+		err := os.WriteFile(inputFile, []byte(tc.ymlInput), 0644)
 		require.NoError(t, err, "Case %d")
 
 		gotCfg, err := config.ReadGodelConfigFromFile(inputFile)
@@ -121,7 +121,7 @@ exclude:
 		},
 	} {
 		inputFile := path.Join(testDir, fmt.Sprintf("test_%d.yml", i))
-		err := ioutil.WriteFile(inputFile, []byte(tc.ymlInput), 0644)
+		err := os.WriteFile(inputFile, []byte(tc.ymlInput), 0644)
 		require.NoError(t, err, "Case %d")
 
 		gotExcludes, err := config.ReadGodelConfigExcludesFromFile(inputFile)

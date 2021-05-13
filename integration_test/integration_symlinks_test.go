@@ -16,7 +16,6 @@ package integration_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -38,7 +37,7 @@ func TestCheckInGoPathSymLink(t *testing.T) {
 	import "testing"
 
 	func TestFoo(t *testing.T) {}`
-	err := ioutil.WriteFile(path.Join(testProjectDir, "foo_test.go"), []byte(src), 0644)
+	err := os.WriteFile(path.Join(testProjectDir, "foo_test.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
 	symLinkParentDir, cleanup, err := dirs.TempDir("", "")
@@ -60,7 +59,7 @@ cd %v
 pwd
 `
 	scriptFilePath := path.Join(symLinkParentDir, "script.sh")
-	err = ioutil.WriteFile(scriptFilePath, []byte(fmt.Sprintf(scriptTemplate, projectPathInSymLink)), 0755)
+	err = os.WriteFile(scriptFilePath, []byte(fmt.Sprintf(scriptTemplate, projectPathInSymLink)), 0755)
 	require.NoError(t, err)
 
 	cmd := exec.Command(scriptFilePath)
@@ -72,7 +71,7 @@ pwd
 cd %v
 ./godelw check
 `
-	err = ioutil.WriteFile(scriptFilePath, []byte(fmt.Sprintf(scriptTemplate, projectPathInSymLink)), 0755)
+	err = os.WriteFile(scriptFilePath, []byte(fmt.Sprintf(scriptTemplate, projectPathInSymLink)), 0755)
 	require.NoError(t, err)
 
 	cmd = exec.Command(scriptFilePath)
@@ -91,7 +90,7 @@ func TestCheckInGoPathSymLinkGoPathSymLink(t *testing.T) {
 	import "testing"
 
 	func TestFoo(t *testing.T) {}`
-	err := ioutil.WriteFile(path.Join(testProjectDir, "foo_test.go"), []byte(src), 0644)
+	err := os.WriteFile(path.Join(testProjectDir, "foo_test.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
 	symLinkParentDir, cleanup, err := dirs.TempDir("", "")
@@ -121,7 +120,7 @@ cd %v
 pwd
 `
 	scriptFilePath := path.Join(symLinkParentDir, "script.sh")
-	err = ioutil.WriteFile(scriptFilePath, []byte(fmt.Sprintf(scriptTemplate, projectPathInSymLink)), 0755)
+	err = os.WriteFile(scriptFilePath, []byte(fmt.Sprintf(scriptTemplate, projectPathInSymLink)), 0755)
 	require.NoError(t, err)
 
 	cmd := exec.Command(scriptFilePath)
@@ -133,7 +132,7 @@ pwd
 cd %v
 ./godelw check
 `
-	err = ioutil.WriteFile(scriptFilePath, []byte(fmt.Sprintf(scriptTemplate, projectPathInSymLink)), 0755)
+	err = os.WriteFile(scriptFilePath, []byte(fmt.Sprintf(scriptTemplate, projectPathInSymLink)), 0755)
 	require.NoError(t, err)
 
 	cmd = exec.Command(scriptFilePath)
@@ -152,7 +151,7 @@ func TestCheckInGoPathNonSymLinkWhenGoPathIsSymLink(t *testing.T) {
 	import "testing"
 
 	func TestFoo(t *testing.T) {}`
-	err := ioutil.WriteFile(path.Join(testProjectDir, "foo_test.go"), []byte(src), 0644)
+	err := os.WriteFile(path.Join(testProjectDir, "foo_test.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
 	symLinkParentDir, cleanup, err := dirs.TempDir("", "")

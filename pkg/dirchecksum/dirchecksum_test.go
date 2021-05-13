@@ -16,7 +16,6 @@ package dirchecksum_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -58,11 +57,11 @@ func TestChecksumsDiffString(t *testing.T) {
 
 	const originalFileName = "original.txt"
 	missingFile := path.Join(dir1, originalFileName)
-	err = ioutil.WriteFile(missingFile, []byte("original"), 0644)
+	err = os.WriteFile(missingFile, []byte("original"), 0644)
 	require.NoError(t, err)
 
 	checksumDiffFile := path.Join(dir1, "checksumdiff.txt")
-	err = ioutil.WriteFile(checksumDiffFile, []byte("original"), 0644)
+	err = os.WriteFile(checksumDiffFile, []byte("original"), 0644)
 	require.NoError(t, err)
 
 	checksums1, err := dirchecksum.ChecksumsForMatchingPaths(dir1, nil)
@@ -73,12 +72,12 @@ func TestChecksumsDiffString(t *testing.T) {
 
 	const newFileName = "new.txt"
 	extraFile := path.Join(dir2, newFileName)
-	err = ioutil.WriteFile(extraFile, []byte("new"), 0644)
+	err = os.WriteFile(extraFile, []byte("new"), 0644)
 	require.NoError(t, err)
 
 	const diffFileName = "checksumdiff.txt"
 	checksumDiffFile = path.Join(dir2, diffFileName)
-	err = ioutil.WriteFile(checksumDiffFile, []byte("new"), 0644)
+	err = os.WriteFile(checksumDiffFile, []byte("new"), 0644)
 	require.NoError(t, err)
 
 	checksums2, err := dirchecksum.ChecksumsForMatchingPaths(dir2, nil)
@@ -97,13 +96,13 @@ func createTestFiles(t *testing.T, rootDir string) (string, string) {
 	require.NoError(t, err)
 
 	testFile := path.Join(rootDir, "testfile.txt")
-	err = ioutil.WriteFile(testFile, []byte("foo"), 0644)
+	err = os.WriteFile(testFile, []byte("foo"), 0644)
 	require.NoError(t, err)
 
 	testInnerFile := path.Join(rootDir, "dir", "innerfile.txt")
 	err = os.MkdirAll(path.Dir(testInnerFile), 0755)
 	require.NoError(t, err)
-	err = ioutil.WriteFile(testInnerFile, []byte("bar"), 0644)
+	err = os.WriteFile(testInnerFile, []byte("bar"), 0644)
 	require.NoError(t, err)
 
 	return testFile, testInnerFile

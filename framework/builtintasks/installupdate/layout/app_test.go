@@ -16,7 +16,6 @@ package layout_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"runtime"
@@ -112,13 +111,13 @@ func TestAppLayoutValidation(t *testing.T) {
 }
 
 func createFiles(t *testing.T, tmpDir string, files map[string]string) string {
-	currCaseTmpDir, err := ioutil.TempDir(tmpDir, "")
+	currCaseTmpDir, err := os.MkdirTemp(tmpDir, "")
 	require.NoError(t, err)
 
 	for currFile, currContent := range files {
 		err = os.MkdirAll(path.Join(currCaseTmpDir, path.Dir(currFile)), 0755)
 		require.NoError(t, err)
-		err = ioutil.WriteFile(path.Join(currCaseTmpDir, currFile), []byte(currContent), 0644)
+		err = os.WriteFile(path.Join(currCaseTmpDir, currFile), []byte(currContent), 0644)
 		require.NoError(t, err)
 	}
 

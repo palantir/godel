@@ -16,7 +16,6 @@ package layout
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"runtime"
@@ -33,7 +32,7 @@ func AllPaths(dir string) (map[string]bool, error) {
 }
 
 func allPaths(paths map[string]bool, pathStack []string, dir string) error {
-	fis, err := ioutil.ReadDir(dir)
+	fis, err := os.ReadDir(dir)
 	if err != nil {
 		return err
 	}

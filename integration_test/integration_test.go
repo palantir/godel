@@ -16,7 +16,6 @@ package integration_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -82,7 +81,7 @@ func TestProjectVersion(t *testing.T) {
 
 	gittest.InitGitDir(t, tmpDir)
 	gittest.CreateGitTag(t, tmpDir, "testTag")
-	err = ioutil.WriteFile(path.Join(tmpDir, "random.txt"), []byte(""), 0644)
+	err = os.WriteFile(path.Join(tmpDir, "random.txt"), []byte(""), 0644)
 	require.NoError(t, err)
 
 	testProjectDir := setUpGodelTestAndDownload(t, tmpDir, godelTGZ, version)
@@ -110,7 +109,7 @@ func TestGitHooksSuccess(t *testing.T) {
 func main() {
 }
 `
-	err = ioutil.WriteFile(path.Join(testProjectDir, "main.go"), []byte(formatted), 0644)
+	err = os.WriteFile(path.Join(testProjectDir, "main.go"), []byte(formatted), 0644)
 	require.NoError(t, err)
 	execCommand(t, testProjectDir, "git", "add", ".")
 	execCommand(t, testProjectDir, "git", "commit", "--author=testAuthor <test@author.com>", "-m", "Second commit")
@@ -137,7 +136,7 @@ import "fmt"
 func Foo() {
 fmt.Println("foo")
 }`
-	err = ioutil.WriteFile(path.Join(testProjectDir, "helper.go"), []byte(notFormatted), 0644)
+	err = os.WriteFile(path.Join(testProjectDir, "helper.go"), []byte(notFormatted), 0644)
 	require.NoError(t, err)
 	execCommand(t, testProjectDir, "git", "add", ".")
 
@@ -160,7 +159,7 @@ products:
     build:
       main-pkg: ./bar
 `
-	err := ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "dist-plugin.yml"), []byte(distYml), 0644)
+	err := os.WriteFile(path.Join(testProjectDir, "godel", "config", "dist-plugin.yml"), []byte(distYml), 0644)
 	require.NoError(t, err)
 
 	src := `package main
@@ -171,12 +170,12 @@ products:
 	}`
 	err = os.MkdirAll(path.Join(testProjectDir, "foo"), 0755)
 	require.NoError(t, err)
-	err = ioutil.WriteFile(path.Join(testProjectDir, "foo", "foo.go"), []byte(src), 0644)
+	err = os.WriteFile(path.Join(testProjectDir, "foo", "foo.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
 	err = os.MkdirAll(path.Join(testProjectDir, "bar"), 0755)
 	require.NoError(t, err)
-	err = ioutil.WriteFile(path.Join(testProjectDir, "bar", "bar.go"), []byte(src), 0644)
+	err = os.WriteFile(path.Join(testProjectDir, "bar", "bar.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
 	execCommand(t, testProjectDir, "./godelw", "products")
@@ -185,14 +184,14 @@ products:
 func TestExec(t *testing.T) {
 	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 
-	currGodelYML, err := ioutil.ReadFile(path.Join(testProjectDir, "godel", "config", "godel.yml"))
+	currGodelYML, err := os.ReadFile(path.Join(testProjectDir, "godel", "config", "godel.yml"))
 	require.NoError(t, err)
 
 	updatedGodelYML := string(currGodelYML) + `
 environment:
   MY_ENV_VAR: "FOO"
 `
-	err = ioutil.WriteFile(path.Join(testProjectDir, "godel", "config", "godel.yml"), []byte(updatedGodelYML), 0644)
+	err = os.WriteFile(path.Join(testProjectDir, "godel", "config", "godel.yml"), []byte(updatedGodelYML), 0644)
 	require.NoError(t, err)
 
 	out := execCommand(t, testProjectDir, "./godelw", "exec", "env")
@@ -208,7 +207,7 @@ func TestTest(t *testing.T) {
 	import "testing"
 
 	func TestFoo(t *testing.T) {}`
-	err := ioutil.WriteFile(path.Join(testProjectDir, "foo_test.go"), []byte(src), 0644)
+	err := os.WriteFile(path.Join(testProjectDir, "foo_test.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
 	execCommand(t, testProjectDir, "./godelw", "test")
@@ -221,7 +220,7 @@ func TestCheckFromNestedDirectory(t *testing.T) {
 
 	// write Go file to root directory of project
 	badSrc := `package main`
-	err := ioutil.WriteFile(path.Join(testProjectDir, "main.go"), []byte(badSrc), 0644)
+	err := os.WriteFile(path.Join(testProjectDir, "main.go"), []byte(badSrc), 0644)
 	require.NoError(t, err)
 
 	// write valid Go file to child directory
@@ -234,7 +233,7 @@ func TestCheckFromNestedDirectory(t *testing.T) {
 	func main() {
 		fmt.Println("hello, world!")
 	}`
-	err = ioutil.WriteFile(path.Join(childDir, "main.go"), []byte(src), 0644)
+	err = os.WriteFile(path.Join(childDir, "main.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
 	execCommand(t, childDir, "../godelw", "check")
