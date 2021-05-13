@@ -44,6 +44,11 @@ func TestVerify(t *testing.T) {
 
 	specs := []gofiles.GoFileSpec{
 		{
+			RelPath: "go.mod",
+			Src: `module github.com/godel/test
+`,
+		},
+		{
 			RelPath: "main.go",
 			Src: `package main
 import "fmt"
@@ -96,6 +101,11 @@ func TestVerifyApply(t *testing.T) {
 	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 
 	specs := []gofiles.GoFileSpec{
+		{
+			RelPath: "go.mod",
+			Src: `module github.com/godel/test
+`,
+		},
 		{
 			RelPath: "main.go",
 			Src: `package main
@@ -219,6 +229,11 @@ func TestVerifyWithJUnitOutput(t *testing.T) {
 func TestVerifyTestTags(t *testing.T) {
 	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 	specs := []gofiles.GoFileSpec{
+		{
+			RelPath: "go.mod",
+			Src: `module github.com/godel/test
+`,
+		},
 		{
 			RelPath: "main.go",
 			Src: `package main

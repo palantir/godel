@@ -40,11 +40,11 @@ github.com/mattn/go-isatty
 github.com/mattn/go-runewidth
 # github.com/mholt/archiver/v3 v3.3.0
 github.com/mholt/archiver/v3
-# github.com/nmiyake/pkg/dirs v1.0.0
+# github.com/nmiyake/pkg/dirs v1.1.0
 github.com/nmiyake/pkg/dirs
-# github.com/nmiyake/pkg/errorstringer v1.0.0
+# github.com/nmiyake/pkg/errorstringer v1.1.0
 github.com/nmiyake/pkg/errorstringer
-# github.com/nmiyake/pkg/gofiles v1.0.0
+# github.com/nmiyake/pkg/gofiles v1.2.0
 github.com/nmiyake/pkg/gofiles
 # github.com/nwaples/rardecode v1.0.0
 github.com/nwaples/rardecode
@@ -94,7 +94,26 @@ github.com/ulikunitz/xz/internal/xlog
 github.com/ulikunitz/xz/lzma
 # github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
 github.com/xi2/xz
-# golang.org/x/sys v0.0.0-20190624142023-c5567b49c5d0
+# golang.org/x/mod v0.4.2
+golang.org/x/mod/semver
+# golang.org/x/sys v0.0.0-20210510120138-977fb7262007
+golang.org/x/sys/execabs
+golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
+# golang.org/x/tools v0.1.1
+golang.org/x/tools/go/gcexportdata
+golang.org/x/tools/go/internal/gcimporter
+golang.org/x/tools/go/internal/packagesdriver
+golang.org/x/tools/go/packages
+golang.org/x/tools/internal/event
+golang.org/x/tools/internal/event/core
+golang.org/x/tools/internal/event/keys
+golang.org/x/tools/internal/event/label
+golang.org/x/tools/internal/gocommand
+golang.org/x/tools/internal/packagesinternal
+golang.org/x/tools/internal/typesinternal
+# golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
+golang.org/x/xerrors
+golang.org/x/xerrors/internal
 # gopkg.in/yaml.v2 v2.4.0
 gopkg.in/yaml.v2

@@ -49,6 +49,11 @@ func TestListProjectPaths(t *testing.T) {
 			"empty matcher matches nothing",
 			[]gofiles.GoFileSpec{
 				{
+					RelPath: "go.mod",
+					Src: `module github.com/godel/test
+`,
+				},
+				{
 					RelPath: "foo.go",
 				},
 			},
@@ -60,6 +65,11 @@ func TestListProjectPaths(t *testing.T) {
 		{
 			"matcher matches files and directories",
 			[]gofiles.GoFileSpec{
+				{
+					RelPath: "go.mod",
+					Src: `module github.com/godel/test
+`,
+				},
 				{
 					RelPath: "foo.go",
 				},
@@ -74,11 +84,17 @@ func TestListProjectPaths(t *testing.T) {
 				"bar",
 				"bar/bar.go",
 				"foo.go",
+				"go.mod",
 			},
 		},
 		{
 			"matcher returns relative paths",
 			[]gofiles.GoFileSpec{
+				{
+					RelPath: "go.mod",
+					Src: `module github.com/godel/test
+`,
+				},
 				{
 					RelPath: "foo.go",
 				},
@@ -93,11 +109,17 @@ func TestListProjectPaths(t *testing.T) {
 				"../bar",
 				"../bar/bar.go",
 				"../foo.go",
+				"../go.mod",
 			},
 		},
 		{
 			"exclude matcher is used",
 			[]gofiles.GoFileSpec{
+				{
+					RelPath: "go.mod",
+					Src: `module github.com/godel/test
+`,
+				},
 				{
 					RelPath: "foo.go",
 				},
@@ -111,6 +133,7 @@ func TestListProjectPaths(t *testing.T) {
 			[]string{
 				"../bar",
 				"../foo.go",
+				"../go.mod",
 			},
 		},
 	} {
