@@ -20,7 +20,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -68,14 +68,14 @@ func installGodel(t *testing.T, testProjectDir, godelTGZ, version string) {
 	specDir, err := layout.AppSpecDir(strings.TrimSuffix(godelTGZ, ".tgz"), version)
 	require.NoError(t, err)
 
-	err = layout.CopyFile(specDir.Path(layout.WrapperScriptFile), path.Join(testProjectDir, "godelw"))
+	err = layout.CopyFile(specDir.Path(layout.WrapperScriptFile), filepath.Join(testProjectDir, "godelw"))
 	require.NoError(t, err)
-	err = layout.CopyDir(specDir.Path(layout.WrapperAppDir), path.Join(testProjectDir, "godel"))
+	err = layout.CopyDir(specDir.Path(layout.WrapperAppDir), filepath.Join(testProjectDir, "godel"))
 	require.NoError(t, err)
 }
 
 func updateGodelProperties(t *testing.T, testProjectDir, url string) {
 	contents := fmt.Sprintf("distributionURL=%v\n", url)
-	err := os.WriteFile(path.Join(testProjectDir, "godel", "config", "godel.properties"), []byte(contents), 0644)
+	err := os.WriteFile(filepath.Join(testProjectDir, "godel", "config", "godel.properties"), []byte(contents), 0644)
 	require.NoError(t, err)
 }

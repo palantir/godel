@@ -16,7 +16,7 @@ package generator
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 	"sort"
 	"testing"
 
@@ -230,7 +230,7 @@ RUN /scripts/run-add.sh 2>&1
 		for _, k := range sortedKeys {
 			want := tc.wantFiles[k]
 
-			filePath := path.Join(currDir, k)
+			filePath := filepath.Join(currDir, k)
 			gotBytes, err := os.ReadFile(filePath)
 			require.NoError(t, err, "Case %d\nPath: %s", i, filePath)
 			got := string(gotBytes)

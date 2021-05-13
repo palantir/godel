@@ -17,7 +17,7 @@ package products
 import (
 	"fmt"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
@@ -109,7 +109,7 @@ func godelwPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return path.Join(projectDir, "godelw"), nil
+	return filepath.Join(projectDir, "godelw"), nil
 }
 
 func projectDir() (string, error) {

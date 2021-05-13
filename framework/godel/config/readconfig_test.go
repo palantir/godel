@@ -17,7 +17,7 @@ package config_test
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -68,7 +68,7 @@ exclude:
 			}),
 		},
 	} {
-		inputFile := path.Join(testDir, fmt.Sprintf("test_%d.yml", i))
+		inputFile := filepath.Join(testDir, fmt.Sprintf("test_%d.yml", i))
 		err := os.WriteFile(inputFile, []byte(tc.ymlInput), 0644)
 		require.NoError(t, err, "Case %d")
 
@@ -120,7 +120,7 @@ exclude:
 			},
 		},
 	} {
-		inputFile := path.Join(testDir, fmt.Sprintf("test_%d.yml", i))
+		inputFile := filepath.Join(testDir, fmt.Sprintf("test_%d.yml", i))
 		err := os.WriteFile(inputFile, []byte(tc.ymlInput), 0644)
 		require.NoError(t, err, "Case %d")
 

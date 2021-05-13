@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/palantir/godel/v2/framework/godellauncher"
@@ -76,10 +75,10 @@ func RunPlugin(
 			if err != nil {
 				return cleanup, errors.Wrapf(err, "failed to determine working directory")
 			}
-			projectDir = path.Join(wd, projectDir)
+			projectDir = filepath.Join(wd, projectDir)
 		}
 
-		godelwPath := path.Join(projectDir, "godelw")
+		godelwPath := filepath.Join(projectDir, "godelw")
 		if _, err := os.Stat(godelwPath); os.IsNotExist(err) {
 			if err := os.WriteFile(godelwPath, nil, 0644); err != nil {
 				return cleanup, errors.Wrapf(err, "failed to create temporary godelw file")
@@ -90,7 +89,7 @@ func RunPlugin(
 				}
 			}
 		}
-		globalConfig.Wrapper = path.Join(projectDir, "godelw")
+		globalConfig.Wrapper = filepath.Join(projectDir, "godelw")
 	}
 	return cleanup, task.Run(globalConfig, stdout)
 }

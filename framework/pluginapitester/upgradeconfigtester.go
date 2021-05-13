@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"sort"
 	"testing"
@@ -95,10 +94,10 @@ func RunUpgradeConfig(
 			if err != nil {
 				return cleanup, errors.Wrapf(err, "failed to determine working directory")
 			}
-			projectDir = path.Join(wd, projectDir)
+			projectDir = filepath.Join(wd, projectDir)
 		}
 
-		godelwPath := path.Join(projectDir, "godelw")
+		godelwPath := filepath.Join(projectDir, "godelw")
 		if _, err := os.Stat(godelwPath); os.IsNotExist(err) {
 			if err := os.WriteFile(godelwPath, nil, 0644); err != nil {
 				return cleanup, errors.Wrapf(err, "failed to create temporary godelw file")
@@ -109,7 +108,7 @@ func RunUpgradeConfig(
 				}
 			}
 		}
-		globalConfig.Wrapper = path.Join(projectDir, "godelw")
+		globalConfig.Wrapper = filepath.Join(projectDir, "godelw")
 	}
 	return cleanup, task.Run(globalConfig, stdout)
 }
@@ -148,9 +147,9 @@ func RunUpgradeConfigTest(t *testing.T,
 		sort.Strings(sortedKeys)
 
 		for _, k := range sortedKeys {
-			err = os.MkdirAll(path.Dir(path.Join(projectDir, k)), 0755)
+			err = os.MkdirAll(filepath.Dir(filepath.Join(projectDir, k)), 0755)
 			require.NoError(t, err)
-			err = os.WriteFile(path.Join(projectDir, k), []byte(tc.ConfigFiles[k]), 0644)
+			err = os.WriteFile(filepath.Join(projectDir, k), []byte(tc.ConfigFiles[k]), 0644)
 			require.NoError(t, err)
 		}
 
@@ -172,7 +171,7 @@ func RunUpgradeConfigTest(t *testing.T,
 			sort.Strings(sortedKeys)
 			for _, k := range sortedKeys {
 				wantContent := tc.WantFiles[k]
-				bytes, err := os.ReadFile(path.Join(projectDir, k))
+				bytes, err := os.ReadFile(filepath.Join(projectDir, k))
 				require.NoError(t, err, "Case %d: %s", i, tc.Name)
 				assert.Equal(t, wantContent, string(bytes), "Case %d: %s\nContent of file %s did not match expectation.\nActual:\n%s", i, tc.Name, k, string(bytes))
 			}

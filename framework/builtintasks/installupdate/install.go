@@ -19,7 +19,6 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -83,7 +82,7 @@ func install(src godelgetter.PkgSrc, stdout io.Writer) (string, error) {
 		return "", errors.Wrapf(err, "failed to extract archive %s to %s", tgzFilePath, tmpDir)
 	}
 
-	expandedGodelDir := path.Join(tmpDir, layout.AppName+"-"+tgzVersion)
+	expandedGodelDir := filepath.Join(tmpDir, layout.AppName+"-"+tgzVersion)
 	expandedGodelApp, err := layout.AppSpecDir(expandedGodelDir, tgzVersion)
 	if err != nil {
 		return "", errors.Wrapf(err, "extracted archive layout did not match expected gödel layout")

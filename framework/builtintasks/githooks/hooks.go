@@ -17,7 +17,7 @@ package githooks
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/palantir/godel/v2/framework/builtintasks/installupdate/layout"
 	"github.com/pkg/errors"
@@ -44,13 +44,13 @@ exit $exitCode
 }
 
 func InstallGitHooks(rootDir string) error {
-	gitDir := path.Join(rootDir, ".git")
+	gitDir := filepath.Join(rootDir, ".git")
 	if err := layout.VerifyDirExists(gitDir); err != nil {
 		return fmt.Errorf(".git directory does not exist at %v", gitDir)
 	}
 
 	for hook, contents := range hooks {
-		hookPath := path.Join(gitDir, "hooks", hook)
+		hookPath := filepath.Join(gitDir, "hooks", hook)
 		if err := os.WriteFile(hookPath, []byte(contents), 0755); err != nil {
 			return errors.Wrapf(err, "failed to write %s hook to %s", hook, hookPath)
 		}

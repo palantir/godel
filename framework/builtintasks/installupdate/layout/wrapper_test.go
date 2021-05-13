@@ -16,7 +16,7 @@ package layout_test
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/nmiyake/pkg/dirs"
@@ -62,16 +62,16 @@ func TestWrapperLayoutValidation(t *testing.T) {
 	defer cleanup()
 	require.NoError(t, err)
 
-	err = os.MkdirAll(path.Join(tmpDir, "wrapperParent", "godel", "config"), 0755)
+	err = os.MkdirAll(filepath.Join(tmpDir, "wrapperParent", "godel", "config"), 0755)
 	require.NoError(t, err)
 
-	err = os.MkdirAll(path.Join(tmpDir, "wrapperParent", "godel", ".src"), 0755)
+	err = os.MkdirAll(filepath.Join(tmpDir, "wrapperParent", "godel", ".src"), 0755)
 	require.NoError(t, err)
 
-	err = os.WriteFile(path.Join(tmpDir, "wrapperParent", "godelw"), []byte("test file"), 0644)
+	err = os.WriteFile(filepath.Join(tmpDir, "wrapperParent", "godelw"), []byte("test file"), 0644)
 	require.NoError(t, err)
 
-	specDir, err := specdir.New(path.Join(tmpDir, "wrapperParent"), layout.WrapperSpec(), nil, specdir.Validate)
+	specDir, err := specdir.New(filepath.Join(tmpDir, "wrapperParent"), layout.WrapperSpec(), nil, specdir.Validate)
 	require.NoError(t, err)
 
 	for i, currCase := range []struct {
@@ -91,6 +91,6 @@ func TestWrapperLayoutValidation(t *testing.T) {
 			want:      "wrapperParent/godelw",
 		},
 	} {
-		assert.Equal(t, path.Join(tmpDir, currCase.want), specDir.Path(currCase.aliasName), "Case %d", i)
+		assert.Equal(t, filepath.Join(tmpDir, currCase.want), specDir.Path(currCase.aliasName), "Case %d", i)
 	}
 }

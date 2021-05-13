@@ -17,7 +17,7 @@ package layout_test
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"runtime"
 	"testing"
 
@@ -51,7 +51,7 @@ func TestAppSpecLayoutValidationFail(t *testing.T) {
 	defer cleanup()
 	require.NoError(t, err)
 
-	godelDir := path.Join(tmpDir, "godel-0.0.1")
+	godelDir := filepath.Join(tmpDir, "godel-0.0.1")
 	err = os.Mkdir(godelDir, 0755)
 	require.NoError(t, err)
 
@@ -84,15 +84,15 @@ func TestAppLayoutValidation(t *testing.T) {
 	require.NoError(t, err)
 
 	filesToCreate := map[string]string{
-		path.Join("godel-0.0.1", "bin", "darwin-amd64", "godel"):          "godel",
-		path.Join("godel-0.0.1", "bin", "linux-amd64", "godel"):           "godel",
-		path.Join("godel-0.0.1", "wrapper", "godel", "bin", "godelw"):     "godelw",
-		path.Join("godel-0.0.1", "wrapper", "godel", "config", "foo.yml"): "testconfig",
-		path.Join("godel-0.0.1", "wrapper", "godelw"):                     "godelw",
+		filepath.Join("godel-0.0.1", "bin", "darwin-amd64", "godel"):          "godel",
+		filepath.Join("godel-0.0.1", "bin", "linux-amd64", "godel"):           "godel",
+		filepath.Join("godel-0.0.1", "wrapper", "godel", "bin", "godelw"):     "godelw",
+		filepath.Join("godel-0.0.1", "wrapper", "godel", "config", "foo.yml"): "testconfig",
+		filepath.Join("godel-0.0.1", "wrapper", "godelw"):                     "godelw",
 	}
 
 	createdFilesTmpDir := createFiles(t, tmpDir, filesToCreate)
-	specDir, err := specdir.New(path.Join(createdFilesTmpDir, "godel-0.0.1"), layout.AppSpec(), layout.AppSpecTemplate("0.0.1"), specdir.Validate)
+	specDir, err := specdir.New(filepath.Join(createdFilesTmpDir, "godel-0.0.1"), layout.AppSpec(), layout.AppSpecTemplate("0.0.1"), specdir.Validate)
 	require.NoError(t, err)
 
 	for i, currCase := range []struct {
@@ -104,7 +104,7 @@ func TestAppLayoutValidation(t *testing.T) {
 			want:      fmt.Sprintf("godel-0.0.1/bin/%v-%v/godel", runtime.GOOS, runtime.GOARCH),
 		},
 	} {
-		expected := path.Join(createdFilesTmpDir, currCase.want)
+		expected := filepath.Join(createdFilesTmpDir, currCase.want)
 		got := specDir.Path(currCase.aliasName)
 		assert.Equal(t, expected, got, "Case %d", i)
 	}
@@ -115,9 +115,9 @@ func createFiles(t *testing.T, tmpDir string, files map[string]string) string {
 	require.NoError(t, err)
 
 	for currFile, currContent := range files {
-		err = os.MkdirAll(path.Join(currCaseTmpDir, path.Dir(currFile)), 0755)
+		err = os.MkdirAll(filepath.Join(currCaseTmpDir, filepath.Dir(currFile)), 0755)
 		require.NoError(t, err)
-		err = os.WriteFile(path.Join(currCaseTmpDir, currFile), []byte(currContent), 0644)
+		err = os.WriteFile(filepath.Join(currCaseTmpDir, currFile), []byte(currContent), 0644)
 		require.NoError(t, err)
 	}
 

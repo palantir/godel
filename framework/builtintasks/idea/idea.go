@@ -18,7 +18,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"text/template"
 
 	"github.com/nmiyake/pkg/dirs"
@@ -120,7 +120,7 @@ func CreateGoglandFiles(rootDir string) error {
 }
 
 func createIDEAFiles(rootDir string, imlContent, iprContent string) error {
-	projectName := path.Base(rootDir)
+	projectName := filepath.Base(rootDir)
 
 	goRoot, err := dirs.GoRoot()
 	if err != nil {
@@ -137,7 +137,7 @@ func createIDEAFiles(rootDir string, imlContent, iprContent string) error {
 		return errors.Wrapf(err, "failed to execute template %s with values %v", imlContent, templateValues)
 	}
 
-	imlFilePath := path.Join(rootDir, projectName+".iml")
+	imlFilePath := filepath.Join(rootDir, projectName+".iml")
 	if err := os.WriteFile(imlFilePath, buffer.Bytes(), 0644); err != nil {
 		return errors.Wrapf(err, "failed to write .iml file to %s", imlFilePath)
 	}
@@ -148,7 +148,7 @@ func createIDEAFiles(rootDir string, imlContent, iprContent string) error {
 		return errors.Wrapf(err, "failed to execute template %s with values %v", iprContent, templateValues)
 	}
 
-	iprFilePath := path.Join(rootDir, projectName+".ipr")
+	iprFilePath := filepath.Join(rootDir, projectName+".ipr")
 	if err := os.WriteFile(iprFilePath, buffer.Bytes(), 0644); err != nil {
 		return errors.Wrapf(err, "failed to write .ipr file to %s", iprFilePath)
 	}
@@ -157,9 +157,9 @@ func createIDEAFiles(rootDir string, imlContent, iprContent string) error {
 }
 
 func CleanIDEAFiles(rootDir string) error {
-	projectName := path.Base(rootDir)
+	projectName := filepath.Base(rootDir)
 	for _, ext := range []string{"iml", "ipr", "iws"} {
-		currPath := path.Join(rootDir, fmt.Sprintf("%v.%v", projectName, ext))
+		currPath := filepath.Join(rootDir, fmt.Sprintf("%v.%v", projectName, ext))
 		if err := os.Remove(currPath); err != nil && !os.IsNotExist(err) {
 			return errors.Wrapf(err, "failed to remove file %s", currPath)
 		}

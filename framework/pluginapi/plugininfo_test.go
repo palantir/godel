@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/nmiyake/pkg/dirs"
@@ -250,14 +250,14 @@ func TestRunPluginFromInfo(t *testing.T) {
 
 		pluginInfoJSON, err := json.Marshal(pluginInfo)
 		require.NoError(t, err)
-		pluginExecPath := path.Join(tmpDir, fmt.Sprintf("echo-%d.sh", i))
+		pluginExecPath := filepath.Join(tmpDir, fmt.Sprintf("echo-%d.sh", i))
 
 		err = os.WriteFile(pluginExecPath, []byte(fmt.Sprintf(echoPluginTmpl, string(pluginInfoJSON))), 0755)
 		require.NoError(t, err)
 
 		var assets []string
 		for assetNum := 0; assetNum < tc.numAssets; assetNum++ {
-			assetPath := path.Join(tmpDir, fmt.Sprintf("echo-%d-asset-%d", i, assetNum))
+			assetPath := filepath.Join(tmpDir, fmt.Sprintf("echo-%d-asset-%d", i, assetNum))
 
 			err = os.WriteFile(assetPath, []byte(fmt.Sprintf("asset %d", assetNum)), 0755)
 			require.NoError(t, err)
@@ -352,7 +352,7 @@ func TestRunPluginVerify(t *testing.T) {
 
 		pluginInfoJSON, err := json.Marshal(pluginInfo)
 		require.NoError(t, err)
-		pluginExecPath := path.Join(tmpDir, fmt.Sprintf("echo-%d.sh", i))
+		pluginExecPath := filepath.Join(tmpDir, fmt.Sprintf("echo-%d.sh", i))
 
 		err = os.WriteFile(pluginExecPath, []byte(fmt.Sprintf(echoPluginTmpl, string(pluginInfoJSON))), 0755)
 		require.NoError(t, err)

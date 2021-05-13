@@ -21,7 +21,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"path"
+	"path/filepath"
 	"regexp"
 	"testing"
 
@@ -58,15 +58,15 @@ func TestDownloadIntoDirectory(t *testing.T) {
 			defer cleanup()
 			require.NoError(t, err)
 
-			repoDir := path.Join(tmpDir, "repo")
+			repoDir := filepath.Join(tmpDir, "repo")
 			err = os.MkdirAll(repoDir, 0755)
 			require.NoError(t, err, "Case %d", i)
 
-			downloadsDir := path.Join(tmpDir, "downloads")
+			downloadsDir := filepath.Join(tmpDir, "downloads")
 			err = os.MkdirAll(downloadsDir, 0755)
 			require.NoError(t, err, "Case %d", i)
 
-			repoTGZFile := path.Join(repoDir, "test.tgz")
+			repoTGZFile := filepath.Join(repoDir, "test.tgz")
 			writeSimpleTestTgz(t, repoTGZFile)
 
 			srcPath, cleanup := tc.setup(t, repoTGZFile)
@@ -81,7 +81,7 @@ func TestDownloadIntoDirectory(t *testing.T) {
 			err = archiver.DefaultTarGz.Unarchive(fileName, tmpDir)
 			require.NoError(t, err, "Case %d", i)
 
-			fileBytes, err := os.ReadFile(path.Join(tmpDir, "test.txt"))
+			fileBytes, err := os.ReadFile(filepath.Join(tmpDir, "test.txt"))
 			require.NoError(t, err, "Case %d", i)
 
 			assert.Equal(t, "Test file\n", string(fileBytes), "Case %d", i)
@@ -95,7 +95,7 @@ func TestDownloadSameFileOK(t *testing.T) {
 	require.NoError(t, err)
 	defer cleanup()
 
-	testFile := path.Join(tmpDir, "test.txt")
+	testFile := filepath.Join(tmpDir, "test.txt")
 	const content = "test content"
 	err = os.WriteFile(testFile, []byte(content), 0644)
 	require.NoError(t, err)
@@ -116,21 +116,21 @@ func TestFailedReaderDoesNotOverwriteDestinationFile(t *testing.T) {
 
 	const fileName = "test.txt"
 
-	srcDir := path.Join(tmpDir, "src")
+	srcDir := filepath.Join(tmpDir, "src")
 	err = os.MkdirAll(srcDir, 0755)
 	require.NoError(t, err)
 
-	dstDir := path.Join(tmpDir, "dst")
+	dstDir := filepath.Join(tmpDir, "dst")
 	err = os.MkdirAll(dstDir, 0755)
 	require.NoError(t, err)
 
 	// write content in destination file
-	dstFile := path.Join(dstDir, fileName)
+	dstFile := filepath.Join(dstDir, fileName)
 	const content = "destination content"
 	err = os.WriteFile(dstFile, []byte(content), 0644)
 	require.NoError(t, err)
 
-	srcFile := path.Join(srcDir, fileName)
+	srcFile := filepath.Join(srcDir, fileName)
 	_, err = godelgetter.DownloadIntoDirectory(godelgetter.NewPkgSrc(srcFile, ""), dstDir, os.Stdout)
 	// download operation should fail
 	assert.EqualError(t, err, fmt.Sprintf("%s does not exist", srcFile))
@@ -146,7 +146,7 @@ func writeSimpleTestTgz(t *testing.T, filePath string) {
 	defer cleanup()
 	require.NoError(t, err)
 
-	testFilePath := path.Join(tmpDir, "test.txt")
+	testFilePath := filepath.Join(tmpDir, "test.txt")
 	err = os.WriteFile(testFilePath, []byte("Test file\n"), 0644)
 	require.NoError(t, err)
 

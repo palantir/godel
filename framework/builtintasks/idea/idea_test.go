@@ -17,7 +17,7 @@ package idea_test
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/nmiyake/pkg/dirs"
@@ -75,5 +75,5 @@ func verifyXMLHelper(t *testing.T, fPath string) {
 }
 
 func ideaFilePath(dir, ext string) string {
-	return path.Join(dir, fmt.Sprintf("%v.%v", path.Base(dir), ext))
+	return filepath.Join(dir, fmt.Sprintf("%v.%v", filepath.Base(dir), ext))
 }

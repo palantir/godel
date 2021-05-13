@@ -16,7 +16,7 @@ package cmd
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 	"time"
 
 	"github.com/palantir/godel/v2/framework/builtintasks/installupdate"
@@ -54,7 +54,7 @@ to the project. If a specific version of godel is desired, it can be specified u
 		}
 
 		// if current directory does not contain "godelw" wrapper, don't bother trying to upgrade configuration
-		if _, err := os.Stat(path.Join(projectDir, "godelw")); err != nil {
+		if _, err := os.Stat(filepath.Join(projectDir, "godelw")); err != nil {
 			skipUpgradeConfigFlagVal = true
 		}
 

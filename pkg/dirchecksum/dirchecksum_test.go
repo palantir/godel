@@ -17,7 +17,7 @@ package dirchecksum_test
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/nmiyake/pkg/dirs"
@@ -31,12 +31,12 @@ func TestChecksumsForMatchingPaths(t *testing.T) {
 	require.NoError(t, err)
 	defer cleanup()
 
-	dir1 := path.Join(tmpDir, "dir1")
+	dir1 := filepath.Join(tmpDir, "dir1")
 	createTestFiles(t, dir1)
 	checksums1, err := dirchecksum.ChecksumsForMatchingPaths(dir1, nil)
 	require.NoError(t, err)
 
-	dir2 := path.Join(tmpDir, "dir2")
+	dir2 := filepath.Join(tmpDir, "dir2")
 	createTestFiles(t, dir2)
 	checksums2, err := dirchecksum.ChecksumsForMatchingPaths(dir2, nil)
 	require.NoError(t, err)
@@ -52,31 +52,31 @@ func TestChecksumsDiffString(t *testing.T) {
 	require.NoError(t, err)
 	defer cleanup()
 
-	dir1 := path.Join(tmpDir, "dir1")
+	dir1 := filepath.Join(tmpDir, "dir1")
 	createTestFiles(t, dir1)
 
 	const originalFileName = "original.txt"
-	missingFile := path.Join(dir1, originalFileName)
+	missingFile := filepath.Join(dir1, originalFileName)
 	err = os.WriteFile(missingFile, []byte("original"), 0644)
 	require.NoError(t, err)
 
-	checksumDiffFile := path.Join(dir1, "checksumdiff.txt")
+	checksumDiffFile := filepath.Join(dir1, "checksumdiff.txt")
 	err = os.WriteFile(checksumDiffFile, []byte("original"), 0644)
 	require.NoError(t, err)
 
 	checksums1, err := dirchecksum.ChecksumsForMatchingPaths(dir1, nil)
 	require.NoError(t, err)
 
-	dir2 := path.Join(tmpDir, "dir2")
+	dir2 := filepath.Join(tmpDir, "dir2")
 	createTestFiles(t, dir2)
 
 	const newFileName = "new.txt"
-	extraFile := path.Join(dir2, newFileName)
+	extraFile := filepath.Join(dir2, newFileName)
 	err = os.WriteFile(extraFile, []byte("new"), 0644)
 	require.NoError(t, err)
 
 	const diffFileName = "checksumdiff.txt"
-	checksumDiffFile = path.Join(dir2, diffFileName)
+	checksumDiffFile = filepath.Join(dir2, diffFileName)
 	err = os.WriteFile(checksumDiffFile, []byte("new"), 0644)
 	require.NoError(t, err)
 
@@ -95,12 +95,12 @@ func createTestFiles(t *testing.T, rootDir string) (string, string) {
 	err := os.MkdirAll(rootDir, 0755)
 	require.NoError(t, err)
 
-	testFile := path.Join(rootDir, "testfile.txt")
+	testFile := filepath.Join(rootDir, "testfile.txt")
 	err = os.WriteFile(testFile, []byte("foo"), 0644)
 	require.NoError(t, err)
 
-	testInnerFile := path.Join(rootDir, "dir", "innerfile.txt")
-	err = os.MkdirAll(path.Dir(testInnerFile), 0755)
+	testInnerFile := filepath.Join(rootDir, "dir", "innerfile.txt")
+	err = os.MkdirAll(filepath.Dir(testInnerFile), 0755)
 	require.NoError(t, err)
 	err = os.WriteFile(testInnerFile, []byte("bar"), 0644)
 	require.NoError(t, err)

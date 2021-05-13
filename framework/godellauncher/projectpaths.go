@@ -16,7 +16,6 @@ package godellauncher
 
 import (
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/palantir/pkg/matcher"
@@ -31,7 +30,7 @@ func ListProjectPaths(projectDir string, include, exclude matcher.Matcher) ([]st
 		return nil, errors.Wrapf(err, "failed to determine working directory")
 	}
 	if !filepath.IsAbs(projectDir) {
-		projectDir = path.Join(wd, projectDir)
+		projectDir = filepath.Join(wd, projectDir)
 	}
 	relPathPrefix, err := filepath.Rel(wd, projectDir)
 	if err != nil {
@@ -44,7 +43,7 @@ func ListProjectPaths(projectDir string, include, exclude matcher.Matcher) ([]st
 	}
 	if relPathPrefix != "" {
 		for i, file := range files {
-			files[i] = path.Join(relPathPrefix, file)
+			files[i] = filepath.Join(relPathPrefix, file)
 		}
 	}
 	return files, nil
