@@ -15,7 +15,7 @@
 package installupdate
 
 import (
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/nmiyake/pkg/dirs"
@@ -44,7 +44,7 @@ func TestReadProperties(t *testing.T) {
 	}{
 		{
 			propertiesFileWriter: func(dir string) string {
-				dest, err := ioutil.TempFile(dir, "")
+				dest, err := os.CreateTemp(dir, "")
 				require.NoError(t, err)
 				err = dest.Close()
 				require.NoError(t, err)
@@ -67,7 +67,7 @@ func TestReadProperties(t *testing.T) {
 }
 
 func writePropertiesFile(filePath string) error {
-	err := ioutil.WriteFile(filePath, []byte(propertiesFileContent), 0644)
+	err := os.WriteFile(filePath, []byte(propertiesFileContent), 0644)
 	if err != nil {
 		return errors.Wrapf(err, "failed to write file to path %s", filePath)
 	}

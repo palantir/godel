@@ -17,7 +17,8 @@ package githubwiki
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
+	"os"
 	"os/exec"
 	"path"
 	"regexp"
@@ -97,16 +98,16 @@ func TestSyncGitHubWiki(t *testing.T) {
 			},
 		},
 	} {
-		currCaseTmpDir, err := ioutil.TempDir(tmpDir, fmt.Sprintf("case-%d-", i))
+		currCaseTmpDir, err := os.MkdirTemp(tmpDir, fmt.Sprintf("case-%d-", i))
 		require.NoError(t, err)
 
 		// src repo
-		githubWikiSrcRepo, err := ioutil.TempDir(currCaseTmpDir, "github-wiki-")
+		githubWikiSrcRepo, err := os.MkdirTemp(currCaseTmpDir, "github-wiki-")
 		require.NoError(t, err)
 		gittest.InitGitDir(t, githubWikiSrcRepo)
 
 		// add commit with specific user and committer
-		err = ioutil.WriteFile(path.Join(githubWikiSrcRepo, "foo.txt"), []byte("foo"), 0644)
+		err = os.WriteFile(path.Join(githubWikiSrcRepo, "foo.txt"), []byte("foo"), 0644)
 		require.NoError(t, err)
 		err = git(githubWikiSrcRepo).commitAll("Original commit message", srcRepoParams)
 		require.NoError(t, err)
@@ -115,10 +116,10 @@ func TestSyncGitHubWiki(t *testing.T) {
 		githubWikiBareRepo := gitCloneBare(t, githubWikiSrcRepo, currCaseTmpDir)
 
 		// docs directory
-		docsDir, err := ioutil.TempDir(tmpDir, "docs-")
+		docsDir, err := os.MkdirTemp(tmpDir, "docs-")
 		require.NoError(t, err)
 		gittest.InitGitDir(t, docsDir)
-		err = ioutil.WriteFile(path.Join(docsDir, "page.md"), []byte("Test page"), 0644)
+		err = os.WriteFile(path.Join(docsDir, "page.md"), []byte("Test page"), 0644)
 		require.NoError(t, err)
 		gittest.CommitAllFiles(t, docsDir, "Initial docs directory commit")
 
@@ -130,7 +131,7 @@ func TestSyncGitHubWiki(t *testing.T) {
 			CommitterName:  currCase.params.committerName,
 			CommitterEmail: currCase.params.committerEmail,
 			Msg:            currCase.msg,
-		}, ioutil.Discard)
+		}, io.Discard)
 		require.NoError(t, err, "Case %d", i)
 
 		got := commitUserParamForRepo(t, git(githubWikiBareRepo))
@@ -170,16 +171,16 @@ func TestSyncGitHubWikiNonGitDocsDir(t *testing.T) {
 			wantStdoutRegexp: "(?s).+Continuing with templating disabled. To fix this issue, ensure that the directory is in a Git repository.",
 		},
 	} {
-		currCaseTmpDir, err := ioutil.TempDir(tmpDir, fmt.Sprintf("case-%d-", i))
+		currCaseTmpDir, err := os.MkdirTemp(tmpDir, fmt.Sprintf("case-%d-", i))
 		require.NoError(t, err)
 
 		// src repo
-		githubWikiSrcRepo, err := ioutil.TempDir(currCaseTmpDir, "github-wiki-")
+		githubWikiSrcRepo, err := os.MkdirTemp(currCaseTmpDir, "github-wiki-")
 		require.NoError(t, err)
 		gittest.InitGitDir(t, githubWikiSrcRepo)
 
 		// add commit with specific user and committer
-		err = ioutil.WriteFile(path.Join(githubWikiSrcRepo, "foo.txt"), []byte("foo"), 0644)
+		err = os.WriteFile(path.Join(githubWikiSrcRepo, "foo.txt"), []byte("foo"), 0644)
 		require.NoError(t, err)
 		err = git(githubWikiSrcRepo).commitAll("Original commit message", srcRepoParams)
 		require.NoError(t, err)
@@ -188,9 +189,9 @@ func TestSyncGitHubWikiNonGitDocsDir(t *testing.T) {
 		githubWikiBareRepo := gitCloneBare(t, githubWikiSrcRepo, currCaseTmpDir)
 
 		// docs directory
-		docsDir, err := ioutil.TempDir(tmpDir, "docs-")
+		docsDir, err := os.MkdirTemp(tmpDir, "docs-")
 		require.NoError(t, err)
-		err = ioutil.WriteFile(path.Join(docsDir, "page.md"), []byte("Test page"), 0644)
+		err = os.WriteFile(path.Join(docsDir, "page.md"), []byte("Test page"), 0644)
 		require.NoError(t, err)
 
 		buf := &bytes.Buffer{}
@@ -230,7 +231,7 @@ func commitUserParamForRepo(t *testing.T, g git) commitUserParam {
 }
 
 func gitCloneBare(t *testing.T, srcGitRepo, tmpDir string) string {
-	bareRepo, err := ioutil.TempDir(tmpDir, "bare-")
+	bareRepo, err := os.MkdirTemp(tmpDir, "bare-")
 	require.NoError(t, err)
 	cmd := exec.Command("git", "clone", "--bare", srcGitRepo, bareRepo)
 	output, err := cmd.CombinedOutput()

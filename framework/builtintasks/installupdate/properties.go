@@ -15,7 +15,7 @@
 package installupdate
 
 import (
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -29,7 +29,7 @@ const (
 // Reads the file at the provided path and returns the properties that it contains. The file should contain one property
 // per line and the line should be of the form "key=value". Any line that starts with the character '#' is ignored.
 func readPropertiesFile(path string) (map[string]string, error) {
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to read file %s", path)
 	}

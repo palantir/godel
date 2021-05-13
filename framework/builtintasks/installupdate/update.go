@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -160,7 +159,7 @@ func readLatestCachedVersion() (versionConfig, error) {
 	cacheDirPath := godelHomeSpecDir.Path(layout.CacheDir)
 	latestVersionFile := path.Join(cacheDirPath, latestVersionFileName)
 
-	bytes, err := ioutil.ReadFile(latestVersionFile)
+	bytes, err := os.ReadFile(latestVersionFile)
 	if err != nil {
 		return versionConfig{}, errors.Wrapf(err, "failed to read version file")
 	}
@@ -187,7 +186,7 @@ func writeLatestCachedVersion(version string) error {
 		return errors.Wrapf(err, "failed to marshal version config as JSON")
 	}
 
-	if err := ioutil.WriteFile(latestVersionFile, bytes, 0644); err != nil {
+	if err := os.WriteFile(latestVersionFile, bytes, 0644); err != nil {
 		return errors.Wrap(err, "failed to write version file")
 	}
 	return nil
@@ -211,7 +210,7 @@ func setGodelPropertyKey(projectDir, key, val string) error {
 	configDir := wrapperSpec.Path(layout.WrapperConfigDir)
 
 	propsFilePath := path.Join(configDir, fmt.Sprintf("%s.properties", layout.AppName))
-	bytes, err := ioutil.ReadFile(propsFilePath)
+	bytes, err := os.ReadFile(propsFilePath)
 	if err != nil {
 		return errors.Wrapf(err, "failed to read properties file")
 	}
@@ -223,7 +222,7 @@ func setGodelPropertyKey(projectDir, key, val string) error {
 		lines[i] = key + "=" + val
 	}
 	output := strings.Join(lines, "\n")
-	if err := ioutil.WriteFile(propsFilePath, []byte(output), 0644); err != nil {
+	if err := os.WriteFile(propsFilePath, []byte(output), 0644); err != nil {
 		return errors.Wrapf(err, "failed to write properties file")
 	}
 	return nil
@@ -302,7 +301,7 @@ func update(wrapperScriptDir string, pkg godelgetter.PkgSrc, newInstall bool, st
 
 	// overlay all directories except "config"
 	installedGodelWrapperDir := godelDist.Path(layout.WrapperAppDir)
-	wrapperDirFiles, err := ioutil.ReadDir(installedGodelWrapperDir)
+	wrapperDirFiles, err := os.ReadDir(installedGodelWrapperDir)
 	if err != nil {
 		return errors.Wrapf(err, "failed to list files in directory %s", installedGodelWrapperDir)
 	}

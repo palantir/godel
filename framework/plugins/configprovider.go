@@ -17,7 +17,6 @@ package plugins
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -183,7 +182,7 @@ func resolveAndVerifyConfigProvider(
 func readConfigFromProvider(locator artifactresolver.Locator, configsDir string) (config.TasksConfig, error) {
 	cfgPath := path.Join(configsDir, pathsinternal.ConfigProviderFileName(locator))
 
-	cfgBytes, err := ioutil.ReadFile(cfgPath)
+	cfgBytes, err := os.ReadFile(cfgPath)
 	if err != nil {
 		return config.TasksConfig{}, errors.Wrapf(err, "failed to read %s", cfgPath)
 	}

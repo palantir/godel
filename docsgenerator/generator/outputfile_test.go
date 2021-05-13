@@ -15,7 +15,7 @@
 package generator
 
 import (
-	"io/ioutil"
+	"os"
 	"path"
 	"sort"
 	"testing"
@@ -215,7 +215,7 @@ RUN /scripts/run-add.sh 2>&1
 			},
 		},
 	} {
-		currDir, err := ioutil.TempDir(tmpDir, "")
+		currDir, err := os.MkdirTemp(tmpDir, "")
 		require.NoError(t, err, "Case %d", i)
 
 		_, err = writeOutputFiles(currDir, tc.inFile, tc.fromImage)
@@ -231,7 +231,7 @@ RUN /scripts/run-add.sh 2>&1
 			want := tc.wantFiles[k]
 
 			filePath := path.Join(currDir, k)
-			gotBytes, err := ioutil.ReadFile(filePath)
+			gotBytes, err := os.ReadFile(filePath)
 			require.NoError(t, err, "Case %d\nPath: %s", i, filePath)
 			got := string(gotBytes)
 

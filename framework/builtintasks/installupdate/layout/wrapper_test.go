@@ -15,7 +15,6 @@
 package layout_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -69,7 +68,7 @@ func TestWrapperLayoutValidation(t *testing.T) {
 	err = os.MkdirAll(path.Join(tmpDir, "wrapperParent", "godel", ".src"), 0755)
 	require.NoError(t, err)
 
-	err = ioutil.WriteFile(path.Join(tmpDir, "wrapperParent", "godelw"), []byte("test file"), 0644)
+	err = os.WriteFile(path.Join(tmpDir, "wrapperParent", "godelw"), []byte("test file"), 0644)
 	require.NoError(t, err)
 
 	specDir, err := specdir.New(path.Join(tmpDir, "wrapperParent"), layout.WrapperSpec(), nil, specdir.Validate)

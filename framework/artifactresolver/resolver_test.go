@@ -17,9 +17,10 @@ package artifactresolver
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path"
 	"path/filepath"
 	"testing"
@@ -37,7 +38,7 @@ func TestResolverLocal(t *testing.T) {
 
 	const content = "file content"
 	srcFile := path.Join(tmpDir, "srcFile")
-	err = ioutil.WriteFile(srcFile, []byte(content), 0644)
+	err = os.WriteFile(srcFile, []byte(content), 0644)
 	require.NoError(t, err)
 
 	srcFileAbs, err := filepath.Abs(srcFile)
@@ -50,9 +51,9 @@ func TestResolverLocal(t *testing.T) {
 	dstFileAbs, err := filepath.Abs(dstFile)
 	require.NoError(t, err)
 
-	err = r.Resolve(LocatorParam{}, osarch.OSArch{}, dstFileAbs, ioutil.Discard)
+	err = r.Resolve(LocatorParam{}, osarch.OSArch{}, dstFileAbs, io.Discard)
 	require.NoError(t, err)
-	bytes, err := ioutil.ReadFile(dstFileAbs)
+	bytes, err := os.ReadFile(dstFileAbs)
 	require.NoError(t, err)
 	assert.Equal(t, content, string(bytes))
 }
@@ -75,9 +76,9 @@ func TestResolverURL(t *testing.T) {
 	dstFileAbs, err := filepath.Abs(dstFile)
 	require.NoError(t, err)
 
-	err = r.Resolve(LocatorParam{}, osarch.OSArch{}, dstFileAbs, ioutil.Discard)
+	err = r.Resolve(LocatorParam{}, osarch.OSArch{}, dstFileAbs, io.Discard)
 	require.NoError(t, err)
-	bytes, err := ioutil.ReadFile(dstFileAbs)
+	bytes, err := os.ReadFile(dstFileAbs)
 	require.NoError(t, err)
 	assert.Equal(t, content, string(bytes))
 }

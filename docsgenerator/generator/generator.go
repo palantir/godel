@@ -19,7 +19,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -137,7 +136,7 @@ func Generate(inputDir, outputDir, baseImage string, params Params, stdout io.Wr
 					return errors.Wrapf(err, "failed to render parsed content for %s", inputFile.TemplateFileName)
 				}
 				renderedFilePath := path.Join(outputDir, inputFile.OutputRenderedFileName())
-				if err := ioutil.WriteFile(renderedFilePath, renderedBytes, 0644); err != nil {
+				if err := os.WriteFile(renderedFilePath, renderedBytes, 0644); err != nil {
 					return errors.Wrapf(err, "failed to write rendered content for %s", inputFile.TemplateFileName)
 				}
 				return nil
@@ -240,7 +239,7 @@ func (f *inputFile) DockerTag(tagPrefix string) string {
 var templateFileRegexp = regexp.MustCompile(`^(\d+)_(.+)` + regexp.QuoteMeta(".tmpl") + "$")
 
 func getInputFilesFromDir(inputDir string) ([]inputFile, error) {
-	fis, err := ioutil.ReadDir(inputDir)
+	fis, err := os.ReadDir(inputDir)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to read directory")
 	}

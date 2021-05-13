@@ -15,7 +15,7 @@
 package generator
 
 import (
-	"io/ioutil"
+	"os"
 	"path"
 	"regexp"
 	"strconv"
@@ -30,7 +30,7 @@ type inputFileWithParsedContent struct {
 }
 
 func readTemplateFile(inputDir string, f inputFile) (inputFileWithParsedContent, error) {
-	fBytes, err := ioutil.ReadFile(path.Join(inputDir, f.TemplateFileName))
+	fBytes, err := os.ReadFile(path.Join(inputDir, f.TemplateFileName))
 	if err != nil {
 		return inputFileWithParsedContent{}, errors.Wrapf(err, "failed to read file")
 	}

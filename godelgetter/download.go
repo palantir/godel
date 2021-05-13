@@ -19,7 +19,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -138,7 +137,7 @@ func copyWithProgress(w io.Writer, r io.Reader, dataLen int64, stdout io.Writer)
 }
 
 func computeSHA256Checksum(filename string) (string, error) {
-	bytes, err := ioutil.ReadFile(filename)
+	bytes, err := os.ReadFile(filename)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to read file %s", filename)
 	}

@@ -19,7 +19,6 @@ package pluginapitester
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -82,7 +81,7 @@ func RunPlugin(
 
 		godelwPath := path.Join(projectDir, "godelw")
 		if _, err := os.Stat(godelwPath); os.IsNotExist(err) {
-			if err := ioutil.WriteFile(godelwPath, nil, 0644); err != nil {
+			if err := os.WriteFile(godelwPath, nil, 0644); err != nil {
 				return cleanup, errors.Wrapf(err, "failed to create temporary godelw file")
 			}
 			cleanup = func() {

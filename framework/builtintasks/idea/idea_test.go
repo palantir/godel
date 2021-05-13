@@ -16,7 +16,6 @@ package idea_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -49,12 +48,12 @@ func TestCleanIdeaFiles(t *testing.T) {
 		// test case where not all files to be cleaned exist
 		{"iml", "ipr"},
 	} {
-		currDir, err := ioutil.TempDir(tmpDir, "")
+		currDir, err := os.MkdirTemp(tmpDir, "")
 		require.NoError(t, err)
 
 		for _, ext := range currCase {
 			currPath := ideaFilePath(currDir, ext)
-			err := ioutil.WriteFile(currPath, []byte(ext), 0644)
+			err := os.WriteFile(currPath, []byte(ext), 0644)
 			require.NoError(t, err, "Case %d: failed to write %v", i, currPath)
 		}
 

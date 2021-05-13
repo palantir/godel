@@ -16,7 +16,7 @@ package githooks
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 
 	"github.com/palantir/godel/v2/framework/builtintasks/installupdate/layout"
@@ -51,7 +51,7 @@ func InstallGitHooks(rootDir string) error {
 
 	for hook, contents := range hooks {
 		hookPath := path.Join(gitDir, "hooks", hook)
-		if err := ioutil.WriteFile(hookPath, []byte(contents), 0755); err != nil {
+		if err := os.WriteFile(hookPath, []byte(contents), 0755); err != nil {
 			return errors.Wrapf(err, "failed to write %s hook to %s", hook, hookPath)
 		}
 	}

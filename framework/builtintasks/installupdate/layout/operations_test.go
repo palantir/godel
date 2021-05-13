@@ -15,7 +15,6 @@
 package layout_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -167,11 +166,11 @@ func TestSyncDir(t *testing.T) {
 			wantModified: true,
 		},
 	} {
-		srcDir, err := ioutil.TempDir(tmpDir, "src")
+		srcDir, err := os.MkdirTemp(tmpDir, "src")
 		require.NoError(t, err, "Case %d", i)
 		writeLayout(t, srcDir, currCase.srcDirLayout)
 
-		dstDir, err := ioutil.TempDir(tmpDir, "dst")
+		dstDir, err := os.MkdirTemp(tmpDir, "dst")
 		require.NoError(t, err, "Case %d", i)
 		writeLayout(t, dstDir, currCase.dstDirLayout)
 
@@ -205,7 +204,7 @@ func assertLayoutEqual(t *testing.T, caseNum int, want Specs, got string) {
 		assert.Equal(t, curr.IsDir, fi.IsDir(), "Case %d", caseNum)
 
 		if !curr.IsDir {
-			content, err := ioutil.ReadFile(p)
+			content, err := os.ReadFile(p)
 			require.NoError(t, err, "Case %d", caseNum)
 			assert.Equal(t, curr.Content, string(content), "Case %d", caseNum)
 		}
@@ -224,7 +223,7 @@ func writeLayout(t *testing.T, dir string, specs []Spec) {
 		require.NoError(t, err, "Failed to create directory %v", dir)
 
 		if !curr.IsDir {
-			err = ioutil.WriteFile(p, []byte(curr.Content), 0644)
+			err = os.WriteFile(p, []byte(curr.Content), 0644)
 			require.NoError(t, err, "Failed to write file %v", p)
 		}
 	}

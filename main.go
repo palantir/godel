@@ -16,7 +16,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
 
@@ -114,7 +114,7 @@ func runGodelApp(osArgs []string) int {
 			if err != nil {
 				printErrAndExit(err, global.Debug)
 			}
-			if _, _, err := plugins.LoadPluginsTasks(combinedParam, ioutil.Discard); err != nil {
+			if _, _, err := plugins.LoadPluginsTasks(combinedParam, io.Discard); err != nil {
 				printErrAndExit(err, global.Debug)
 			}
 		}

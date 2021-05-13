@@ -16,7 +16,6 @@ package generator
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"regexp"
@@ -31,11 +30,11 @@ func writeOutputFiles(outputDir string, inFile inputFileWithParsedContent, fromI
 		return "", errors.Wrapf(err, "failed to create output directory")
 	}
 	scriptContent := bashScript(inFile.ParsedContent.TutorialCodeParts)
-	if err := ioutil.WriteFile(path.Join(currOutputDir, inFile.FileInfo.OutputScriptFileName()), []byte(scriptContent), 0755); err != nil {
+	if err := os.WriteFile(path.Join(currOutputDir, inFile.FileInfo.OutputScriptFileName()), []byte(scriptContent), 0755); err != nil {
 		return "", errors.Wrapf(err, "failed to write script file")
 	}
 	dockerfileContent := dockerFile(fromImage, inFile.FileInfo.OutputScriptFileName())
-	if err := ioutil.WriteFile(path.Join(currOutputDir, "Dockerfile"), []byte(dockerfileContent), 0644); err != nil {
+	if err := os.WriteFile(path.Join(currOutputDir, "Dockerfile"), []byte(dockerfileContent), 0644); err != nil {
 		return "", errors.Wrapf(err, "failed to write Dockerfile")
 	}
 	return currOutputDir, nil
