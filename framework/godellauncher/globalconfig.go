@@ -15,7 +15,7 @@
 package godellauncher
 
 import (
-	"path"
+	"path/filepath"
 
 	"github.com/pkg/errors"
 )
@@ -44,5 +44,5 @@ func (g GlobalConfig) ProjectDir() (string, error) {
 	if g.Wrapper == "" {
 		return "", errors.Errorf("wrapper must be specified to determine project directory")
 	}
-	return path.Dir(g.Wrapper), nil
+	return filepath.Dir(g.Wrapper), nil
 }

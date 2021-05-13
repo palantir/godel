@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
 	"testing"
@@ -65,11 +64,11 @@ func TestInfoFromResolved(t *testing.T) {
 	defer cleanup()
 
 	pluginName := newPluginName()
-	pluginFile := path.Join(tmpDir, fmt.Sprintf("com.palantir-%s-1.0.0", pluginName))
+	pluginFile := filepath.Join(tmpDir, fmt.Sprintf("com.palantir-%s-1.0.0", pluginName))
 	err = os.WriteFile(pluginFile, []byte(fmt.Sprintf(pluginScriptTmpl, pluginName)), 0755)
 	require.NoError(t, err)
 
-	gotInfo, err := pluginapi.InfoFromPlugin(path.Join(tmpDir, pathsinternal.PluginFileName(artifactresolver.Locator{
+	gotInfo, err := pluginapi.InfoFromPlugin(filepath.Join(tmpDir, pathsinternal.PluginFileName(artifactresolver.Locator{
 		Group:   "com.palantir",
 		Product: pluginName,
 		Version: "1.0.0",
@@ -92,14 +91,14 @@ func TestInfoFromResolvedError(t *testing.T) {
 	defer cleanup()
 
 	pluginName := newPluginName()
-	pluginFile := path.Join(tmpDir, fmt.Sprintf("com.palantir-%s-1.0.0", pluginName))
+	pluginFile := filepath.Join(tmpDir, fmt.Sprintf("com.palantir-%s-1.0.0", pluginName))
 	err = os.WriteFile(pluginFile, []byte(`#!/usr/bin/env bash
 
 exit 1
 `), 0755)
 	require.NoError(t, err)
 
-	_, err = pluginapi.InfoFromPlugin(path.Join(tmpDir, pathsinternal.PluginFileName(artifactresolver.Locator{
+	_, err = pluginapi.InfoFromPlugin(filepath.Join(tmpDir, pathsinternal.PluginFileName(artifactresolver.Locator{
 		Group:   "com.palantir",
 		Product: pluginName,
 		Version: "1.0.0",
@@ -115,15 +114,15 @@ func TestResolvePlugins(t *testing.T) {
 
 	loc, resolver, osArch := createTestPlugin(t, tmpDir)
 
-	pluginsDir := path.Join(tmpDir, "plugins")
+	pluginsDir := filepath.Join(tmpDir, "plugins")
 	err = os.Mkdir(pluginsDir, 0755)
 	require.NoError(t, err)
 
-	assetsDir := path.Join(tmpDir, "assets")
+	assetsDir := filepath.Join(tmpDir, "assets")
 	err = os.Mkdir(assetsDir, 0755)
 	require.NoError(t, err)
 
-	downloadsDir := path.Join(tmpDir, "downloads")
+	downloadsDir := filepath.Join(tmpDir, "downloads")
 	err = os.Mkdir(downloadsDir, 0755)
 	require.NoError(t, err)
 
@@ -158,15 +157,15 @@ func TestResolvePlugins(t *testing.T) {
 
 func createTestPlugin(t *testing.T, tmpDir string) (artifactresolver.Locator, artifactresolver.Resolver, osarch.OSArch) {
 	pluginName := newPluginName()
-	testProductDir := path.Join(tmpDir, "repo", "com", "palantir", pluginName, "1.0.0")
+	testProductDir := filepath.Join(tmpDir, "repo", "com", "palantir", pluginName, "1.0.0")
 	err := os.MkdirAll(testProductDir, 0755)
 	require.NoError(t, err)
 
-	testProductPath := path.Join(testProductDir, pluginName)
+	testProductPath := filepath.Join(testProductDir, pluginName)
 	err = os.WriteFile(testProductPath, []byte(fmt.Sprintf(pluginScriptTmpl, pluginName)), 0755)
 	require.NoError(t, err)
 
-	testProductTGZPath := path.Join(testProductDir, pluginName+"-darwin-amd64-1.0.0.tgz")
+	testProductTGZPath := filepath.Join(testProductDir, pluginName+"-darwin-amd64-1.0.0.tgz")
 	err = archiver.DefaultTarGz.Archive([]string{testProductPath}, testProductTGZPath)
 	require.NoError(t, err)
 

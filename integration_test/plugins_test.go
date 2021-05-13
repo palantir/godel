@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"path"
+	"path/filepath"
 	"regexp"
 	"testing"
 	"time"
@@ -65,7 +65,7 @@ plugins:
 	err = yaml.Unmarshal([]byte(cfgContent), &cfg)
 	require.NoError(t, err)
 
-	pluginDir := path.Join(testProjectDir, "repo", "com", "palantir", pluginName, "1.0.0")
+	pluginDir := filepath.Join(testProjectDir, "repo", "com", "palantir", pluginName, "1.0.0")
 	err = os.MkdirAll(pluginDir, 0755)
 	require.NoError(t, err)
 
@@ -75,7 +75,7 @@ plugins:
 	require.NoError(t, err)
 	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
 	require.NoError(t, err)
-	err = os.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
+	err = os.WriteFile(filepath.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
 	require.NoError(t, err)
 
 	// plugin is resolved on first run
@@ -126,21 +126,21 @@ plugins:
 	err = yaml.Unmarshal([]byte(cfgContent), &cfg)
 	require.NoError(t, err)
 
-	pluginDir := path.Join(testProjectDir, "repo", "com", "palantir", pluginName, "1.0.0")
+	pluginDir := filepath.Join(testProjectDir, "repo", "com", "palantir", pluginName, "1.0.0")
 	err = os.MkdirAll(pluginDir, 0755)
 	require.NoError(t, err)
 
-	assetDir := path.Join(testProjectDir, "repo", "com", "palantir", assetName, "1.0.0")
+	assetDir := filepath.Join(testProjectDir, "repo", "com", "palantir", assetName, "1.0.0")
 	err = os.MkdirAll(assetDir, 0755)
 	require.NoError(t, err)
 
 	writeDefaultPlugin(t, testProjectDir, pluginName, "1.0.0")
 
-	assetFile := path.Join(assetDir, assetName+"-1.0.0")
+	assetFile := filepath.Join(assetDir, assetName+"-1.0.0")
 	err = os.WriteFile(assetFile, []byte("asset content"), 0644)
 	require.NoError(t, err)
 
-	assetTGZPath := path.Join(assetDir, fmt.Sprintf("%s-%s-1.0.0.tgz", assetName, osarch.Current()))
+	assetTGZPath := filepath.Join(assetDir, fmt.Sprintf("%s-%s-1.0.0.tgz", assetName, osarch.Current()))
 	err = archiver.DefaultTarGz.Archive([]string{assetFile}, assetTGZPath)
 	require.NoError(t, err)
 
@@ -148,7 +148,7 @@ plugins:
 	require.NoError(t, err)
 	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
 	require.NoError(t, err)
-	err = os.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
+	err = os.WriteFile(filepath.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
 	require.NoError(t, err)
 
 	// plugin and asset is resolved on first run
@@ -162,7 +162,7 @@ plugins:
 	godelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.SpecOnly)
 	require.NoError(t, err)
 	assetsDir := godelHomeSpecDir.Path(layout.AssetsDir)
-	assetPath := path.Join(assetsDir, "com.palantir-"+assetName+"-1.0.0")
+	assetPath := filepath.Join(assetsDir, "com.palantir-"+assetName+"-1.0.0")
 
 	gotOutput = execCommand(t, testProjectDir, "./godelw", "echo-task", "foo", "--bar", "baz")
 	wantOutput = fmt.Sprintf("--project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml --assets %s echo foo --bar baz\n", testProjectDir, testProjectDir, testProjectDir, pluginName, assetPath)
@@ -202,9 +202,9 @@ plugins:
 `, testProjectDir, pluginName)
 
 	configProviderName := fmt.Sprintf("tester-integration-config-provider-%d-%d", time.Now().Unix(), rand.Int())
-	err = os.MkdirAll(path.Join(testProjectDir, "com", "palantir", configProviderName), os.ModePerm)
+	err = os.MkdirAll(filepath.Join(testProjectDir, "com", "palantir", configProviderName), os.ModePerm)
 	assert.NoError(t, err)
-	resolverLocation := path.Join(testProjectDir, "com", "palantir", configProviderName, "1.0.0.yml")
+	resolverLocation := filepath.Join(testProjectDir, "com", "palantir", configProviderName, "1.0.0.yml")
 	err = os.WriteFile(resolverLocation, []byte(cfgProviderContent), 0755)
 	assert.NoError(t, err)
 
@@ -225,7 +225,7 @@ tasks-config-providers:
 	require.NoError(t, err)
 	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
 	require.NoError(t, err)
-	err = os.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
+	err = os.WriteFile(filepath.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
 	require.NoError(t, err)
 
 	// plugin is resolved on first run
@@ -272,9 +272,9 @@ plugins:
 `, testProjectDir, pluginName)
 
 	configProviderName := fmt.Sprintf("tester-integration-config-provider-%d-%d", time.Now().Unix(), rand.Int())
-	err = os.MkdirAll(path.Join(testProjectDir, "com", "palantir", configProviderName), os.ModePerm)
+	err = os.MkdirAll(filepath.Join(testProjectDir, "com", "palantir", configProviderName), os.ModePerm)
 	assert.NoError(t, err)
-	resolverLocation := path.Join(testProjectDir, "com", "palantir", configProviderName, "1.0.0.yml")
+	resolverLocation := filepath.Join(testProjectDir, "com", "palantir", configProviderName, "1.0.0.yml")
 	err = os.WriteFile(resolverLocation, []byte(cfgProviderContent), 0755)
 	assert.NoError(t, err)
 
@@ -295,7 +295,7 @@ tasks-config-providers:
 	require.NoError(t, err)
 	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
 	require.NoError(t, err)
-	err = os.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
+	err = os.WriteFile(filepath.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
 	require.NoError(t, err)
 
 	// configuration provider should fail to load because it has a plugin that specifies an "override" property
@@ -324,9 +324,9 @@ plugins:
 `, testProjectDir, pluginName)
 
 	configProviderName := fmt.Sprintf("tester-integration-config-provider-%d-%d", time.Now().Unix(), rand.Int())
-	err = os.MkdirAll(path.Join(testProjectDir, "com", "palantir", configProviderName), os.ModePerm)
+	err = os.MkdirAll(filepath.Join(testProjectDir, "com", "palantir", configProviderName), os.ModePerm)
 	assert.NoError(t, err)
-	resolverLocation := path.Join(testProjectDir, "com", "palantir", configProviderName, "1.0.0.yml")
+	resolverLocation := filepath.Join(testProjectDir, "com", "palantir", configProviderName, "1.0.0.yml")
 	err = os.WriteFile(resolverLocation, []byte(cfgProviderContent), 0755)
 	assert.NoError(t, err)
 	cfgContent := fmt.Sprintf(`
@@ -372,7 +372,7 @@ echo "2.0.0: $@"
 	require.NoError(t, err)
 	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
 	require.NoError(t, err)
-	err = os.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
+	err = os.WriteFile(filepath.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
 	require.NoError(t, err)
 
 	// plugin is resolved on first run
@@ -395,7 +395,7 @@ func main() {
 	fmt.Println("hello, world!")
 }
 `
-	err := os.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
+	err := os.WriteFile(filepath.Join(testProjectDir, "main.go"), []byte(src), 0644)
 	require.NoError(t, err)
 }
 
@@ -404,16 +404,16 @@ func writeDefaultPlugin(t *testing.T, testProjectDir, pluginName, pluginVersion 
 }
 
 func writePlugin(t *testing.T, testProjectDir, pluginName, pluginVersion, pluginContent string) {
-	pluginDir := path.Join(testProjectDir, "repo", "com", "palantir", pluginName, pluginVersion)
+	pluginDir := filepath.Join(testProjectDir, "repo", "com", "palantir", pluginName, pluginVersion)
 	err := os.MkdirAll(pluginDir, 0755)
 	require.NoError(t, err)
 	pluginInfoJSON := getDefaultPluginInfoJSON(t, pluginName, pluginVersion)
 
-	pluginScript := path.Join(pluginDir, fmt.Sprintf("%s-%s", pluginName, pluginVersion))
+	pluginScript := filepath.Join(pluginDir, fmt.Sprintf("%s-%s", pluginName, pluginVersion))
 	err = os.WriteFile(pluginScript, []byte(fmt.Sprintf(pluginContent, string(pluginInfoJSON))), 0755)
 	require.NoError(t, err)
 
-	pluginTGZPath := path.Join(pluginDir, fmt.Sprintf("%s-%s-%s.tgz", pluginName, osarch.Current(), pluginVersion))
+	pluginTGZPath := filepath.Join(pluginDir, fmt.Sprintf("%s-%s-%s.tgz", pluginName, osarch.Current(), pluginVersion))
 	if _, err := os.Stat(pluginTGZPath); os.IsNotExist(err) {
 		err = archiver.DefaultTarGz.Archive([]string{pluginScript}, pluginTGZPath)
 		require.NoError(t, err)

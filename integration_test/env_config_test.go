@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"path"
+	"path/filepath"
 	"regexp"
 	"testing"
 	"time"
@@ -47,7 +47,7 @@ func main() {
 	fmt.Println("hello, world!")
 }
 `
-	err := os.WriteFile(path.Join(testProjectDir, "main.go"), []byte(src), 0644)
+	err := os.WriteFile(filepath.Join(testProjectDir, "main.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
 	cfg, err := config.ReadGodelConfigFromProjectDir(testProjectDir)
@@ -66,7 +66,7 @@ plugins:
 	err = yaml.Unmarshal([]byte(cfgContent), &cfg)
 	require.NoError(t, err)
 
-	pluginDir := path.Join(testProjectDir, "repo", "com", "palantir", pluginName, "1.0.0")
+	pluginDir := filepath.Join(testProjectDir, "repo", "com", "palantir", pluginName, "1.0.0")
 	err = os.MkdirAll(pluginDir, 0755)
 	require.NoError(t, err)
 
@@ -80,7 +80,7 @@ plugins:
 	pluginInfoJSON, err := json.Marshal(pluginInfo)
 	require.NoError(t, err)
 
-	pluginScript := path.Join(pluginDir, pluginName+"-1.0.0")
+	pluginScript := filepath.Join(pluginDir, pluginName+"-1.0.0")
 	err = os.WriteFile(pluginScript, []byte(fmt.Sprintf(fmt.Sprintf(`#!/bin/sh
 if [ "$1" = "%s" ]; then
     echo '%s'
@@ -91,7 +91,7 @@ echo ${GODEL_TEST_ENV_VAR}
 `, pluginapi.PluginInfoCommandName, `%s`), string(pluginInfoJSON))), 0755)
 	require.NoError(t, err)
 
-	pluginTGZPath := path.Join(pluginDir, fmt.Sprintf("%s-%s-1.0.0.tgz", pluginName, osarch.Current()))
+	pluginTGZPath := filepath.Join(pluginDir, fmt.Sprintf("%s-%s-1.0.0.tgz", pluginName, osarch.Current()))
 	err = archiver.DefaultTarGz.Archive([]string{pluginScript}, pluginTGZPath)
 	require.NoError(t, err)
 
@@ -99,7 +99,7 @@ echo ${GODEL_TEST_ENV_VAR}
 	require.NoError(t, err)
 	cfgDir, err := godellauncher.ConfigDirPath(testProjectDir)
 	require.NoError(t, err)
-	err = os.WriteFile(path.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
+	err = os.WriteFile(filepath.Join(cfgDir, godellauncher.GodelConfigYML), cfgBytes, 0644)
 	require.NoError(t, err)
 
 	// plugin is resolved on first run

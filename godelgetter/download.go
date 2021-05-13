@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/pkg/errors"
@@ -40,7 +40,7 @@ func DownloadIntoDirectory(pkgSrc PkgSrc, dstDir string, w io.Writer) (rPkg stri
 		return "", errors.Errorf("destination path %s exists, but is not a directory", dstDir)
 	}
 
-	dstFilePath := path.Join(dstDir, pkgSrc.Name())
+	dstFilePath := filepath.Join(dstDir, pkgSrc.Name())
 	if !pkgSrc.Same(dstFilePath) {
 		// download the source package to the destination
 		if err := Download(pkgSrc, dstFilePath, w); err != nil {

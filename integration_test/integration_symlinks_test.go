@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -37,13 +36,13 @@ func TestCheckInGoPathSymLink(t *testing.T) {
 	import "testing"
 
 	func TestFoo(t *testing.T) {}`
-	err := os.WriteFile(path.Join(testProjectDir, "foo_test.go"), []byte(src), 0644)
+	err := os.WriteFile(filepath.Join(testProjectDir, "foo_test.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
 	symLinkParentDir, cleanup, err := dirs.TempDir("", "")
 	defer cleanup()
 	require.NoError(t, err)
-	symLinkPath := path.Join(symLinkParentDir, "test-go")
+	symLinkPath := filepath.Join(symLinkParentDir, "test-go")
 
 	originalGoPath := os.Getenv("GOPATH")
 	err = os.Symlink(originalGoPath, symLinkPath)
@@ -53,12 +52,12 @@ func TestCheckInGoPathSymLink(t *testing.T) {
 	require.NoError(t, err)
 
 	// use script to set cd because setting wd on exec.Command does not work for symlinks
-	projectPathInSymLink := path.Join(symLinkPath, testProjectRelPath)
+	projectPathInSymLink := filepath.Join(symLinkPath, testProjectRelPath)
 	scriptTemplate := `#!/bin/bash
 cd %v
 pwd
 `
-	scriptFilePath := path.Join(symLinkParentDir, "script.sh")
+	scriptFilePath := filepath.Join(symLinkParentDir, "script.sh")
 	err = os.WriteFile(scriptFilePath, []byte(fmt.Sprintf(scriptTemplate, projectPathInSymLink)), 0755)
 	require.NoError(t, err)
 
@@ -90,13 +89,13 @@ func TestCheckInGoPathSymLinkGoPathSymLink(t *testing.T) {
 	import "testing"
 
 	func TestFoo(t *testing.T) {}`
-	err := os.WriteFile(path.Join(testProjectDir, "foo_test.go"), []byte(src), 0644)
+	err := os.WriteFile(filepath.Join(testProjectDir, "foo_test.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
 	symLinkParentDir, cleanup, err := dirs.TempDir("", "")
 	defer cleanup()
 	require.NoError(t, err)
-	symLinkPath := path.Join(symLinkParentDir, "test-go")
+	symLinkPath := filepath.Join(symLinkParentDir, "test-go")
 
 	originalGoPath := os.Getenv("GOPATH")
 	err = os.Symlink(originalGoPath, symLinkPath)
@@ -114,12 +113,12 @@ func TestCheckInGoPathSymLinkGoPathSymLink(t *testing.T) {
 	require.NoError(t, err)
 
 	// use script to set cd because setting wd on exec.Command does not work for symlinks
-	projectPathInSymLink := path.Join(symLinkPath, testProjectRelPath)
+	projectPathInSymLink := filepath.Join(symLinkPath, testProjectRelPath)
 	scriptTemplate := `#!/bin/bash
 cd %v
 pwd
 `
-	scriptFilePath := path.Join(symLinkParentDir, "script.sh")
+	scriptFilePath := filepath.Join(symLinkParentDir, "script.sh")
 	err = os.WriteFile(scriptFilePath, []byte(fmt.Sprintf(scriptTemplate, projectPathInSymLink)), 0755)
 	require.NoError(t, err)
 
@@ -151,13 +150,13 @@ func TestCheckInGoPathNonSymLinkWhenGoPathIsSymLink(t *testing.T) {
 	import "testing"
 
 	func TestFoo(t *testing.T) {}`
-	err := os.WriteFile(path.Join(testProjectDir, "foo_test.go"), []byte(src), 0644)
+	err := os.WriteFile(filepath.Join(testProjectDir, "foo_test.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
 	symLinkParentDir, cleanup, err := dirs.TempDir("", "")
 	defer cleanup()
 	require.NoError(t, err)
-	symLinkPath := path.Join(symLinkParentDir, "test-go")
+	symLinkPath := filepath.Join(symLinkParentDir, "test-go")
 
 	originalGoPath := os.Getenv("GOPATH")
 	err = os.Symlink(originalGoPath, symLinkPath)

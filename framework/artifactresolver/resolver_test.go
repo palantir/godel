@@ -21,7 +21,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"path"
 	"path/filepath"
 	"testing"
 
@@ -37,7 +36,7 @@ func TestResolverLocal(t *testing.T) {
 	defer cleanup()
 
 	const content = "file content"
-	srcFile := path.Join(tmpDir, "srcFile")
+	srcFile := filepath.Join(tmpDir, "srcFile")
 	err = os.WriteFile(srcFile, []byte(content), 0644)
 	require.NoError(t, err)
 
@@ -47,7 +46,7 @@ func TestResolverLocal(t *testing.T) {
 	r, err := NewTemplateResolver(srcFileAbs)
 	require.NoError(t, err)
 
-	dstFile := path.Join(tmpDir, "dstFile")
+	dstFile := filepath.Join(tmpDir, "dstFile")
 	dstFileAbs, err := filepath.Abs(dstFile)
 	require.NoError(t, err)
 
@@ -72,7 +71,7 @@ func TestResolverURL(t *testing.T) {
 	r, err := NewTemplateResolver(ts.URL)
 	require.NoError(t, err)
 
-	dstFile := path.Join(tmpDir, "dstFile")
+	dstFile := filepath.Join(tmpDir, "dstFile")
 	dstFileAbs, err := filepath.Abs(dstFile)
 	require.NoError(t, err)
 
@@ -87,7 +86,7 @@ func TestRenderResolve(t *testing.T) {
 	tmpDir, cleanup, err := dirs.TempDir("", "")
 	require.NoError(t, err)
 	defer cleanup()
-	dstFile := path.Join(tmpDir, "dstFile")
+	dstFile := filepath.Join(tmpDir, "dstFile")
 
 	var got string
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

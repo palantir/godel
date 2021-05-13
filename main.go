@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/nmiyake/pkg/errorstringer"
 	"github.com/palantir/godel/v2/framework/builtintasks"
@@ -48,7 +48,7 @@ func runGodelApp(osArgs []string) int {
 	var allUpgradeConfigTasks []godellauncher.UpgradeConfigTask
 	var defaultTasks, pluginTasks []godellauncher.Task
 	if global.Wrapper != "" {
-		godelCfg, err := config.ReadGodelConfigFromProjectDir(path.Dir(global.Wrapper))
+		godelCfg, err := config.ReadGodelConfigFromProjectDir(filepath.Dir(global.Wrapper))
 		if err != nil {
 			printErrAndExit(err, global.Debug)
 		}

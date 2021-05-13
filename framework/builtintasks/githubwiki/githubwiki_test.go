@@ -20,7 +20,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -107,7 +107,7 @@ func TestSyncGitHubWiki(t *testing.T) {
 		gittest.InitGitDir(t, githubWikiSrcRepo)
 
 		// add commit with specific user and committer
-		err = os.WriteFile(path.Join(githubWikiSrcRepo, "foo.txt"), []byte("foo"), 0644)
+		err = os.WriteFile(filepath.Join(githubWikiSrcRepo, "foo.txt"), []byte("foo"), 0644)
 		require.NoError(t, err)
 		err = git(githubWikiSrcRepo).commitAll("Original commit message", srcRepoParams)
 		require.NoError(t, err)
@@ -119,7 +119,7 @@ func TestSyncGitHubWiki(t *testing.T) {
 		docsDir, err := os.MkdirTemp(tmpDir, "docs-")
 		require.NoError(t, err)
 		gittest.InitGitDir(t, docsDir)
-		err = os.WriteFile(path.Join(docsDir, "page.md"), []byte("Test page"), 0644)
+		err = os.WriteFile(filepath.Join(docsDir, "page.md"), []byte("Test page"), 0644)
 		require.NoError(t, err)
 		gittest.CommitAllFiles(t, docsDir, "Initial docs directory commit")
 
@@ -180,7 +180,7 @@ func TestSyncGitHubWikiNonGitDocsDir(t *testing.T) {
 		gittest.InitGitDir(t, githubWikiSrcRepo)
 
 		// add commit with specific user and committer
-		err = os.WriteFile(path.Join(githubWikiSrcRepo, "foo.txt"), []byte("foo"), 0644)
+		err = os.WriteFile(filepath.Join(githubWikiSrcRepo, "foo.txt"), []byte("foo"), 0644)
 		require.NoError(t, err)
 		err = git(githubWikiSrcRepo).commitAll("Original commit message", srcRepoParams)
 		require.NoError(t, err)
@@ -191,7 +191,7 @@ func TestSyncGitHubWikiNonGitDocsDir(t *testing.T) {
 		// docs directory
 		docsDir, err := os.MkdirTemp(tmpDir, "docs-")
 		require.NoError(t, err)
-		err = os.WriteFile(path.Join(docsDir, "page.md"), []byte("Test page"), 0644)
+		err = os.WriteFile(filepath.Join(docsDir, "page.md"), []byte("Test page"), 0644)
 		require.NoError(t, err)
 
 		buf := &bytes.Buffer{}

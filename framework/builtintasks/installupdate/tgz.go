@@ -19,7 +19,7 @@ import (
 	"compress/gzip"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -89,7 +89,7 @@ func getPathsInTgz(tgzFile string) (rPaths map[string]bool, rErr error) {
 
 		switch header.Typeflag {
 		case tar.TypeDir:
-			dirs[path.Dir(header.Name)] = true
+			dirs[filepath.Dir(header.Name)] = true
 		case tar.TypeReg:
 			dirs[header.Name] = true
 		default:

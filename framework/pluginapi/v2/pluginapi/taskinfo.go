@@ -19,7 +19,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"strings"
 	"unicode"
 
@@ -185,7 +185,7 @@ func globalFlagArgs(globalFlagOpts godellauncher.GlobalFlagOptions, configFileNa
 		return args, nil
 	}
 
-	projectDir := path.Dir(global.Wrapper)
+	projectDir := filepath.Dir(global.Wrapper)
 	if globalFlagOpts.ProjectDirFlag != "" {
 		args = append(args, globalFlagOpts.ProjectDirFlag, projectDir)
 	}
@@ -201,11 +201,11 @@ func globalFlagArgs(globalFlagOpts godellauncher.GlobalFlagOptions, configFileNa
 	}
 
 	if globalFlagOpts.GodelConfigFlag != "" {
-		args = append(args, globalFlagOpts.GodelConfigFlag, path.Join(cfgDir, godellauncher.GodelConfigYML))
+		args = append(args, globalFlagOpts.GodelConfigFlag, filepath.Join(cfgDir, godellauncher.GodelConfigYML))
 	}
 
 	if globalFlagOpts.ConfigFlag != "" && configFileName != "" {
-		args = append(args, globalFlagOpts.ConfigFlag, path.Join(cfgDir, configFileName))
+		args = append(args, globalFlagOpts.ConfigFlag, filepath.Join(cfgDir, configFileName))
 	}
 
 	return args, nil

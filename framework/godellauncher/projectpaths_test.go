@@ -16,7 +16,6 @@ package godellauncher_test
 
 import (
 	"os"
-	"path"
 	"path/filepath"
 	"testing"
 
@@ -145,7 +144,7 @@ func TestListProjectPaths(t *testing.T) {
 		require.NoError(t, err)
 
 		func() {
-			err = os.Chdir(path.Join(projectDir, tc.wd))
+			err = os.Chdir(filepath.Join(projectDir, tc.wd))
 			require.NoError(t, err)
 			defer func() {
 				err = os.Chdir(origWd)

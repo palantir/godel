@@ -21,7 +21,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -135,7 +135,7 @@ func Generate(inputDir, outputDir, baseImage string, params Params, stdout io.Wr
 				if err != nil {
 					return errors.Wrapf(err, "failed to render parsed content for %s", inputFile.TemplateFileName)
 				}
-				renderedFilePath := path.Join(outputDir, inputFile.OutputRenderedFileName())
+				renderedFilePath := filepath.Join(outputDir, inputFile.OutputRenderedFileName())
 				if err := os.WriteFile(renderedFilePath, renderedBytes, 0644); err != nil {
 					return errors.Wrapf(err, "failed to write rendered content for %s", inputFile.TemplateFileName)
 				}

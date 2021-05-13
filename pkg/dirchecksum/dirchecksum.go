@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -95,7 +94,7 @@ func (c *ChecksumsDiff) String() string {
 
 	var parts []string
 	for _, k := range sortedKeys {
-		parts = append(parts, fmt.Sprintf("%s: %s", path.Join(c.RootDir, k), c.Diffs[k]))
+		parts = append(parts, fmt.Sprintf("%s: %s", filepath.Join(c.RootDir, k), c.Diffs[k]))
 	}
 	return strings.Join(parts, "\n")
 }

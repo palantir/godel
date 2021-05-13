@@ -16,7 +16,7 @@ package layout_test
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/nmiyake/pkg/dirs"
@@ -39,7 +39,7 @@ func (s Specs) AllPaths() map[string]bool {
 		m[c.Path] = c.IsDir
 		// if path is a file, populate entries for all parent directories
 		if !c.IsDir {
-			for d := path.Dir(c.Path); d != "."; d = path.Dir(d) {
+			for d := filepath.Dir(c.Path); d != "."; d = filepath.Dir(d) {
 				m[d] = true
 			}
 		}
@@ -197,7 +197,7 @@ func assertLayoutEqual(t *testing.T, caseNum int, want Specs, got string) {
 
 	// verify that provided directory matches all provided specs
 	for _, curr := range want {
-		p := path.Join(got, curr.Path)
+		p := filepath.Join(got, curr.Path)
 
 		fi, err := os.Stat(p)
 		assert.NoError(t, err, "Case %d", caseNum)
@@ -213,11 +213,11 @@ func assertLayoutEqual(t *testing.T, caseNum int, want Specs, got string) {
 
 func writeLayout(t *testing.T, dir string, specs []Spec) {
 	for _, curr := range specs {
-		p := path.Join(dir, curr.Path)
+		p := filepath.Join(dir, curr.Path)
 
 		dir := p
 		if !curr.IsDir {
-			dir = path.Dir(dir)
+			dir = filepath.Dir(dir)
 		}
 		err := os.MkdirAll(dir, 0755)
 		require.NoError(t, err, "Failed to create directory %v", dir)

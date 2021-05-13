@@ -17,7 +17,7 @@ package installupdate
 import (
 	"io"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -35,7 +35,7 @@ func RunUpgradeLegacyConfig(projectDir string, stdout, stderr io.Writer) error {
 }
 
 func runUpgradeConfig(projectDir string, args []string, stdout, stderr io.Writer) error {
-	godelw := path.Join(projectDir, "godelw")
+	godelw := filepath.Join(projectDir, "godelw")
 	cmd := exec.Command(godelw, append([]string{"upgrade-config"}, args...)...)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
@@ -44,7 +44,7 @@ func runUpgradeConfig(projectDir string, args []string, stdout, stderr io.Writer
 
 // getGodelVersion returns the Version returned by "{{projectDir}}/godelw version".
 func getGodelVersion(projectDir string) (godelVersion, error) {
-	godelw := path.Join(projectDir, "godelw")
+	godelw := filepath.Join(projectDir, "godelw")
 	cmd := exec.Command(godelw, "version")
 	output, err := cmd.Output()
 	if err != nil {

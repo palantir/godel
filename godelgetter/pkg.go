@@ -18,7 +18,7 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -83,7 +83,7 @@ type basePkg struct {
 }
 
 func (p *basePkg) Name() string {
-	return path.Base(p.path)
+	return filepath.Base(p.path)
 }
 
 func (p *basePkg) Path() string {

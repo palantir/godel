@@ -16,7 +16,7 @@ package pathsinternal
 
 import (
 	"fmt"
-	"path"
+	"path/filepath"
 
 	"github.com/palantir/godel/v2/framework/artifactresolver"
 	"github.com/palantir/godel/v2/framework/builtintasks/installupdate/layout"
@@ -25,7 +25,7 @@ import (
 )
 
 func PluginPath(pluginDir string, locator artifactresolver.Locator) string {
-	return path.Join(pluginDir, PluginFileName(locator))
+	return filepath.Join(pluginDir, PluginFileName(locator))
 }
 
 func PluginFileName(locator artifactresolver.Locator) string {

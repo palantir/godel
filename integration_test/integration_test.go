@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -46,7 +46,7 @@ func runTestMain(m *testing.M) int {
 	if err != nil {
 		panic(err)
 	}
-	godelProjectDir := path.Join(wd, "..")
+	godelProjectDir := filepath.Join(wd, "..")
 	version, err = git.ProjectVersion(godelProjectDir)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to get version from directory %s: %v", godelProjectDir, err))
@@ -81,7 +81,7 @@ func TestProjectVersion(t *testing.T) {
 
 	gittest.InitGitDir(t, tmpDir)
 	gittest.CreateGitTag(t, tmpDir, "testTag")
-	err = os.WriteFile(path.Join(tmpDir, "random.txt"), []byte(""), 0644)
+	err = os.WriteFile(filepath.Join(tmpDir, "random.txt"), []byte(""), 0644)
 	require.NoError(t, err)
 
 	testProjectDir := setUpGodelTestAndDownload(t, tmpDir, godelTGZ, version)
@@ -109,7 +109,7 @@ func TestGitHooksSuccess(t *testing.T) {
 func main() {
 }
 `
-	err = os.WriteFile(path.Join(testProjectDir, "main.go"), []byte(formatted), 0644)
+	err = os.WriteFile(filepath.Join(testProjectDir, "main.go"), []byte(formatted), 0644)
 	require.NoError(t, err)
 	execCommand(t, testProjectDir, "git", "add", ".")
 	execCommand(t, testProjectDir, "git", "commit", "--author=testAuthor <test@author.com>", "-m", "Second commit")
@@ -136,7 +136,7 @@ import "fmt"
 func Foo() {
 fmt.Println("foo")
 }`
-	err = os.WriteFile(path.Join(testProjectDir, "helper.go"), []byte(notFormatted), 0644)
+	err = os.WriteFile(filepath.Join(testProjectDir, "helper.go"), []byte(notFormatted), 0644)
 	require.NoError(t, err)
 	execCommand(t, testProjectDir, "git", "add", ".")
 
@@ -159,7 +159,7 @@ products:
     build:
       main-pkg: ./bar
 `
-	err := os.WriteFile(path.Join(testProjectDir, "godel", "config", "dist-plugin.yml"), []byte(distYml), 0644)
+	err := os.WriteFile(filepath.Join(testProjectDir, "godel", "config", "dist-plugin.yml"), []byte(distYml), 0644)
 	require.NoError(t, err)
 
 	src := `package main
@@ -168,14 +168,14 @@ products:
 	func main() {
 		fmt.Println("hello, world!")
 	}`
-	err = os.MkdirAll(path.Join(testProjectDir, "foo"), 0755)
+	err = os.MkdirAll(filepath.Join(testProjectDir, "foo"), 0755)
 	require.NoError(t, err)
-	err = os.WriteFile(path.Join(testProjectDir, "foo", "foo.go"), []byte(src), 0644)
+	err = os.WriteFile(filepath.Join(testProjectDir, "foo", "foo.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
-	err = os.MkdirAll(path.Join(testProjectDir, "bar"), 0755)
+	err = os.MkdirAll(filepath.Join(testProjectDir, "bar"), 0755)
 	require.NoError(t, err)
-	err = os.WriteFile(path.Join(testProjectDir, "bar", "bar.go"), []byte(src), 0644)
+	err = os.WriteFile(filepath.Join(testProjectDir, "bar", "bar.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
 	execCommand(t, testProjectDir, "./godelw", "products")
@@ -184,14 +184,14 @@ products:
 func TestExec(t *testing.T) {
 	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 
-	currGodelYML, err := os.ReadFile(path.Join(testProjectDir, "godel", "config", "godel.yml"))
+	currGodelYML, err := os.ReadFile(filepath.Join(testProjectDir, "godel", "config", "godel.yml"))
 	require.NoError(t, err)
 
 	updatedGodelYML := string(currGodelYML) + `
 environment:
   MY_ENV_VAR: "FOO"
 `
-	err = os.WriteFile(path.Join(testProjectDir, "godel", "config", "godel.yml"), []byte(updatedGodelYML), 0644)
+	err = os.WriteFile(filepath.Join(testProjectDir, "godel", "config", "godel.yml"), []byte(updatedGodelYML), 0644)
 	require.NoError(t, err)
 
 	out := execCommand(t, testProjectDir, "./godelw", "exec", "env")
@@ -207,7 +207,7 @@ func TestTest(t *testing.T) {
 	import "testing"
 
 	func TestFoo(t *testing.T) {}`
-	err := os.WriteFile(path.Join(testProjectDir, "foo_test.go"), []byte(src), 0644)
+	err := os.WriteFile(filepath.Join(testProjectDir, "foo_test.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
 	execCommand(t, testProjectDir, "./godelw", "test")
@@ -220,11 +220,11 @@ func TestCheckFromNestedDirectory(t *testing.T) {
 
 	// write Go file to root directory of project
 	badSrc := `package main`
-	err := os.WriteFile(path.Join(testProjectDir, "main.go"), []byte(badSrc), 0644)
+	err := os.WriteFile(filepath.Join(testProjectDir, "main.go"), []byte(badSrc), 0644)
 	require.NoError(t, err)
 
 	// write valid Go file to child directory
-	childDir := path.Join(testProjectDir, "childDir")
+	childDir := filepath.Join(testProjectDir, "childDir")
 	err = os.MkdirAll(childDir, 0755)
 	require.NoError(t, err)
 	src := `package main
@@ -233,7 +233,7 @@ func TestCheckFromNestedDirectory(t *testing.T) {
 	func main() {
 		fmt.Println("hello, world!")
 	}`
-	err = os.WriteFile(path.Join(childDir, "main.go"), []byte(src), 0644)
+	err = os.WriteFile(filepath.Join(childDir, "main.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
 	execCommand(t, childDir, "../godelw", "check")

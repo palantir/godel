@@ -17,7 +17,7 @@ package generator
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -25,16 +25,16 @@ import (
 )
 
 func writeOutputFiles(outputDir string, inFile inputFileWithParsedContent, fromImage string) (string, error) {
-	currOutputDir := path.Join(outputDir, inFile.FileInfo.OutputDirName())
+	currOutputDir := filepath.Join(outputDir, inFile.FileInfo.OutputDirName())
 	if err := os.MkdirAll(currOutputDir, 0755); err != nil {
 		return "", errors.Wrapf(err, "failed to create output directory")
 	}
 	scriptContent := bashScript(inFile.ParsedContent.TutorialCodeParts)
-	if err := os.WriteFile(path.Join(currOutputDir, inFile.FileInfo.OutputScriptFileName()), []byte(scriptContent), 0755); err != nil {
+	if err := os.WriteFile(filepath.Join(currOutputDir, inFile.FileInfo.OutputScriptFileName()), []byte(scriptContent), 0755); err != nil {
 		return "", errors.Wrapf(err, "failed to write script file")
 	}
 	dockerfileContent := dockerFile(fromImage, inFile.FileInfo.OutputScriptFileName())
-	if err := os.WriteFile(path.Join(currOutputDir, "Dockerfile"), []byte(dockerfileContent), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(currOutputDir, "Dockerfile"), []byte(dockerfileContent), 0644); err != nil {
 		return "", errors.Wrapf(err, "failed to write Dockerfile")
 	}
 	return currOutputDir, nil

@@ -16,7 +16,7 @@ package config
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/palantir/godel/v2/framework/godellauncher"
 	"github.com/palantir/pkg/matcher"
@@ -32,7 +32,7 @@ func ReadGodelConfigFromProjectDir(projectDir string) (GodelConfig, error) {
 	if err != nil {
 		return GodelConfig{}, err
 	}
-	return ReadGodelConfigFromFile(path.Join(cfgDir, godellauncher.GodelConfigYML))
+	return ReadGodelConfigFromFile(filepath.Join(cfgDir, godellauncher.GodelConfigYML))
 }
 
 // ReadGodelConfigFromFile reads the gödel configuration from the provided file and returns the loaded configuration.

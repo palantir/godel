@@ -19,7 +19,7 @@ import (
 	"encoding/hex"
 	"io"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/pkg/errors"
 )
@@ -59,8 +59,8 @@ func CopyDir(src, dst string) error {
 	}
 
 	for _, f := range files {
-		srcPath := path.Join(src, f.Name())
-		dstPath := path.Join(dst, f.Name())
+		srcPath := filepath.Join(src, f.Name())
+		dstPath := filepath.Join(dst, f.Name())
 
 		if f.IsDir() {
 			err = CopyDir(srcPath, dstPath)
@@ -149,8 +149,8 @@ func SyncDir(srcDir, dstDir string, skip []string) (bool, error) {
 		}
 
 		remove := false
-		srcFilePath := path.Join(srcDir, dstFileName)
-		dstFilePath := path.Join(dstDir, dstFileName)
+		srcFilePath := filepath.Join(srcDir, dstFileName)
+		dstFilePath := filepath.Join(dstDir, dstFileName)
 
 		if currSrcFileInfo, ok := srcFilesMap[dstFileName]; !ok {
 			// if dst exists but src does not, remove dst
@@ -196,8 +196,8 @@ func SyncDir(srcDir, dstDir string, skip []string) (bool, error) {
 			continue
 		}
 
-		srcFilePath := path.Join(srcDir, srcFileName)
-		dstFilePath := path.Join(dstDir, srcFileName)
+		srcFilePath := filepath.Join(srcDir, srcFileName)
+		dstFilePath := filepath.Join(dstDir, srcFileName)
 
 		if _, err := os.Stat(dstFilePath); os.IsNotExist(err) {
 			// if path does not exist at destination, copy source version
@@ -256,8 +256,8 @@ func SyncDirAdditive(src, dst string) error {
 	}
 
 	for _, srcInfo := range srcInfos {
-		srcPath := path.Join(src, srcInfo.Name())
-		dstPath := path.Join(dst, srcInfo.Name())
+		srcPath := filepath.Join(src, srcInfo.Name())
+		dstPath := filepath.Join(dst, srcInfo.Name())
 
 		if dstInfo, err := os.Stat(dstPath); os.IsNotExist(err) {
 			// safe to copy
@@ -282,11 +282,11 @@ func SyncDirAdditive(src, dst string) error {
 }
 
 func VerifyDirExists(dir string) error {
-	return verifyPath(dir, path.Base(dir), true, false)
+	return verifyPath(dir, filepath.Base(dir), true, false)
 }
 
 func verifyPath(p, expectedName string, isDir bool, optional bool) error {
-	if path.Base(p) != expectedName {
+	if filepath.Base(p) != expectedName {
 		return errors.Errorf("%s is not a path to %s", p, expectedName)
 	}
 
@@ -311,7 +311,7 @@ func verifyDstPathSafe(dst string) error {
 	if _, err := os.Stat(dst); !os.IsNotExist(err) {
 		return errors.Wrapf(err, "destination path %s already exists", dst)
 	}
-	if _, err := os.Stat(path.Dir(dst)); os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Dir(dst)); os.IsNotExist(err) {
 		return errors.Wrapf(err, "parent directory of destination path %s does not exist", dst)
 	}
 	return nil

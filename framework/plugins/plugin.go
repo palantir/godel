@@ -17,7 +17,6 @@ package plugins
 import (
 	"fmt"
 	"io"
-	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -135,7 +134,7 @@ func resolvePlugins(pluginsDir, assetsDir, downloadsDir string, osArch osarch.OS
 		if !ok {
 			continue
 		}
-		info, err := pluginapi.InfoFromPlugin(path.Join(pluginsDir, pathsinternal.PluginFileName(currPluginLocator)))
+		info, err := pluginapi.InfoFromPlugin(filepath.Join(pluginsDir, pathsinternal.PluginFileName(currPluginLocator)))
 		if err != nil {
 			pluginErrors[currPluginLocator] = errors.Wrapf(err, "failed to get plugin info for plugin %+v", currPluginLocator)
 			continue

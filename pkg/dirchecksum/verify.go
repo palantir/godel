@@ -17,7 +17,7 @@ package dirchecksum
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/termie/go-shutil"
 )
@@ -56,7 +56,7 @@ func ChecksumsForDirAfterAction(dir string, action func(dir string) error) (Chec
 
 	// copy original directory to temporary location
 	var err error
-	origDirCopy, err = createTmpDirPath(path.Dir(dir))
+	origDirCopy, err = createTmpDirPath(filepath.Dir(dir))
 	if err != nil {
 		return ChecksumSet{}, err
 	}
@@ -65,7 +65,7 @@ func ChecksumsForDirAfterAction(dir string, action func(dir string) error) (Chec
 	}
 
 	// move original directory to temporary location
-	origDirMoved, err = createTmpDirPath(path.Dir(dir))
+	origDirMoved, err = createTmpDirPath(filepath.Dir(dir))
 	if err != nil {
 		return ChecksumSet{}, err
 	}
