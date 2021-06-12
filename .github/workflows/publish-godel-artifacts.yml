@@ -2,7 +2,7 @@ name: publish-godel-artifacts
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+**'
 jobs:
   run-godel-publish:
     runs-on: ubuntu-latest
