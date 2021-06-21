@@ -193,8 +193,8 @@ func TestDefaultTasksPluginsConfig(t *testing.T) {
 			"",
 			config.PluginsConfig{
 				DefaultResolvers: []string{
-					defaultResolver,
 					"default/repo/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}.tgz",
+					defaultResolver,
 				},
 				Plugins: config.ToSinglePluginConfigs([]config.SinglePluginConfig{
 					{
