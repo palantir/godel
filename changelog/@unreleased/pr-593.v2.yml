@@ -1,7 +1,7 @@
 type: improvement
 improvement:
   description: |-
-    If resolvers are specified  for default tasks, they are now used before the default resolver.
+    If resolvers are specified for default tasks, they are now used before the default resolver.
 
     The prior behavior can be maintained by adding the default resolver as the first entry in the resolver list in the config.
   links:
