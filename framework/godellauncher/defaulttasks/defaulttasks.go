@@ -223,12 +223,12 @@ var defaultPluginsConfig = config.PluginsConfig{
 		{
 			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.godel-test-plugin:test-plugin:1.7.0",
+					ID: "com.palantir.godel-test-plugin:test-plugin:1.8.0",
 					Checksums: map[string]string{
-						"darwin-amd64": "b0eef2d579ed0e83e020def9fe02c77b18c562e85e82d4760a0978a83569c285",
-						"darwin-arm64": "549db5de9dd83ccf068f0a9bc79176c438e4c00f4beb230a21fda9d950fee598",
-						"linux-amd64":  "fb0a57f493b9a86c10124b2d33b3f7c4b788ef7a031d38ed3ecdcc7f44b47f1b",
-						"linux-arm64":  "a30d044400629b3066fef42983bfe9f4acdc1ab764bde5ce15ef3c37c3199128",
+						"darwin-amd64": "812ef8496dae13c38716593c566e237d8588f9a16ca5492f1949ba7c4c800e71",
+						"darwin-arm64": "061019dc30533938e9e8d97e7d8efb4c8616445fadb29b3c9835443154f533cd",
+						"linux-amd64":  "744715a3cb4a6b51e40599129d36d2014b80167897d857dacc91e233dcaf51f5",
+						"linux-arm64":  "31e5b95404d696f758ee0a2bfbfd0749cf31bba7228397253a0278758af7e86f",
 					},
 				}),
 			}),
