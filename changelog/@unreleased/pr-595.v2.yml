@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Upgrade godel-test-plugin to 1.8.0
+  links:
+  - https://github.com/palantir/godel/pull/595
