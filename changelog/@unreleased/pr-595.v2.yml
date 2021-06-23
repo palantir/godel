@@ -1,5 +1,5 @@
 type: improvement
 improvement:
-  description: Upgrade godel-test-plugin to 1.8.0
+  description: Upgrade godel-test-plugin to 1.8.0. Fixes race condition where JUnit test results may not be written before the plugin exits.
   links:
   - https://github.com/palantir/godel/pull/595
