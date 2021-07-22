@@ -3,6 +3,7 @@ github.com/VividCortex/ewma
 # github.com/andybalholm/brotli v0.0.0-20190621154722-5f990b63d2d6
 github.com/andybalholm/brotli
 # github.com/cheggaaa/pb/v3 v3.0.2
+## explicit
 github.com/cheggaaa/pb/v3
 github.com/cheggaaa/pb/v3/termutil
 # github.com/davecgh/go-spew v1.1.1
@@ -39,53 +40,71 @@ github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.4
 github.com/mattn/go-runewidth
 # github.com/mholt/archiver/v3 v3.3.0
+## explicit
 github.com/mholt/archiver/v3
 # github.com/nmiyake/pkg/dirs v1.1.0
+## explicit
 github.com/nmiyake/pkg/dirs
 # github.com/nmiyake/pkg/errorstringer v1.1.0
+## explicit
 github.com/nmiyake/pkg/errorstringer
 # github.com/nmiyake/pkg/gofiles v1.2.0
+## explicit
 github.com/nmiyake/pkg/gofiles
 # github.com/nwaples/rardecode v1.0.0
 github.com/nwaples/rardecode
 # github.com/palantir/distgo/pkg/git v1.0.0
+## explicit
 github.com/palantir/distgo/pkg/git
 # github.com/palantir/godel/pkg/products/v2 v2.0.0
+## explicit
 github.com/palantir/godel/pkg/products/v2
 # github.com/palantir/pkg v1.0.1
 github.com/palantir/pkg
 # github.com/palantir/pkg/cobracli v1.0.1
+## explicit
 github.com/palantir/pkg/cobracli
 # github.com/palantir/pkg/gittest v1.0.1
+## explicit
 github.com/palantir/pkg/gittest
 # github.com/palantir/pkg/matcher v1.0.1
+## explicit
 github.com/palantir/pkg/matcher
 # github.com/palantir/pkg/pkgpath v1.0.1
+## explicit
 github.com/palantir/pkg/pkgpath
 # github.com/palantir/pkg/signals v1.0.1
+## explicit
 github.com/palantir/pkg/signals
 # github.com/palantir/pkg/specdir v1.0.1
+## explicit
 github.com/palantir/pkg/specdir
 # github.com/pierrec/lz4 v2.0.5+incompatible
 github.com/pierrec/lz4
 github.com/pierrec/lz4/internal/xxh32
 # github.com/pkg/errors v0.8.1
+## explicit
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
 # github.com/rogpeppe/go-internal v1.7.0
+## explicit
 github.com/rogpeppe/go-internal/internal/syscall/windows
 github.com/rogpeppe/go-internal/internal/syscall/windows/sysdll
 github.com/rogpeppe/go-internal/lockedfile
 github.com/rogpeppe/go-internal/lockedfile/internal/filelock
 # github.com/spf13/cobra v1.2.1
+## explicit
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
+## explicit
 github.com/spf13/pflag
 # github.com/stretchr/testify v1.7.0
+## explicit
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # github.com/termie/go-shutil v0.0.0-20140729215957-bcacb06fecae
+## explicit
 github.com/termie/go-shutil
 # github.com/ulikunitz/xz v0.5.6
 github.com/ulikunitz/xz
@@ -116,6 +135,7 @@ golang.org/x/tools/internal/typesinternal
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
 # gopkg.in/yaml.v2 v2.4.0
+## explicit
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 gopkg.in/yaml.v3
