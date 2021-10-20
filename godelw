@@ -91,7 +91,7 @@ function compute_sha256 {
     local file=$1
     if command -v openssl >/dev/null 2>&1; then
         # print SHA-256 hash using openssl
-        openssl dgst -sha256 "$file" | sed -E 's/SHA256\(.*\)= //'
+        openssl dgst -sha256 "$file" | sed -E 's/SHA(2-)?256\(.*\)= //'
     elif command -v shasum >/dev/null 2>&1; then
         # Darwin systems ship with "shasum" utility
         shasum -a 256 "$file" | sed -E 's/[[:space:]]+.+//'
