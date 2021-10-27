@@ -1,0 +1,6 @@
+type: fix
+fix:
+  description: |
+    Updates godelw script to support parsing SHA-256 checksums from versions of openssl that use "SHA2-256" as the label for checksums.
+  links:
+  - https://github.com/palantir/godel/pull/604
