@@ -27,32 +27,6 @@ jobs:
       - checkout
       - godel/setup
       - run: ./godelw github-wiki --docs-dir docs --repository=git@github.com:palantir/godel.wiki.git
-  godel-alpine-integration:
-    parameters:
-      executor:
-        type: executor
-      tags:
-        description: |
-          The tags for the tests
-        type: string
-        default: ""
-      parallelism:
-        description: |
-          If specified, adds the "-p" flag with the specified value for parallelism
-        type: string
-        default: ""
-    executor: << parameters.executor >>
-    steps:
-      - checkout
-      - run: go version
-      - run: pwd && ls -la
-      - run: mkdir -p "/tmp/test-results"
-      - run: ./godelw test<<# parameters.tags >> --tags=<< parameters.tags >><</ parameters.tags >> --junit-output="$TESTS_DIR/$CIRCLE_PROJECT_REPONAME-tests.xml"<<# parameters.parallelism >> -- -p=<< parameters.parallelism >><</ parameters.parallelism >>
-      - store_test_results:
-          path: /tmp/test-results
-      - store_artifacts:
-          path: /tmp/test-results
-          destination: test-results
 
 all-tags-filter: &all-tags-filter
   filters:
@@ -96,7 +70,8 @@ workflows:
           name: integration-go-prev
           tags: integration
           executor: circleci-go
-          go-prev-version: 1
+          # set this to 1 once current Go version is set to 1.17
+          go-prev-version: 0
           <<: *homepath
           <<: *gopath
           <<: *all-tags-filter
