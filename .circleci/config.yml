@@ -11,16 +11,6 @@ gopath: &gopath
   gopath: /home/circleci/go
 
 executors:
-  alpine-go:
-    parameters:
-      version:
-        type: string
-      working_directory:
-        type: string
-        default: /go/src/github.com/palantir/godel
-    docker:
-      - image: golang:<< parameters.version >>-alpine
-    working_directory: << parameters.working_directory >>
   circleci-go:
     parameters:
       working_directory:
@@ -97,27 +87,19 @@ workflows:
           <<: *gopath
           <<: *all-tags-filter
       - godel/test:
-          name: integration-std
+          name: integration-curr
           tags: integration
           executor: circleci-go
           <<: *homepath
           <<: *gopath
           <<: *all-tags-filter
-      - godel-alpine-integration:
-          name: integration-alpine-go-curr
+      - godel/test:
+          name: integration-prev
           tags: integration
-          executor:
-            name: alpine-go
-            version: 1.17.3
-            working_directory: /go/src/github.com/palantir/godel
-          <<: *all-tags-filter
-      - godel-alpine-integration:
-          name: integration-alpine-go-prev
-          tags: integration
-          executor:
-            name: alpine-go
-            version: 1.16.10
-            working_directory: /go/src/github.com/palantir/godel
+          executor: circleci-go
+          go-prev-version: 1
+          <<: *homepath
+          <<: *gopath
           <<: *all-tags-filter
       - godel/verify:
           name: pkg-products-verify-test
