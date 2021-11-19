@@ -108,7 +108,7 @@ workflows:
           executor:
             name: alpine-go
             version: 1.17.3
-          working_directory: /go/src/github.com/palantir/godel
+            working_directory: /go/src/github.com/palantir/godel
           <<: *all-tags-filter
       - godel-alpine-integration:
           name: integration-alpine-go-prev
@@ -116,7 +116,7 @@ workflows:
           executor:
             name: alpine-go
             version: 1.16.10
-          working_directory: /go/src/github.com/palantir/godel
+            working_directory: /go/src/github.com/palantir/godel
           <<: *all-tags-filter
       - godel/verify:
           name: pkg-products-verify-test
