@@ -80,8 +80,8 @@ workflows:
           tags: integration
           executor:
             name: alpine-go
-          <<: *homepath
-          <<: *gopath
+          homepath: /root
+          gopath: /go
           <<: *all-tags-filter
       - godel/test:
           name: integration-alpine-go-prev
@@ -89,16 +89,18 @@ workflows:
           executor:
             name: alpine-go
           go-prev-version: 1
-          <<: *homepath
-          <<: *gopath
+          homepath: /root
+          gopath: /go
           <<: *all-tags-filter
       - godel/verify:
           name: pkg-products-verify-test
-          checkout-path: /go/src/github.com/palantir/godel
+          checkout-path: /home/circleci/go/src/github.com/palantir/godel/pkg/products/v2
           include-tests: true
           executor:
             name: circleci-go
-            working_directory: /home/circleci/go/src/palantir/godel/pkg/products/v2
+            working_directory: /home/circleci/go/src/github.com/palantir/godel/pkg/products/v2
+          <<: *homepath
+          <<: *gopath
           <<: *all-tags-filter
       - godel/dist:
           name: dist
