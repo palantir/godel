@@ -62,9 +62,8 @@ all-tags-filter: &all-tags-filter
 requires_products: &requires_products
   - verify
   - test
-  - integration-std
-  - integration-alpine-go-curr
-  - integration-alpine-go-prev
+  - integration-go-curr
+  - integration-go-prev
   - dist
   - pkg-products-verify-test
 
@@ -87,14 +86,14 @@ workflows:
           <<: *gopath
           <<: *all-tags-filter
       - godel/test:
-          name: integration-curr
+          name: integration-go-curr
           tags: integration
           executor: circleci-go
           <<: *homepath
           <<: *gopath
           <<: *all-tags-filter
       - godel/test:
-          name: integration-prev
+          name: integration-go-prev
           tags: integration
           executor: circleci-go
           go-prev-version: 1
