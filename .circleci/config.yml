@@ -13,11 +13,13 @@ gopath: &gopath
 executors:
   alpine-go:
     parameters:
+      version:
+        type: string
       working_directory:
         type: string
         default: /go/src/github.com/palantir/godel
     docker:
-      - image: golang:alpine
+      - image: golang:<< parameters.version >>-alpine
     working_directory: << parameters.working_directory >>
   circleci-go:
     parameters:
@@ -35,6 +37,31 @@ jobs:
       - checkout
       - godel/setup
       - run: ./godelw github-wiki --docs-dir docs --repository=git@github.com:palantir/godel.wiki.git
+  godel-alpine-integration:
+    parameters:
+      executor:
+        type: executor
+      tags:
+        description: |
+          The tags for the tests
+        type: string
+        default: ""
+      parallelism:
+        description: |
+          If specified, adds the "-p" flag with the specified value for parallelism
+        type: string
+        default: ""
+    executor: << parameters.executor >>
+    steps:
+      - run: go version
+      - run: echo 'export TESTS_DIR=/tmp/test-results' >> $BASH_ENV
+      - run: mkdir -p "${TESTS_DIR}"
+      - run: ./godelw test<<# parameters.tags >> --tags=<< parameters.tags >><</ parameters.tags >> --junit-output="$TESTS_DIR/$CIRCLE_PROJECT_REPONAME-tests.xml"<<# parameters.parallelism >> -- -p=<< parameters.parallelism >><</ parameters.parallelism >>
+      - store_test_results:
+          path: /tmp/test-results
+      - store_artifacts:
+          path: /tmp/test-results
+          destination: test-results
 
 all-tags-filter: &all-tags-filter
   filters:
@@ -52,7 +79,7 @@ requires_products: &requires_products
 
 workflows:
   version: 2
-  verify-test-dist-publish:
+  verify-test-dist:
     jobs:
       - godel/verify:
           name: verify
@@ -75,22 +102,19 @@ workflows:
           <<: *homepath
           <<: *gopath
           <<: *all-tags-filter
-      - godel/test:
+      - godel-alpine-integration:
           name: integration-alpine-go-curr
           tags: integration
           executor:
             name: alpine-go
-          homepath: /root
-          gopath: /go
+            version: 1.17.3
           <<: *all-tags-filter
-      - godel/test:
+      - godel-alpine-integration:
           name: integration-alpine-go-prev
           tags: integration
           executor:
             name: alpine-go
-          go-prev-version: 0
-          homepath: /root
-          gopath: /go
+            version: 1.16.10
           <<: *all-tags-filter
       - godel/verify:
           name: pkg-products-verify-test
