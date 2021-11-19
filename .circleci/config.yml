@@ -1,40 +1,28 @@
-owner-repo: &owner-repo
-  owner-repo: palantir/godel
-
-go-version-current: &go-version-current "1.16.2"
-# set go-version-prev to 1.16.2 because integration tests require building darwin-arm64
-# binary and support for doing so is only available starting in Go 1.16. This means that
-# tests will not run on Go 1.15 for now. This will be correct once Go 1.17 becomes the
-# current version.
-go-version-prev: &go-version-prev "1.16.2"
-
-executor: &executor
-  executor:
-    name: go/golang
-    version: *go-version-current
-    <<: *owner-repo
-
 version: 2.1
 
 orbs:
-  go: palantir/go@0.0.18
-  godel: palantir/godel@0.0.18
+  go: palantir/go@0.0.30
+  godel: palantir/godel@0.0.30
+
+homepath: &homepath
+  homepath: /home/circleci
+
+gopath: &gopath
+  gopath: /home/circleci/go
 
 executors:
-  alpine-go:
+  circleci-go:
     parameters:
-      version:
-        description: The Go version for the Docker image
+      working_directory:
         type: string
-    working_directory: /go/src/github.com/palantir/godel
-    environment:
-      CGO_ENABLED: 0
+        default: /home/circleci/go/src/github.com/palantir/godel
     docker:
-      - image: golang:<< parameters.version >>
+      - image: cimg/go:1.16-browsers
+    working_directory: << parameters.working_directory >>
 
 jobs:
   wiki:
-    <<: *executor
+    executor: circleci-go
     steps:
       - checkout
       - godel/setup
@@ -48,57 +36,60 @@ all-tags-filter: &all-tags-filter
 requires_products: &requires_products
   - verify
   - test
-  - integration-std
-  - integration-alpine-go-curr
-  - integration-alpine-go-prev
+  - integration-go-curr
+  - integration-go-prev
   - dist
   - pkg-products-verify-test
 
 workflows:
   version: 2
-  verify-test-dist-publish:
+  verify-test-dist:
     jobs:
       - godel/verify:
           name: verify
-          <<: *executor
+          executor: circleci-go
+          <<: *homepath
+          <<: *gopath
           <<: *all-tags-filter
           parallel: false
       - godel/test:
           name: test
           tags: none
-          <<: *executor
+          executor: circleci-go
+          <<: *homepath
+          <<: *gopath
           <<: *all-tags-filter
       - godel/test:
-          name: integration-std
+          name: integration-go-curr
           tags: integration
-          <<: *executor
+          executor: circleci-go
+          <<: *homepath
+          <<: *gopath
           <<: *all-tags-filter
       - godel/test:
-          name: integration-alpine-go-curr
+          name: integration-go-prev
           tags: integration
-          executor:
-            name: alpine-go
-            version: *go-version-current
-          <<: *all-tags-filter
-      - godel/test:
-          name: integration-alpine-go-prev
-          tags: integration
-          executor:
-            name: alpine-go
-            version: *go-version-prev
+          executor: circleci-go
+          # set this to 1 once current Go version is set to 1.17
+          go-prev-version: 0
+          <<: *homepath
+          <<: *gopath
           <<: *all-tags-filter
       - godel/verify:
           name: pkg-products-verify-test
-          checkout-path: /go/src/github.com/palantir/godel
+          checkout-path: /home/circleci/go/src/github.com/palantir/godel/pkg/products/v2
           include-tests: true
           executor:
-            name: go/golang
-            version: *go-version-current
-            owner-repo: palantir/godel/pkg/products/v2
+            name: circleci-go
+            working_directory: /home/circleci/go/src/github.com/palantir/godel/pkg/products/v2
+          <<: *homepath
+          <<: *gopath
           <<: *all-tags-filter
       - godel/dist:
           name: dist
-          <<: *executor
+          executor: circleci-go
+          <<: *homepath
+          <<: *gopath
           <<: *all-tags-filter
       - wiki:
           requires: *requires_products
