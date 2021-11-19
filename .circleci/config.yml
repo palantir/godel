@@ -53,6 +53,7 @@ jobs:
         default: ""
     executor: << parameters.executor >>
     steps:
+      - checkout
       - run: go version
       - run: mkdir -p "/tmp/test-results"
       - run: ./godelw test<<# parameters.tags >> --tags=<< parameters.tags >><</ parameters.tags >> --junit-output="$TESTS_DIR/$CIRCLE_PROJECT_REPONAME-tests.xml"<<# parameters.parallelism >> -- -p=<< parameters.parallelism >><</ parameters.parallelism >>
@@ -107,6 +108,7 @@ workflows:
           executor:
             name: alpine-go
             version: 1.17.3
+          working_directory: /go/src/github.com/palantir/godel
           <<: *all-tags-filter
       - godel-alpine-integration:
           name: integration-alpine-go-prev
@@ -114,6 +116,7 @@ workflows:
           executor:
             name: alpine-go
             version: 1.16.10
+          working_directory: /go/src/github.com/palantir/godel
           <<: *all-tags-filter
       - godel/verify:
           name: pkg-products-verify-test
