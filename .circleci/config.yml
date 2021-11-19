@@ -1,8 +1,8 @@
 version: 2.1
 
 orbs:
-  go: palantir/go@0.0.29
-  godel: palantir/godel@0.0.29
+  go: palantir/go@0.0.30
+  godel: palantir/godel@0.0.30
 
 homepath: &homepath
   homepath: /home/circleci
@@ -88,7 +88,7 @@ workflows:
           tags: integration
           executor:
             name: alpine-go
-          go-prev-version: 1
+          go-prev-version: 0
           homepath: /root
           gopath: /go
           <<: *all-tags-filter
