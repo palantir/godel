@@ -55,6 +55,7 @@ jobs:
     steps:
       - checkout
       - run: go version
+      - run: pwd && ls -la
       - run: mkdir -p "/tmp/test-results"
       - run: ./godelw test<<# parameters.tags >> --tags=<< parameters.tags >><</ parameters.tags >> --junit-output="$TESTS_DIR/$CIRCLE_PROJECT_REPONAME-tests.xml"<<# parameters.parallelism >> -- -p=<< parameters.parallelism >><</ parameters.parallelism >>
       - store_test_results:
