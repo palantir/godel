@@ -25,7 +25,9 @@ jobs:
     executor: circleci-go
     steps:
       - checkout
-      - godel/setup
+      - godel/setup:
+          <<: *homepath
+          <<: *gopath
       - run: ./godelw github-wiki --docs-dir docs --repository=git@github.com:palantir/godel.wiki.git
 
 all-tags-filter: &all-tags-filter
