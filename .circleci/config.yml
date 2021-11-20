@@ -78,11 +78,12 @@ workflows:
           <<: *all-tags-filter
       - godel/verify:
           name: pkg-products-verify-test
-          checkout-path: /home/circleci/go/src/github.com/palantir/godel/pkg/products/v2
+          checkout-path: /home/circleci/go/src/github.com/palantir/godel
           include-tests: true
           executor:
             name: circleci-go
             working_directory: /home/circleci/go/src/github.com/palantir/godel/pkg/products/v2
+          go-version-file: ../../../.palantir/go-version
           <<: *homepath
           <<: *gopath
           <<: *all-tags-filter
