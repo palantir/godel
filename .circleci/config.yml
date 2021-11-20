@@ -82,7 +82,7 @@ workflows:
           executor:
             name: circleci-go
             working_directory: /home/circleci/go/src/github.com/palantir/godel/pkg/products/v2
-          go-version-file: /home/circleci/go/src/github.com/palantir/godel/.palantir/go-version
+          go-version-file: ../../../.palantir/go-version
           <<: *homepath
           <<: *gopath
           <<: *all-tags-filter
