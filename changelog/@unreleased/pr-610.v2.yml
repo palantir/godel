@@ -1,0 +1,6 @@
+type: fix
+fix:
+  description: Updates github.com/ulikunitz/xz module to v0.5.10 to address security
+    vulnerability flagged by GitHub.
+  links:
+  - https://github.com/palantir/godel/pull/610
