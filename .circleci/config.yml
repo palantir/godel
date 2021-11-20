@@ -78,6 +78,7 @@ workflows:
           <<: *all-tags-filter
       - godel/verify:
           name: pkg-products-verify-test
+          checkout-path: /home/circleci/go/src/github.com/palantir/godel
           include-tests: true
           executor:
             name: circleci-go
