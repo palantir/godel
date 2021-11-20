@@ -72,8 +72,7 @@ workflows:
           name: integration-go-prev
           tags: integration
           executor: circleci-go
-          # set this to 1 once current Go version is set to 1.17
-          go-prev-version: 0
+          go-prev-version: 1
           <<: *homepath
           <<: *gopath
           <<: *all-tags-filter
