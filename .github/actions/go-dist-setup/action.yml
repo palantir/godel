@@ -1,0 +1,67 @@
+name: Set up Go distribution
+description: |
+  Sets up the Go distribution by creating a symlink from /usr/local/go to the Go distribution and updating the PATH
+  accordingly. Downloads the Go distribution of the specified version if it does not already exist.
+inputs:
+  gopath:
+    description: |
+      The $GOPATH value.
+    required: true
+  go-version:
+    description: |
+      The version of the Go distribution to download and set up.
+    required: true
+  go-dist-download-url-prefix:
+    description: |
+      Prefix of the download URL that should be used to download the Golang distribution. The prefix is joined with
+      the desired Go distribution file (for example, "go1.16.5.linux-amd64.tar.gz").
+    required: false
+    default: "https://golang.org/dl/"
+  go-dist-os-arch:
+    description: |
+      The os-arch value for the distribution to be downloaded.
+    required: false
+    default: "linux-amd64"
+runs:
+  using: "composite"
+  steps:
+    - id: download-go-dist
+      shell: bash
+      run: |
+        PARAM_GOPATH="${{ inputs.gopath }}"
+        PARAM_GO_VERSION="${{ inputs.go-version }}"
+        PARAM_GO_DIST_DOWNLOAD_URL_PREFIX="${{ inputs.go-dist-download-url-prefix }}"
+        PARAM_GO_DIST_OS_ARCH="${{ inputs.go-dist-os-arch }}"
+        # set Go version
+        GO_VERSION="${PARAM_GO_VERSION}"
+        GO_DIST_DIR="${PARAM_GOPATH}/go-dists/${GO_VERSION}"
+        # desired distribution already exists: nothing to do
+        if [ -d "${GO_DIST_DIR}" ]; then
+          echo "${GO_DIST_DIR} exists: nothing to do"
+          exit
+        fi
+        # Desired distribution does not already exist and is not in cache: download and ensure that it exists in
+        # location that will be cached and in expected location
+        echo "${GO_DIST_DIR} does not exist"
+        echo "Downloading golang distribution from ${PARAM_GO_DIST_DOWNLOAD_URL_PREFIX}${GO_VERSION}.${PARAM_GO_DIST_OS_ARCH}.tar.gz..." && wget -q "${PARAM_GO_DIST_DOWNLOAD_URL_PREFIX}${GO_VERSION}.${PARAM_GO_DIST_OS_ARCH}.tar.gz"
+        echo "Expanding archive" && tar xf "${GO_VERSION}.${PARAM_GO_DIST_OS_ARCH}.tar.gz"
+        echo "Removing archive" && rm "${GO_VERSION}.${PARAM_GO_DIST_OS_ARCH}.tar.gz"
+        echo "Creating ${PARAM_GOPATH}/go-dists directory" && mkdir -p "${PARAM_GOPATH}/go-dists"
+        echo "Moving expanded Go distribution to ${GO_DIST_DIR}" && mv go "${GO_DIST_DIR}"
+        echo "Setting working directory to ${PARAM_GOPATH} to ensure that 'install std' command doesn't use local go.mod file" && cd "${PARAM_GOPATH}"
+        echo "Running go install std for linux-amd64" && GOOS=linux GOARCH=amd64 "${GO_DIST_DIR}/bin/go" install std
+        echo "Running go install std for linux-arm64" && GOOS=linux GOARCH=arm64 "${GO_DIST_DIR}/bin/go" install std
+        echo "Running go install std for darwin-amd64" && GOOS=darwin GOARCH=amd64 "${GO_DIST_DIR}/bin/go" install std
+        echo "Running go install std for darwin-arm64" && GOOS=darwin GOARCH=arm64 "${GO_DIST_DIR}/bin/go" install std
+        echo "Running go install std for windows-amd64" && GOOS=windows GOARCH=amd64 "${GO_DIST_DIR}/bin/go" install std
+    - id: set-up-symlinks
+      shell: bash
+      run: |
+        which go
+        sudo rm -f /usr/bin/go
+        sudo rm -f /usr/local/bin/go
+        sudo ln -s "${{ inputs.gopath }}/go-dists/${{ inputs.go-version }}" /usr/local/go
+        echo "/usr/local/go/bin" >> $GITHUB_PATH
+    - id: go-version
+      shell: bash
+      run: go version
