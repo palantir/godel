@@ -8,9 +8,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      #####################
+      # START Go dist setup
+      #####################
+      - id: set-gopath
+        run: echo "::set-output name=GOPATH::$(go env GOPATH)"
+      - id: go-dist-info
+        uses: ./.github/actions/go-dist-info
         with:
-          go-version: '1.16.2'
+          gopath: ${{ steps.set-gopath.outputs.gopath }}
+      - id: restore-go-dist-from-cache
+        if: steps.go-dist-info.outputs.go-dist-exists != 'true'
+        uses: actions/cache@v2
+        with:
+          path: |
+            ${{ steps.set-gopath.outputs.gopath }}/go-dists/${{ steps.go-dist-info.outputs.go-dist-version }}
+          key: ${{ runner.os }}-${{ steps.go-dist-info.outputs.go-dist-version }}
+      - id: go-dist-setup
+        uses: ./.github/actions/go-dist-setup
+        with:
+          gopath: ${{ steps.set-gopath.outputs.gopath }}
+          go-version: ${{ steps.go-dist-info.outputs.go-dist-version }}
+      #####################
+      # END Go dist setup
+      #####################
       - uses: actions/cache@v2
         with:
           path: |
