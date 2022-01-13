@@ -1,0 +1,7 @@
+type: fix
+fix:
+  description: Changes the behavior of the `upgrade-config` command such that, if
+    the configuration for a plugin does not exist, it is ignored and treated as a
+    success rather than a failure.
+  links:
+  - https://github.com/palantir/godel/pull/619

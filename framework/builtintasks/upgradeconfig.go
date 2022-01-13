@@ -147,6 +147,10 @@ func upgradeConfigFile(task godellauncher.UpgradeConfigTask, global godellaunche
 	configFile := filepath.Join(configDir, task.ConfigFile)
 	origConfigBytes, err := os.ReadFile(configFile)
 	if err != nil {
+		if os.IsNotExist(err) {
+			// if configuration file does not exist, skip
+			return false, nil, nil
+		}
 		return false, nil, errors.Wrapf(err, "failed to read config file")
 	}
 	upgradedConfigBytes, err := task.Run(origConfigBytes, global, stdout)
