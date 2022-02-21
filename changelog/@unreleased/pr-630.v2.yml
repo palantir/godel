@@ -1,0 +1,5 @@
+type: fix
+fix:
+  description: fix compute_sha256 in godelw script if openssl3 is on the path
+  links:
+  - https://github.com/palantir/godel/pull/630
