@@ -185,23 +185,23 @@ var defaultPluginsConfig = config.PluginsConfig{
 				},
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-unconvert:unconvert-asset:1.17.0",
+						ID: "com.palantir.godel-okgo-asset-unconvert:unconvert-asset:1.18.0",
 						Checksums: map[string]string{
-							"darwin-amd64": "1f6b6491bdc605de51fd93f5b04019786811d2832ee72703c0a5c6f39d525837",
-							"darwin-arm64": "9721ca1c07d1784b6dc9c576fbb3ec3f65834b74ffbe7e362f98f9707ba4fe5b",
-							"linux-amd64":  "d5b09accfae6acee4c9582ca66d7a2034ade01f0fd0e243c5f106c572db4a31a",
-							"linux-arm64":  "f7b8e22cdd8bbcf920d647e34831ad24d7cbaa6838b65605f173ec06672ec407",
+							"darwin-amd64": "2edd22aa8667d1d3f84495494428bf4b8a27fb413ad50012d64bcaa579f1a215",
+							"darwin-arm64": "906e5256343d64ef62048ae219a720268cf5a2470a4569e70a82e32e7f209fb4",
+							"linux-amd64":  "364cde5f4910dc5e1aa76c200836cc34c3a8a662b26b2c2b518c98a9ac526e5f",
+							"linux-arm64":  "8ec20673ff49c20f55c600bc1fd45a9dc1297d67907387c53def48ec5831d1e2",
 						},
 					}),
 				},
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-varcheck:varcheck-asset:1.16.0",
+						ID: "com.palantir.godel-okgo-asset-varcheck:varcheck-asset:1.17.0",
 						Checksums: map[string]string{
-							"darwin-amd64": "75b39d2f59710b58a1dcb3cebfe2bc95ed24bc8f4b624bb1e3b3bdda07ca29a9",
-							"darwin-arm64": "1459bac1f85898e42adf1e3dfc6785364eedcca3bd770430ab25ba83e720d313",
-							"linux-amd64":  "97574cd43d0c859e02c1cbdacd31f794d601ae3608cd3dfb71e49d0f1670c96e",
-							"linux-arm64":  "84d7b1e761128311ee1d82fe073a587806e82953ba30e535b2bcd19a58ed0afa",
+							"darwin-amd64": "56af3e6f97ddf9d8e387705e934974ccd0dfae494a5611aad5dc137c9e43df63",
+							"darwin-arm64": "e47692e728c4fa1c13f8a65e41707d24eef3e5ca04c25b23ab4b0a18c750b260",
+							"linux-amd64":  "8be2fbff924ed63b29fb314d5b972ee1e54f26495e576ada88a910578957bb7f",
+							"linux-arm64":  "aedce11e14549a68a3c618b0c6463611695bcaac32695a032fd244f8b82d3ea6",
 						},
 					}),
 				},
