@@ -33,12 +33,12 @@ var defaultPluginsConfig = config.PluginsConfig{
 		{
 			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.distgo:dist-plugin:1.43.0",
+					ID: "com.palantir.distgo:dist-plugin:1.44.0",
 					Checksums: map[string]string{
-						"darwin-amd64": "e8f735923d427fde81f8ad93d146bcf10848cb35a53e8d6ddf900b03457a44d0",
-						"darwin-arm64": "b9216823a45f83bb6410a473771d1bfc3a9d03416286bd44b9bbfa9db3239af8",
-						"linux-amd64":  "1c694b8f8106c9fcc6fe9685a8710cae7e75168ffc94533e8e8a2739bb3a3355",
-						"linux-arm64":  "cc85fc303ef97462f230ba10825d8e959b9a66b2fb9391ce10e0b4d9a5b436d0",
+						"darwin-amd64": "b23bf12945521e17e60780c37cca6d2d936a993eececf564c8cb38ebfc392b64",
+						"darwin-arm64": "3420d96e4a2a9a285136099513048d9a4f8f28a3355390cfb4969eb71797f4ba",
+						"linux-amd64":  "7c8b8061ccc39e80b805c2b27d0b458ab25b3d2f171d9d3493fa9cae2835dbd1",
+						"linux-arm64":  "4592fb2a4693dfb6f3bb850a90bfe31b7e81f84a062bd2f6d4d3cf668e10460b",
 					},
 				}),
 			}),
@@ -72,12 +72,12 @@ var defaultPluginsConfig = config.PluginsConfig{
 		{
 			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.godel-goland-plugin:goland-plugin:1.16.0",
+					ID: "com.palantir.godel-goland-plugin:goland-plugin:1.17.0",
 					Checksums: map[string]string{
-						"darwin-amd64": "9696f509b048640d0ad053016e819a429cf0183df9c1b0328a10d089d3594cca",
-						"darwin-arm64": "ce1b094f4e058cb17f9603e9837f8a9044c5f9a6d64e19448d159f4912717b78",
-						"linux-amd64":  "b9666db3e4d6dccfcb0935c24477f2e9b6d5cb9cd3fa3cfdd0e878d6a0d30ac2",
-						"linux-arm64":  "0d37df0e91450b9d6ebc2007c914af0af4dcaa622c022bd885a32d5537e9c774",
+						"darwin-amd64": "7febedb3d7c3d7e5b8afbd7bd1416c106dd8c4533f830fe4283505db9e5dea4f",
+						"darwin-arm64": "a3179a7263c18ee15bfa678f7e382b82e4343806ace97460e62222309a8f4a22",
+						"linux-amd64":  "17c01fb1d487968793d61df23c48e16cb2c2f08502b44b55d2ce4fcbad441381",
+						"linux-arm64":  "cdfe3e1313ff6dda98f52c5191297852dfb2f31e5c2d8ca7909fa6fa786a14d3",
 					},
 				}),
 			}),
