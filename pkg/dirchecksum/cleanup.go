@@ -27,10 +27,10 @@ import (
 // returned function to ensure that the signal listener registered by this function will be unregistered if the cleanup
 // function is called normally in a defer. Example usage:
 //
-//   fn := cleanup.MustDefer(func() {
-//   	_ = os.Remove(tmpFile)
-//   })
-//   defer fn()
+//	fn := cleanup.MustDefer(func() {
+//		_ = os.Remove(tmpFile)
+//	})
+//	defer fn()
 //
 // Note that the "cleanup.MustDefer" call must occur before the defer -- if the call is inlined as part of the defer,
 // then "MustDefer" will not run until the defer action is run, which will fail to properly register the signal

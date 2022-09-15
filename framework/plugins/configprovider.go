@@ -36,9 +36,9 @@ import (
 // LoadProvidedConfigurations returns all of the godellauncher.GodelConfig configurations provided by the specified
 // params. Does the following:
 //
-// * Resolves all of the configuration providers defined in the provided params into the gödel home configs and
-//   downloads directories.
-// * Unmarshals all of the resolved configurations into godellauncher.TasksConfig structs.
+//   - Resolves all of the configuration providers defined in the provided params into the gödel home configs and
+//     downloads directories.
+//   - Unmarshals all of the resolved configurations into godellauncher.TasksConfig structs.
 //
 // Returns all of the unmarshaled configurations.
 func LoadProvidedConfigurations(taskConfigProvidersParam godellauncher.TasksConfigProvidersParam, stdout io.Writer) ([]config.TasksConfig, error) {
@@ -58,16 +58,16 @@ func LoadProvidedConfigurations(taskConfigProvidersParam godellauncher.TasksConf
 // For each configuration provider defined in the parameters:
 //
 // * If a file does not exist in the expected location in the configurations directory, resolve it
-//   * If the configuration provider specifies a custom resolver, use it to resolve the configuration YML to the
+//   - If the configuration provider specifies a custom resolver, use it to resolve the configuration YML to the
 //     expected location in the configurations directory
-//   * Otherwise, if default resolvers are specified in the parameters, try to resolve the configuration YML to the
+//   - Otherwise, if default resolvers are specified in the parameters, try to resolve the configuration YML to the
 //     expected location from each of them in order
-//   * If the configuration cannot be resolved, return an error
-// * If the configuration specifies a checksum, verify that the checksum of the YML in the configurations directory
-//   matches the specified checksum
-// * Unmarshal the downloaded YML as godellauncher.TasksConfig
-//   * If the unmarshal fails, return an error
-//   * If the TaskConfig contains a plugin configuration that specifies an "override" parameter, return an error
+//   - If the configuration cannot be resolved, return an error
+//   - If the configuration specifies a checksum, verify that the checksum of the YML in the configurations directory
+//     matches the specified checksum
+//   - Unmarshal the downloaded YML as godellauncher.TasksConfig
+//   - If the unmarshal fails, return an error
+//   - If the TaskConfig contains a plugin configuration that specifies an "override" parameter, return an error
 //     (configuration providers are not allowed to set overrides)
 func resolveConfigProviders(configsDir, downloadsDir string, taskConfigProvidersParam godellauncher.TasksConfigProvidersParam, stdout io.Writer) ([]config.TasksConfig, error) {
 	var configs []config.TasksConfig

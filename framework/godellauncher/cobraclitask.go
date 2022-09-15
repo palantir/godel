@@ -26,9 +26,9 @@ import (
 
 // CobraCLITask creates a new Task that runs the provided *cobra.Command. The runner for the task does the following:
 //
-// * Creates a "dummy" root cobra.Command with "godel" as the command name
-// * Adds the provided command as a subcommand of the dummy root
-// * Executes the root command with the following "os.Args":
+//   - Creates a "dummy" root cobra.Command with "godel" as the command name
+//   - Adds the provided command as a subcommand of the dummy root
+//   - Executes the root command with the following "os.Args":
 //     [executable] [task] [task args...]
 //
 // The second argument is an optional pointer. If the pointer is non-nil, then the value of the provided pointer will be
