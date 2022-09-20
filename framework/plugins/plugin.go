@@ -39,11 +39,11 @@ type pluginInfoWithAssets struct {
 
 // LoadPluginsTasks returns all of the tasks defined by the plugins in the specified parameters. Does the following:
 //
-// * Resolves all of the plugins defined in the provided params for the runtime environment's OS/Architecture into the
-//   gödel home plugins and downloads directories.
-// * Verifies that all of the resolved plugins are valid and compatible with each other (for example, ensures that
-//   multiple plugins do not provide the same task).
-// * Creates runnable godellauncher.Task tasks for all of the plugins.
+//   - Resolves all of the plugins defined in the provided params for the runtime environment's OS/Architecture into the
+//     gödel home plugins and downloads directories.
+//   - Verifies that all of the resolved plugins are valid and compatible with each other (for example, ensures that
+//     multiple plugins do not provide the same task).
+//   - Creates runnable godellauncher.Task tasks for all of the plugins.
 //
 // Returns all of the tasks provided by the plugins in the provided parameters.
 func LoadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer) ([]godellauncher.Task, []godellauncher.UpgradeConfigTask, error) {
@@ -96,19 +96,19 @@ func LoadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer)
 // For each plugin defined in the parameters:
 //
 // * If a file does not exist in the expected location in the plugins directory, resolve it
-//   * If the configuration specifies a custom resolver for the plugin, use it to resolve the plugin TGZ into the
+//   - If the configuration specifies a custom resolver for the plugin, use it to resolve the plugin TGZ into the
 //     downloads directory
-//   * Otherwise, if default resolvers are specified in the parameters, try to resolve the plugin TGZ into the
+//   - Otherwise, if default resolvers are specified in the parameters, try to resolve the plugin TGZ into the
 //     downloads directory from each of them in order
-//   * If the plugin TGZ cannot be resolved, return an error
-//   * If the plugin TGZ was resolved, unpack the content of the TGZ (which must contain a single file) into the
+//   - If the plugin TGZ cannot be resolved, return an error
+//   - If the plugin TGZ was resolved, unpack the content of the TGZ (which must contain a single file) into the
 //     expected location in the plugins directory
-// * If the configuration specifies a checksum for the plugin and the specified osArch, verify that the checksum of
-//   the plugin in the plugins directory matches the specified checksum
-// * Invoke the plugin info command (specified by the InfoCommandName constant) on the plugin and parse the output
-//   as the plugin information
-// * If the plugin specifies assets, resolve all of the assets
-//   * Asset resolution uses a process that is analogous to plugin resolution, but performs it in the assets directory
+//   - If the configuration specifies a checksum for the plugin and the specified osArch, verify that the checksum of
+//     the plugin in the plugins directory matches the specified checksum
+//   - Invoke the plugin info command (specified by the InfoCommandName constant) on the plugin and parse the output
+//     as the plugin information
+//   - If the plugin specifies assets, resolve all of the assets
+//   - Asset resolution uses a process that is analogous to plugin resolution, but performs it in the assets directory
 func resolvePlugins(pluginsDir, assetsDir, downloadsDir string, osArch osarch.OSArch, pluginsParam godellauncher.PluginsParam, stdout io.Writer) (map[artifactresolver.Locator]pluginInfoWithAssets, error) {
 	// lock global resolver file while performing resolution
 	pluginResolverLockFilePath := filepath.Join(pluginsDir, "godel-resolver.lock")
@@ -172,9 +172,9 @@ func resolvePlugins(pluginsDir, assetsDir, downloadsDir string, osArch osarch.OS
 }
 
 // Verifies that the plugins in the provided map are compatible with one another. Specifically, ensures that:
-//   * There is at most 1 version of a given plugin (a locator with a given {group, product} pair)
-//   * There are no conflicts between tasks provided by the plugins
-//   * There are no 2 plugins that use a configuration file that have the same plugin name
+//   - There is at most 1 version of a given plugin (a locator with a given {group, product} pair)
+//   - There are no conflicts between tasks provided by the plugins
+//   - There are no 2 plugins that use a configuration file that have the same plugin name
 func verifyPluginCompatibility(plugins map[artifactresolver.Locator]pluginInfoWithAssets) error {
 	// map from a plugin locator to the locators to all of the plugins that they conflict with and the error that
 	// describes the conflict.
