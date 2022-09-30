@@ -18,19 +18,19 @@ import (
 // useful to use for cleanup tasks that would typically be deferred and which you want to run even if the program is
 // terminated or cancelled. The following is a common usage pattern:
 //
-//   cleanupCtx, cancel := signals.ContextWithShutdown(context.Background())
-//   cleanupDone := make(chan struct{})
-//   defer func() {
-//   	cancel()
-//   	<-cleanupDone
-//   }()
-//   go func() {
-//   	select {
-//   	case <-cleanupCtx.Done():
-//   		// perform cleanup action
-//   	}
-//   	cleanupDone <- struct{}{}
-//   }()
+//	cleanupCtx, cancel := signals.ContextWithShutdown(context.Background())
+//	cleanupDone := make(chan struct{})
+//	defer func() {
+//		cancel()
+//		<-cleanupDone
+//	}()
+//	go func() {
+//		select {
+//		case <-cleanupCtx.Done():
+//			// perform cleanup action
+//		}
+//		cleanupDone <- struct{}{}
+//	}()
 func ContextWithShutdown(ctx context.Context) (context.Context, context.CancelFunc) {
 	return CancelOnSignalsContext(ctx, syscall.SIGTERM, syscall.SIGINT)
 }
