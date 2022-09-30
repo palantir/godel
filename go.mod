@@ -10,10 +10,10 @@ require (
 	github.com/nmiyake/pkg/gofiles v1.2.0
 	github.com/palantir/distgo/pkg/git v1.0.0
 	github.com/palantir/godel/pkg/products/v2 v2.0.0
-	github.com/palantir/pkg/cobracli v1.1.0
-	github.com/palantir/pkg/gittest v1.0.1
-	github.com/palantir/pkg/matcher v1.1.0
-	github.com/palantir/pkg/pkgpath v1.1.0
+	github.com/palantir/pkg/cobracli v1.2.0
+	github.com/palantir/pkg/gittest v1.1.0
+	github.com/palantir/pkg/matcher v1.2.0
+	github.com/palantir/pkg/pkgpath v1.2.0
 	github.com/palantir/pkg/signals v1.1.0
 	github.com/palantir/pkg/specdir v1.2.0
 	github.com/pkg/errors v0.8.1

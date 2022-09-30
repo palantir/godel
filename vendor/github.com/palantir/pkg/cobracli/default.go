@@ -39,15 +39,15 @@ func ExecuteWithDebugVarAndDefaultParams(rootCmd *cobra.Command, debugVar *bool,
 // DefaultParams returns a slice of Params that configures Cobra CLI execution with specific opinionated default
 // behavior:
 //
-// * Sets SilenceErrors and SilenceUsage to true, which disables Cobra's built-in error and usage behavior. This
-//   prevents the behavior where usage is printed on any error returned by the command.
-// * Registers a custom flag usage error handler that appends Cobra's command usage string to the errors encountered
-//   while parsing flags. This makes it such that errors that occur due to invalid flags do print the usage.
-// * Registers an error printer that prints top-level errors as "Error: <error.Error()>" unless <error.Error()> is the
-//   empty string, in which case no error is printed. If the "debugVar" pointer is non-nil and its underlying value is
-//   true, then <error.Error()> is printed as a full verbose stack trace if it is a pkg/errors error. This printer is
-//   also configured to print the usage output for a command if the command returns an error that indicates that a
-//   required flag was not provided.
+//   - Sets SilenceErrors and SilenceUsage to true, which disables Cobra's built-in error and usage behavior. This
+//     prevents the behavior where usage is printed on any error returned by the command.
+//   - Registers a custom flag usage error handler that appends Cobra's command usage string to the errors encountered
+//     while parsing flags. This makes it such that errors that occur due to invalid flags do print the usage.
+//   - Registers an error printer that prints top-level errors as "Error: <error.Error()>" unless <error.Error()> is the
+//     empty string, in which case no error is printed. If the "debugVar" pointer is non-nil and its underlying value is
+//     true, then <error.Error()> is printed as a full verbose stack trace if it is a pkg/errors error. This printer is
+//     also configured to print the usage output for a command if the command returns an error that indicates that a
+//     required flag was not provided.
 func DefaultParams(debugVar *bool) []Param {
 	return []Param{
 		// silence default error and usage printing provided by cobra CLI
