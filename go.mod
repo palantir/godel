@@ -18,7 +18,7 @@ require (
 	github.com/palantir/pkg/specdir v1.2.0
 	github.com/pkg/errors v0.8.1
 	github.com/rogpeppe/go-internal v1.7.0
-	github.com/spf13/cobra v1.5.0
+	github.com/spf13/cobra v1.6.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.0
 	github.com/termie/go-shutil v0.0.0-20140729215957-bcacb06fecae
@@ -33,7 +33,7 @@ require (
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/golang/gddo v0.0.0-20190419222130-af0f2af80721 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/klauspost/compress v1.9.2 // indirect
 	github.com/klauspost/pgzip v1.2.1 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
