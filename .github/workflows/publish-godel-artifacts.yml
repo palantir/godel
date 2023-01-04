@@ -1,8 +1,8 @@
 name: publish-godel-artifacts
 on:
-  push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+**'
+  release:
+    types:
+      - created
 jobs:
   run-godel-publish:
     runs-on: ubuntu-latest
