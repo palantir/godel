@@ -1,0 +1,5 @@
+type: fix
+fix:
+  description: Fixes checksums in the godelw file.
+  links:
+  - https://github.com/palantir/godel/pull/695
