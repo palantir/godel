@@ -6,6 +6,7 @@ package gittest
 
 import (
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"runtime/debug"
 	"testing"
@@ -45,6 +46,7 @@ func Merge(t *testing.T, gitDir, branch string) {
 func RunGitCommand(t *testing.T, gitDir string, args ...string) string {
 	cmd := exec.Command("git", args...)
 	cmd.Dir = gitDir
+	cmd.Env = append(os.Environ(), "GIT_CONFIG_SYSTEM=''", "GIT_CONFIG_GLOBAL=''")
 	output, err := cmd.CombinedOutput()
 	requireNoError(t, err, string(output))
 	return string(output)
