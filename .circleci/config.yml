@@ -17,7 +17,7 @@ executors:
         type: string
         default: /home/circleci/go/src/github.com/palantir/godel
     docker:
-      - image: cimg/go:1.16-browsers
+      - image: cimg/go:1.18-browsers
     working_directory: << parameters.working_directory >>
 
 jobs:
