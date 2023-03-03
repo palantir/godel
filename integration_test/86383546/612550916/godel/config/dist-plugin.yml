@@ -1,0 +1,8 @@
+
+products:
+  foo:
+    build:
+      main-pkg: ./foo
+  bar:
+    build:
+      main-pkg: ./bar
