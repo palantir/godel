@@ -1,0 +1,5 @@
+type: fix
+fix:
+  description: Downgrade distgo plugin to 1.49.0
+  links:
+  - https://github.com/palantir/godel/pull/717
