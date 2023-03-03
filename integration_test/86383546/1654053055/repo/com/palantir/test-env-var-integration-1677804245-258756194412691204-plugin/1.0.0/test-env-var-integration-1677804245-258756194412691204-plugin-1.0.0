@@ -1,7 +1,0 @@
-#!/bin/sh
-if [ "$1" = "_godelPluginInfo" ]; then
-    echo '{"pluginSchemaVersion":"2","group":"com.palantir","product":"test-env-var-integration-1677804245-258756194412691204-plugin","version":"1.0.0","usesConfig":false,"tasks":[{"name":"env-var","description":"Prints value of the GODEL_TEST_ENV_VAR variable","command":["env-var"],"globalFlagOptions":null,"verifyOptions":null}],"upgradeTask":null}'
-    exit 0
-fi
-
-echo ${GODEL_TEST_ENV_VAR}

@@ -1,9 +1,0 @@
-exclude:
-  names:
-    - "\\..+"
-    - "vendor"
-  paths:
-    - "godel"
-
-environment:
-  MY_ENV_VAR: "FOO"
