@@ -77,7 +77,7 @@ func TestFoo(t *testing.T) {
 		args []string
 		want string
 	}{
-		{want: `(?s).+Failed tasks:\n\tformat --verify\n\tlicense --verify\n\tcheck\n\ttest`},
+		{want: `(?s).+Failed tasks:\n\tformat --verify\n\tmod --verify\n\tlicense --verify\n\tcheck\n\ttest`},
 		{args: []string{"--skip-format"}, want: `(?s).+Failed tasks:\n\tlicense --verify\n\tcheck\n\ttest`},
 		{args: []string{"--skip-check"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tlicense --verify\n\ttest`},
 		{args: []string{"--skip-license"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tcheck\n\ttest`},
@@ -280,7 +280,7 @@ func TestFooIntegration(t *testing.T) {}
 	require.NoError(t, err)
 
 	// run verify with "none" tags. Should include output for main package but not for integration_test package.
-	cmd := exec.Command("./godelw", "verify", "--apply=false", "--tags=none")
+	cmd := exec.Command("./godelw", "verify", "--skip-mod", "--apply=false", "--tags=none")
 	cmd.Dir = testProjectDir
 	output, err := cmd.CombinedOutput()
 	outputStr := string(output)
