@@ -289,7 +289,7 @@ func TestFooIntegration(t *testing.T) {}
 	assert.NotRegexp(t, fmt.Sprintf(`(?s).+%s\s+[0-9.]+s.+`, files["integration_tests/integration_test.go"].ImportPath), outputStr)
 
 	// run verify with "all" tags. Should include output for integration_test package but not for main package.
-	cmd = exec.Command("./godelw", "verify", "--apply=false", "--tags=all")
+	cmd = exec.Command("./godelw", "verify", "--skip-mod", "--apply=false", "--tags=all")
 	cmd.Dir = testProjectDir
 	output, err = cmd.CombinedOutput()
 	outputStr = string(output)
@@ -298,7 +298,7 @@ func TestFooIntegration(t *testing.T) {}
 	assert.NotRegexp(t, fmt.Sprintf(`(?s).+%s\s+[0-9.]+s.+`, files["main.go"].ImportPath), outputStr)
 
 	// run verify in regular mode. Should include output for all tests.
-	cmd = exec.Command("./godelw", "verify", "--apply=false")
+	cmd = exec.Command("./godelw", "verify", "--skip-mod", "--apply=false")
 	cmd.Dir = testProjectDir
 	output, err = cmd.CombinedOutput()
 	outputStr = string(output)
