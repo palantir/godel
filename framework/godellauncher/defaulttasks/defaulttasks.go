@@ -33,12 +33,12 @@ var defaultPluginsConfig = config.PluginsConfig{
 		{
 			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.distgo:dist-plugin:1.62.0",
+					ID: "com.palantir.distgo:dist-plugin:1.63.0",
 					Checksums: map[string]string{
-						"darwin-amd64": "d54d3bf32941dddf5150e8a86e52bbcc84e3254633d8736c62336189f5ed74a7",
-						"darwin-arm64": "835c2dc36cc364c323c3df10ef1cea545b2e4248721302afda927fdea1eef260",
-						"linux-amd64":  "cffbd63d4ce66f15a40220f58b85c0acf0aceca91d8c2a93088fc1b9611c447f",
-						"linux-arm64":  "dcabb1eed25438a730c2ba2a0585b4bd248b8c97c9a3b535f48a43b28388fc61",
+						"darwin-amd64": "10f0802ab2cfe7d2a44895bc1ae75a8b215fd7e7bbff8795dd4ddec408c5e11f",
+						"darwin-arm64": "ea6b15994e2d26d988eda7ad270e677e34b4fe3b04e49138d9f7d77068387121",
+						"linux-amd64":  "c43d28370ba090283adc3bba62acffb96b17232dc3aea970ea74a22b7b509bb3",
+						"linux-arm64":  "07168d6cad6bdd19a64f28a521effe48488d2a70adb11a72a1cdbe11734fe87a",
 					},
 				}),
 			}),
@@ -46,162 +46,24 @@ var defaultPluginsConfig = config.PluginsConfig{
 		{
 			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.godel-format-plugin:format-plugin:1.36.0",
+					ID: "com.palantir.godel-format-plugin:format-plugin:1.37.0",
 					Checksums: map[string]string{
-						"darwin-amd64": "6c6166daeafa129f75cb96150c7b91f652439b01d2fe94409c68cd0cc8abd15c",
-						"darwin-arm64": "57e7c2b0c63434894d3da7b7a626508cc91b1f52db89bd36ba74f29a96865be5",
-						"linux-amd64":  "ebff909f9e2cf450337487f6101945fd331569d86968eb139c42c1f479408815",
-						"linux-arm64":  "5e9673a0117b80de37d09c653071d1436e545354a10a7456d7537c4205873eb2",
-					},
-				}),
-			}),
-			Assets: config.ToLocatorWithResolverConfigs([]config.LocatorWithResolverConfig{
-				{
-					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-format-asset-ptimports:ptimports-asset:1.35.0",
-						Checksums: map[string]string{
-							"darwin-amd64": "02b4df7534cc3b7357705cc62551fa11762e0ae2f3a0dc3bc3becca71180d898",
-							"darwin-arm64": "329d968018a302f7b25ecedae51ecfe5f116990fae7c9b329c32bf6d17ffec9d",
-							"linux-amd64":  "cfe76d907dbdd067820d00dc95d3336b2e22446f1bfaf817919c5342a84197a8",
-							"linux-arm64":  "39cd502f0282bd5e1bafef79704bfbbf79e798f8a20988226a955298f2872bd1",
-						},
-					}),
-				},
-			}),
-		},
-		{
-			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
-				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.godel-goland-plugin:goland-plugin:1.32.0",
-					Checksums: map[string]string{
-						"darwin-amd64": "cb591dcfa23198c8c3ea0660ecbedd8cc09fb0c43e73c5940b8a73fc4228cce4",
-						"darwin-arm64": "269b069cc00e446e84f92c8dcae7e25734baf78c981ad4e636eb7135cf4c9e3d",
-						"linux-amd64":  "8ab9a21b1e209ffec930641f2e3f931d5143cc4bcd3735ab643859d9bcc93920",
-						"linux-arm64":  "9c895312a61ba937c58b0fae94bf31453e712393989e721593d01437c5555c52",
-					},
-				}),
-			}),
-		},
-		{
-			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
-				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.okgo:check-plugin:1.41.0",
-					Checksums: map[string]string{
-						"darwin-amd64": "f5fe94fd1ae450fb1db81f7849eb2a310c9f078ab8b0a00cbaab5fd76c4e3ce9",
-						"darwin-arm64": "2afad9e31824620fe6951b50681065584aeff571cbc093d8fe8ddbf237fe70c9",
-						"linux-amd64":  "182377cad7b730f4ffdc3a34d32eea72cbc4cae7209149314ccc19f27d401606",
-						"linux-arm64":  "96c84efddb2af682f69715362e5df3d413792a1b222d6e03acbfbf7311c25a23",
+						"darwin-amd64": "204408d8f28157c4f8c93b13d231c49bf4bf47104b09cb982042c0301be3e21a",
+						"darwin-arm64": "a3c4305dc39a7435155bf64367499c31fd6e0a8deea418f7c6a2d1ed5ff3841c",
+						"linux-amd64":  "7d58463864ad55e9bac03dacb4789170923d659ba1b1106dbf1bcc7773121c56",
+						"linux-arm64":  "a77041223851e454738664e91c81ff74ee217bd3de8991f30bfe7c6961ab112c",
 					},
 				}),
 			}),
 			Assets: config.ToLocatorWithResolverConfigs([]config.LocatorWithResolverConfig{
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-compiles:compiles-asset:1.40.0",
+						ID: "com.palantir.godel-format-asset-ptimports:ptimports-asset:1.36.0",
 						Checksums: map[string]string{
-							"darwin-amd64": "26d3e84750cf4888712f94085294d39eb2ff4ba26eb9ae196f2966611b064175",
-							"darwin-arm64": "140e42ecdce73b0ee34da126d8aea49c58086ba0441b1c4704266cbf89c4cf71",
-							"linux-amd64":  "627c5b8c51020094df9b8912212564788fabb466567aa5cfbd0892fe42a832b5",
-							"linux-arm64":  "d2a01ad09e53bab6c69a253fec91f6ecdd9a895df6273883379f4ab69939b9ed",
-						},
-					}),
-				},
-				{
-					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-deadcode:deadcode-asset:1.37.0",
-						Checksums: map[string]string{
-							"darwin-amd64": "8db3e1350025e3ffd6a5bee21219cc88e512b3cd9acb25d68db301b398afb036",
-							"darwin-arm64": "c4931fd33ef48bb7b85ee64a65a0dc3444955b790a653970b0c3fbfdb9d7da10",
-							"linux-amd64":  "aff4a16e7a3fa1c84c051f248f20be7ae59917298c13b1755763407d05cab9e0",
-							"linux-arm64":  "88ee6fd9ddf678616ec1fa3bc9c7ed328cfe1bbd99b028436e48b9381905969f",
-						},
-					}),
-				},
-				{
-					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-errcheck:errcheck-asset:1.38.0",
-						Checksums: map[string]string{
-							"darwin-amd64": "04600bce714e59ebbb68db4885654f37f4bb17f4ae2721d58a27173ba31d244f",
-							"darwin-arm64": "0f4c7756ea60912da7f824e1561e10c8cb8ad169bbc8ebb67db9f7b35e6fa4c1",
-							"linux-amd64":  "c47fbe54825e9616c44a71b59b20922cf0c64655c1c6735c50dd0955549b927a",
-							"linux-arm64":  "81aa2280321085665b62d1b68720f6d651bedcea4d046cc7e81b6509b1d0af05",
-						},
-					}),
-				},
-				{
-					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-golint:golint-asset:1.29.0",
-						Checksums: map[string]string{
-							"darwin-amd64": "9de0f221f92290735822c0ed7d8cd83f0fab1e7fd713cdb4c9f394d6ecfc7385",
-							"darwin-arm64": "0967dc54a3cc4ac57e4fcd958b562cca4dcae89bc74674761af86e05e7424093",
-							"linux-amd64":  "7987637f724be4384e18b1a923d2378df8ce8299b5739a0cf6fdc21f87472b5e",
-							"linux-arm64":  "12f421427aa92a1812b1341d7bc6757b526ba117410fcbba6ba872e67ee05ded",
-						},
-					}),
-				},
-				{
-					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-govet:govet-asset:1.33.0",
-						Checksums: map[string]string{
-							"darwin-amd64": "8c51ce914ec335c9da31a7694eedb51d5dc43ef7920539068572c32b368a78e8",
-							"darwin-arm64": "c10521ba9393ddecddbf4368383af859a7af1e28d57a6fb34410fecd112c0d98",
-							"linux-amd64":  "37f82ba2beb4ac09bf89788d16ffec809e715c3e4d71819e17bc61f7480b80bf",
-							"linux-arm64":  "8ddd0c9044a2c7cc09c4bb53a908c36c063c52a42867612342c253d47c826806",
-						},
-					}),
-				},
-				{
-					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-importalias:importalias-asset:1.32.0",
-						Checksums: map[string]string{
-							"darwin-amd64": "a53f2ccc12f842d1e47d03470429b091005069c56c13683a9e29570bb290afac",
-							"darwin-arm64": "aa9520b42262763a8996d2eac0908eb684e3c3d73b7ec881484e7f4691d0885b",
-							"linux-amd64":  "27a6bdcd4fda1b9ef6cb318d6f8d1f3491ff5dd129e97e2f2fec85a0d61bdb84",
-							"linux-arm64":  "80d1f2767a3ed53cbd1826ef1b51448aadf050eb4d3e6231615fc618114950b3",
-						},
-					}),
-				},
-				{
-					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-ineffassign:ineffassign-asset:1.35.0",
-						Checksums: map[string]string{
-							"darwin-amd64": "663598457d89adea9955f670cd9c392cc90035567d8aa438c6c3ac92d40e3880",
-							"darwin-arm64": "648a9f3ea8e4b294cb5d8a390f76378dcc9b7ad918e56a3ef365fa96a5c88593",
-							"linux-amd64":  "ab32449200fae64833a7114bbac40eb474bd8837b130aa3d44510b56322f7bc4",
-							"linux-arm64":  "da121ee39befe7abd7be18213d1fe63b737f4747db7dca1c608e9a4636fd6674",
-						},
-					}),
-				},
-				{
-					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-outparamcheck:outparamcheck-asset:1.37.0",
-						Checksums: map[string]string{
-							"darwin-amd64": "795a9fc0ccdc3284409c08a891d114409df84a8e4b4ac128297b5a35e5b07dd4",
-							"darwin-arm64": "349bc910d69d289d7e47f57e6b0ab9ed393304731eb9e944d23039a973d752e1",
-							"linux-amd64":  "ffbdef3f8f07537261d628ede229a4616dc859e55f3dcd19de5320f120506ec2",
-							"linux-arm64":  "c39501b9032dc92d860f466f7969e9187297be915eddc5eca164db80c23ec17a",
-						},
-					}),
-				},
-				{
-					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-unconvert:unconvert-asset:1.37.0",
-						Checksums: map[string]string{
-							"darwin-amd64": "36e3b278d5ac6ae7f3ff13b4440cda911df1be4fe173d6570eadd6cf65bba066",
-							"darwin-arm64": "9110166e07cee143df0bcf2d9208fbfcaf4565539d765f18bfde2d3cd6cfe0cb",
-							"linux-amd64":  "42219354a3a25bcfdb7ab607e16a0a01bfbe92822bec9c4327d7b7557e42622e",
-							"linux-arm64":  "0ec080d2940d4cc14313d51775551f72f7eb7521ed06d24bb374733e7674609b",
-						},
-					}),
-				},
-				{
-					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-varcheck:varcheck-asset:1.37.0",
-						Checksums: map[string]string{
-							"darwin-amd64": "0ea858951e4feda105075e9d47f74461e5d6acc34e1b968c2e50d70b2d0643c4",
-							"darwin-arm64": "a0e31886537735bb0abf85249a719ebcadaf64fe66f69dac1993c860cfdd0d3c",
-							"linux-amd64":  "aae8cdb9212f035a6d040f92ce25e0d9e0215ab6918c696e965539c5a2f09039",
-							"linux-arm64":  "03b4b68ec5c2906cef2e3770a0edafe29efe409e1630f6c83175365944d59a16",
+							"darwin-amd64": "41188aa8a53397e0f967ca756aa44d657bc061056575dfc6d70aa0ea12953b14",
+							"darwin-arm64": "7dc6e6567f2719b75a463568509c5cf2cbabc0c778a5235a0769375270329df7",
+							"linux-amd64":  "367451ea2dbb0640b32ab7f1607d9fd10d191b2115a44d880bddfb9c2d2f36f9",
+							"linux-arm64":  "f01b4d91018b68d778216b0c93197f229bc0ed2e7af179e0a3fd8b67426156c2",
 						},
 					}),
 				},
@@ -210,12 +72,12 @@ var defaultPluginsConfig = config.PluginsConfig{
 		{
 			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.godel-license-plugin:license-plugin:1.35.0",
+					ID: "com.palantir.godel-goland-plugin:goland-plugin:1.33.0",
 					Checksums: map[string]string{
-						"darwin-amd64": "ca86c8def75d2363d1d40e889595ed8ee1d42125be5b62446faca87e5ba81cdf",
-						"darwin-arm64": "d143f11871ee27f9fae24b594761d0598ca03ebbe12710effb6f84563499055f",
-						"linux-amd64":  "ae0b90f74ca5bae8f0bbbe785979beaf439ad92d543bf33816abea646264fa58",
-						"linux-arm64":  "67ad6794be9eed70fb75e6bf4f5041f46ccfde0c4973cf4b5fbbb1a8abd213f4",
+						"darwin-amd64": "ac141b8f463f1b505f82e1f3b1e4937205861829a778be9362eb972556e2601d",
+						"darwin-arm64": "62f60bb74ddf1c8b49fd31165bd385ac0eb158e4b090860e4b90a6dfc69dfc1d",
+						"linux-amd64":  "41380a5fd6ba6eedbdea36b898eab413afc5b65fdd17abf546f57e8ede4fa5fe",
+						"linux-arm64":  "0b372f4da07ba257c7ed05d0993e9867212e06d58e3bdcfbce61088fbf79b2bd",
 					},
 				}),
 			}),
@@ -223,12 +85,150 @@ var defaultPluginsConfig = config.PluginsConfig{
 		{
 			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.godel-test-plugin:test-plugin:1.34.0",
+					ID: "com.palantir.okgo:check-plugin:1.42.0",
 					Checksums: map[string]string{
-						"darwin-amd64": "baa0d5527eef7a0b0a0c3b2ad35defbf67fdeb78ae1a98ae027643825fc208b9",
-						"darwin-arm64": "8a3adcdca760747ce939ce39af72675873fdc79130182206ffc02bfaf92fdf98",
-						"linux-amd64":  "730216b6fb50f53f06bac963cb96c6f8413f28a48b00905c42629e0d2a61c4ed",
-						"linux-arm64":  "b7dba9e03b38dd1c6ff49b527e754c4bf1eae46e461d6b62aec7bf8ee78fd173",
+						"darwin-amd64": "0f4c6f34f8ec9082ee654535aa47cbdc4e65c0536303c74cb0dbfb187131126a",
+						"darwin-arm64": "557b873d672be367611e8ee025a982e479db530b3834524f5aba475db7f34821",
+						"linux-amd64":  "776fc2f004c6952cc1c446aac5ac7909f25d59405a3c008b9e7d47f507f68c63",
+						"linux-arm64":  "2127d6ae5460ed526431a7b7a4dcdcb22323e6aa832ee1903a3bf56a96fe8f60",
+					},
+				}),
+			}),
+			Assets: config.ToLocatorWithResolverConfigs([]config.LocatorWithResolverConfig{
+				{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
+						ID: "com.palantir.godel-okgo-asset-compiles:compiles-asset:1.41.0",
+						Checksums: map[string]string{
+							"darwin-amd64": "07974a5ea35aeb1b29a3fd410bad6b93abff47357253d58c257182d5ccd40a87",
+							"darwin-arm64": "564ff1eca8e9d162d3d6b57463970579d630d3f04345d377180b91cf4af49671",
+							"linux-amd64":  "7c9fa4863eb24d58e1c0d70be85b4894669444ff2d7a224ab5b315e5c6a1d85f",
+							"linux-arm64":  "e117e27c7ca64d0c855b2fa8e6748c5cab3f9ee7bfe480370f5e857e343e89c4",
+						},
+					}),
+				},
+				{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
+						ID: "com.palantir.godel-okgo-asset-deadcode:deadcode-asset:1.38.0",
+						Checksums: map[string]string{
+							"darwin-amd64": "3ad65c67135435b2a89fb126a93c7be540e7b1e062c701864a9f62476a5b939f",
+							"darwin-arm64": "0be33adf893a3c67ff01e417103be0b942e75603e1c28090e437e17ee9b629fc",
+							"linux-amd64":  "7bd4ad957359ea964e5731e1f90ee81b5fa51a74ed31cc215d813304618acdea",
+							"linux-arm64":  "3a0c6bdd7b444ed2b5b868fb842c7580f8b46e0f1d1d163cb718520dc26ba394",
+						},
+					}),
+				},
+				{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
+						ID: "com.palantir.godel-okgo-asset-errcheck:errcheck-asset:1.39.0",
+						Checksums: map[string]string{
+							"darwin-amd64": "7de3245c9020e499a796170bcc4449c66b350b5d7ba0d3ac7c39ec2b96ab69da",
+							"darwin-arm64": "7b29f051ac0a0c9f902cf43ffeba9199a47291e1dbae7805b3d2b4f92f0ffc8e",
+							"linux-amd64":  "605f0ba695f5b75b260ec384da47ebaf866587754d12332276bc71d78f789b4c",
+							"linux-arm64":  "53e999b8aaa594c3528044e0a7936427d3ea144f310261a853ca5cc1e9ba187a",
+						},
+					}),
+				},
+				{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
+						ID: "com.palantir.godel-okgo-asset-golint:golint-asset:1.30.0",
+						Checksums: map[string]string{
+							"darwin-amd64": "b107e5e519c71631fa065aa18925dba88066b07551dd116a603a82f93549fbbd",
+							"darwin-arm64": "6f0501247f14d6f482c1f37431c503615adf832528cfe9e34d7d80e4d7b122aa",
+							"linux-amd64":  "332c16ca538e309e54a236b69dfe51ca1c98ac949507ee1051c69412a4ee18a7",
+							"linux-arm64":  "97288b6b74048c77091ddfcfc37d94e10b7cd4e0493d715e2c9279aacb5b2480",
+						},
+					}),
+				},
+				{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
+						ID: "com.palantir.godel-okgo-asset-govet:govet-asset:1.34.0",
+						Checksums: map[string]string{
+							"darwin-amd64": "2ff7a64feaf34376b9a6a58c4a310627d3f064989458dfbdae7e1bfa399d8016",
+							"darwin-arm64": "53999c3617aa03eb1a7dd39b038d7f0f67dae0f23c85f595c57d0ec4e97a2fdc",
+							"linux-amd64":  "43f8dd0e2e12ad624e9fe756495c4a35d555b253fc68dc55705bbce64a64a5cf",
+							"linux-arm64":  "9ac50baf8b07182ca670a76e363fb26be23ffb5c24b3e18ac408c33ca8f53ecf",
+						},
+					}),
+				},
+				{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
+						ID: "com.palantir.godel-okgo-asset-importalias:importalias-asset:1.33.0",
+						Checksums: map[string]string{
+							"darwin-amd64": "dd69d1af4dcdf7f66cde993160c14d9cf7dc3ad5b0133d67a9d21606a51f39ac",
+							"darwin-arm64": "6994f072962e532147427f687098f1ed35c5ead1f921653665162fe24353f855",
+							"linux-amd64":  "d2fe02c1ece9f683a3fc0cade5f5642a222525eab81261e378f20ed12176ed42",
+							"linux-arm64":  "08af97f20fcfa7bb3116b07c2d818efabe7720bb94a8c4b1d2dc9e8522dfd02e",
+						},
+					}),
+				},
+				{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
+						ID: "com.palantir.godel-okgo-asset-ineffassign:ineffassign-asset:1.36.0",
+						Checksums: map[string]string{
+							"darwin-amd64": "e269e73016972c1f844f28d01ce67400b4391f3865592ae63960c7b8651d3d2c",
+							"darwin-arm64": "a8ff4a59e481688bacc1ad2604258b1ccc0cfdce12ecf863c0d08db9f27a9337",
+							"linux-amd64":  "64ac95a9a0bc3be31b8bf2068881fd5574228c16904d2c24af4cdc1b45b8be46",
+							"linux-arm64":  "2aaa6652417b765b16b2678db2e607960e919d25e03485ba884439f377ae9399",
+						},
+					}),
+				},
+				{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
+						ID: "com.palantir.godel-okgo-asset-outparamcheck:outparamcheck-asset:1.38.0",
+						Checksums: map[string]string{
+							"darwin-amd64": "876d24ee0952f4d16cf8d3b92234c3984c98d973dd78fcca3ff27769d54e6d47",
+							"darwin-arm64": "456aaa0e5199d3a6bc668c1a9c77666c440b1cce04d10fc476d892e3def53403",
+							"linux-amd64":  "60415a0bb9ce6acc94b70b9d879d0c527c7ac9a2227e75ad3ba82f9c803b1cf2",
+							"linux-arm64":  "6f2d1842758b4c3935510a12330125833aa2ea3a6b8ce0a75e9a6b42af286fa0",
+						},
+					}),
+				},
+				{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
+						ID: "com.palantir.godel-okgo-asset-unconvert:unconvert-asset:1.38.0",
+						Checksums: map[string]string{
+							"darwin-amd64": "c4eb4f2786261f1005e6466ff8bc6948d4700d1ec1dadd7e458cb17de93a9c18",
+							"darwin-arm64": "448553548ae4f2a5280c60a676362fa14dda48d9be1ad6883e011fa3ec2ff2ec",
+							"linux-amd64":  "62a9ed7ed179d972c125b74ed819535a0f3e83ab439439c6bef945e1b58c9810",
+							"linux-arm64":  "eb8bc381f38b230fd89907176bd7b7b918eb6fdbf582b1201162c0a95005fe09",
+						},
+					}),
+				},
+				{
+					Locator: config.ToLocatorConfig(config.LocatorConfig{
+						ID: "com.palantir.godel-okgo-asset-varcheck:varcheck-asset:1.38.0",
+						Checksums: map[string]string{
+							"darwin-amd64": "afb138dc4f8454aa1e482c70861817af3fe47a4f6de55870130d52f5ce6a13c7",
+							"darwin-arm64": "f8bcac5517ec8f6776c810065c11a6903aecd87175f14944a7f14b2c7d7afce4",
+							"linux-amd64":  "601cd2c8f06770a66474c137c971cb23e83778f719d5c8591051d7df209d6acc",
+							"linux-arm64":  "dd6ffdbfbda245a001d4295f1b50e4dcd416a7d46a58bdb4690b9c99b2dfc406",
+						},
+					}),
+				},
+			}),
+		},
+		{
+			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
+				Locator: config.ToLocatorConfig(config.LocatorConfig{
+					ID: "com.palantir.godel-license-plugin:license-plugin:1.36.0",
+					Checksums: map[string]string{
+						"darwin-amd64": "478bbdb55f295c8473b019e9a61c5adeedc82fe2a7eac5292ee9a3af6742a321",
+						"darwin-arm64": "951a9dfe5afbc4e59b4f08598e80f9b3633ff74b7d2087afe2425815b1aafeda",
+						"linux-amd64":  "7b94d677aaf53412d08c677c06878cc70083f69a6f9cfab3aa5e2caf010e40b3",
+						"linux-arm64":  "5365076b81823818bab1f9605b7f5f1b9c20b74852285e3f2202a46cb94b60fb",
+					},
+				}),
+			}),
+		},
+		{
+			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
+				Locator: config.ToLocatorConfig(config.LocatorConfig{
+					ID: "com.palantir.godel-test-plugin:test-plugin:1.35.0",
+					Checksums: map[string]string{
+						"darwin-amd64": "82a1bd7dd4226fa856f960a699bc226b2b49b734b2d5bf27a0fcce002df9e5f7",
+						"darwin-arm64": "f7169fc9fda2118486cbff07e816ae7a9399a93ca8d496811d492e79917cbcbb",
+						"linux-amd64":  "5b211f6af7de6cc986e657c8273fa1c8bb614121f311de70b1b61ffb5ab35cc0",
+						"linux-arm64":  "6fc773e9b1e21550736c06ad580e0cc1055a6c73737cb28b81ac48e1d36a1957",
 					},
 				}),
 			}),
