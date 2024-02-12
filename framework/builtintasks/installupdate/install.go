@@ -22,7 +22,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mholt/archiver/v3"
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/godel/v2/framework/builtintasks/installupdate/layout"
 	"github.com/palantir/godel/v2/godelgetter"
@@ -76,10 +75,6 @@ func install(src godelgetter.PkgSrc, stdout io.Writer) (string, error) {
 	defer cleanup()
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to create temporary directory rooted at %s", godelHome)
-	}
-
-	if err := archiver.DefaultTarGz.Unarchive(tgzFilePath, tmpDir); err != nil {
-		return "", errors.Wrapf(err, "failed to extract archive %s to %s", tgzFilePath, tmpDir)
 	}
 
 	expandedGodelDir := filepath.Join(tmpDir, layout.AppName+"-"+tgzVersion)
