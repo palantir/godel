@@ -97,12 +97,12 @@ var defaultPluginsConfig = config.PluginsConfig{
 			Assets: config.ToLocatorWithResolverConfigs([]config.LocatorWithResolverConfig{
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-compiles:compiles-asset:1.44.0",
+						ID: "com.palantir.godel-okgo-asset-compiles:compiles-asset:1.45.0",
 						Checksums: map[string]string{
-							"darwin-amd64": "7a7f2776a784fe2a6553779bbc252b64420564cc80da094997c927a876a4fdef",
-							"darwin-arm64": "14daa5b607567897da596f72c4f651a07d6d96001d8f9d828e4f70663806f572",
-							"linux-amd64":  "9d6d9b43cda25c51e9b3adda206ca0ff82d25e4e2f64d8e4e3f9111d76594599",
-							"linux-arm64":  "72e2b4c45ca6722efcf4015c2b5b6ae41d260b149f795f862c74b9a331f09b60",
+							"darwin-amd64": "6c214fb54c319aefb84dcfce8a2d62d65dbc2eda655ae0996851aebdc277542d",
+							"darwin-arm64": "f654bf5038f8c7b632d6136abbae6f1c5464b0f03fa8bbf6617e4d47fc56d5f7",
+							"linux-amd64":  "f7abb928ff7e5cb857a6f00ef1e8fab45026dbc68fe86c434b08cc290dc8b784",
+							"linux-arm64":  "75626060c3eeb8b96ce28b5395392e8c69d7c729b641b1d149bfc85ea45d8c25",
 						},
 					}),
 				},
