@@ -33,12 +33,12 @@ var defaultPluginsConfig = config.PluginsConfig{
 		{
 			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.distgo:dist-plugin:1.65.0",
+					ID: "com.palantir.distgo:dist-plugin:1.67.0",
 					Checksums: map[string]string{
-						"darwin-amd64": "602dd5f6733a98b30e4b245c5ae6141605ca683457bbbca1529e43346b006406",
-						"darwin-arm64": "9343303815777d7d0e46e28363a0cd154ee07a709fbc26ea105d872db9887308",
-						"linux-amd64":  "c45006a604c2952d1f7c84c8c17de8faf2039dba6614a55562bcb2a5ed21fadf",
-						"linux-arm64":  "2aefbb172ec82606f0b1ae00638b8fe44fee3ac7eb438dcd9d0f87b51ee4323a",
+						"darwin-amd64": "1f0d362dda2e099dd07452a706a2ee3dc6383c6efd3e65a7bdec02fefed7a944",
+						"darwin-arm64": "7c5fe6bfae5edcf5a079014b16827ab7a782325b1c840e27ef913eca75505420",
+						"linux-amd64":  "0469ecfe56bc491ed5e9a19bde5b7b646f0576ff6163595c940baa52b2575ad0",
+						"linux-arm64":  "66a51ceb929c3f5faa851b632004184e89531f613688730ef2fb23bf7c30a8bf",
 					},
 				}),
 			}),
