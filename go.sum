@@ -71,8 +71,8 @@ github.com/palantir/pkg/gittest v1.2.0 h1:RPINGtLh+Mlt+o1M/nRQlTPrt4CP5tJOSMgeB5
 github.com/palantir/pkg/gittest v1.2.0/go.mod h1:z2eq/rEzUDmNR8rvJCb+/XZ7w9/nxRCAKvYjMYW/w/w=
 github.com/palantir/pkg/matcher v1.2.0 h1:h4IeYPSQGWIdi1Qh7QSzWATv0+2coTaaCiozYtPWBks=
 github.com/palantir/pkg/matcher v1.2.0/go.mod h1:JUH9L+Cmjv2U87y+1Ov5KKLmMbgHtESCTrPq5MyWeVM=
-github.com/palantir/pkg/pkgpath v1.2.0 h1:6JDFKFZZsiVBiek47OB7363oIAIjQNFkTsPoEtJpWzY=
-github.com/palantir/pkg/pkgpath v1.2.0/go.mod h1:VaK3q7OPEFs+YqIAAJBi3oE+dw622WmucIRpU4qa14g=
+github.com/palantir/pkg/pkgpath v1.3.0 h1:S2kbdqSEMSHLgaEdr8LQuCju+AfzSvwwSUM/Q4QUNUI=
+github.com/palantir/pkg/pkgpath v1.3.0/go.mod h1:22X+LjC1DKT6Zc9KYTPXOc0AP95gzPIC3me45vz78ac=
 github.com/palantir/pkg/signals v1.1.0 h1:AOHJflBjlzp6SFzqqLPQAHQEzMnrw4KuQSOtCMaYC1w=
 github.com/palantir/pkg/signals v1.1.0/go.mod h1:4gHxwsglYgLOH39qIUhFMdfvSgHwZEVl+ViJYs1/NNY=
 github.com/palantir/pkg/specdir v1.2.0 h1:O8ukQIYBUrYfOB+LDj88Ih7308KW9THuNy0/LcV7IoY=
