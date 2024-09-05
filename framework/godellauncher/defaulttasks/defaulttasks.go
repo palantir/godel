@@ -85,12 +85,12 @@ var defaultPluginsConfig = config.PluginsConfig{
 		{
 			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
 				Locator: config.ToLocatorConfig(config.LocatorConfig{
-					ID: "com.palantir.okgo:check-plugin:1.58.0",
+					ID: "com.palantir.okgo:check-plugin:1.59.0",
 					Checksums: map[string]string{
-						"darwin-amd64": "9669f63ef65daa884a13488dd23a2093006a1a11c18987887114d1a98189334c",
-						"darwin-arm64": "90a4d4e1eab81ee7cabf673cf76cafb07e6f191268a6e3692f5a34ff21d0c989",
-						"linux-amd64":  "efdabe18a7fc3e982d4c6525c6f1451d940cc331f673ce613c6eb1f4a8dfd3ad",
-						"linux-arm64":  "7dc8abde90360c2c0d6f90d42faf53ec2bdd543acdc255b64d20c9588d5e20f8",
+						"darwin-amd64": "97d2080f8cb039f46de1474452c0abf3a4e5becb37485aca50878ecb68ad1dc8",
+						"darwin-arm64": "0d54796ece319fe57f8974c723796aec87cd32c5544bbd486bf1a223ec48b629",
+						"linux-amd64":  "debfddf54935bd09db8dc0686b7d71ad85ce8af4a42a21daced36064fcf5062d",
+						"linux-arm64":  "cbafbf938a87750162977fa37255a9bfba7aa6aa2e2e3f980d8937eac8a11201",
 					},
 				}),
 			}),
