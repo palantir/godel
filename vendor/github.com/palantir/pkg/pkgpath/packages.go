@@ -9,6 +9,7 @@ import (
 	"go/build"
 	"go/parser"
 	"go/token"
+	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -16,6 +17,8 @@ import (
 	"strings"
 
 	"github.com/palantir/pkg/matcher"
+	"golang.org/x/mod/modfile"
+	gopackages "golang.org/x/tools/go/packages"
 )
 
 // DefaultGoPkgExcludeMatcher returns a matcher that matches names that standard Go tools generally exclude as Go
@@ -228,36 +231,80 @@ func PackagesFromPaths(rootDir string, relPaths []string) (Packages, error) {
 // PackagesInDir creates a Packages that contains all of the packages rooted at the provided directory. Every directory
 // rooted in the provided directory whose path does not match the provided exclude matcher is considered as a package.
 func PackagesInDir(rootDir string, exclude matcher.Matcher) (Packages, error) {
+	return packagesInDir(rootDir, nil, exclude)
+}
+
+// PackagesInDirMatchingRootModule creates a Packages that contains all of the packages rooted at the provided directory
+// that are part of the same module as the root directory. Every directory rooted in the provided directory whose path
+// does not match the provided exclude matcher and is part of the same module as the module of the root directory is
+// considered as a package.
+func PackagesInDirMatchingRootModule(rootDir string, exclude matcher.Matcher) (Packages, error) {
+	return packagesInDir(rootDir, nonRootModuleExcluder(rootDir), exclude)
+}
+
+// packagesInDir creates a Packages that contains all of the packages rooted at the provided directory. Every
+// directory rooted in the provided directory whose path does not match the provided exclude matcher is considered as a
+// package. A directory is only considered if pkgDirExcluder and pkgFileExcluder do not match it. If a directory is
+// considered, its package will be determined based on considering only the files in the directory that do not match the
+// pkgFileExcluder. If pkgDirExcluder returns a value that indicates that the subdirectories should be skipped, those
+// subdirectories will not be considered.
+func packagesInDir(rootDir string, pkgDirExcluder pkgExcluder, pkgFileExcluder matcher.Matcher) (Packages, error) {
 	dirAbsolutePath, err := filepath.Abs(rootDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert %s to absolute path: %v", rootDir, err)
 	}
 
 	allPkgs := make(map[string]string)
-	if err := filepath.Walk(dirAbsolutePath, func(currPath string, currInfo os.FileInfo, err error) error {
-		currRelPath, currRelPathErr := filepath.Rel(dirAbsolutePath, currPath)
-
-		// skip current path if it matches an exclude
-		if currRelPathErr == nil && exclude != nil && exclude.Match(currRelPath) {
-			return nil
-		}
-
+	if err := filepath.WalkDir(dirAbsolutePath, func(currPath string, currInfo fs.DirEntry, err error) error {
+		// if there was any error reading path, return error
 		if err != nil {
 			return err
 		}
 
+		// skip path if it is not a directory
 		if !currInfo.IsDir() {
 			return nil
 		}
 
+		// determine relative path for package
+		currRelPath, currRelPathErr := filepath.Rel(dirAbsolutePath, currPath)
 		if currRelPathErr != nil {
 			return currRelPathErr
+		}
+
+		skipDir := false
+
+		// if pkgDirExcluder is non-nil, check if directory should be excluded
+		if pkgDirExcluder != nil {
+			// determine whether current directory should be excluded
+			excludeDir, skipAllSubDirs := pkgDirExcluder.Exclude(currRelPath)
+
+			// update value of "skipDir" parameter: this will be used later (even if current directory is not excluded,
+			// if this value is true, the subdirectories will still be skipped).
+			skipDir = skipAllSubDirs
+
+			// if current directory should be excluded, return. Use "skipDir" parameter to determine whether all
+			// subdirectories should be skipped.
+			if excludeDir {
+				if skipDir {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+		}
+
+		// if pkgFileExcluder is non-nil, check if directory should be excluded
+		if pkgFileExcluder != nil && pkgFileExcluder.Match(currRelPath) {
+			if skipDir {
+				return filepath.SkipDir
+			}
+			return nil
 		}
 
 		// create a filter for processing package files that only passes if it does not match an exclude
 		filter := func(info os.FileInfo) bool {
 			// if exclude exists and matches the file, skip it
-			if exclude != nil && exclude.Match(path.Join(currRelPath, info.Name())) {
+			if pkgFileExcluder != nil && pkgFileExcluder.Match(path.Join(currRelPath, info.Name())) {
 				return false
 			}
 			// process file if it would be included in build context (handles things like build tags)
@@ -274,12 +321,75 @@ func PackagesInDir(rootDir string, exclude matcher.Matcher) (Packages, error) {
 			allPkgs[currPath] = pkgName
 		}
 
+		// if this directory matched but return value indicates that subdirectories should not be considered, return
+		// filepath.SkipDir
+		if skipDir {
+			return filepath.SkipDir
+		}
+
 		return nil
 	}); err != nil {
 		return nil, err
 	}
 
 	return createPkgsWithValidation(dirAbsolutePath, allPkgs)
+}
+
+func nonRootModuleExcluder(wd string) pkgExcluder {
+	wdPkgs, err := gopackages.Load(&gopackages.Config{
+		Mode: gopackages.NeedModule,
+		Dir:  wd,
+	}, ".")
+	if err != nil || len(wdPkgs) == 0 || wdPkgs[0].Module == nil || wdPkgs[0].Module.Path == "" {
+		return nil
+	}
+
+	wdModulePath := wdPkgs[0].Module.Path
+	return pkgExcluderFn(func(relPath string) (exclude, excludeAllSubdirs bool) {
+		fullPath := filepath.Join(wd, relPath)
+		dirEntries, readDirErr := os.ReadDir(fullPath)
+		// path cannot be read: do not exclude
+		if readDirErr != nil {
+			return false, false
+		}
+		var goModFilePath string
+		for _, entry := range dirEntries {
+			// skip all entries that are not the "go.mod" file
+			if entry.IsDir() || entry.Name() != "go.mod" {
+				continue
+			}
+			goModFilePath = filepath.Join(fullPath, entry.Name())
+			break
+		}
+		// no "go.mod" file in directory: do not exclude
+		if goModFilePath == "" {
+			return false, false
+		}
+
+		// "go.mod" file exists in directory
+		modFileBytes, err := os.ReadFile(goModFilePath)
+
+		// "go.mod" file cannot be read: do not exclude
+		if err != nil {
+			return false, false
+		}
+		// if module path of directory does not match root module, exclude this directory and all subdirectories
+		differentModule := modfile.ModulePath(modFileBytes) != wdModulePath
+		return differentModule, differentModule
+	})
+}
+
+type pkgExcluder interface {
+	// Exclude returns true if the package at the specified path should be excluded when matching packages. The relpath
+	// parameter will always be a directory. If the second return value is true, then no subdirectories of the package
+	// directories will be considered.
+	Exclude(relPath string) (exclude, excludeAllSubdirs bool)
+}
+
+type pkgExcluderFn func(relPath string) (exclude, excludeAllSubdirs bool)
+
+func (fn pkgExcluderFn) Exclude(relPath string) (exclude, excludeAllSubdirs bool) {
+	return fn(relPath)
 }
 
 func createPkgsWithValidation(rootDir string, pkgs map[string]string) (*packages, error) {

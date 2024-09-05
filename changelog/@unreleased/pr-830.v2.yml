@@ -1,0 +1,6 @@
+type: improvement
+improvement:
+  description: Makes it so that the "packages" command only returns packages that
+    are part of the same module as the module of the project root directory.
+  links:
+  - https://github.com/palantir/godel/pull/830

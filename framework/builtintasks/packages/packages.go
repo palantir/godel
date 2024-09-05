@@ -21,7 +21,7 @@ import (
 )
 
 func List(exclude matcher.Matcher, wd string) ([]string, error) {
-	pkgs, err := pkgpath.PackagesInDir(wd, exclude)
+	pkgs, err := pkgpath.PackagesInDirMatchingRootModule(wd, exclude)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to list packages")
 	}
