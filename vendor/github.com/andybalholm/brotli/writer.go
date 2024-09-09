@@ -1,12 +1,10 @@
 package brotli
 
 import (
-	"compress/gzip"
 	"errors"
 	"io"
-	"net/http"
 
-	"github.com/golang/gddo/httputil"
+	"github.com/andybalholm/brotli/matchfinder"
 )
 
 const (
@@ -50,11 +48,8 @@ func NewWriterLevel(dst io.Writer, level int) *Writer {
 // NewWriterOptions is like NewWriter but specifies WriterOptions
 func NewWriterOptions(dst io.Writer, options WriterOptions) *Writer {
 	w := new(Writer)
+	w.options = options
 	w.Reset(dst)
-	w.params.quality = options.Quality
-	if options.LGWin > 0 {
-		w.params.lgwin = uint(options.LGWin)
-	}
 	return w
 }
 
@@ -63,12 +58,20 @@ func NewWriterOptions(dst io.Writer, options WriterOptions) *Writer {
 // instead. This permits reusing a Writer rather than allocating a new one.
 func (w *Writer) Reset(dst io.Writer) {
 	encoderInitState(w)
+	w.params.quality = w.options.Quality
+	if w.options.LGWin > 0 {
+		w.params.lgwin = uint(w.options.LGWin)
+	}
 	w.dst = dst
+	w.err = nil
 }
 
 func (w *Writer) writeChunk(p []byte, op int) (n int, err error) {
 	if w.dst == nil {
 		return 0, errWriterClosed
+	}
+	if w.err != nil {
+		return 0, w.err
 	}
 
 	for {
@@ -82,16 +85,8 @@ func (w *Writer) writeChunk(p []byte, op int) (n int, err error) {
 			return n, errEncode
 		}
 
-		outputData := encoderTakeOutput(w)
-
-		if len(outputData) > 0 {
-			_, err = w.dst.Write(outputData)
-			if err != nil {
-				return n, err
-			}
-		}
-		if len(p) == 0 {
-			return n, nil
+		if len(p) == 0 || w.err != nil {
+			return n, w.err
 		}
 	}
 }
@@ -125,31 +120,43 @@ type nopCloser struct {
 
 func (nopCloser) Close() error { return nil }
 
-// HTTPCompressor chooses a compression method (brotli, gzip, or none) based on
-// the Accept-Encoding header, sets the Content-Encoding header, and returns a
-// WriteCloser that implements that compression. The Close method must be called
-// before the current HTTP handler returns.
-//
-// Due to https://github.com/golang/go/issues/31753, the response will not be
-// compressed unless you set a Content-Type header before you call
-// HTTPCompressor.
-func HTTPCompressor(w http.ResponseWriter, r *http.Request) io.WriteCloser {
-	if w.Header().Get("Content-Type") == "" {
-		return nopCloser{w}
+// NewWriterV2 is like NewWriterLevel, but it uses the new implementation
+// based on the matchfinder package. It currently supports up to level 7;
+// if a higher level is specified, level 7 will be used.
+func NewWriterV2(dst io.Writer, level int) *matchfinder.Writer {
+	var mf matchfinder.MatchFinder
+	if level < 2 {
+		mf = matchfinder.M0{Lazy: level == 1}
+	} else {
+		hashLen := 6
+		if level >= 6 {
+			hashLen = 5
+		}
+		chainLen := 64
+		switch level {
+		case 2:
+			chainLen = 0
+		case 3:
+			chainLen = 1
+		case 4:
+			chainLen = 2
+		case 5:
+			chainLen = 4
+		case 6:
+			chainLen = 8
+		}
+		mf = &matchfinder.M4{
+			MaxDistance:     1 << 20,
+			ChainLength:     chainLen,
+			HashLen:         hashLen,
+			DistanceBitCost: 57,
+		}
 	}
 
-	if w.Header().Get("Vary") == "" {
-		w.Header().Set("Vary", "Accept-Encoding")
+	return &matchfinder.Writer{
+		Dest:        dst,
+		MatchFinder: mf,
+		Encoder:     &Encoder{},
+		BlockSize:   1 << 16,
 	}
-
-	encoding := httputil.NegotiateContentEncoding(r, []string{"br", "gzip"})
-	switch encoding {
-	case "br":
-		w.Header().Set("Content-Encoding", "br")
-		return NewWriter(w)
-	case "gzip":
-		w.Header().Set("Content-Encoding", "gzip")
-		return gzip.NewWriter(w)
-	}
-	return nopCloser{w}
 }

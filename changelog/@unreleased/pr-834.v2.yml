@@ -1,0 +1,7 @@
+type: improvement
+improvement:
+  description: Updates transitive dependency of github.com/pierrec/lz4 to github.com/pierrec/lz4/v4
+    v4.1.2, which resolves a previous issue where timeouts were encountered when fetching
+    an older version of github.com/pierrec/lz4.
+  links:
+  - https://github.com/palantir/godel/pull/834
