@@ -1,15 +1,24 @@
 package brotli
 
-import "math"
+import (
+	"math"
+	"sync"
+)
 
 const maxHuffmanTreeSize = (2*numCommandSymbols + 1)
 
-/* The maximum size of Huffman dictionary for distances assuming that
-   NPOSTFIX = 0 and NDIRECT = 0. */
+/*
+The maximum size of Huffman dictionary for distances assuming that
+
+	NPOSTFIX = 0 and NDIRECT = 0.
+*/
 const maxSimpleDistanceAlphabetSize = 140
 
-/* Represents the range of values belonging to a prefix code:
-   [offset, offset + 2^nbits) */
+/*
+Represents the range of values belonging to a prefix code:
+
+	[offset, offset + 2^nbits)
+*/
 type prefixCodeRange struct {
 	offset uint32
 	nbits  uint32
@@ -93,9 +102,12 @@ func nextBlockTypeCode(calculator *blockTypeCodeCalculator, type_ byte) uint {
 	return type_code
 }
 
-/* |nibblesbits| represents the 2 bits to encode MNIBBLES (0-3)
-   REQUIRES: length > 0
-   REQUIRES: length <= (1 << 24) */
+/*
+|nibblesbits| represents the 2 bits to encode MNIBBLES (0-3)
+
+	REQUIRES: length > 0
+	REQUIRES: length <= (1 << 24)
+*/
 func encodeMlen(length uint, bits *uint64, numbits *uint, nibblesbits *uint64) {
 	var lg uint
 	if length == 1 {
@@ -129,8 +141,11 @@ func storeCommandExtra(cmd *command, storage_ix *uint, storage []byte) {
 	writeBits(uint(insnumextra+getCopyExtra(copycode)), bits, storage_ix, storage)
 }
 
-/* Data structure that stores almost everything that is needed to encode each
-   block switch command. */
+/*
+Data structure that stores almost everything that is needed to encode each
+
+	block switch command.
+*/
 type blockSplitCode struct {
 	type_code_calculator blockTypeCodeCalculator
 	type_depths          [maxBlockTypeSymbols]byte
@@ -151,9 +166,12 @@ func storeVarLenUint8(n uint, storage_ix *uint, storage []byte) {
 	}
 }
 
-/* Stores the compressed meta-block header.
-   REQUIRES: length > 0
-   REQUIRES: length <= (1 << 24) */
+/*
+Stores the compressed meta-block header.
+
+	REQUIRES: length > 0
+	REQUIRES: length <= (1 << 24)
+*/
 func storeCompressedMetaBlockHeader(is_final_block bool, length uint, storage_ix *uint, storage []byte) {
 	var lenbits uint64
 	var nlenbits uint
@@ -183,9 +201,12 @@ func storeCompressedMetaBlockHeader(is_final_block bool, length uint, storage_ix
 	}
 }
 
-/* Stores the uncompressed meta-block header.
-   REQUIRES: length > 0
-   REQUIRES: length <= (1 << 24) */
+/*
+Stores the uncompressed meta-block header.
+
+	REQUIRES: length > 0
+	REQUIRES: length <= (1 << 24)
+*/
 func storeUncompressedMetaBlockHeader(length uint, storage_ix *uint, storage []byte) {
 	var lenbits uint64
 	var nlenbits uint
@@ -309,8 +330,11 @@ func storeSimpleHuffmanTree(depths []byte, symbols []uint, num_symbols uint, max
 	}
 }
 
-/* num = alphabet size
-   depths = symbol depths */
+/*
+num = alphabet size
+
+	depths = symbol depths
+*/
 func storeHuffmanTree(depths []byte, num uint, tree []huffmanTree, storage_ix *uint, storage []byte) {
 	var huffman_tree [numCommandSymbols]byte
 	var huffman_tree_extra_bits [numCommandSymbols]byte
@@ -364,8 +388,11 @@ func storeHuffmanTree(depths []byte, num uint, tree []huffmanTree, storage_ix *u
 	storeHuffmanTreeToBitMask(huffman_tree_size, huffman_tree[:], huffman_tree_extra_bits[:], code_length_bitdepth[:], code_length_bitdepth_symbols[:], storage_ix, storage)
 }
 
-/* Builds a Huffman tree from histogram[0:length] into depth[0:length] and
-   bits[0:length] and stores the encoded tree to the bit stream. */
+/*
+Builds a Huffman tree from histogram[0:length] into depth[0:length] and
+
+	bits[0:length] and stores the encoded tree to the bit stream.
+*/
 func buildAndStoreHuffmanTree(histogram []uint32, histogram_length uint, alphabet_size uint, tree []huffmanTree, depth []byte, bits []uint16, storage_ix *uint, storage []byte) {
 	var count uint = 0
 	var s4 = [4]uint{0}
@@ -411,9 +438,11 @@ func buildAndStoreHuffmanTree(histogram []uint32, histogram_length uint, alphabe
 	}
 }
 
-func sortHuffmanTree1(v0 *huffmanTree, v1 *huffmanTree) bool {
+func sortHuffmanTree1(v0 huffmanTree, v1 huffmanTree) bool {
 	return v0.total_count_ < v1.total_count_
 }
+
+var huffmanTreePool sync.Pool
 
 func buildAndStoreHuffmanTreeFast(histogram []uint32, histogram_total uint, max_bits uint, depth []byte, bits []uint16, storage_ix *uint, storage []byte) {
 	var count uint = 0
@@ -446,7 +475,13 @@ func buildAndStoreHuffmanTreeFast(histogram []uint32, histogram_total uint, max_
 	}
 	{
 		var max_tree_size uint = 2*length + 1
-		var tree []huffmanTree = make([]huffmanTree, max_tree_size)
+		tree, _ := huffmanTreePool.Get().(*[]huffmanTree)
+		if tree == nil || cap(*tree) < int(max_tree_size) {
+			tmp := make([]huffmanTree, max_tree_size)
+			tree = &tmp
+		} else {
+			*tree = (*tree)[:max_tree_size]
+		}
 		var count_limit uint32
 		for count_limit = 1; ; count_limit *= 2 {
 			var node int = 0
@@ -455,9 +490,9 @@ func buildAndStoreHuffmanTreeFast(histogram []uint32, histogram_total uint, max_
 				l--
 				if histogram[l] != 0 {
 					if histogram[l] >= count_limit {
-						initHuffmanTree(&tree[node:][0], histogram[l], -1, int16(l))
+						initHuffmanTree(&(*tree)[node:][0], histogram[l], -1, int16(l))
 					} else {
-						initHuffmanTree(&tree[node:][0], count_limit, -1, int16(l))
+						initHuffmanTree(&(*tree)[node:][0], count_limit, -1, int16(l))
 					}
 
 					node++
@@ -471,7 +506,7 @@ func buildAndStoreHuffmanTreeFast(histogram []uint32, histogram_total uint, max_
 				var j int = n + 1
 				var k int
 
-				sortHuffmanTreeItems(tree, uint(n), huffmanTreeComparator(sortHuffmanTree1))
+				sortHuffmanTreeItems(*tree, uint(n), huffmanTreeComparator(sortHuffmanTree1))
 
 				/* The nodes are:
 				   [0, n): the sorted leaf nodes that we start with.
@@ -482,15 +517,15 @@ func buildAndStoreHuffmanTreeFast(histogram []uint32, histogram_total uint, max_
 				   There will be (2n+1) elements at the end. */
 				initHuffmanTree(&sentinel, math.MaxUint32, -1, -1)
 
-				tree[node] = sentinel
+				(*tree)[node] = sentinel
 				node++
-				tree[node] = sentinel
+				(*tree)[node] = sentinel
 				node++
 
 				for k = n - 1; k > 0; k-- {
 					var left int
 					var right int
-					if tree[i].total_count_ <= tree[j].total_count_ {
+					if (*tree)[i].total_count_ <= (*tree)[j].total_count_ {
 						left = i
 						i++
 					} else {
@@ -498,7 +533,7 @@ func buildAndStoreHuffmanTreeFast(histogram []uint32, histogram_total uint, max_
 						j++
 					}
 
-					if tree[i].total_count_ <= tree[j].total_count_ {
+					if (*tree)[i].total_count_ <= (*tree)[j].total_count_ {
 						right = i
 						i++
 					} else {
@@ -507,17 +542,17 @@ func buildAndStoreHuffmanTreeFast(histogram []uint32, histogram_total uint, max_
 					}
 
 					/* The sentinel node becomes the parent node. */
-					tree[node-1].total_count_ = tree[left].total_count_ + tree[right].total_count_
+					(*tree)[node-1].total_count_ = (*tree)[left].total_count_ + (*tree)[right].total_count_
 
-					tree[node-1].index_left_ = int16(left)
-					tree[node-1].index_right_or_value_ = int16(right)
+					(*tree)[node-1].index_left_ = int16(left)
+					(*tree)[node-1].index_right_or_value_ = int16(right)
 
 					/* Add back the last sentinel node. */
-					tree[node] = sentinel
+					(*tree)[node] = sentinel
 					node++
 				}
 
-				if setDepth(2*n-1, tree, depth, 14) {
+				if setDepth(2*n-1, *tree, depth, 14) {
 					/* We need to pack the Huffman tree in 14 bits. If this was not
 					   successful, add fake entities to the lowest values and retry. */
 					break
@@ -525,7 +560,7 @@ func buildAndStoreHuffmanTreeFast(histogram []uint32, histogram_total uint, max_
 			}
 		}
 
-		tree = nil
+		huffmanTreePool.Put(tree)
 	}
 
 	convertBitDepthsToSymbols(depth, length, bits)
@@ -612,6 +647,203 @@ func buildAndStoreHuffmanTreeFast(histogram []uint32, histogram_total uint, max_
 	}
 }
 
+func buildAndStoreHuffmanTreeFastBW(histogram []uint32, histogram_total uint, max_bits uint, depth []byte, bits []uint16, bw *bitWriter) {
+	var count uint = 0
+	var symbols = [4]uint{0}
+	var length uint = 0
+	var total uint = histogram_total
+	for total != 0 {
+		if histogram[length] != 0 {
+			if count < 4 {
+				symbols[count] = length
+			}
+
+			count++
+			total -= uint(histogram[length])
+		}
+
+		length++
+	}
+
+	if count <= 1 {
+		bw.writeBits(4, 1)
+		bw.writeBits(max_bits, uint64(symbols[0]))
+		depth[symbols[0]] = 0
+		bits[symbols[0]] = 0
+		return
+	}
+
+	for i := 0; i < int(length); i++ {
+		depth[i] = 0
+	}
+	{
+		var max_tree_size uint = 2*length + 1
+		tree, _ := huffmanTreePool.Get().(*[]huffmanTree)
+		if tree == nil || cap(*tree) < int(max_tree_size) {
+			tmp := make([]huffmanTree, max_tree_size)
+			tree = &tmp
+		} else {
+			*tree = (*tree)[:max_tree_size]
+		}
+		var count_limit uint32
+		for count_limit = 1; ; count_limit *= 2 {
+			var node int = 0
+			var l uint
+			for l = length; l != 0; {
+				l--
+				if histogram[l] != 0 {
+					if histogram[l] >= count_limit {
+						initHuffmanTree(&(*tree)[node:][0], histogram[l], -1, int16(l))
+					} else {
+						initHuffmanTree(&(*tree)[node:][0], count_limit, -1, int16(l))
+					}
+
+					node++
+				}
+			}
+			{
+				var n int = node
+				/* Points to the next leaf node. */ /* Points to the next non-leaf node. */
+				var sentinel huffmanTree
+				var i int = 0
+				var j int = n + 1
+				var k int
+
+				sortHuffmanTreeItems(*tree, uint(n), huffmanTreeComparator(sortHuffmanTree1))
+
+				/* The nodes are:
+				   [0, n): the sorted leaf nodes that we start with.
+				   [n]: we add a sentinel here.
+				   [n + 1, 2n): new parent nodes are added here, starting from
+				                (n+1). These are naturally in ascending order.
+				   [2n]: we add a sentinel at the end as well.
+				   There will be (2n+1) elements at the end. */
+				initHuffmanTree(&sentinel, math.MaxUint32, -1, -1)
+
+				(*tree)[node] = sentinel
+				node++
+				(*tree)[node] = sentinel
+				node++
+
+				for k = n - 1; k > 0; k-- {
+					var left int
+					var right int
+					if (*tree)[i].total_count_ <= (*tree)[j].total_count_ {
+						left = i
+						i++
+					} else {
+						left = j
+						j++
+					}
+
+					if (*tree)[i].total_count_ <= (*tree)[j].total_count_ {
+						right = i
+						i++
+					} else {
+						right = j
+						j++
+					}
+
+					/* The sentinel node becomes the parent node. */
+					(*tree)[node-1].total_count_ = (*tree)[left].total_count_ + (*tree)[right].total_count_
+
+					(*tree)[node-1].index_left_ = int16(left)
+					(*tree)[node-1].index_right_or_value_ = int16(right)
+
+					/* Add back the last sentinel node. */
+					(*tree)[node] = sentinel
+					node++
+				}
+
+				if setDepth(2*n-1, *tree, depth, 14) {
+					/* We need to pack the Huffman tree in 14 bits. If this was not
+					   successful, add fake entities to the lowest values and retry. */
+					break
+				}
+			}
+		}
+
+		huffmanTreePool.Put(tree)
+	}
+
+	convertBitDepthsToSymbols(depth, length, bits)
+	if count <= 4 {
+		var i uint
+
+		/* value of 1 indicates a simple Huffman code */
+		bw.writeBits(2, 1)
+
+		bw.writeBits(2, uint64(count)-1) /* NSYM - 1 */
+
+		/* Sort */
+		for i = 0; i < count; i++ {
+			var j uint
+			for j = i + 1; j < count; j++ {
+				if depth[symbols[j]] < depth[symbols[i]] {
+					var tmp uint = symbols[j]
+					symbols[j] = symbols[i]
+					symbols[i] = tmp
+				}
+			}
+		}
+
+		if count == 2 {
+			bw.writeBits(max_bits, uint64(symbols[0]))
+			bw.writeBits(max_bits, uint64(symbols[1]))
+		} else if count == 3 {
+			bw.writeBits(max_bits, uint64(symbols[0]))
+			bw.writeBits(max_bits, uint64(symbols[1]))
+			bw.writeBits(max_bits, uint64(symbols[2]))
+		} else {
+			bw.writeBits(max_bits, uint64(symbols[0]))
+			bw.writeBits(max_bits, uint64(symbols[1]))
+			bw.writeBits(max_bits, uint64(symbols[2]))
+			bw.writeBits(max_bits, uint64(symbols[3]))
+
+			/* tree-select */
+			bw.writeSingleBit(depth[symbols[0]] == 1)
+		}
+	} else {
+		var previous_value byte = 8
+		var i uint
+
+		/* Complex Huffman Tree */
+		storeStaticCodeLengthCodeBW(bw)
+
+		/* Actual RLE coding. */
+		for i = 0; i < length; {
+			var value byte = depth[i]
+			var reps uint = 1
+			var k uint
+			for k = i + 1; k < length && depth[k] == value; k++ {
+				reps++
+			}
+
+			i += reps
+			if value == 0 {
+				bw.writeBits(uint(kZeroRepsDepth[reps]), kZeroRepsBits[reps])
+			} else {
+				if previous_value != value {
+					bw.writeBits(uint(kCodeLengthDepth[value]), uint64(kCodeLengthBits[value]))
+					reps--
+				}
+
+				if reps < 3 {
+					for reps != 0 {
+						reps--
+						bw.writeBits(uint(kCodeLengthDepth[value]), uint64(kCodeLengthBits[value]))
+					}
+				} else {
+					reps -= 3
+					bw.writeBits(uint(kNonZeroRepsDepth[reps]), kNonZeroRepsBits[reps])
+				}
+
+				previous_value = value
+			}
+		}
+	}
+}
+
 func indexOf(v []byte, v_size uint, value byte) uint {
 	var i uint = 0
 	for ; i < v_size; i++ {
@@ -663,12 +895,15 @@ func moveToFrontTransform(v_in []uint32, v_size uint, v_out []uint32) {
 	}
 }
 
-/* Finds runs of zeros in v[0..in_size) and replaces them with a prefix code of
-   the run length plus extra bits (lower 9 bits is the prefix code and the rest
-   are the extra bits). Non-zero values in v[] are shifted by
-   *max_length_prefix. Will not create prefix codes bigger than the initial
-   value of *max_run_length_prefix. The prefix code of run length L is simply
-   Log2Floor(L) and the number of extra bits is the same as the prefix code. */
+/*
+Finds runs of zeros in v[0..in_size) and replaces them with a prefix code of
+
+	the run length plus extra bits (lower 9 bits is the prefix code and the rest
+	are the extra bits). Non-zero values in v[] are shifted by
+	*max_length_prefix. Will not create prefix codes bigger than the initial
+	value of *max_run_length_prefix. The prefix code of run length L is simply
+	Log2Floor(L) and the number of extra bits is the same as the prefix code.
+*/
 func runLengthCodeZeros(in_size uint, v []uint32, out_size *uint, max_run_length_prefix *uint32) {
 	var max_reps uint32 = 0
 	var i uint
@@ -788,8 +1023,11 @@ func storeBlockSwitch(code *blockSplitCode, block_len uint32, block_type byte, i
 	writeBits(uint(len_nextra), uint64(len_extra), storage_ix, storage)
 }
 
-/* Builds a BlockSplitCode data structure from the block split given by the
-   vector of block types and block lengths and stores it to the bit stream. */
+/*
+Builds a BlockSplitCode data structure from the block split given by the
+
+	vector of block types and block lengths and stores it to the bit stream.
+*/
 func buildAndStoreBlockSplitCode(types []byte, lengths []uint32, num_blocks uint, num_types uint, tree []huffmanTree, code *blockSplitCode, storage_ix *uint, storage []byte) {
 	var type_histo [maxBlockTypeSymbols]uint32
 	var length_histo [numBlockLenSymbols]uint32
@@ -875,37 +1113,53 @@ type blockEncoder struct {
 	bits_             []uint16
 }
 
-func initBlockEncoder(self *blockEncoder, histogram_length uint, num_block_types uint, block_types []byte, block_lengths []uint32, num_blocks uint) {
+var blockEncoderPool sync.Pool
+
+func getBlockEncoder(histogram_length uint, num_block_types uint, block_types []byte, block_lengths []uint32, num_blocks uint) *blockEncoder {
+	self, _ := blockEncoderPool.Get().(*blockEncoder)
+
+	if self != nil {
+		self.block_ix_ = 0
+		self.entropy_ix_ = 0
+		self.depths_ = self.depths_[:0]
+		self.bits_ = self.bits_[:0]
+	} else {
+		self = &blockEncoder{}
+	}
+
 	self.histogram_length_ = histogram_length
 	self.num_block_types_ = num_block_types
 	self.block_types_ = block_types
 	self.block_lengths_ = block_lengths
 	self.num_blocks_ = num_blocks
 	initBlockTypeCodeCalculator(&self.block_split_code_.type_code_calculator)
-	self.block_ix_ = 0
 	if num_blocks == 0 {
 		self.block_len_ = 0
 	} else {
 		self.block_len_ = uint(block_lengths[0])
 	}
-	self.entropy_ix_ = 0
-	self.depths_ = nil
-	self.bits_ = nil
+
+	return self
 }
 
 func cleanupBlockEncoder(self *blockEncoder) {
-	self.depths_ = nil
-	self.bits_ = nil
+	blockEncoderPool.Put(self)
 }
 
-/* Creates entropy codes of block lengths and block types and stores them
-   to the bit stream. */
+/*
+Creates entropy codes of block lengths and block types and stores them
+
+	to the bit stream.
+*/
 func buildAndStoreBlockSwitchEntropyCodes(self *blockEncoder, tree []huffmanTree, storage_ix *uint, storage []byte) {
 	buildAndStoreBlockSplitCode(self.block_types_, self.block_lengths_, self.num_blocks_, self.num_block_types_, tree, &self.block_split_code_, storage_ix, storage)
 }
 
-/* Stores the next symbol with the entropy code of the current block type.
-   Updates the block type and block length at block boundaries. */
+/*
+Stores the next symbol with the entropy code of the current block type.
+
+	Updates the block type and block length at block boundaries.
+*/
 func storeSymbol(self *blockEncoder, symbol uint, storage_ix *uint, storage []byte) {
 	if self.block_len_ == 0 {
 		self.block_ix_++
@@ -924,9 +1178,12 @@ func storeSymbol(self *blockEncoder, symbol uint, storage_ix *uint, storage []by
 	}
 }
 
-/* Stores the next symbol with the entropy code of the current block type and
-   context value.
-   Updates the block type and block length at block boundaries. */
+/*
+Stores the next symbol with the entropy code of the current block type and
+
+	context value.
+	Updates the block type and block length at block boundaries.
+*/
 func storeSymbolWithContext(self *blockEncoder, symbol uint, context uint, context_map []uint32, storage_ix *uint, storage []byte, context_bits uint) {
 	if self.block_len_ == 0 {
 		self.block_ix_++
@@ -948,8 +1205,16 @@ func storeSymbolWithContext(self *blockEncoder, symbol uint, context uint, conte
 
 func buildAndStoreEntropyCodesLiteral(self *blockEncoder, histograms []histogramLiteral, histograms_size uint, alphabet_size uint, tree []huffmanTree, storage_ix *uint, storage []byte) {
 	var table_size uint = histograms_size * self.histogram_length_
-	self.depths_ = make([]byte, table_size)
-	self.bits_ = make([]uint16, table_size)
+	if cap(self.depths_) < int(table_size) {
+		self.depths_ = make([]byte, table_size)
+	} else {
+		self.depths_ = self.depths_[:table_size]
+	}
+	if cap(self.bits_) < int(table_size) {
+		self.bits_ = make([]uint16, table_size)
+	} else {
+		self.bits_ = self.bits_[:table_size]
+	}
 	{
 		var i uint
 		for i = 0; i < histograms_size; i++ {
@@ -961,8 +1226,16 @@ func buildAndStoreEntropyCodesLiteral(self *blockEncoder, histograms []histogram
 
 func buildAndStoreEntropyCodesCommand(self *blockEncoder, histograms []histogramCommand, histograms_size uint, alphabet_size uint, tree []huffmanTree, storage_ix *uint, storage []byte) {
 	var table_size uint = histograms_size * self.histogram_length_
-	self.depths_ = make([]byte, table_size)
-	self.bits_ = make([]uint16, table_size)
+	if cap(self.depths_) < int(table_size) {
+		self.depths_ = make([]byte, table_size)
+	} else {
+		self.depths_ = self.depths_[:table_size]
+	}
+	if cap(self.bits_) < int(table_size) {
+		self.bits_ = make([]uint16, table_size)
+	} else {
+		self.bits_ = self.bits_[:table_size]
+	}
 	{
 		var i uint
 		for i = 0; i < histograms_size; i++ {
@@ -974,8 +1247,16 @@ func buildAndStoreEntropyCodesCommand(self *blockEncoder, histograms []histogram
 
 func buildAndStoreEntropyCodesDistance(self *blockEncoder, histograms []histogramDistance, histograms_size uint, alphabet_size uint, tree []huffmanTree, storage_ix *uint, storage []byte) {
 	var table_size uint = histograms_size * self.histogram_length_
-	self.depths_ = make([]byte, table_size)
-	self.bits_ = make([]uint16, table_size)
+	if cap(self.depths_) < int(table_size) {
+		self.depths_ = make([]byte, table_size)
+	} else {
+		self.depths_ = self.depths_[:table_size]
+	}
+	if cap(self.bits_) < int(table_size) {
+		self.bits_ = make([]uint16, table_size)
+	} else {
+		self.bits_ = self.bits_[:table_size]
+	}
 	{
 		var i uint
 		for i = 0; i < histograms_size; i++ {
@@ -990,16 +1271,13 @@ func jumpToByteBoundary(storage_ix *uint, storage []byte) {
 	storage[*storage_ix>>3] = 0
 }
 
-func storeMetaBlock(input []byte, start_pos uint, length uint, mask uint, prev_byte byte, prev_byte2 byte, is_last bool, params *encoderParams, literal_context_mode int, commands []command, n_commands uint, mb *metaBlockSplit, storage_ix *uint, storage []byte) {
+func storeMetaBlock(input []byte, start_pos uint, length uint, mask uint, prev_byte byte, prev_byte2 byte, is_last bool, params *encoderParams, literal_context_mode int, commands []command, mb *metaBlockSplit, storage_ix *uint, storage []byte) {
 	var pos uint = start_pos
 	var i uint
 	var num_distance_symbols uint32 = params.dist.alphabet_size
 	var num_effective_distance_symbols uint32 = num_distance_symbols
 	var tree []huffmanTree
 	var literal_context_lut contextLUT = getContextLUT(literal_context_mode)
-	var literal_enc blockEncoder
-	var command_enc blockEncoder
-	var distance_enc blockEncoder
 	var dist *distanceParams = &params.dist
 	if params.large_window && num_effective_distance_symbols > numHistogramDistanceSymbols {
 		num_effective_distance_symbols = numHistogramDistanceSymbols
@@ -1008,13 +1286,13 @@ func storeMetaBlock(input []byte, start_pos uint, length uint, mask uint, prev_b
 	storeCompressedMetaBlockHeader(is_last, length, storage_ix, storage)
 
 	tree = make([]huffmanTree, maxHuffmanTreeSize)
-	initBlockEncoder(&literal_enc, numLiteralSymbols, mb.literal_split.num_types, mb.literal_split.types, mb.literal_split.lengths, mb.literal_split.num_blocks)
-	initBlockEncoder(&command_enc, numCommandSymbols, mb.command_split.num_types, mb.command_split.types, mb.command_split.lengths, mb.command_split.num_blocks)
-	initBlockEncoder(&distance_enc, uint(num_effective_distance_symbols), mb.distance_split.num_types, mb.distance_split.types, mb.distance_split.lengths, mb.distance_split.num_blocks)
+	literal_enc := getBlockEncoder(numLiteralSymbols, mb.literal_split.num_types, mb.literal_split.types, mb.literal_split.lengths, mb.literal_split.num_blocks)
+	command_enc := getBlockEncoder(numCommandSymbols, mb.command_split.num_types, mb.command_split.types, mb.command_split.lengths, mb.command_split.num_blocks)
+	distance_enc := getBlockEncoder(uint(num_effective_distance_symbols), mb.distance_split.num_types, mb.distance_split.types, mb.distance_split.lengths, mb.distance_split.num_blocks)
 
-	buildAndStoreBlockSwitchEntropyCodes(&literal_enc, tree, storage_ix, storage)
-	buildAndStoreBlockSwitchEntropyCodes(&command_enc, tree, storage_ix, storage)
-	buildAndStoreBlockSwitchEntropyCodes(&distance_enc, tree, storage_ix, storage)
+	buildAndStoreBlockSwitchEntropyCodes(literal_enc, tree, storage_ix, storage)
+	buildAndStoreBlockSwitchEntropyCodes(command_enc, tree, storage_ix, storage)
+	buildAndStoreBlockSwitchEntropyCodes(distance_enc, tree, storage_ix, storage)
 
 	writeBits(2, uint64(dist.distance_postfix_bits), storage_ix, storage)
 	writeBits(4, uint64(dist.num_direct_distance_codes)>>dist.distance_postfix_bits, storage_ix, storage)
@@ -1034,20 +1312,19 @@ func storeMetaBlock(input []byte, start_pos uint, length uint, mask uint, prev_b
 		encodeContextMap(mb.distance_context_map, mb.distance_context_map_size, mb.distance_histograms_size, tree, storage_ix, storage)
 	}
 
-	buildAndStoreEntropyCodesLiteral(&literal_enc, mb.literal_histograms, mb.literal_histograms_size, numLiteralSymbols, tree, storage_ix, storage)
-	buildAndStoreEntropyCodesCommand(&command_enc, mb.command_histograms, mb.command_histograms_size, numCommandSymbols, tree, storage_ix, storage)
-	buildAndStoreEntropyCodesDistance(&distance_enc, mb.distance_histograms, mb.distance_histograms_size, uint(num_distance_symbols), tree, storage_ix, storage)
+	buildAndStoreEntropyCodesLiteral(literal_enc, mb.literal_histograms, mb.literal_histograms_size, numLiteralSymbols, tree, storage_ix, storage)
+	buildAndStoreEntropyCodesCommand(command_enc, mb.command_histograms, mb.command_histograms_size, numCommandSymbols, tree, storage_ix, storage)
+	buildAndStoreEntropyCodesDistance(distance_enc, mb.distance_histograms, mb.distance_histograms_size, uint(num_distance_symbols), tree, storage_ix, storage)
 	tree = nil
 
-	for i = 0; i < n_commands; i++ {
-		var cmd command = commands[i]
+	for _, cmd := range commands {
 		var cmd_code uint = uint(cmd.cmd_prefix_)
-		storeSymbol(&command_enc, cmd_code, storage_ix, storage)
+		storeSymbol(command_enc, cmd_code, storage_ix, storage)
 		storeCommandExtra(&cmd, storage_ix, storage)
 		if mb.literal_context_map_size == 0 {
 			var j uint
 			for j = uint(cmd.insert_len_); j != 0; j-- {
-				storeSymbol(&literal_enc, uint(input[pos&mask]), storage_ix, storage)
+				storeSymbol(literal_enc, uint(input[pos&mask]), storage_ix, storage)
 				pos++
 			}
 		} else {
@@ -1055,7 +1332,7 @@ func storeMetaBlock(input []byte, start_pos uint, length uint, mask uint, prev_b
 			for j = uint(cmd.insert_len_); j != 0; j-- {
 				var context uint = uint(getContext(prev_byte, prev_byte2, literal_context_lut))
 				var literal byte = input[pos&mask]
-				storeSymbolWithContext(&literal_enc, uint(literal), context, mb.literal_context_map, storage_ix, storage, literalContextBits)
+				storeSymbolWithContext(literal_enc, uint(literal), context, mb.literal_context_map, storage_ix, storage, literalContextBits)
 				prev_byte2 = prev_byte
 				prev_byte = literal
 				pos++
@@ -1071,10 +1348,10 @@ func storeMetaBlock(input []byte, start_pos uint, length uint, mask uint, prev_b
 				var distnumextra uint32 = uint32(cmd.dist_prefix_) >> 10
 				var distextra uint64 = uint64(cmd.dist_extra_)
 				if mb.distance_context_map_size == 0 {
-					storeSymbol(&distance_enc, dist_code, storage_ix, storage)
+					storeSymbol(distance_enc, dist_code, storage_ix, storage)
 				} else {
 					var context uint = uint(commandDistanceContext(&cmd))
-					storeSymbolWithContext(&distance_enc, dist_code, context, mb.distance_context_map, storage_ix, storage, distanceContextBits)
+					storeSymbolWithContext(distance_enc, dist_code, context, mb.distance_context_map, storage_ix, storage, distanceContextBits)
 				}
 
 				writeBits(uint(distnumextra), distextra, storage_ix, storage)
@@ -1082,19 +1359,17 @@ func storeMetaBlock(input []byte, start_pos uint, length uint, mask uint, prev_b
 		}
 	}
 
-	cleanupBlockEncoder(&distance_enc)
-	cleanupBlockEncoder(&command_enc)
-	cleanupBlockEncoder(&literal_enc)
+	cleanupBlockEncoder(distance_enc)
+	cleanupBlockEncoder(command_enc)
+	cleanupBlockEncoder(literal_enc)
 	if is_last {
 		jumpToByteBoundary(storage_ix, storage)
 	}
 }
 
-func buildHistograms(input []byte, start_pos uint, mask uint, commands []command, n_commands uint, lit_histo *histogramLiteral, cmd_histo *histogramCommand, dist_histo *histogramDistance) {
+func buildHistograms(input []byte, start_pos uint, mask uint, commands []command, lit_histo *histogramLiteral, cmd_histo *histogramCommand, dist_histo *histogramDistance) {
 	var pos uint = start_pos
-	var i uint
-	for i = 0; i < n_commands; i++ {
-		var cmd command = commands[i]
+	for _, cmd := range commands {
 		var j uint
 		histogramAddCommand(cmd_histo, uint(cmd.cmd_prefix_))
 		for j = uint(cmd.insert_len_); j != 0; j-- {
@@ -1109,11 +1384,9 @@ func buildHistograms(input []byte, start_pos uint, mask uint, commands []command
 	}
 }
 
-func storeDataWithHuffmanCodes(input []byte, start_pos uint, mask uint, commands []command, n_commands uint, lit_depth []byte, lit_bits []uint16, cmd_depth []byte, cmd_bits []uint16, dist_depth []byte, dist_bits []uint16, storage_ix *uint, storage []byte) {
+func storeDataWithHuffmanCodes(input []byte, start_pos uint, mask uint, commands []command, lit_depth []byte, lit_bits []uint16, cmd_depth []byte, cmd_bits []uint16, dist_depth []byte, dist_bits []uint16, storage_ix *uint, storage []byte) {
 	var pos uint = start_pos
-	var i uint
-	for i = 0; i < n_commands; i++ {
-		var cmd command = commands[i]
+	for _, cmd := range commands {
 		var cmd_code uint = uint(cmd.cmd_prefix_)
 		var j uint
 		writeBits(uint(cmd_depth[cmd_code]), uint64(cmd_bits[cmd_code]), storage_ix, storage)
@@ -1135,7 +1408,7 @@ func storeDataWithHuffmanCodes(input []byte, start_pos uint, mask uint, commands
 	}
 }
 
-func storeMetaBlockTrivial(input []byte, start_pos uint, length uint, mask uint, is_last bool, params *encoderParams, commands []command, n_commands uint, storage_ix *uint, storage []byte) {
+func storeMetaBlockTrivial(input []byte, start_pos uint, length uint, mask uint, is_last bool, params *encoderParams, commands []command, storage_ix *uint, storage []byte) {
 	var lit_histo histogramLiteral
 	var cmd_histo histogramCommand
 	var dist_histo histogramDistance
@@ -1154,7 +1427,7 @@ func storeMetaBlockTrivial(input []byte, start_pos uint, length uint, mask uint,
 	histogramClearCommand(&cmd_histo)
 	histogramClearDistance(&dist_histo)
 
-	buildHistograms(input, start_pos, mask, commands, n_commands, &lit_histo, &cmd_histo, &dist_histo)
+	buildHistograms(input, start_pos, mask, commands, &lit_histo, &cmd_histo, &dist_histo)
 
 	writeBits(13, 0, storage_ix, storage)
 
@@ -1163,13 +1436,13 @@ func storeMetaBlockTrivial(input []byte, start_pos uint, length uint, mask uint,
 	buildAndStoreHuffmanTree(cmd_histo.data_[:], numCommandSymbols, numCommandSymbols, tree, cmd_depth[:], cmd_bits[:], storage_ix, storage)
 	buildAndStoreHuffmanTree(dist_histo.data_[:], maxSimpleDistanceAlphabetSize, uint(num_distance_symbols), tree, dist_depth[:], dist_bits[:], storage_ix, storage)
 	tree = nil
-	storeDataWithHuffmanCodes(input, start_pos, mask, commands, n_commands, lit_depth[:], lit_bits[:], cmd_depth[:], cmd_bits[:], dist_depth[:], dist_bits[:], storage_ix, storage)
+	storeDataWithHuffmanCodes(input, start_pos, mask, commands, lit_depth[:], lit_bits[:], cmd_depth[:], cmd_bits[:], dist_depth[:], dist_bits[:], storage_ix, storage)
 	if is_last {
 		jumpToByteBoundary(storage_ix, storage)
 	}
 }
 
-func storeMetaBlockFast(input []byte, start_pos uint, length uint, mask uint, is_last bool, params *encoderParams, commands []command, n_commands uint, storage_ix *uint, storage []byte) {
+func storeMetaBlockFast(input []byte, start_pos uint, length uint, mask uint, is_last bool, params *encoderParams, commands []command, storage_ix *uint, storage []byte) {
 	var num_distance_symbols uint32 = params.dist.alphabet_size
 	var distance_alphabet_bits uint32 = log2FloorNonZero(uint(num_distance_symbols-1)) + 1
 
@@ -1177,15 +1450,13 @@ func storeMetaBlockFast(input []byte, start_pos uint, length uint, mask uint, is
 
 	writeBits(13, 0, storage_ix, storage)
 
-	if n_commands <= 128 {
+	if len(commands) <= 128 {
 		var histogram = [numLiteralSymbols]uint32{0}
 		var pos uint = start_pos
 		var num_literals uint = 0
-		var i uint
 		var lit_depth [numLiteralSymbols]byte
 		var lit_bits [numLiteralSymbols]uint16
-		for i = 0; i < n_commands; i++ {
-			var cmd command = commands[i]
+		for _, cmd := range commands {
 			var j uint
 			for j = uint(cmd.insert_len_); j != 0; j-- {
 				histogram[input[pos&mask]]++
@@ -1201,7 +1472,7 @@ func storeMetaBlockFast(input []byte, start_pos uint, length uint, mask uint, is
 
 		storeStaticCommandHuffmanTree(storage_ix, storage)
 		storeStaticDistanceHuffmanTree(storage_ix, storage)
-		storeDataWithHuffmanCodes(input, start_pos, mask, commands, n_commands, lit_depth[:], lit_bits[:], kStaticCommandCodeDepth[:], kStaticCommandCodeBits[:], kStaticDistanceCodeDepth[:], kStaticDistanceCodeBits[:], storage_ix, storage)
+		storeDataWithHuffmanCodes(input, start_pos, mask, commands, lit_depth[:], lit_bits[:], kStaticCommandCodeDepth[:], kStaticCommandCodeBits[:], kStaticDistanceCodeDepth[:], kStaticDistanceCodeBits[:], storage_ix, storage)
 	} else {
 		var lit_histo histogramLiteral
 		var cmd_histo histogramCommand
@@ -1215,7 +1486,7 @@ func storeMetaBlockFast(input []byte, start_pos uint, length uint, mask uint, is
 		histogramClearLiteral(&lit_histo)
 		histogramClearCommand(&cmd_histo)
 		histogramClearDistance(&dist_histo)
-		buildHistograms(input, start_pos, mask, commands, n_commands, &lit_histo, &cmd_histo, &dist_histo)
+		buildHistograms(input, start_pos, mask, commands, &lit_histo, &cmd_histo, &dist_histo)
 		buildAndStoreHuffmanTreeFast(lit_histo.data_[:], lit_histo.total_count_, /* max_bits = */
 			8, lit_depth[:], lit_bits[:], storage_ix, storage)
 
@@ -1225,7 +1496,7 @@ func storeMetaBlockFast(input []byte, start_pos uint, length uint, mask uint, is
 		buildAndStoreHuffmanTreeFast(dist_histo.data_[:], dist_histo.total_count_, /* max_bits = */
 			uint(distance_alphabet_bits), dist_depth[:], dist_bits[:], storage_ix, storage)
 
-		storeDataWithHuffmanCodes(input, start_pos, mask, commands, n_commands, lit_depth[:], lit_bits[:], cmd_depth[:], cmd_bits[:], dist_depth[:], dist_bits[:], storage_ix, storage)
+		storeDataWithHuffmanCodes(input, start_pos, mask, commands, lit_depth[:], lit_bits[:], cmd_depth[:], cmd_bits[:], dist_depth[:], dist_bits[:], storage_ix, storage)
 	}
 
 	if is_last {
@@ -1233,8 +1504,11 @@ func storeMetaBlockFast(input []byte, start_pos uint, length uint, mask uint, is
 	}
 }
 
-/* This is for storing uncompressed blocks (simple raw storage of
-   bytes-as-bytes). */
+/*
+This is for storing uncompressed blocks (simple raw storage of
+
+	bytes-as-bytes).
+*/
 func storeUncompressedMetaBlock(is_final_block bool, input []byte, position uint, mask uint, len uint, storage_ix *uint, storage []byte) {
 	var masked_pos uint = position & mask
 	storeUncompressedMetaBlockHeader(uint(len), storage_ix, storage)
