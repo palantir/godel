@@ -1,5 +1,0 @@
-name: godel-repos-go-version
-reason: |
-  Manage Go version for godel repos separately so that their version can be incremented before other repositories.
-  This allows other repositories to use the version of godel and its plugins/assets built with the new version of Go
-  before they update their own version.
