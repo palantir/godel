@@ -1,0 +1,5 @@
+version-selector: latest-first-release
+reason: |
+  godel repositories should always attempt to use the latest available major/minor version of Go so that their version
+  can be incremented before other repositories. This allows other repositories to use the version of godel and its
+  plugins/assets built with the new version of Go before they update their own version.
