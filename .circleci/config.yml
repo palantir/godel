@@ -69,6 +69,8 @@ workflows:
           name: "integration-test"
           executor: "standard-executor"
           test_flags: "--tags=integration"
+          requires:
+            - build
           <<: *all-tags-filter
       - go-jobs/godel_verify:
           name: "pkg-products-verify-test"
