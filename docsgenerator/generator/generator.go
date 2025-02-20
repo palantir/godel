@@ -174,7 +174,7 @@ func runDockerBuild(workDir, tag string, suppressDockerOutput bool, stdout io.Wr
 		if suppressDockerOutput {
 			errMsg += " with output " + outputBuf.String()
 		}
-		return "", errors.Wrapf(err, errMsg)
+		return "", errors.Wrap(err, errMsg)
 	}
 	return outputBuf.String(), nil
 }
