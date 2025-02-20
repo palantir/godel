@@ -136,9 +136,9 @@ func (ti upgradeConfigTaskInfoImpl) toTask(pluginExecPath, cfgFileName string, a
 				}
 				if _, ok := err.(*exec.ExitError); ok {
 					// if error was an exit error, don't bother wrapping because it's probably just "exit 1"
-					return nil, errors.Errorf(output)
+					return nil, errors.Errorf("%s", output)
 				}
-				return nil, errors.Wrapf(err, output)
+				return nil, errors.Wrap(err, output)
 			}
 
 			// valid output bytes are encoded as base64, so decode

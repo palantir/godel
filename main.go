@@ -42,7 +42,7 @@ func runGodelApp(osArgs []string) int {
 	}
 	if err != nil {
 		// match invalid flag output with that provided by Cobra CLI
-		printErrAndExit(fmt.Errorf(err.Error()+"\n"+godellauncher.UsageString(createTasks(nil, nil, nil, tasksCfgInfo))), false)
+		printErrAndExit(fmt.Errorf("%s", err.Error()+"\n"+godellauncher.UsageString(createTasks(nil, nil, nil, tasksCfgInfo))), false)
 	}
 
 	var allUpgradeConfigTasks []godellauncher.UpgradeConfigTask
