@@ -77,7 +77,7 @@ func TestFoo(t *testing.T) {
 		args []string
 		want string
 	}{
-		{want: `(?s).+Failed tasks:\n\tformat --verify\n\tlicense --verify\n\tcheck\n\ttest`},
+		{want: `(?s).+Failed tasks:\n\tformat --verify\n\tmod --verify\n\tlicense --verify\n\tcheck\n\ttest`},
 		{args: []string{"--skip-format"}, want: `(?s).+Failed tasks:\n\tlicense --verify\n\tcheck\n\ttest`},
 		{args: []string{"--skip-check"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tlicense --verify\n\ttest`},
 		{args: []string{"--skip-license"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tcheck\n\ttest`},
@@ -280,7 +280,7 @@ func TestFooIntegration(t *testing.T) {}
 	require.NoError(t, err)
 
 	// run verify with "none" tags. Should include output for main package but not for integration_test package.
-	cmd := exec.Command("./godelw", "verify", "--apply=false", "--tags=none")
+	cmd := exec.Command("./godelw", "verify", "--skip-mod", "--apply=false", "--tags=none")
 	cmd.Dir = testProjectDir
 	output, err := cmd.CombinedOutput()
 	outputStr := string(output)
@@ -289,7 +289,7 @@ func TestFooIntegration(t *testing.T) {}
 	assert.NotRegexp(t, fmt.Sprintf(`(?s).+%s\s+[0-9.]+s.+`, files["integration_tests/integration_test.go"].ImportPath), outputStr)
 
 	// run verify with "all" tags. Should include output for integration_test package but not for main package.
-	cmd = exec.Command("./godelw", "verify", "--apply=false", "--tags=all")
+	cmd = exec.Command("./godelw", "verify", "--skip-mod", "--apply=false", "--tags=all")
 	cmd.Dir = testProjectDir
 	output, err = cmd.CombinedOutput()
 	outputStr = string(output)
@@ -298,7 +298,7 @@ func TestFooIntegration(t *testing.T) {}
 	assert.NotRegexp(t, fmt.Sprintf(`(?s).+%s\s+[0-9.]+s.+`, files["main.go"].ImportPath), outputStr)
 
 	// run verify in regular mode. Should include output for all tests.
-	cmd = exec.Command("./godelw", "verify", "--apply=false")
+	cmd = exec.Command("./godelw", "verify", "--skip-mod", "--apply=false")
 	cmd.Dir = testProjectDir
 	output, err = cmd.CombinedOutput()
 	outputStr = string(output)
