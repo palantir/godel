@@ -17,6 +17,7 @@ package plugins
 import (
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -37,27 +38,62 @@ type pluginInfoWithAssets struct {
 	Assets     []artifactresolver.Locator
 }
 
-// LoadPluginsTasks returns all of the tasks defined by the plugins in the specified parameters. Does the following:
+// LoadPluginsTasks returns the tasks defined by the plugins in the specified parameters. Does the following:
 //
-//   - Resolves all of the plugins defined in the provided params for the runtime environment's OS/Architecture into the
+//   - Resolves the plugins defined in the provided params for the runtime environment's OS/Architecture into the
 //     gödel home plugins and downloads directories.
-//   - Verifies that all of the resolved plugins are valid and compatible with each other (for example, ensures that
-//     multiple plugins do not provide the same task).
-//   - Creates runnable godellauncher.Task tasks for all of the plugins.
+//   - Verifies that the resolved plugins are valid and compatible with each other (for example, ensures that multiple
+//     plugins do not provide the same task).
+//   - Creates runnable godellauncher.Task tasks for the plugins.
 //
-// Returns all of the tasks provided by the plugins in the provided parameters.
+// Returns the tasks provided by the plugins in the provided parameters.
 func LoadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer) ([]godellauncher.Task, []godellauncher.UpgradeConfigTask, error) {
+	return loadPluginsTasks(pluginsParam, stdout, "")
+}
+
+// loadPluginsTasks is a helper function that loads the tasks defined by the plugins in the specified parameters and
+// optionally uses a cache for plugin information.
+//
+// If cachePath is non-empty, it is used as the path to a file that contains the plugin information, which is a
+// map[artifactresolver.Locator]pluginInfoWithAssets. If the cache file exists, it is read and used to load the plugin
+// information. If the cache file does not exist, the work to resolve the plugins and verify their validity is performed
+// and then the resulting plugin information is written to the cache file.
+func loadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer, cachePath string) ([]godellauncher.Task, []godellauncher.UpgradeConfigTask, error) {
 	pluginsDir, assetsDir, downloadsDir, err := pathsinternal.ResourceDirs()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	plugins, err := resolvePlugins(pluginsDir, assetsDir, downloadsDir, osarch.Current(), pluginsParam, stdout)
-	if err != nil {
-		return nil, nil, err
+	var plugins map[artifactresolver.Locator]pluginInfoWithAssets
+	if cachePath != "" {
+		if pluginsConfigCacheBytes, err := os.ReadFile(cachePath); err == nil {
+			loadedPlugins, err := unmarshalPluginsInfoJSON(pluginsConfigCacheBytes)
+			if err != nil {
+				return nil, nil, errors.Wrapf(err, "failed to unmarshal plugin information")
+			}
+			plugins = loadedPlugins
+		} else if !os.IsNotExist(err) {
+			return nil, nil, errors.Wrapf(err, "failed to read plugin information from cache file at %q", cachePath)
+		}
 	}
-	if err := verifyPluginCompatibility(plugins); err != nil {
-		return nil, nil, err
+
+	if plugins == nil {
+		plugins, err = resolvePlugins(pluginsDir, assetsDir, downloadsDir, osarch.Current(), pluginsParam, stdout)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := verifyPluginCompatibility(plugins); err != nil {
+			return nil, nil, err
+		}
+
+		// write plugin information to cache file
+		pluginsJSON, err := marshalPluginsInfoJSON(plugins)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, "failed to marshal plugin information")
+		}
+		if err := writeFileUsingRename(cachePath, pluginsJSON); err != nil {
+			return nil, nil, errors.Wrapf(err, "failed to write plugin information to cache file at %q", cachePath)
+		}
 	}
 
 	var sortedPluginLocators []artifactresolver.Locator

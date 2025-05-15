@@ -121,17 +121,17 @@ func ResolveAndVerify(
 			artifactErrors[currLocator] = errors.Wrapf(err, "failed to extract artifact from archive into destination")
 			return currLocator, false
 		}
-	}
 
-	if wantChecksum, ok := currArtifact.LocatorWithChecksums.Checksums[osArch]; ok {
-		gotChecksum, err := artifactresolver.SHA256ChecksumFile(currDstPath)
-		if err != nil {
-			artifactErrors[currLocator] = errors.Wrapf(err, "failed to compute checksum for plugin")
-			return currLocator, false
-		}
-		if gotChecksum != wantChecksum {
-			artifactErrors[currLocator] = errors.Errorf("failed to verify checksum for %s: want %s, got %s", currDstPath, wantChecksum, gotChecksum)
-			return currLocator, false
+		if wantChecksum, ok := currArtifact.LocatorWithChecksums.Checksums[osArch]; ok {
+			gotChecksum, err := artifactresolver.SHA256ChecksumFile(currDstPath)
+			if err != nil {
+				artifactErrors[currLocator] = errors.Wrapf(err, "failed to compute checksum for plugin")
+				return currLocator, false
+			}
+			if gotChecksum != wantChecksum {
+				artifactErrors[currLocator] = errors.Errorf("failed to verify checksum for %s: want %s, got %s", currDstPath, wantChecksum, gotChecksum)
+				return currLocator, false
+			}
 		}
 	}
 	return currLocator, true
