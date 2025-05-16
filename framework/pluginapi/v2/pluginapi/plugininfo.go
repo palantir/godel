@@ -31,6 +31,8 @@ const (
 )
 
 // PluginInfo specifies the information for a plugin and the tasks that it provides.
+//
+// Although the interface is exported, implementations can only be defined in this package.
 type PluginInfo interface {
 	// PluginSchemaVersion returns the schema version for the plugin.
 	PluginSchemaVersion() string
@@ -55,8 +57,49 @@ type PluginInfo interface {
 	// does not support upgrading configuration.
 	UpgradeConfigTask(pluginExecPath string, assets []string) *godellauncher.UpgradeConfigTask
 
-	// private function on interface to keep implementation private to package.
+	// MarshalPluginInfoJSON returns a JSON representation of the plugin info. Note that this function is intentionally
+	// *not* MarshalJSON: this ensures that individual implementors of PluginInfo can have their own MarshalJSON that
+	// only marshals the specific type.
+	//
+	// When an implementation of this function is created, the UnmarshalPluginInfoJSON function should be updated to
+	// ensure that it can unmarshal the JSON produced by the implementation.
+	MarshalPluginInfoJSON() ([]byte, error)
+
+	// private is an unexported function on interface to require that all implementations be in this package.
 	private()
+}
+
+// UnmarshalPluginInfoJSON returns a PluginInfo from the provided JSON-encoded bytes. The bytes must have been
+// produced by the MarshalPluginInfoJSON function on a PluginInfo. This function should handle every implementation of
+// PluginInfo (which should be possible because the interface has an unexported function and thus every implementation
+// of the interface must be in this package).
+func UnmarshalPluginInfoJSON(data []byte) (PluginInfo, error) {
+	var marshalType pluginInfoMarshalType
+	if err := json.Unmarshal(data, &marshalType); err != nil {
+		return nil, errors.Wrapf(err, "failed to unmarshal plugin info")
+	}
+	switch {
+	case marshalType.V2Info != nil:
+		return marshalType.V2Info, nil
+	case marshalType.WrappedV1Info != nil:
+		return marshalType.WrappedV1Info, nil
+	}
+	return nil, errors.Errorf("JSON data did not have V2Info or WrappedV1Info field")
+}
+
+func marshalJSONHelper(in pluginInfoMarshalType) ([]byte, error) {
+	in.SchemaVersion = currentPluginInfoMarshalTypeSchemaVersion
+	return json.Marshal(in)
+}
+
+const currentPluginInfoMarshalTypeSchemaVersion = 1
+
+// pluginInfoMarshalType is a struct used to marshal PluginInfo to JSON. It is a union type where only one info field
+// should be set.
+type pluginInfoMarshalType struct {
+	SchemaVersion int                      `json:"schemaVersion"`
+	V2Info        *pluginInfoImpl          `json:"v2Info,omitempty"`
+	WrappedV1Info *wrappedV1PluginInfoImpl `json:"wrappedV1Info,omitempty"`
 }
 
 // MustNewPluginInfo returns the result of calling NewInfo with the provided parameters. Panics if the call to
@@ -116,7 +159,7 @@ func NewPluginInfo(group, product, version string, params ...PluginInfoParam) (P
 		return nil, errors.Errorf(`plugin %s provides a configuration upgrade task but does not specify that it uses configuration`, id)
 	}
 
-	return pluginInfoImpl{
+	return &pluginInfoImpl{
 		PluginSchemaVersionVar: CurrentSchemaVersion,
 		GroupVar:               group,
 		ProductVar:             product,
@@ -210,27 +253,27 @@ type pluginInfoImpl struct {
 	UpgradeConfigTaskVar *upgradeConfigTaskInfoImpl `json:"upgradeTask"`
 }
 
-func (infoImpl pluginInfoImpl) PluginSchemaVersion() string {
+func (infoImpl *pluginInfoImpl) PluginSchemaVersion() string {
 	return infoImpl.PluginSchemaVersionVar
 }
 
-func (infoImpl pluginInfoImpl) Group() string {
+func (infoImpl *pluginInfoImpl) Group() string {
 	return infoImpl.GroupVar
 }
 
-func (infoImpl pluginInfoImpl) Product() string {
+func (infoImpl *pluginInfoImpl) Product() string {
 	return infoImpl.ProductVar
 }
 
-func (infoImpl pluginInfoImpl) Version() string {
+func (infoImpl *pluginInfoImpl) Version() string {
 	return infoImpl.VersionVar
 }
 
-func (infoImpl pluginInfoImpl) UsesConfig() bool {
+func (infoImpl *pluginInfoImpl) UsesConfig() bool {
 	return infoImpl.UsesConfigVar
 }
 
-func (infoImpl pluginInfoImpl) configFileName() string {
+func (infoImpl *pluginInfoImpl) configFileName() string {
 	var configFileName string
 	if infoImpl.UsesConfigVar {
 		configFileName = infoImpl.ProductVar + ".yml"
@@ -238,7 +281,7 @@ func (infoImpl pluginInfoImpl) configFileName() string {
 	return configFileName
 }
 
-func (infoImpl pluginInfoImpl) Tasks(pluginExecPath string, assets []string) []godellauncher.Task {
+func (infoImpl *pluginInfoImpl) Tasks(pluginExecPath string, assets []string) []godellauncher.Task {
 	var tasks []godellauncher.Task
 	for _, ti := range infoImpl.TasksVar {
 		tasks = append(tasks, ti.toTask(pluginExecPath, infoImpl.configFileName(), assets))
@@ -246,7 +289,7 @@ func (infoImpl pluginInfoImpl) Tasks(pluginExecPath string, assets []string) []g
 	return tasks
 }
 
-func (infoImpl pluginInfoImpl) UpgradeConfigTask(pluginExecPath string, assets []string) *godellauncher.UpgradeConfigTask {
+func (infoImpl *pluginInfoImpl) UpgradeConfigTask(pluginExecPath string, assets []string) *godellauncher.UpgradeConfigTask {
 	if infoImpl.UpgradeConfigTaskVar == nil {
 		return nil
 	}
@@ -254,7 +297,13 @@ func (infoImpl pluginInfoImpl) UpgradeConfigTask(pluginExecPath string, assets [
 	return &taskVar
 }
 
-func (infoImpl pluginInfoImpl) private() {}
+func (infoImpl *pluginInfoImpl) MarshalPluginInfoJSON() ([]byte, error) {
+	return marshalJSONHelper(pluginInfoMarshalType{
+		V2Info: infoImpl,
+	})
+}
+
+func (infoImpl *pluginInfoImpl) private() {}
 
 // InfoFromPlugin returns the Info for the plugin at the specified path. Does so by invoking the InfoCommand on the
 // plugin and parsing the output.
@@ -286,7 +335,7 @@ func InfoFromPlugin(pluginPath string) (PluginInfo, error) {
 		if _, err := NewPluginInfo(parts[0], parts[1], parts[2]); err != nil {
 			return nil, errors.Wrapf(err, "could not create v2 plugin info from v1 plugin info")
 		}
-		pluginInfo = wrappedV1PluginInfoImpl{
+		pluginInfo = &wrappedV1PluginInfoImpl{
 			v1PluginInfo: v1Info,
 		}
 	case CurrentSchemaVersion:
@@ -294,7 +343,7 @@ func InfoFromPlugin(pluginPath string) (PluginInfo, error) {
 		if err := json.Unmarshal(bytes, &v2Info); err != nil {
 			return nil, errors.Wrapf(err, "failed to unmarshal plugin information for plugin %s from output %q", pluginPath, string(bytes))
 		}
-		pluginInfo = v2Info
+		pluginInfo = &v2Info
 	default:
 		return nil, errors.Errorf("unsupported plugin schema version: %s", version)
 	}
@@ -309,32 +358,38 @@ type wrappedV1PluginInfoImpl struct {
 	v1PluginInfo v1.PluginInfo
 }
 
-func (infoImpl wrappedV1PluginInfoImpl) PluginSchemaVersion() string {
+func (infoImpl *wrappedV1PluginInfoImpl) PluginSchemaVersion() string {
 	return CurrentSchemaVersion
 }
 
-func (infoImpl wrappedV1PluginInfoImpl) Group() string {
+func (infoImpl *wrappedV1PluginInfoImpl) Group() string {
 	return strings.Split(infoImpl.v1PluginInfo.ID(), ":")[0]
 }
 
-func (infoImpl wrappedV1PluginInfoImpl) Product() string {
+func (infoImpl *wrappedV1PluginInfoImpl) Product() string {
 	return strings.Split(infoImpl.v1PluginInfo.ID(), ":")[1]
 }
 
-func (infoImpl wrappedV1PluginInfoImpl) Version() string {
+func (infoImpl *wrappedV1PluginInfoImpl) Version() string {
 	return strings.Split(infoImpl.v1PluginInfo.ID(), ":")[2]
 }
 
-func (infoImpl wrappedV1PluginInfoImpl) UsesConfig() bool {
+func (infoImpl *wrappedV1PluginInfoImpl) UsesConfig() bool {
 	return infoImpl.v1PluginInfo.ConfigFileName() != ""
 }
 
-func (infoImpl wrappedV1PluginInfoImpl) Tasks(pluginExecPath string, assets []string) []godellauncher.Task {
+func (infoImpl *wrappedV1PluginInfoImpl) Tasks(pluginExecPath string, assets []string) []godellauncher.Task {
 	return infoImpl.v1PluginInfo.Tasks(pluginExecPath, assets)
 }
 
-func (infoImpl wrappedV1PluginInfoImpl) UpgradeConfigTask(pluginExecPath string, assets []string) *godellauncher.UpgradeConfigTask {
+func (infoImpl *wrappedV1PluginInfoImpl) UpgradeConfigTask(pluginExecPath string, assets []string) *godellauncher.UpgradeConfigTask {
 	return nil
 }
 
-func (infoImpl wrappedV1PluginInfoImpl) private() {}
+func (infoImpl *wrappedV1PluginInfoImpl) MarshalPluginInfoJSON() ([]byte, error) {
+	return marshalJSONHelper(pluginInfoMarshalType{
+		WrappedV1Info: infoImpl,
+	})
+}
+
+func (infoImpl *wrappedV1PluginInfoImpl) private() {}
