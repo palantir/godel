@@ -1,0 +1,8 @@
+type: improvement
+improvement:
+  description: |-
+    Adds the ability to cache plugin and asset information when resolving plugins and updates the godel startup logic to use the cache.
+
+    The net result is a significant improvement in startup time for projects with multiple plugins and assets.
+  links:
+  - https://github.com/palantir/godel/pull/883
