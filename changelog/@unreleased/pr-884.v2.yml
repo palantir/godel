@@ -1,0 +1,6 @@
+type: fix
+fix:
+  description: Fixes issue where saving and loading the plugin/asset cache for a plugin
+    with v1 plugin info would cause a panic.
+  links:
+  - https://github.com/palantir/godel/pull/884
