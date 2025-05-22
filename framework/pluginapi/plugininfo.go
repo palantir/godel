@@ -40,8 +40,41 @@ type PluginInfo interface {
 	// Tasks returns the tasks provided by the plugin. Requires the path to the plugin executable and assets as input.
 	Tasks(pluginExecPath string, assets []string) []godellauncher.Task
 
+	// MarshalPluginInfoJSON returns a JSON representation of the plugin info. Note that this function is intentionally
+	// *not* MarshalJSON: this ensures that individual implementors of PluginInfo can have their own MarshalJSON that
+	// only marshals the specific type.
+	//
+	// When an implementation of this function is created, the UnmarshalPluginInfoJSON function should be updated to
+	// ensure that it can unmarshal the JSON produced by the implementation.
+	MarshalPluginInfoJSON() ([]byte, error)
+
 	// private function on interface to keep implementation private to package.
 	private()
+}
+
+// UnmarshalPluginInfoJSON returns a PluginInfo from the provided JSON-encoded bytes. The bytes must have been
+// produced by the MarshalPluginInfoJSON function on a PluginInfo. This function should handle every implementation of
+// PluginInfo (which should be possible because the interface has an unexported function and thus every implementation
+// of the interface must be in this package).
+func UnmarshalPluginInfoJSON(data []byte) (PluginInfo, error) {
+	var marshalType pluginInfoMarshalType
+	if err := json.Unmarshal(data, &marshalType); err != nil {
+		return nil, errors.Wrapf(err, "failed to unmarshal plugin info")
+	}
+	switch {
+	case marshalType.V1Info != nil:
+		return marshalType.V1Info, nil
+	}
+	return nil, errors.Errorf("JSON data did not have V1Info field")
+}
+
+const currentPluginInfoMarshalTypeSchemaVersion = 1
+
+// pluginInfoMarshalType is a struct used to marshal PluginInfo to JSON. It is a union type where only one info field
+// should be set.
+type pluginInfoMarshalType struct {
+	SchemaVersion int             `json:"schemaVersion"`
+	V1Info        *pluginInfoImpl `json:"v1Info,omitempty"`
 }
 
 // MustNewPluginInfo returns the result of calling NewInfo with the provided parameters. Panics if the call to
@@ -166,6 +199,13 @@ func (infoImpl pluginInfoImpl) Tasks(pluginExecPath string, assets []string) []g
 		tasks = append(tasks, ti.toTask(pluginExecPath, infoImpl.ConfigFileNameVar, assets))
 	}
 	return tasks
+}
+
+func (infoImpl pluginInfoImpl) MarshalPluginInfoJSON() ([]byte, error) {
+	return json.Marshal(pluginInfoMarshalType{
+		SchemaVersion: currentPluginInfoMarshalTypeSchemaVersion,
+		V1Info:        &infoImpl,
+	})
 }
 
 func (infoImpl pluginInfoImpl) private() {}
