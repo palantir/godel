@@ -392,4 +392,17 @@ func (infoImpl *wrappedV1PluginInfoImpl) MarshalPluginInfoJSON() ([]byte, error)
 	})
 }
 
+func (infoImpl wrappedV1PluginInfoImpl) MarshalJSON() ([]byte, error) {
+	return infoImpl.v1PluginInfo.MarshalPluginInfoJSON()
+}
+
+func (infoImpl *wrappedV1PluginInfoImpl) UnmarshalJSON(b []byte) error {
+	v1PluginInfo, err := v1.UnmarshalPluginInfoJSON(b)
+	if err != nil {
+		return err
+	}
+	infoImpl.v1PluginInfo = v1PluginInfo
+	return nil
+}
+
 func (infoImpl *wrappedV1PluginInfoImpl) private() {}
