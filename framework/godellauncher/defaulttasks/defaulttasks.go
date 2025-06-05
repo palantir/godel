@@ -130,12 +130,12 @@ var defaultPluginsConfig = config.PluginsConfig{
 				},
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.godel-okgo-asset-golint:golint-asset:1.43.0",
+						ID: "com.palantir.godel-okgo-asset-golint:golint-asset:1.44.0",
 						Checksums: map[string]string{
-							"darwin-amd64": "4b1947bff2a4cef73deb6f32e4e15172e03bffab1cd651161c9baba0492b7283",
-							"darwin-arm64": "dee1a57805a79f3347dfa5357d3e09b790ee52ec0b3e44611853c132d79dd2ad",
-							"linux-amd64":  "7a05916b682c37da8196a7af4ce4ae5ad18f54ece77d2490b261e02d95d673f3",
-							"linux-arm64":  "390d900c493c1bb3c228e182547fabe94dc848a17e67796ab185e9fe17513788",
+							"darwin-amd64": "ee85c1e5306dbb7f94ac0638a78cfc58cc79fbe397e6c84078d5aae3b60347e0",
+							"darwin-arm64": "6ebde8cbb008416590901bca0c0a07e9e7ea58c8ba6267c7fce80ab89238723d",
+							"linux-amd64":  "3855742934c33f284dbae5efd79eb18effc83efad6aa5d47c27a123259d44d77",
+							"linux-arm64":  "9659b9e33e6c1d7bab5370117b1e9302112b14f87fd7a454b331b8e6806a06d2",
 						},
 					}),
 				},
