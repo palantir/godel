@@ -86,13 +86,15 @@ func loadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer,
 			return nil, nil, err
 		}
 
-		// write plugin information to cache file
-		pluginsJSON, err := marshalPluginsInfoJSON(plugins)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, "failed to marshal plugin information")
-		}
-		if err := writeFileUsingRename(cachePath, pluginsJSON); err != nil {
-			return nil, nil, errors.Wrapf(err, "failed to write plugin information to cache file at %q", cachePath)
+		if cachePath != "" {
+			// write plugin information to cache file
+			pluginsJSON, err := marshalPluginsInfoJSON(plugins)
+			if err != nil {
+				return nil, nil, errors.Wrapf(err, "failed to marshal plugin information")
+			}
+			if err := writeFileUsingRename(cachePath, pluginsJSON); err != nil {
+				return nil, nil, errors.Wrapf(err, "failed to write plugin information to cache file at %q", cachePath)
+			}
 		}
 	}
 
