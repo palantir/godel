@@ -233,6 +233,19 @@ var defaultPluginsConfig = config.PluginsConfig{
 				}),
 			}),
 		},
+		{
+			LocatorWithResolverConfig: config.ToLocatorWithResolverConfig(config.LocatorWithResolverConfig{
+				Locator: config.ToLocatorConfig(config.LocatorConfig{
+					ID: "com.palantir.godel-mod-plugin:mod-plugin:1.33.0",
+					Checksums: map[string]string{
+						"darwin-amd64": "ccc2d3e011108ab5610281b31cd1bdcb04f76c346f957882dc747e90ad4de29d",
+						"darwin-arm64": "e8497f8ab8ebf09be3e43f0ebc9d5f958f848c58a4f3b1a12e2174009c3f5d2f",
+						"linux-amd64":  "97e97d474dbf08708bbb6e494699e0fe174cfb31bd6e0526f87804dffd1d97a5",
+						"linux-arm64":  "03cc1a89d2fc6820a8ff0ac7e2774c932ee0afad9ef2801fc3300e73a7ca8a34",
+					},
+				}),
+			}),
+		},
 	}),
 }
 

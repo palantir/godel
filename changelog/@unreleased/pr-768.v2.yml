@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Add mod-plugin to default tasks
+  links:
+  - https://github.com/palantir/godel/pull/768
