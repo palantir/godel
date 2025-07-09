@@ -88,7 +88,7 @@ var defaultPluginsConfig = config.PluginsConfig{
 					ID: "com.palantir.okgo:check-plugin:1.63.0",
 					Checksums: map[string]string{
 						"darwin-amd64": "62272db913c3a8cda19e018ac7e11356564f221e037fda705f85f3ec74e66b2c",
-						"darwin-arm64": "7e2fd26a1c41e0ef25617dcf2c6d9052280feae33c4b0301871cfc277ec73dde",
+						"darwin-arm64": "",
 						"linux-amd64":  "8c3e9a130823c2c76c69572f7201ee131cd2a1631c35f5373dfe1a2767992319",
 						"linux-arm64":  "31459e95bf1b06bf8b8b87d7f4ffffeaa2380cf3af84ebd734b9b98dff2188af",
 					},
