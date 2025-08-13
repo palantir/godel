@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build windows
+//go:build windows
 
 package filelock
 
 import (
-	"os"
+	"io/fs"
 	"syscall"
 
 	"github.com/rogpeppe/go-internal/internal/syscall/windows"
@@ -35,7 +35,7 @@ func lock(f File, lt lockType) error {
 
 	err := windows.LockFileEx(syscall.Handle(f.Fd()), uint32(lt), reserved, allBytes, allBytes, ol)
 	if err != nil {
-		return &os.PathError{
+		return &fs.PathError{
 			Op:   lt.String(),
 			Path: f.Name(),
 			Err:  err,
@@ -48,7 +48,7 @@ func unlock(f File) error {
 	ol := new(syscall.Overlapped)
 	err := windows.UnlockFileEx(syscall.Handle(f.Fd()), reserved, allBytes, allBytes, ol)
 	if err != nil {
-		return &os.PathError{
+		return &fs.PathError{
 			Op:   "Unlock",
 			Path: f.Name(),
 			Err:  err,
