@@ -12,6 +12,8 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/fatih/color"
+
 	"github.com/mattn/go-colorable"
 	"github.com/mattn/go-isatty"
 
@@ -19,7 +21,7 @@ import (
 )
 
 // Version of ProgressBar library
-const Version = "3.0.2"
+const Version = "3.0.8"
 
 type key int
 
@@ -27,6 +29,9 @@ const (
 	// Bytes means we're working with byte sizes. Numbers will print as Kb, Mb, etc
 	// bar.Set(pb.Bytes, true)
 	Bytes key = 1 << iota
+
+	// Use SI bytes prefix names (kB, MB, etc) instead of IEC prefix names (KiB, MiB, etc)
+	SIBytesPrefix
 
 	// Terminal means we're will print to terminal and can use ascii sequences
 	// Also we're will try to use terminal width
@@ -40,6 +45,12 @@ const (
 
 	// Color by default is true when output is tty, but you can set to false for disabling colors
 	Color
+
+	// Hide the progress bar when finished, rather than leaving it up. By default it's false.
+	CleanOnFinish
+
+	// Round elapsed time to this precision. Defaults to time.Second.
+	TimeRound
 )
 
 const (
@@ -137,6 +148,9 @@ func (pb *ProgressBar) configure() {
 	if pb.refreshRate == 0 {
 		pb.refreshRate = defaultRefreshRate
 	}
+	if pb.vars[CleanOnFinish] == nil {
+		pb.vars[CleanOnFinish] = false
+	}
 	if f, ok := pb.output.(*os.File); ok {
 		pb.coutput = colorable.NewColorable(f)
 	} else {
@@ -201,7 +215,12 @@ func (pb *ProgressBar) write(finish bool) {
 	if ret, ok := pb.Get(ReturnSymbol).(string); ok {
 		result = ret + result
 		if finish && ret == "\r" {
-			result += "\n"
+			if pb.GetBool(CleanOnFinish) {
+				// "Wipe out" progress bar by overwriting one line with blanks
+				result = "\r" + color.New(color.Reset).Sprint(strings.Repeat(" ", width)) + "\r"
+			} else {
+				result += "\n"
+			}
 		}
 	}
 	if pb.GetBool(Color) {
@@ -219,6 +238,12 @@ func (pb *ProgressBar) Total() int64 {
 // SetTotal sets the total bar value
 func (pb *ProgressBar) SetTotal(value int64) *ProgressBar {
 	atomic.StoreInt64(&pb.total, value)
+	return pb
+}
+
+// AddTotal adds to the total bar value
+func (pb *ProgressBar) AddTotal(value int64) *ProgressBar {
+	atomic.AddInt64(&pb.total, value)
 	return pb
 }
 
@@ -351,7 +376,7 @@ func (pb *ProgressBar) StartTime() time.Time {
 // Format convert int64 to string according to the current settings
 func (pb *ProgressBar) Format(v int64) string {
 	if pb.GetBool(Bytes) {
-		return formatBytes(v)
+		return formatBytes(v, pb.GetBool(SIBytesPrefix))
 	}
 	return strconv.FormatInt(v, 10)
 }
@@ -381,6 +406,13 @@ func (pb *ProgressBar) IsStarted() bool {
 	pb.mu.RLock()
 	defer pb.mu.RUnlock()
 	return pb.finish != nil
+}
+
+// IsFinished indicates progress bar is finished
+func (pb *ProgressBar) IsFinished() bool {
+	pb.mu.RLock()
+	defer pb.mu.RUnlock()
+	return pb.finished
 }
 
 // SetTemplateString sets ProgressBar tempate string and parse it
