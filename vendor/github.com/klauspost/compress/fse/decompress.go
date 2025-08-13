@@ -15,7 +15,7 @@ const (
 // It is possible, but by no way guaranteed that corrupt data will
 // return an error.
 // It is up to the caller to verify integrity of the returned data.
-// Use a predefined Scrach to set maximum acceptable output size.
+// Use a predefined Scratch to set maximum acceptable output size.
 func Decompress(b []byte, s *Scratch) ([]byte, error) {
 	s, err := s.prepare(b)
 	if err != nil {
@@ -172,7 +172,7 @@ type decSymbol struct {
 // allocDtable will allocate decoding tables if they are not big enough.
 func (s *Scratch) allocDtable() {
 	tableSize := 1 << s.actualTableLog
-	if cap(s.decTable) < int(tableSize) {
+	if cap(s.decTable) < tableSize {
 		s.decTable = make([]decSymbol, tableSize)
 	}
 	s.decTable = s.decTable[:tableSize]
@@ -260,7 +260,9 @@ func (s *Scratch) buildDtable() error {
 // If the buffer is over-read an error is returned.
 func (s *Scratch) decompress() error {
 	br := &s.bits
-	br.init(s.br.unread())
+	if err := br.init(s.br.unread()); err != nil {
+		return err
+	}
 
 	var s1, s2 decoder
 	// Initialize and decode first state and symbol.
@@ -340,7 +342,7 @@ type decoder struct {
 func (d *decoder) init(in *bitReader, dt []decSymbol, tableLog uint8) {
 	d.dt = dt
 	d.br = in
-	d.state = uint16(in.getBits(tableLog))
+	d.state = in.getBits(tableLog)
 }
 
 // next returns the next symbol and sets the next state.
