@@ -21,7 +21,7 @@ go get github.com/pierrec/lz4/v4
 There is a command line interface tool to compress and decompress LZ4 files.
 
 ```
-go install github.com/pierrec/lz4/v4/cmd/lz4c
+go install github.com/pierrec/lz4/v4/cmd/lz4c@latest
 ```
 
 Usage
@@ -86,5 +86,7 @@ Contributions are very welcome for bug fixing, performance improvements...!
 Thanks to all [contributors](https://github.com/pierrec/lz4/graphs/contributors)  so far!
 
 Special thanks to [@Zariel](https://github.com/Zariel) for his asm implementation of the decoder.
+
+Special thanks to [@greatroar](https://github.com/greatroar) for his work on the asm implementations of the decoder for amd64 and arm64.
 
 Special thanks to [@klauspost](https://github.com/klauspost) for his work on optimizing the code.
