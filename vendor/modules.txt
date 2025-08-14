@@ -67,7 +67,7 @@ github.com/nmiyake/pkg/errorstringer
 # github.com/nmiyake/pkg/gofiles v1.2.0
 ## explicit; go 1.16
 github.com/nmiyake/pkg/gofiles
-# github.com/nwaples/rardecode v1.1.0
+# github.com/nwaples/rardecode v1.1.3
 ## explicit
 github.com/nwaples/rardecode
 # github.com/palantir/distgo/pkg/git v1.0.0
