@@ -29,8 +29,8 @@ import (
 
 // * Symlink "test-go" -> $GOPATH
 // * Set current directory to test project inside the symlink
-// * Verify that "./godelw check" works in sym-linked path
-func TestCheckInGoPathSymLink(t *testing.T) {
+// * Verify that "./godelw lint" works in sym-linked path
+func TestLintInGoPathSymLink(t *testing.T) {
 	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 	src := `package foo_test
 	import "testing"
@@ -68,7 +68,7 @@ pwd
 
 	scriptTemplate = `#!/bin/bash
 cd %v
-./godelw check
+./godelw lint
 `
 	err = os.WriteFile(scriptFilePath, []byte(fmt.Sprintf(scriptTemplate, projectPathInSymLink)), 0755)
 	require.NoError(t, err)
@@ -81,9 +81,9 @@ cd %v
 // * Symlink "test-go" -> $GOPATH
 // * Set $GOPATH to be the symlink ("test-go")
 // * Set current directory to test project inside the symlink
-// * Verify that "./godelw check" works in sym-linked path
+// * Verify that "./godelw lint" works in sym-linked path
 // * Restore $GOPATH to original value
-func TestCheckInGoPathSymLinkGoPathSymLink(t *testing.T) {
+func TestLintInGoPathSymLinkGoPathSymLink(t *testing.T) {
 	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 	src := `package foo_test
 	import "testing"
@@ -129,7 +129,7 @@ pwd
 
 	scriptTemplate = `#!/bin/bash
 cd %v
-./godelw check
+./godelw lint
 `
 	err = os.WriteFile(scriptFilePath, []byte(fmt.Sprintf(scriptTemplate, projectPathInSymLink)), 0755)
 	require.NoError(t, err)
@@ -142,9 +142,9 @@ cd %v
 // * Symlink "test-go" -> $GOPATH
 // * Set $GOPATH to be the symlink ("test-go")
 // * Set current directory to real project (not inside symlink)
-// * Verify that "./godelw check" works in real path
+// * Verify that "./godelw lint" works in real path
 // * Restore $GOPATH to original value
-func TestCheckInGoPathNonSymLinkWhenGoPathIsSymLink(t *testing.T) {
+func TestLintInGoPathNonSymLinkWhenGoPathIsSymLink(t *testing.T) {
 	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 	src := `package foo_test
 	import "testing"
@@ -170,7 +170,7 @@ func TestCheckInGoPathNonSymLinkWhenGoPathIsSymLink(t *testing.T) {
 		}
 	}()
 
-	cmd := exec.Command("./godelw", "check")
+	cmd := exec.Command("./godelw", "lint")
 	cmd.Dir = testProjectDir
 	output, err := cmd.CombinedOutput()
 	require.NoError(t, err, "Command %v failed. Output:\n%v", cmd.Args, string(output))

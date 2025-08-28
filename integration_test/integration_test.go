@@ -213,9 +213,9 @@ func TestTest(t *testing.T) {
 	execCommand(t, testProjectDir, "./godelw", "test")
 }
 
-// Run "../godelw check" and ensure that it works (command supports being invoked from subdirectory). The action should
+// Run "../godelw lint" and ensure that it works (command supports being invoked from subdirectory). The action should
 // execute with the subdirectory as the working directory.
-func TestCheckFromNestedDirectory(t *testing.T) {
+func TestLintFromNestedDirectory(t *testing.T) {
 	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
 
 	// write Go file to root directory of project
@@ -236,7 +236,7 @@ func TestCheckFromNestedDirectory(t *testing.T) {
 	err = os.WriteFile(filepath.Join(childDir, "main.go"), []byte(src), 0644)
 	require.NoError(t, err)
 
-	execCommand(t, childDir, "../godelw", "check")
+	execCommand(t, childDir, "../godelw", "lint")
 }
 
 func TestDebugFlagPrintsStackTrace(t *testing.T) {

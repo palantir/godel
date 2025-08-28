@@ -87,14 +87,14 @@ plugins:
 	wantOutput = fmt.Sprintf("--project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml echo foo --bar baz\n", testProjectDir, testProjectDir, testProjectDir, pluginName)
 	assert.Equal(t, wantOutput, gotOutput)
 
-	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-check", "--skip-license", "--skip-test")
+	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-lint", "--skip-license", "--skip-test")
 	wantOutput = fmt.Sprintf(`Running format...
 Running echo-task...
 --project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml echo
 `, testProjectDir, testProjectDir, testProjectDir, pluginName)
 	assert.Equal(t, wantOutput, gotOutput)
 
-	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-check", "--skip-license", "--skip-test", "--apply=false")
+	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-lint", "--skip-license", "--skip-test", "--apply=false")
 	wantOutput = fmt.Sprintf(`Running format...
 Running echo-task...
 --project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml echo --verify
@@ -168,14 +168,14 @@ plugins:
 	wantOutput = fmt.Sprintf("--project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml --assets %s echo foo --bar baz\n", testProjectDir, testProjectDir, testProjectDir, pluginName, assetPath)
 	assert.Equal(t, wantOutput, gotOutput)
 
-	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-check", "--skip-license", "--skip-test")
+	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-lint", "--skip-license", "--skip-test")
 	wantOutput = fmt.Sprintf(`Running format...
 Running echo-task...
 --project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml --assets %s echo
 `, testProjectDir, testProjectDir, testProjectDir, pluginName, assetPath)
 	assert.Equal(t, wantOutput, gotOutput)
 
-	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-check", "--skip-license", "--skip-test", "--apply=false")
+	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-lint", "--skip-license", "--skip-test", "--apply=false")
 	wantOutput = fmt.Sprintf(`Running format...
 Running echo-task...
 --project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml --assets %s echo --verify
@@ -237,14 +237,14 @@ tasks-config-providers:
 	wantOutput = fmt.Sprintf("--project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml echo foo --bar baz\n", testProjectDir, testProjectDir, testProjectDir, pluginName)
 	assert.Equal(t, wantOutput, gotOutput)
 
-	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-check", "--skip-license", "--skip-test")
+	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-lint", "--skip-license", "--skip-test")
 	wantOutput = fmt.Sprintf(`Running format...
 Running echo-task...
 --project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml echo
 `, testProjectDir, testProjectDir, testProjectDir, pluginName)
 	assert.Equal(t, wantOutput, gotOutput)
 
-	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-check", "--skip-license", "--skip-test", "--apply=false")
+	gotOutput = execCommand(t, testProjectDir, "./godelw", "verify", "--skip-lint", "--skip-license", "--skip-test", "--apply=false")
 	wantOutput = fmt.Sprintf(`Running format...
 Running echo-task...
 --project-dir %s --godel-config %s/godel/config/godel.yml --config %s/godel/config/%s.yml echo --verify
