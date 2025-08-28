@@ -155,7 +155,7 @@ var defaultPluginsConfig = config.PluginsConfig{
 						ID: "com.palantir.godel-okgo-asset-importalias:importalias-asset:1.47.0",
 						Checksums: map[string]string{
 							"darwin-amd64": "020ef0f22672643354c1268e14be6ce1512e83f2a0a51212abb6c36d79de67bb",
-							"darwin-arm64": "c9c8ab2e2594e3c0afaa49dd37bf4de8c972edaca1548c8bdaa0e36c8bc5e083",
+							"darwin-arm64": "",
 							"linux-amd64":  "6c18e67e02d027c510bf094ae88c40d266c13962ff8a7bc6887e06cdd556944e",
 							"linux-arm64":  "86930e234c7c98dde5ae4d44b9fa670ec8e09972672afbf31cd5cdcd0c510169",
 						},
