@@ -59,8 +59,8 @@ github.com/palantir/pkg v1.1.0/go.mod h1:KC9srP/9ssWRxBxFCIqhUGC4Jt7OJkWRz0Iqehu
 github.com/palantir/pkg/cobracli v1.2.0 h1:hANp5fUB5cX90SVri97Apz4xB3BqnZw0gP2jMQ34G8Y=
 github.com/palantir/pkg/cobracli v1.2.0/go.mod h1:8poQy1FM1lISezW7Czmhmj7I0xEVpuYpv/ywgsAzv0Y=
 github.com/palantir/pkg/gittest v1.0.0/go.mod h1:M49S4TsX5sh7lYJmOF+pFzcB4fJNOylzN8tOdpSq958=
-github.com/palantir/pkg/gittest v1.2.0 h1:RPINGtLh+Mlt+o1M/nRQlTPrt4CP5tJOSMgeB5vxerM=
-github.com/palantir/pkg/gittest v1.2.0/go.mod h1:z2eq/rEzUDmNR8rvJCb+/XZ7w9/nxRCAKvYjMYW/w/w=
+github.com/palantir/pkg/gittest v1.3.0 h1:JkoXNT3MWhlmmDyNhpkYJlQG4Boe99d9M15QJcIFlns=
+github.com/palantir/pkg/gittest v1.3.0/go.mod h1:sfzWndTEU0HBZ8XZHFAsFZx9DH5Ere+hfYK13USLjbg=
 github.com/palantir/pkg/matcher v1.3.0 h1:sRcoJUknco5GSKiFW464bbl+E61rwXwyFvHmmisI7B0=
 github.com/palantir/pkg/matcher v1.3.0/go.mod h1:1zHkiClf0Av70MvkSufw3+PWH4D419Y/j0ZVQoyEbGE=
 github.com/palantir/pkg/pkgpath v1.3.0 h1:S2kbdqSEMSHLgaEdr8LQuCju+AfzSvwwSUM/Q4QUNUI=
