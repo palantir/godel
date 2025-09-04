@@ -12,7 +12,7 @@ require (
 	github.com/palantir/godel/pkg/products/v2 v2.0.0
 	github.com/palantir/pkg/cobracli v1.2.0
 	github.com/palantir/pkg/gittest v1.2.0
-	github.com/palantir/pkg/matcher v1.2.0
+	github.com/palantir/pkg/matcher v1.3.0
 	github.com/palantir/pkg/pkgpath v1.3.0
 	github.com/palantir/pkg/signals v1.1.0
 	github.com/palantir/pkg/specdir v1.2.0
