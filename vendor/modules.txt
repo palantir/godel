@@ -85,8 +85,8 @@ github.com/palantir/pkg/cobracli
 # github.com/palantir/pkg/gittest v1.2.0
 ## explicit; go 1.19
 github.com/palantir/pkg/gittest
-# github.com/palantir/pkg/matcher v1.2.0
-## explicit; go 1.19
+# github.com/palantir/pkg/matcher v1.3.0
+## explicit; go 1.25.0
 github.com/palantir/pkg/matcher
 # github.com/palantir/pkg/pkgpath v1.3.0
 ## explicit; go 1.21
