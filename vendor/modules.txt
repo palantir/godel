@@ -79,8 +79,8 @@ github.com/palantir/godel/pkg/products/v2
 # github.com/palantir/pkg v1.1.0
 ## explicit; go 1.19
 github.com/palantir/pkg
-# github.com/palantir/pkg/cobracli v1.2.0
-## explicit; go 1.19
+# github.com/palantir/pkg/cobracli v1.3.0
+## explicit; go 1.25.0
 github.com/palantir/pkg/cobracli
 # github.com/palantir/pkg/gittest v1.3.0
 ## explicit; go 1.25.0
@@ -88,14 +88,14 @@ github.com/palantir/pkg/gittest
 # github.com/palantir/pkg/matcher v1.3.0
 ## explicit; go 1.25.0
 github.com/palantir/pkg/matcher
-# github.com/palantir/pkg/pkgpath v1.3.0
-## explicit; go 1.21
+# github.com/palantir/pkg/pkgpath v1.4.0
+## explicit; go 1.25.0
 github.com/palantir/pkg/pkgpath
 # github.com/palantir/pkg/signals v1.2.0
 ## explicit; go 1.25.0
 github.com/palantir/pkg/signals
-# github.com/palantir/pkg/specdir v1.2.0
-## explicit; go 1.19
+# github.com/palantir/pkg/specdir v1.3.0
+## explicit; go 1.25.0
 github.com/palantir/pkg/specdir
 # github.com/pierrec/lz4/v4 v4.1.22
 ## explicit; go 1.14
