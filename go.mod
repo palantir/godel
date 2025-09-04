@@ -14,7 +14,7 @@ require (
 	github.com/palantir/pkg/gittest v1.3.0
 	github.com/palantir/pkg/matcher v1.3.0
 	github.com/palantir/pkg/pkgpath v1.3.0
-	github.com/palantir/pkg/signals v1.1.0
+	github.com/palantir/pkg/signals v1.2.0
 	github.com/palantir/pkg/specdir v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/rogpeppe/go-internal v1.14.1
