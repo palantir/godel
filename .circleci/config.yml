@@ -7,7 +7,7 @@ version: 2.1
 orbs:
   go-jobs: palantir/go-jobs@0.7.0
 
-image-version: &image-version "cimg/go:1.25.0-browsers"
+image-version: &image-version "cimg/go:1.25.1-browsers"
 
 go-version: &go-version
   go_version: go1.25.0
