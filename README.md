@@ -28,9 +28,10 @@ The following features are provided by a default gödel installation (either as 
 * `./godelw goland` creates and configures a GoLand project for the project
 * Supports configuring directories and files that should be excluded by the tool
 * `./godelw format` formats all code in a project
-* `./godelw check` runs a variety of code linting checks on all the code in a project
-  * Default configuration includes a wide variety of checks that catch common errors
-  * Custom checks can be added as assets
+* `./godelw lint` runs a variety of code linting checks on all the code in a project
+  * Use [`golangci-lint`](https://github.com/golangci/golangci-lint) to run linters
+  * The `golangci-lint` executable that should be used (which can be one that is built with custom linters) can be
+    configured as an asset
 * `./godelw license` applies a specified license header to all Go files in a project
   * Supports configuring custom license headers for specific directories or files
 * `./godelw test` runs the tests in the project
