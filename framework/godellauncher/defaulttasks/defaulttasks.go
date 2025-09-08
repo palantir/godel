@@ -114,10 +114,10 @@ var defaultPluginsConfig = config.PluginsConfig{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
 						ID: "com.palantir.golangci-lint-palantir:golangci-lint-palantir-config:0.2.0",
 						Checksums: map[string]string{
-							"darwin-amd64": "b71b2325328e3ae12cbe05c2dbb1dcef0baf18ea167a4d6a5c6d61a0068676be",
-							"darwin-arm64": "b71b2325328e3ae12cbe05c2dbb1dcef0baf18ea167a4d6a5c6d61a0068676be",
-							"linux-amd64":  "b71b2325328e3ae12cbe05c2dbb1dcef0baf18ea167a4d6a5c6d61a0068676be",
-							"linux-arm64":  "b71b2325328e3ae12cbe05c2dbb1dcef0baf18ea167a4d6a5c6d61a0068676be",
+							"darwin-amd64": "",
+							"darwin-arm64": "",
+							"linux-amd64":  "",
+							"linux-arm64":  "",
 						},
 					}),
 				},
