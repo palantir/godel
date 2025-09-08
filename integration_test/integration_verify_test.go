@@ -77,11 +77,11 @@ func TestFoo(t *testing.T) {
 		args []string
 		want string
 	}{
-		{want: `(?s).+Failed tasks:\n\tformat --verify\n\tlicense --verify\n\tcheck\n\ttest`},
-		{args: []string{"--skip-format"}, want: `(?s).+Failed tasks:\n\tlicense --verify\n\tcheck\n\ttest`},
-		{args: []string{"--skip-check"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tlicense --verify\n\ttest`},
-		{args: []string{"--skip-license"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tcheck\n\ttest`},
-		{args: []string{"--skip-test"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tlicense --verify\n\tcheck`},
+		{want: `(?s).+Failed tasks:\n\tformat --verify\n\tlicense --verify\n\tlint\n\ttest`},
+		{args: []string{"--skip-format"}, want: `(?s).+Failed tasks:\n\tlicense --verify\n\tlint\n\ttest`},
+		{args: []string{"--skip-lint"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tlicense --verify\n\ttest`},
+		{args: []string{"--skip-license"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tlint\n\ttest`},
+		{args: []string{"--skip-test"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tlicense --verify\n\tlint`},
 	} {
 		err = os.MkdirAll(filepath.Join(testProjectDir, "gen"), 0755)
 		require.NoError(t, err)
@@ -119,7 +119,10 @@ func TestVerifyApply(t *testing.T) {
 			Src: `package main_test
 	import "testing"
 
+    var foo = "foo"
+
 	func TestFoo(t *testing.T) {
+		_=t
 		t=t
 		t.Fail()
 	}`,
@@ -127,31 +130,23 @@ func TestVerifyApply(t *testing.T) {
 	}
 
 	const (
-		formattedTestSrc = `package main_test
+		formattedAndLintedTestSrc = `package main_test
 
 import (
 	"testing"
 )
 
+var foo = "foo"
+
 func TestFoo(t *testing.T) {
-	t = t
+	_ = t
+
 	t.Fail()
 }
 `
 	)
 
 	var (
-		licensedTestSrc = fmt.Sprintf(`// Copyright (c) %d Palantir Technologies Inc. All rights reserved.
-// Use of this source code is governed by the Apache License, Version 2.0
-// that can be found in the LICENSE file.
-
-package main_test
-	import "testing"
-
-	func TestFoo(t *testing.T) {
-		t=t
-		t.Fail()
-	}`, time.Now().Year())
 		licensedAndFormattedTestSrc = fmt.Sprintf(`// Copyright (c) %d Palantir Technologies Inc. All rights reserved.
 // Use of this source code is governed by the Apache License, Version 2.0
 // that can be found in the LICENSE file.
@@ -162,12 +157,50 @@ import (
 	"testing"
 )
 
+var foo = "foo"
+
 func TestFoo(t *testing.T) {
+	_ = t
 	t = t
 	t.Fail()
 }
 `, time.Now().Year())
+		licensedAndLintedTestSrc = fmt.Sprintf(`// Copyright (c) %d Palantir Technologies Inc. All rights reserved.
+// Use of this source code is governed by the Apache License, Version 2.0
+// that can be found in the LICENSE file.
+
+package main_test
+
+import "testing"
+
+var foo = "foo"
+
+func TestFoo(t *testing.T) {
+	_ = t
+
+	t.Fail()
+}
+`, time.Now().Year())
+		licensedAndFormattedAndLintedTestSrc = fmt.Sprintf(`// Copyright (c) %d Palantir Technologies Inc. All rights reserved.
+// Use of this source code is governed by the Apache License, Version 2.0
+// that can be found in the LICENSE file.
+
+package main_test
+
+import (
+	"testing"
+)
+
+var foo = "foo"
+
+func TestFoo(t *testing.T) {
+	_ = t
+
+	t.Fail()
+}
+`, time.Now().Year())
 	)
+
 	err := os.WriteFile(filepath.Join(testProjectDir, "godel", "config", "license-plugin.yml"), []byte(licenseYML), 0644)
 	require.NoError(t, err)
 
@@ -176,11 +209,11 @@ func TestFoo(t *testing.T) {
 		want        string
 		wantTestSrc string
 	}{
-		{want: `(?s).+Failed tasks:\n\tcheck\n\ttest`, wantTestSrc: licensedAndFormattedTestSrc},
-		{args: []string{"--skip-format"}, want: `(?s).+Failed tasks:\n\tcheck\n\ttest`, wantTestSrc: licensedTestSrc},
-		{args: []string{"--skip-check"}, want: `(?s).+Failed tasks:\n\ttest`, wantTestSrc: licensedAndFormattedTestSrc},
-		{args: []string{"--skip-license"}, want: `(?s).+Failed tasks:\n\tcheck\n\ttest`, wantTestSrc: formattedTestSrc},
-		{args: []string{"--skip-test"}, want: `(?s).+Failed tasks:\n\tcheck`, wantTestSrc: licensedAndFormattedTestSrc},
+		{want: `(?s).+Failed tasks:\n\tlint --fix\n\ttest`, wantTestSrc: licensedAndFormattedAndLintedTestSrc},
+		{args: []string{"--skip-format"}, want: `(?s).+Failed tasks:\n\tlint --fix\n\ttest`, wantTestSrc: licensedAndLintedTestSrc},
+		{args: []string{"--skip-lint"}, want: `(?s).+Failed tasks:\n\ttest`, wantTestSrc: licensedAndFormattedTestSrc},
+		{args: []string{"--skip-license"}, want: `(?s).+Failed tasks:\n\tlint --fix\n\ttest`, wantTestSrc: formattedAndLintedTestSrc},
+		{args: []string{"--skip-test"}, want: `(?s).+Failed tasks:\n\tlint --fix`, wantTestSrc: licensedAndFormattedAndLintedTestSrc},
 	} {
 		_, err := gofiles.Write(testProjectDir, specs)
 		require.NoError(t, err)
