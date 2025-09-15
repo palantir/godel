@@ -28,7 +28,7 @@ jobs:
         uses: palantir/github-actions/go-dist-info@0.1.0
         with:
           gopath: ${{ steps.set-gopath.outputs.GOPATH }}
-          go-version: go1.25.0
+          go-version: go1.25.1
       - id: restore-go-dist-from-cache
         if: steps.go-dist-info.outputs.go-dist-exists != 'true'
         uses: actions/cache@v4
