@@ -104,8 +104,8 @@ github.com/palantir/pkg/signals
 # github.com/palantir/pkg/specdir v1.3.0
 ## explicit; go 1.25.0
 github.com/palantir/pkg/specdir
-# github.com/pierrec/lz4/v4 v4.1.22
-## explicit; go 1.14
+# github.com/pierrec/lz4/v4 v4.1.23
+## explicit; go 1.17
 github.com/pierrec/lz4/v4
 github.com/pierrec/lz4/v4/internal/lz4block
 github.com/pierrec/lz4/v4/internal/lz4errors
