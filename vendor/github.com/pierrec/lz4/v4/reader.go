@@ -265,24 +265,19 @@ func (r *Reader) WriteTo(w io.Writer) (n int64, err error) {
 		switch err {
 		case nil:
 		case lz4errors.ErrEndOfStream:
-
 			// Read Checksum.
 			err = r.frame.CloseR(r.src)
 			if err != nil {
 				return
 			}
-
-			//Check for new stream.
+			// Check for a new stream.
 			r.Reset(r.src)
 			if err = r.init(); r.state.next(err) {
-
 				if err == io.EOF {
 					err = nil
 				}
-
 				return
 			}
-
 			goto read
 		case io.EOF:
 			err = r.frame.CloseR(r.src)
