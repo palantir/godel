@@ -369,12 +369,14 @@ func TestDefaultTasksPluginsConfig(t *testing.T) {
 			config.PluginsConfig{},
 		},
 	} {
-		got, err := PluginsConfig(tc.in)
-		if tc.wantError == "" {
-			require.NoError(t, err)
-			assert.Equal(t, tc.want, got, "Case %d: %s", i, tc.name)
-		} else {
-			assert.EqualError(t, err, tc.wantError, "Case %d: %s", i, tc.name)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := PluginsConfig(tc.in)
+			if tc.wantError == "" {
+				require.NoError(t, err)
+				assert.Equal(t, tc.want, got, "Case %d: %s", i, tc.name)
+			} else {
+				assert.EqualError(t, err, tc.wantError, "Case %d: %s", i, tc.name)
+			}
+		})
 	}
 }

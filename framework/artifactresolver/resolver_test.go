@@ -157,11 +157,13 @@ func TestRenderResolve(t *testing.T) {
 			"/b/c/Product-darwin-amd64-Version",
 		},
 	} {
-		r, err := NewTemplateResolver(tc.template)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		buf := &bytes.Buffer{}
-		err = r.Resolve(tc.locator, tc.osArch, dstFile, buf)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
-		assert.Equal(t, tc.want, got, "Case %d: %s", i, tc.name)
+		t.Run(tc.name, func(t *testing.T) {
+			r, err := NewTemplateResolver(tc.template)
+			require.NoError(t, err, "Case %d: %s", i, tc.name)
+			buf := &bytes.Buffer{}
+			err = r.Resolve(tc.locator, tc.osArch, dstFile, buf)
+			require.NoError(t, err, "Case %d: %s", i, tc.name)
+			assert.Equal(t, tc.want, got, "Case %d: %s", i, tc.name)
+		})
 	}
 }

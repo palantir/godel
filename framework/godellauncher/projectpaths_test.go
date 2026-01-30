@@ -135,25 +135,27 @@ func TestListProjectPaths(t *testing.T) {
 			},
 		},
 	} {
-		projectDir, err := os.MkdirTemp(tmpDir, "project")
-		require.NoError(t, err)
-		projectDir, err = filepath.EvalSymlinks(projectDir)
-		require.NoError(t, err)
-
-		_, err = gofiles.Write(projectDir, tc.files)
-		require.NoError(t, err)
-
-		func() {
-			err = os.Chdir(filepath.Join(projectDir, tc.wd))
+		t.Run(tc.name, func(t *testing.T) {
+			projectDir, err := os.MkdirTemp(tmpDir, "project")
 			require.NoError(t, err)
-			defer func() {
-				err = os.Chdir(origWd)
+			projectDir, err = filepath.EvalSymlinks(projectDir)
+			require.NoError(t, err)
+
+			_, err = gofiles.Write(projectDir, tc.files)
+			require.NoError(t, err)
+
+			func() {
+				err = os.Chdir(filepath.Join(projectDir, tc.wd))
 				require.NoError(t, err)
-			}()
+				defer func() {
+					err = os.Chdir(origWd)
+					require.NoError(t, err)
+				}()
 
-			got, err := godellauncher.ListProjectPaths(projectDir, tc.include, tc.exclude)
-			require.NoError(t, err)
-			assert.Equal(t, tc.want, got, "Case %d: %s", i, tc.name)
-		}()
+				got, err := godellauncher.ListProjectPaths(projectDir, tc.include, tc.exclude)
+				require.NoError(t, err)
+				assert.Equal(t, tc.want, got, "Case %d: %s", i, tc.name)
+			}()
+		})
 	}
 }

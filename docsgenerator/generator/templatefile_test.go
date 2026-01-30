@@ -100,17 +100,19 @@ mkdir "testDir"
 `,
 		},
 	} {
-		got, err := parseTemplateFile([]byte(tc.in))
-		require.NoError(t, err, "Case %d", i)
-		assert.Equal(t, tc.wantTutorialCodeParts, got.TutorialCodeParts, "Case %d", i)
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := parseTemplateFile([]byte(tc.in))
+			require.NoError(t, err, "Case %d", i)
+			assert.Equal(t, tc.wantTutorialCodeParts, got.TutorialCodeParts, "Case %d", i)
 
-		var rawCode []string
-		for _, currPart := range got.TutorialCodeParts {
-			rawCode = append(rawCode, currPart.Code)
-		}
-		gotRendered, err := got.Render(rawCode)
-		require.NoError(t, err, "Case %d", i)
-		assert.Equal(t, tc.wantRendered, string(gotRendered), "Case %d\nOutput:\n%s", i, string(gotRendered))
+			var rawCode []string
+			for _, currPart := range got.TutorialCodeParts {
+				rawCode = append(rawCode, currPart.Code)
+			}
+			gotRendered, err := got.Render(rawCode)
+			require.NoError(t, err, "Case %d", i)
+			assert.Equal(t, tc.wantRendered, string(gotRendered), "Case %d\nOutput:\n%s", i, string(gotRendered))
+		})
 	}
 }
 
