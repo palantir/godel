@@ -297,12 +297,14 @@ func TestVerifyPluginCompatibility(t *testing.T) {
         plugins have the same product name and both use configuration (this not currently supported -- if this situation is encountered, please file an issue to flag it)`,
 		},
 	} {
-		got := verifyPluginCompatibility(tc.input)
-		if tc.want == "" {
-			assert.NoError(t, got, "Case %d: %s", i, tc.name)
-		} else {
-			assert.EqualError(t, got, tc.want, "Case %d: %s", i, tc.name)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			got := verifyPluginCompatibility(tc.input)
+			if tc.want == "" {
+				assert.NoError(t, got, "Case %d: %s", i, tc.name)
+			} else {
+				assert.EqualError(t, got, tc.want, "Case %d: %s", i, tc.name)
+			}
+		})
 	}
 }
 

@@ -135,9 +135,11 @@ func TestNewPluginInfoError(t *testing.T) {
 			`plugin group:product-plugin:1.0.0 provides a configuration upgrade task but does not specify that it uses configuration`,
 		},
 	} {
-		_, err := pluginapi.NewPluginInfo(tc.group, tc.product, tc.version, tc.params...)
-		require.Error(t, err, "Case %d: %s", i, tc.name)
-		assert.EqualError(t, err, tc.wantError, "Case %d: %s", i, tc.name)
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := pluginapi.NewPluginInfo(tc.group, tc.product, tc.version, tc.params...)
+			require.Error(t, err, "Case %d: %s", i, tc.name)
+			assert.EqualError(t, err, tc.wantError, "Case %d: %s", i, tc.name)
+		})
 	}
 }
 
@@ -240,42 +242,44 @@ func TestRunPluginFromInfo(t *testing.T) {
 			},
 		},
 	} {
-		pluginInfo, err := pluginapi.NewPluginInfo("group", "echo-plugin", "1.0.0",
-			append([]pluginapi.PluginInfoParam{
-				pluginapi.PluginInfoUsesConfigFile(),
-				pluginapi.PluginInfoTaskInfo("echo", "echoes the provided input"),
-			}, tc.params...)...,
-		)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
+		t.Run(tc.name, func(t *testing.T) {
+			pluginInfo, err := pluginapi.NewPluginInfo("group", "echo-plugin", "1.0.0",
+				append([]pluginapi.PluginInfoParam{
+					pluginapi.PluginInfoUsesConfigFile(),
+					pluginapi.PluginInfoTaskInfo("echo", "echoes the provided input"),
+				}, tc.params...)...,
+			)
+			require.NoError(t, err, "Case %d: %s", i, tc.name)
 
-		pluginInfoJSON, err := json.Marshal(pluginInfo)
-		require.NoError(t, err)
-		pluginExecPath := filepath.Join(tmpDir, fmt.Sprintf("echo-%d.sh", i))
+			pluginInfoJSON, err := json.Marshal(pluginInfo)
+			require.NoError(t, err)
+			pluginExecPath := filepath.Join(tmpDir, fmt.Sprintf("echo-%d.sh", i))
 
-		err = os.WriteFile(pluginExecPath, []byte(fmt.Sprintf(echoPluginTmpl, string(pluginInfoJSON))), 0755)
-		require.NoError(t, err)
-
-		var assets []string
-		for assetNum := 0; assetNum < tc.numAssets; assetNum++ {
-			assetPath := filepath.Join(tmpDir, fmt.Sprintf("echo-%d-asset-%d", i, assetNum))
-
-			err = os.WriteFile(assetPath, []byte(fmt.Sprintf("asset %d", assetNum)), 0755)
+			err = os.WriteFile(pluginExecPath, []byte(fmt.Sprintf(echoPluginTmpl, string(pluginInfoJSON))), 0755)
 			require.NoError(t, err)
 
-			assets = append(assets, assetPath)
-		}
+			var assets []string
+			for assetNum := 0; assetNum < tc.numAssets; assetNum++ {
+				assetPath := filepath.Join(tmpDir, fmt.Sprintf("echo-%d-asset-%d", i, assetNum))
 
-		tasks := pluginInfo.Tasks(pluginExecPath, assets)
-		require.Equal(t, 1, len(tasks), "Case %d: %s", i, tc.name)
+				err = os.WriteFile(assetPath, []byte(fmt.Sprintf("asset %d", assetNum)), 0755)
+				require.NoError(t, err)
 
-		outBuf := &bytes.Buffer{}
-		gc := tc.globalConfig
-		gc.Executable = pluginExecPath
+				assets = append(assets, assetPath)
+			}
 
-		err = tasks[0].Run(tc.globalConfig, outBuf)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
+			tasks := pluginInfo.Tasks(pluginExecPath, assets)
+			require.Equal(t, 1, len(tasks), "Case %d: %s", i, tc.name)
 
-		assert.Equal(t, tc.want(tmpDir), outBuf.String(), "Case %d: %s", i, tc.name)
+			outBuf := &bytes.Buffer{}
+			gc := tc.globalConfig
+			gc.Executable = pluginExecPath
+
+			err = tasks[0].Run(tc.globalConfig, outBuf)
+			require.NoError(t, err, "Case %d: %s", i, tc.name)
+
+			assert.Equal(t, tc.want(tmpDir), outBuf.String(), "Case %d: %s", i, tc.name)
+		})
 	}
 }
 
@@ -342,32 +346,34 @@ func TestRunPluginVerify(t *testing.T) {
 			"Running echo...\n--project-dir . verify-subcmd --apply\n",
 		},
 	} {
-		pluginInfo, err := pluginapi.NewPluginInfo("group", "echo-plugin", "1.0.0",
-			append([]pluginapi.PluginInfoParam{
-				pluginapi.PluginInfoUsesConfigFile(),
-				pluginapi.PluginInfoTaskInfo("echo", "echoes the provided input", tc.taskInfoParams...),
-			}, tc.pluginInfoParams...)...,
-		)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
+		t.Run(tc.name, func(t *testing.T) {
+			pluginInfo, err := pluginapi.NewPluginInfo("group", "echo-plugin", "1.0.0",
+				append([]pluginapi.PluginInfoParam{
+					pluginapi.PluginInfoUsesConfigFile(),
+					pluginapi.PluginInfoTaskInfo("echo", "echoes the provided input", tc.taskInfoParams...),
+				}, tc.pluginInfoParams...)...,
+			)
+			require.NoError(t, err, "Case %d: %s", i, tc.name)
 
-		pluginInfoJSON, err := json.Marshal(pluginInfo)
-		require.NoError(t, err)
-		pluginExecPath := filepath.Join(tmpDir, fmt.Sprintf("echo-%d.sh", i))
+			pluginInfoJSON, err := json.Marshal(pluginInfo)
+			require.NoError(t, err)
+			pluginExecPath := filepath.Join(tmpDir, fmt.Sprintf("echo-%d.sh", i))
 
-		err = os.WriteFile(pluginExecPath, []byte(fmt.Sprintf(echoPluginTmpl, string(pluginInfoJSON))), 0755)
-		require.NoError(t, err)
+			err = os.WriteFile(pluginExecPath, []byte(fmt.Sprintf(echoPluginTmpl, string(pluginInfoJSON))), 0755)
+			require.NoError(t, err)
 
-		tasks := pluginInfo.Tasks(pluginExecPath, nil)
-		require.Equal(t, 1, len(tasks), "Case %d: %s", i, tc.name)
+			tasks := pluginInfo.Tasks(pluginExecPath, nil)
+			require.Equal(t, 1, len(tasks), "Case %d: %s", i, tc.name)
 
-		outBuf := &bytes.Buffer{}
-		gc := tc.globalConfig
-		gc.Executable = pluginExecPath
+			outBuf := &bytes.Buffer{}
+			gc := tc.globalConfig
+			gc.Executable = pluginExecPath
 
-		vTask := builtintasks.VerifyTask(tasks)
-		err = vTask.Run(tc.globalConfig, outBuf)
-		require.NoError(t, err, "Case %d: %s", i, tc.name)
+			vTask := builtintasks.VerifyTask(tasks)
+			err = vTask.Run(tc.globalConfig, outBuf)
+			require.NoError(t, err, "Case %d: %s", i, tc.name)
 
-		assert.Equal(t, tc.want, outBuf.String(), "Case %d: %s", i, tc.name)
+			assert.Equal(t, tc.want, outBuf.String(), "Case %d: %s", i, tc.name)
+		})
 	}
 }

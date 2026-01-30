@@ -57,13 +57,15 @@ func TestConfigNotSupported(t *testing.T) {
 			nil,
 		},
 	} {
-		got, err := versionedconfig.ConfigNotSupported(tc.cfgName, []byte(tc.yaml))
-		if tc.wantError != "" {
-			require.Error(t, err, "Case %d: %s", i, tc.name)
-			assert.EqualError(t, err, tc.wantError, "Case %d: %s", i, tc.name)
-		} else {
-			require.NoError(t, err, "Case %d: %s", i, tc.name)
-		}
-		assert.Equal(t, tc.wantBytes, got, "Case %d: %s", i, tc.name)
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := versionedconfig.ConfigNotSupported(tc.cfgName, []byte(tc.yaml))
+			if tc.wantError != "" {
+				require.Error(t, err, "Case %d: %s", i, tc.name)
+				assert.EqualError(t, err, tc.wantError, "Case %d: %s", i, tc.name)
+			} else {
+				require.NoError(t, err, "Case %d: %s", i, tc.name)
+			}
+			assert.Equal(t, tc.wantBytes, got, "Case %d: %s", i, tc.name)
+		})
 	}
 }
