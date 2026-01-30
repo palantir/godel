@@ -137,44 +137,46 @@ func RunUpgradeConfigTest(t *testing.T,
 	require.NoError(t, err)
 
 	for i, tc := range testCases {
-		projectDir, err := os.MkdirTemp(tmpDir, "")
-		require.NoError(t, err)
-
-		var sortedKeys []string
-		for k := range tc.ConfigFiles {
-			sortedKeys = append(sortedKeys, k)
-		}
-		sort.Strings(sortedKeys)
-
-		for _, k := range sortedKeys {
-			err = os.MkdirAll(filepath.Dir(filepath.Join(projectDir, k)), 0755)
+		t.Run(tc.Name, func(t *testing.T) {
+			projectDir, err := os.MkdirTemp(tmpDir, "")
 			require.NoError(t, err)
-			err = os.WriteFile(filepath.Join(projectDir, k), []byte(tc.ConfigFiles[k]), 0644)
-			require.NoError(t, err)
-		}
-
-		outputBuf := &bytes.Buffer{}
-		func() {
-			runPluginCleanup, err := RunUpgradeConfig(pluginProvider, assetProviders, tc.Legacy, projectDir, false, outputBuf)
-			defer runPluginCleanup()
-			if tc.WantError {
-				require.EqualError(t, err, "", "Case %d: %s\nOutput: %s", i, tc.Name, outputBuf.String())
-			} else {
-				require.NoError(t, err, "Case %d: %s\nOutput: %s", i, tc.Name, outputBuf.String())
-			}
-			assert.Equal(t, tc.WantOutput, outputBuf.String(), "Case %d: %s", i, tc.Name)
 
 			var sortedKeys []string
-			for k := range tc.WantFiles {
+			for k := range tc.ConfigFiles {
 				sortedKeys = append(sortedKeys, k)
 			}
 			sort.Strings(sortedKeys)
+
 			for _, k := range sortedKeys {
-				wantContent := tc.WantFiles[k]
-				bytes, err := os.ReadFile(filepath.Join(projectDir, k))
-				require.NoError(t, err, "Case %d: %s", i, tc.Name)
-				assert.Equal(t, wantContent, string(bytes), "Case %d: %s\nContent of file %s did not match expectation.\nActual:\n%s", i, tc.Name, k, string(bytes))
+				err = os.MkdirAll(filepath.Dir(filepath.Join(projectDir, k)), 0755)
+				require.NoError(t, err)
+				err = os.WriteFile(filepath.Join(projectDir, k), []byte(tc.ConfigFiles[k]), 0644)
+				require.NoError(t, err)
 			}
-		}()
+
+			outputBuf := &bytes.Buffer{}
+			func() {
+				runPluginCleanup, err := RunUpgradeConfig(pluginProvider, assetProviders, tc.Legacy, projectDir, false, outputBuf)
+				defer runPluginCleanup()
+				if tc.WantError {
+					require.EqualError(t, err, "", "Case %d: %s\nOutput: %s", i, tc.Name, outputBuf.String())
+				} else {
+					require.NoError(t, err, "Case %d: %s\nOutput: %s", i, tc.Name, outputBuf.String())
+				}
+				assert.Equal(t, tc.WantOutput, outputBuf.String(), "Case %d: %s", i, tc.Name)
+
+				var sortedKeys []string
+				for k := range tc.WantFiles {
+					sortedKeys = append(sortedKeys, k)
+				}
+				sort.Strings(sortedKeys)
+				for _, k := range sortedKeys {
+					wantContent := tc.WantFiles[k]
+					bytes, err := os.ReadFile(filepath.Join(projectDir, k))
+					require.NoError(t, err, "Case %d: %s", i, tc.Name)
+					assert.Equal(t, wantContent, string(bytes), "Case %d: %s\nContent of file %s did not match expectation.\nActual:\n%s", i, tc.Name, k, string(bytes))
+				}
+			}()
+		})
 	}
 }
