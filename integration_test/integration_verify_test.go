@@ -73,7 +73,7 @@ func TestFoo(t *testing.T) {
 	err = os.WriteFile(filepath.Join(testProjectDir, "godel", "config", "license-plugin.yml"), []byte(licenseYML), 0644)
 	require.NoError(t, err)
 
-	for i, currCase := range []struct {
+	for _, tc := range []struct {
 		args []string
 		want string
 	}{
@@ -83,16 +83,18 @@ func TestFoo(t *testing.T) {
 		{args: []string{"--skip-license"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tlint\n\ttest`},
 		{args: []string{"--skip-test"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tlicense --verify\n\tlint`},
 	} {
-		err = os.MkdirAll(filepath.Join(testProjectDir, "gen"), 0755)
-		require.NoError(t, err)
-		err = os.WriteFile(filepath.Join(testProjectDir, "gen", "output.txt"), []byte("bar-output"), 0644)
-		require.NoError(t, err)
+		t.Run(fmt.Sprintf("Args %v", tc.args), func(t *testing.T) {
+			err = os.MkdirAll(filepath.Join(testProjectDir, "gen"), 0755)
+			require.NoError(t, err)
+			err = os.WriteFile(filepath.Join(testProjectDir, "gen", "output.txt"), []byte("bar-output"), 0644)
+			require.NoError(t, err)
 
-		cmd := exec.Command("./godelw", append([]string{"verify", "--apply=false"}, currCase.args...)...)
-		cmd.Dir = testProjectDir
-		output, err := cmd.CombinedOutput()
-		require.Error(t, err)
-		assert.Regexp(t, regexp.MustCompile(currCase.want), string(output), "Case %d", i)
+			cmd := exec.Command("./godelw", append([]string{"verify", "--apply=false"}, tc.args...)...)
+			cmd.Dir = testProjectDir
+			output, err := cmd.CombinedOutput()
+			require.Error(t, err)
+			assert.Regexp(t, regexp.MustCompile(tc.want), string(output))
+		})
 	}
 }
 
@@ -140,7 +142,6 @@ var foo = "foo"
 
 func TestFoo(t *testing.T) {
 	_ = t
-
 	t.Fail()
 }
 `
@@ -177,7 +178,6 @@ var foo = "foo"
 
 func TestFoo(t *testing.T) {
 	_ = t
-
 	t.Fail()
 }
 `, time.Now().Year())
@@ -195,7 +195,6 @@ var foo = "foo"
 
 func TestFoo(t *testing.T) {
 	_ = t
-
 	t.Fail()
 }
 `, time.Now().Year())
@@ -204,7 +203,7 @@ func TestFoo(t *testing.T) {
 	err := os.WriteFile(filepath.Join(testProjectDir, "godel", "config", "license-plugin.yml"), []byte(licenseYML), 0644)
 	require.NoError(t, err)
 
-	for i, currCase := range []struct {
+	for _, tc := range []struct {
 		args        []string
 		want        string
 		wantTestSrc string
@@ -215,18 +214,20 @@ func TestFoo(t *testing.T) {
 		{args: []string{"--skip-license"}, want: `(?s).+Failed tasks:\n\tlint --fix\n\ttest`, wantTestSrc: formattedAndLintedTestSrc},
 		{args: []string{"--skip-test"}, want: `(?s).+Failed tasks:\n\tlint --fix`, wantTestSrc: licensedAndFormattedAndLintedTestSrc},
 	} {
-		_, err := gofiles.Write(testProjectDir, specs)
-		require.NoError(t, err)
+		t.Run(fmt.Sprintf("Args %v", tc.args), func(t *testing.T) {
+			_, err := gofiles.Write(testProjectDir, specs)
+			require.NoError(t, err)
 
-		cmd := exec.Command("./godelw", append([]string{"verify"}, currCase.args...)...)
-		cmd.Dir = testProjectDir
-		output, err := cmd.CombinedOutput()
-		require.Error(t, err, fmt.Sprintf("Case %d", i))
-		assert.Regexp(t, regexp.MustCompile(currCase.want), string(output), "Case %d", i)
+			cmd := exec.Command("./godelw", append([]string{"verify"}, tc.args...)...)
+			cmd.Dir = testProjectDir
+			output, err := cmd.CombinedOutput()
+			require.Error(t, err)
+			assert.Regexp(t, regexp.MustCompile(tc.want), string(output))
 
-		bytes, err := os.ReadFile(filepath.Join(testProjectDir, "main_test.go"))
-		require.NoError(t, err, "Case %d", i)
-		assert.Equal(t, currCase.wantTestSrc, string(bytes), "Case %d", i)
+			bytes, err := os.ReadFile(filepath.Join(testProjectDir, "main_test.go"))
+			require.NoError(t, err)
+			assert.Equal(t, tc.wantTestSrc, string(bytes))
+		})
 	}
 }
 
