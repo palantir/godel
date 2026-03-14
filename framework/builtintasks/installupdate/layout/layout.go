@@ -16,6 +16,7 @@ package layout
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -61,9 +62,7 @@ func GodelDistLayout(version string, mode s.Mode) (s.SpecDir, error) {
 		godelHomeTemplate: filepath.Base(rootDir),
 		versionTemplate:   version,
 	}
-	for key, value := range AppSpecTemplate(version) {
-		values[key] = value
-	}
+	maps.Copy(values, AppSpecTemplate(version))
 
 	return s.New(rootDir, godelHomeSpec([]s.FileNodeProvider{AppSpec()}), values, mode)
 }

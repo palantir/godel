@@ -195,10 +195,10 @@ environment:
 	require.NoError(t, err)
 
 	out := execCommand(t, testProjectDir, "./godelw", "exec", "env")
-	idx := strings.Index(out, "MY_ENV_VAR=FOO\n")
+	found := strings.Contains(out, "MY_ENV_VAR=FOO\n")
 
 	// do not print content of "out" on failure, as it may contain sensitive environment variables
-	assert.True(t, idx != -1, "did not find expected environment variable in output")
+	assert.True(t, found, "did not find expected environment variable in output")
 }
 
 func TestTest(t *testing.T) {
