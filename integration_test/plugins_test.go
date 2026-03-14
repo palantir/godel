@@ -410,7 +410,7 @@ func writePlugin(t *testing.T, testProjectDir, pluginName, pluginVersion, plugin
 	pluginInfoJSON := getDefaultPluginInfoJSON(t, pluginName, pluginVersion)
 
 	pluginScript := filepath.Join(pluginDir, fmt.Sprintf("%s-%s", pluginName, pluginVersion))
-	err = os.WriteFile(pluginScript, []byte(fmt.Sprintf(pluginContent, string(pluginInfoJSON))), 0755)
+	err = os.WriteFile(pluginScript, fmt.Appendf(nil, pluginContent, string(pluginInfoJSON)), 0755)
 	require.NoError(t, err)
 
 	pluginTGZPath := filepath.Join(pluginDir, fmt.Sprintf("%s-%s-%s.tgz", pluginName, osarch.Current(), pluginVersion))
