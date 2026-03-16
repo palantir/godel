@@ -34,7 +34,7 @@ func VerifyTask(tasks []godellauncher.Task, verifyTasksConfig config.VerifyTasks
 
 	verifyTasks, verifyTaskFlags := extractVerifyTasks(tasks, verifyTasksConfig)
 	skipVerifyTasks := make(map[string]*bool)
-	verifyTaskFlagVals := make(map[string]map[godellauncher.VerifyFlag]interface{})
+	verifyTaskFlagVals := make(map[string]map[godellauncher.VerifyFlag]any)
 
 	cmd := &cobra.Command{
 		Use:   verifyCmdName,
@@ -54,7 +54,7 @@ func VerifyTask(tasks []godellauncher.Task, verifyTasksConfig config.VerifyTasks
 		}
 
 		// hook up task-specific flags
-		verifyTaskFlagVals[task.Name] = make(map[godellauncher.VerifyFlag]interface{})
+		verifyTaskFlagVals[task.Name] = make(map[godellauncher.VerifyFlag]any)
 		for _, f := range flags {
 			flagVal, err := f.AddFlag(cmd.Flags())
 			if err != nil {

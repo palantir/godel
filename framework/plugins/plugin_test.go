@@ -65,7 +65,7 @@ func TestInfoFromResolved(t *testing.T) {
 
 	pluginName := newPluginName()
 	pluginFile := filepath.Join(tmpDir, fmt.Sprintf("com.palantir-%s-1.0.0", pluginName))
-	err = os.WriteFile(pluginFile, []byte(fmt.Sprintf(pluginScriptTmpl, pluginName)), 0755)
+	err = os.WriteFile(pluginFile, fmt.Appendf(nil, pluginScriptTmpl, pluginName), 0755)
 	require.NoError(t, err)
 
 	gotInfo, err := pluginapi.InfoFromPlugin(filepath.Join(tmpDir, pathsinternal.PluginFileName(artifactresolver.Locator{
@@ -162,7 +162,7 @@ func createTestPlugin(t *testing.T, tmpDir string) (artifactresolver.Locator, ar
 	require.NoError(t, err)
 
 	testProductPath := filepath.Join(testProductDir, pluginName)
-	err = os.WriteFile(testProductPath, []byte(fmt.Sprintf(pluginScriptTmpl, pluginName)), 0755)
+	err = os.WriteFile(testProductPath, fmt.Appendf(nil, pluginScriptTmpl, pluginName), 0755)
 	require.NoError(t, err)
 
 	testProductTGZPath := filepath.Join(testProductDir, pluginName+"-darwin-amd64-1.0.0.tgz")

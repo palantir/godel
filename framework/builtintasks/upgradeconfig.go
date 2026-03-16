@@ -137,7 +137,7 @@ func printUpgradedConfig(cfgFile string, upgradedCfgBytes []byte, dryRun, printC
 	}
 	dryRunPrintln(stdout, dryRun, "---")
 	cfgStr := strings.TrimSuffix(string(upgradedCfgBytes), "\n")
-	for _, line := range strings.Split(cfgStr, "\n") {
+	for line := range strings.SplitSeq(cfgStr, "\n") {
 		dryRunPrintln(stdout, dryRun, line)
 	}
 	dryRunPrintln(stdout, dryRun, "---")

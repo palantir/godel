@@ -256,14 +256,14 @@ func TestRunPluginFromInfo(t *testing.T) {
 			require.NoError(t, err)
 			pluginExecPath := filepath.Join(tmpDir, fmt.Sprintf("echo-%d.sh", i))
 
-			err = os.WriteFile(pluginExecPath, []byte(fmt.Sprintf(echoPluginTmpl, string(pluginInfoJSON))), 0755)
+			err = os.WriteFile(pluginExecPath, fmt.Appendf(nil, echoPluginTmpl, string(pluginInfoJSON)), 0755)
 			require.NoError(t, err)
 
 			var assets []string
 			for assetNum := 0; assetNum < tc.numAssets; assetNum++ {
 				assetPath := filepath.Join(tmpDir, fmt.Sprintf("echo-%d-asset-%d", i, assetNum))
 
-				err = os.WriteFile(assetPath, []byte(fmt.Sprintf("asset %d", assetNum)), 0755)
+				err = os.WriteFile(assetPath, fmt.Appendf(nil, "asset %d", assetNum), 0755)
 				require.NoError(t, err)
 
 				assets = append(assets, assetPath)
@@ -360,7 +360,7 @@ func TestRunPluginVerify(t *testing.T) {
 			require.NoError(t, err)
 			pluginExecPath := filepath.Join(tmpDir, fmt.Sprintf("echo-%d.sh", i))
 
-			err = os.WriteFile(pluginExecPath, []byte(fmt.Sprintf(echoPluginTmpl, string(pluginInfoJSON))), 0755)
+			err = os.WriteFile(pluginExecPath, fmt.Appendf(nil, echoPluginTmpl, string(pluginInfoJSON)), 0755)
 			require.NoError(t, err)
 
 			tasks := pluginInfo.Tasks(pluginExecPath, nil)

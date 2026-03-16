@@ -58,7 +58,7 @@ func TestDist(t *testing.T) {
 	}
 }
 
-func requireNoError(t *testing.T, err error, msg string, args ...interface{}) {
+func requireNoError(t *testing.T, err error, msg string, args ...any) {
 	if err == nil {
 		return
 	}

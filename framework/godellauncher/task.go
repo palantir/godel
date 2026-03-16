@@ -87,7 +87,7 @@ type VerifyFlag struct {
 
 // AddFlag adds the flag represented by VerifyFlag to the specified pflag.FlagSet. Returns the pointer to the value that
 // can be used to retrieve the value.
-func (f VerifyFlag) AddFlag(fset *pflag.FlagSet) (interface{}, error) {
+func (f VerifyFlag) AddFlag(fset *pflag.FlagSet) (any, error) {
 	switch f.Type {
 	case StringFlag:
 		return fset.String(f.Name, "", f.Description), nil
@@ -100,7 +100,7 @@ func (f VerifyFlag) AddFlag(fset *pflag.FlagSet) (interface{}, error) {
 
 // ToFlagArgs takes the input parameter (which should be the value returned by calling AddFlag for the receiver) and
 // returns a string slice that reconstructs the flag arguments for the given flag.
-func (f VerifyFlag) ToFlagArgs(flagVal interface{}) ([]string, error) {
+func (f VerifyFlag) ToFlagArgs(flagVal any) ([]string, error) {
 	switch f.Type {
 	case StringFlag:
 		flagValStr := flagVal.(*string)

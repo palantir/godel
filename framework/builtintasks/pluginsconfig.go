@@ -50,7 +50,7 @@ func printTasksCfgInfo(tasksCfgInfo config.TasksConfigInfo, stdout io.Writer) er
 	return printWithHeader("Plugin configuration for default tasks", tasksCfgInfo.DefaultTasksPluginsConfig, stdout)
 }
 
-func printWithHeader(header string, in interface{}, stdout io.Writer) error {
+func printWithHeader(header string, in any, stdout io.Writer) error {
 	printHeader(header, stdout)
 	ymlString, err := toYAMLString(in)
 	if err != nil {
@@ -65,7 +65,7 @@ func printHeader(header string, stdout io.Writer) {
 	_, _ = fmt.Fprintln(stdout, strings.Repeat("-", len(header)+1))
 }
 
-func toYAMLString(in interface{}) (string, error) {
+func toYAMLString(in any) (string, error) {
 	ymlBytes, err := yaml.Marshal(in)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to marshal YAML")
