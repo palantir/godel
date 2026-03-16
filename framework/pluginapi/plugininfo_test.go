@@ -24,6 +24,7 @@ import (
 
 	"github.com/nmiyake/pkg/dirs"
 	"github.com/palantir/godel/v2/framework/builtintasks"
+	"github.com/palantir/godel/v2/framework/godel/config"
 	"github.com/palantir/godel/v2/framework/godellauncher"
 	"github.com/palantir/godel/v2/framework/pluginapi/v2/pluginapi"
 	"github.com/stretchr/testify/assert"
@@ -369,7 +370,7 @@ func TestRunPluginVerify(t *testing.T) {
 			gc := tc.globalConfig
 			gc.Executable = pluginExecPath
 
-			vTask := builtintasks.VerifyTask(tasks)
+			vTask := builtintasks.VerifyTask(tasks, config.VerifyTasksConfig{})
 			err = vTask.Run(tc.globalConfig, outBuf)
 			require.NoError(t, err, "Case %d: %s", i, tc.name)
 
