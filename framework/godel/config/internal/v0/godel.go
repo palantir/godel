@@ -41,6 +41,15 @@ type TasksConfig struct {
 	DefaultTasks DefaultTasksConfig `yaml:"default-tasks,omitempty"`
 	// Plugins specifies the configuration for the plugins configured for gödel.
 	Plugins PluginsConfig `yaml:"plugins,omitempty"`
+	// VerifyTasks specifies the configuration for the verify tasks configured for gödel.
+	VerifyTasks VerifyTasksConfig `yaml:"verify-tasks,omitempty"`
+}
+
+type VerifyTasksConfig struct {
+	// Ordering the value for the ordering for a verify task to be set/overridden by configuration. The key of the map
+	// is the name of the "verify" task and the value is the value that should be set. This configuration overrides the
+	// value reported by the plugin that provides the task.
+	Ordering map[string]int `yaml:"ordering,omitempty"`
 }
 
 type DefaultTasksConfig struct {

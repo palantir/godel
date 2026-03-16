@@ -143,7 +143,7 @@ func createTasks(defaultTasks, pluginTasks []godellauncher.Task, upgradeConfigTa
 	var allTasks []godellauncher.Task
 	allTasks = append(allTasks, builtintasks.Tasks(tasksCfgInfo)...)
 	allTasks = append(allTasks, defaultTasks...)
-	allTasks = append(allTasks, builtintasks.VerifyTask(append(allTasks, pluginTasks...)))
+	allTasks = append(allTasks, builtintasks.VerifyTask(append(allTasks, pluginTasks...), config.VerifyTasksConfig(tasksCfgInfo.TasksConfig.VerifyTasks)))
 	allTasks = append(allTasks, builtintasks.UpgradeConfigTask(upgradeConfigTasks))
 	allTasks = append(allTasks, pluginTasks...)
 	return allTasks
