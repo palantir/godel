@@ -59,9 +59,7 @@ func (c *TasksConfig) Combine(configs ...TasksConfig) {
 		c.DefaultTasks.DefaultResolvers = pluginsinternal.Uniquify(append(c.DefaultTasks.DefaultResolvers, cfg.DefaultTasks.DefaultResolvers...))
 
 		// DefaultTask tasks key/values are simply copied (and overwritten with last writer wins for any duplicate keys)
-		for k, v := range cfg.DefaultTasks.Tasks {
-			c.DefaultTasks.Tasks[k] = v
-		}
+		maps.Copy(c.DefaultTasks.Tasks, cfg.DefaultTasks.Tasks)
 
 		// Plugin resolvers are appended and uniquified
 		c.Plugins.DefaultResolvers = pluginsinternal.Uniquify(append(c.Plugins.DefaultResolvers, cfg.Plugins.DefaultResolvers...))

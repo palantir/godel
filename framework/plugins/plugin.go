@@ -235,9 +235,10 @@ func verifyPluginCompatibility(plugins map[artifactresolver.Locator]pluginInfoWi
 	}
 	pluginsinternal.SortLocators(sortedOuterKeys)
 
-	errString := fmt.Sprintf("%d plugins had compatibility issues:", len(conflicts))
+	var errString strings.Builder
+	errString.WriteString(fmt.Sprintf("%d plugins had compatibility issues:", len(conflicts)))
 	for _, k := range sortedOuterKeys {
-		errString += fmt.Sprintf("\n%s%s:", strings.Repeat(" ", pluginsinternal.IndentSpaces), k.String())
+		errString.WriteString(fmt.Sprintf("\n%s%s:", strings.Repeat(" ", pluginsinternal.IndentSpaces), k.String()))
 
 		var sortedInnerKeys []artifactresolver.Locator
 		for innerK := range conflicts[k] {
@@ -246,10 +247,10 @@ func verifyPluginCompatibility(plugins map[artifactresolver.Locator]pluginInfoWi
 		pluginsinternal.SortLocators(sortedInnerKeys)
 
 		for _, innerK := range sortedInnerKeys {
-			errString += fmt.Sprintf("\n%s%s", strings.Repeat(" ", pluginsinternal.IndentSpaces*2), conflicts[k][innerK].Error())
+			errString.WriteString(fmt.Sprintf("\n%s%s", strings.Repeat(" ", pluginsinternal.IndentSpaces*2), conflicts[k][innerK].Error()))
 		}
 	}
-	return errors.New(errString)
+	return errors.New(errString.String())
 }
 
 func verifySinglePluginCompatibility(plugin artifactresolver.Locator, plugins map[artifactresolver.Locator]pluginInfoWithAssets) map[artifactresolver.Locator]error {

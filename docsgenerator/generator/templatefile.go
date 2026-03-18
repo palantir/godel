@@ -126,11 +126,11 @@ func parseTemplateFile(fBytes []byte) (parsedTemplateFile, error) {
 }
 
 func applyOptions(codePart *tutorialCodePart, optionsStr string) error {
-	optionsParts := strings.Split(optionsStr, ",")
-	for _, currOption := range optionsParts {
+	optionsParts := strings.SplitSeq(optionsStr, ",")
+	for currOption := range optionsParts {
 		handled := false
-		if strings.HasPrefix(currOption, "fail=") {
-			failVal := strings.TrimPrefix(currOption, "fail=")
+		if after, ok := strings.CutPrefix(currOption, "fail="); ok {
+			failVal := after
 			failValBool, err := strconv.ParseBool(failVal)
 			if err != nil {
 				return errors.Wrapf(err, "failed to parse option %q", currOption)

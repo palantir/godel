@@ -41,8 +41,8 @@ const legacyPrefix = `legacy-config: true
 // provided bytes do not start with this line, the input is returned directly. Returns true if the prefix is trimmed,
 // false otherwise.
 func TrimLegacyPrefix(in []byte) ([]byte, bool) {
-	if bytes.HasPrefix(in, []byte(legacyPrefix)) {
-		return bytes.TrimPrefix(in, []byte(legacyPrefix)), true
+	if after, ok := bytes.CutPrefix(in, []byte(legacyPrefix)); ok {
+		return after, true
 	}
 	return in, false
 }

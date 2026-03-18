@@ -81,14 +81,14 @@ plugins:
 	require.NoError(t, err)
 
 	pluginScript := filepath.Join(pluginDir, pluginName+"-1.0.0")
-	err = os.WriteFile(pluginScript, []byte(fmt.Sprintf(fmt.Sprintf(`#!/bin/sh
+	err = os.WriteFile(pluginScript, fmt.Appendf(nil, fmt.Sprintf(`#!/bin/sh
 if [ "$1" = "%s" ]; then
     echo '%s'
     exit 0
 fi
 
 echo ${GODEL_TEST_ENV_VAR}
-`, pluginapi.PluginInfoCommandName, `%s`), string(pluginInfoJSON))), 0755)
+`, pluginapi.PluginInfoCommandName, `%s`), string(pluginInfoJSON)), 0755)
 	require.NoError(t, err)
 
 	pluginTGZPath := filepath.Join(pluginDir, fmt.Sprintf("%s-%s-1.0.0.tgz", pluginName, osarch.Current()))

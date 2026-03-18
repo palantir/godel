@@ -58,7 +58,7 @@ cd %v
 pwd
 `
 	scriptFilePath := filepath.Join(symLinkParentDir, "script.sh")
-	err = os.WriteFile(scriptFilePath, []byte(fmt.Sprintf(scriptTemplate, projectPathInSymLink)), 0755)
+	err = os.WriteFile(scriptFilePath, fmt.Appendf(nil, scriptTemplate, projectPathInSymLink), 0755)
 	require.NoError(t, err)
 
 	cmd := exec.Command(scriptFilePath)
@@ -70,7 +70,7 @@ pwd
 cd %v
 ./godelw lint
 `
-	err = os.WriteFile(scriptFilePath, []byte(fmt.Sprintf(scriptTemplate, projectPathInSymLink)), 0755)
+	err = os.WriteFile(scriptFilePath, fmt.Appendf(nil, scriptTemplate, projectPathInSymLink), 0755)
 	require.NoError(t, err)
 
 	cmd = exec.Command(scriptFilePath)
@@ -119,7 +119,7 @@ cd %v
 pwd
 `
 	scriptFilePath := filepath.Join(symLinkParentDir, "script.sh")
-	err = os.WriteFile(scriptFilePath, []byte(fmt.Sprintf(scriptTemplate, projectPathInSymLink)), 0755)
+	err = os.WriteFile(scriptFilePath, fmt.Appendf(nil, scriptTemplate, projectPathInSymLink), 0755)
 	require.NoError(t, err)
 
 	cmd := exec.Command(scriptFilePath)
@@ -131,7 +131,7 @@ pwd
 cd %v
 ./godelw lint
 `
-	err = os.WriteFile(scriptFilePath, []byte(fmt.Sprintf(scriptTemplate, projectPathInSymLink)), 0755)
+	err = os.WriteFile(scriptFilePath, fmt.Appendf(nil, scriptTemplate, projectPathInSymLink), 0755)
 	require.NoError(t, err)
 
 	cmd = exec.Command(scriptFilePath)
