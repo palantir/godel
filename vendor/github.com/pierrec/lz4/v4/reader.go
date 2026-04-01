@@ -207,7 +207,6 @@ func (r *Reader) read(buf []byte) (int, error) {
 	}
 	r.cum += uint32(len(dst))
 	if direct {
-		r.data = r.data[:0]
 		return len(dst), nil
 	}
 	r.data = dst
