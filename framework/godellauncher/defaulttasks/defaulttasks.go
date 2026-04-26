@@ -106,7 +106,7 @@ var defaultPluginsConfig = config.PluginsConfig{
 							"darwin-amd64": "86c7ee33171bf33367e39af75bee807d89cbec906142b1ed5d1e6c20568b54c7",
 							"darwin-arm64": "b4eccb02c926910ddd7ad7ea57e4645962960607f5a2c3a761d46254f40ee22a",
 							"linux-amd64":  "f1355d76d7b61316c78d2c61b675589515c6bdc6c3e1b2634dfec829af7d318a",
-							"linux-arm64":  "9528b1886eb9dcd06299d543a2fce1aa395c2a13553e7305a9d04a3fbde04773",
+							"linux-arm64":  "",
 						},
 					}),
 				},
