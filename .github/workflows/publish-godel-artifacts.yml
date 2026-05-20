@@ -14,7 +14,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@v4
       #####################
       # START Go dist setup
       #####################
@@ -25,32 +25,32 @@ jobs:
           echo "GOPATH=$(go env GOPATH)" >> "$GITHUB_ENV"
           echo "Set GOPATH=$(go env GOPATH) in GITHUB_ENV at $GITHUB_ENV"
       - id: go-dist-info
-        uses: palantir/github-actions/go-dist-info@7004016b4a8d2706f6786928a3043c4f2afad160 # 0.1.0
+        uses: palantir/github-actions/go-dist-info@0.1.0
         with:
           gopath: ${{ steps.set-gopath.outputs.GOPATH }}
           go-version: go1.26.0
       - id: restore-go-dist-from-cache
         if: steps.go-dist-info.outputs.go-dist-exists != 'true'
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        uses: actions/cache@v4
         with:
           path: |
             ${{ steps.set-gopath.outputs.GOPATH }}/go-dists/${{ steps.go-dist-info.outputs.go-dist-version }}
           key: ${{ runner.os }}-${{ steps.go-dist-info.outputs.go-dist-version }}
       - id: go-dist-setup
-        uses: palantir/github-actions/go-dist-setup@7004016b4a8d2706f6786928a3043c4f2afad160 # 0.1.0
+        uses: palantir/github-actions/go-dist-setup@0.1.0
         with:
           gopath: ${{ steps.set-gopath.outputs.gopath }}
           go-version: ${{ steps.go-dist-info.outputs.go-dist-version }}
       #####################
       # END Go dist setup
       #####################
-      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      - uses: actions/cache@v4
         with:
           path: |
             ${{ env.GOPATH }}/pkg/mod
             ~/.cache/go-build
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.godel
