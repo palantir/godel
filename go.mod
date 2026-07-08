@@ -2,7 +2,7 @@ module github.com/palantir/godel/v2
 
 go 1.26.0
 
-toolchain go1.26.4
+toolchain go1.26.5
 
 require (
 	github.com/cheggaaa/pb/v3 v3.1.7
