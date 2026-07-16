@@ -61,11 +61,11 @@ to the project. If a specific version of godel is desired, it can be specified u
 		var runFn func() error
 		if localFlagVal != "" {
 			runFn = func() error {
-				return installupdate.NewInstall(projectDir, godelgetter.NewPkgSrc(localFlagVal, checksumFlagVal), cmd.OutOrStdout())
+				return installupdate.NewInstall(projectDir, godelgetter.NewPkgSrc(localFlagVal, checksumFlagVal), cmd.ErrOrStderr())
 			}
 		} else {
 			runFn = func() error {
-				return installupdate.InstallVersion(projectDir, versionFlagVal, checksumFlagVal, cacheDurationFlagVal, true, cmd.OutOrStdout())
+				return installupdate.InstallVersion(projectDir, versionFlagVal, checksumFlagVal, cacheDurationFlagVal, true, cmd.ErrOrStderr())
 			}
 		}
 		return installupdate.RunActionAndUpgradeConfig(
@@ -73,7 +73,7 @@ to the project. If a specific version of godel is desired, it can be specified u
 			skipUpgradeConfigFlagVal,
 			runFn,
 			cmd.OutOrStdout(),
-			cmd.OutOrStderr(),
+			cmd.ErrOrStderr(),
 		)
 	},
 }

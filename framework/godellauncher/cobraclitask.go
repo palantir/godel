@@ -42,7 +42,8 @@ func CobraCLITask(cmd *cobra.Command, globalConfigPtr *GlobalConfig) Task {
 			if globalConfigPtr != nil {
 				*globalConfigPtr = global
 			}
-			rootCmd.SetOutput(stdout)
+			rootCmd.SetOut(stdout)
+			rootCmd.SetErr(os.Stderr)
 			args := []string{global.Executable}
 			args = append(args, global.Task)
 			args = append(args, global.TaskArgs...)

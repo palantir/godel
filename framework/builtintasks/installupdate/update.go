@@ -37,11 +37,11 @@ import (
 // installation of gödel in the path, it is overwritten by the new file. However, changes in the "var" directory are
 // purely additive -- files that have been added in this directory in the new distribution will be added, but existing
 // files will not be modified or removed.
-func NewInstall(dstDirPath string, srcPkg godelgetter.PkgSrc, stdout io.Writer) error {
+func NewInstall(dstDirPath string, srcPkg godelgetter.PkgSrc, stderr io.Writer) error {
 	if err := layout.VerifyDirExists(dstDirPath); err != nil {
 		return errors.Wrapf(err, "path %s does not specify an existing directory", dstDirPath)
 	}
-	if err := update(dstDirPath, srcPkg, true, stdout); err != nil {
+	if err := update(dstDirPath, srcPkg, true, stderr); err != nil {
 		return errors.Wrapf(err, "failed to install from %s into %s", srcPkg.Path(), dstDirPath)
 	}
 	return nil
@@ -52,8 +52,8 @@ func NewInstall(dstDirPath string, srcPkg godelgetter.PkgSrc, stdout io.Writer) 
 // files provided by the package that was downloaded. However, changes in the "godel" directory are purely additive --
 // files that have been added in this directory in the new distribution will be added, but existing files will not be
 // modified or removed.
-func Update(projectDirPath string, srcPkg godelgetter.PkgSrc, stdout io.Writer) error {
-	if err := update(projectDirPath, srcPkg, false, stdout); err != nil {
+func Update(projectDirPath string, srcPkg godelgetter.PkgSrc, stderr io.Writer) error {
+	if err := update(projectDirPath, srcPkg, false, stderr); err != nil {
 		return errors.Wrapf(err, "update failed")
 	}
 	return nil
@@ -61,7 +61,7 @@ func Update(projectDirPath string, srcPkg godelgetter.PkgSrc, stdout io.Writer) 
 
 // InstallVersion installs the specified version of gödel in the provided project directory. If targetVersion is the
 // empty string, the latest version is determined and used.
-func InstallVersion(projectDir, targetVersion, wantChecksum string, cacheValidDuration time.Duration, newInstall bool, stdout io.Writer) error {
+func InstallVersion(projectDir, targetVersion, wantChecksum string, cacheValidDuration time.Duration, newInstall bool, stderr io.Writer) error {
 	if targetVersion == "" {
 		version, err := latestGodelVersion(cacheValidDuration)
 		if err != nil {
@@ -80,7 +80,7 @@ func InstallVersion(projectDir, targetVersion, wantChecksum string, cacheValidDu
 	} else {
 		installFn = Update
 	}
-	return installFn(projectDir, pkgSrc, stdout)
+	return installFn(projectDir, pkgSrc, stderr)
 }
 
 // pkgSrcForVersion returns a package source for the provided version. If the distribution for the provided version has
@@ -250,7 +250,7 @@ func GodelPropsDistPkgInfo(projectDir string) (godelgetter.PkgSrc, error) {
 	return godelgetter.NewPkgSrc(url, checksum), nil
 }
 
-func update(wrapperScriptDir string, pkg godelgetter.PkgSrc, newInstall bool, stdout io.Writer) error {
+func update(wrapperScriptDir string, pkg godelgetter.PkgSrc, newInstall bool, stderr io.Writer) error {
 	mode := specdir.Validate
 	if newInstall {
 		mode = specdir.SpecOnly
@@ -260,7 +260,7 @@ func update(wrapperScriptDir string, pkg godelgetter.PkgSrc, newInstall bool, st
 		return errors.Wrapf(err, "%s is not a valid wrapper directory", wrapperScriptDir)
 	}
 
-	version, err := install(pkg, stdout)
+	version, err := install(pkg, stderr)
 	if err != nil {
 		return err
 	}

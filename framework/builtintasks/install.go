@@ -44,10 +44,10 @@ func InstallTask() godellauncher.Task {
 				projectDir,
 				skipUpgradeConfigFlagVal,
 				func() error {
-					return installupdate.NewInstall(projectDir, godelgetter.NewPkgSrc(args[0], checksumFlagVal), cmd.OutOrStdout())
+					return installupdate.NewInstall(projectDir, godelgetter.NewPkgSrc(args[0], checksumFlagVal), cmd.ErrOrStderr())
 				},
 				cmd.OutOrStdout(),
-				cmd.OutOrStderr(),
+				cmd.ErrOrStderr(),
 			)
 		},
 	}
