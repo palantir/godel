@@ -29,14 +29,14 @@ import (
 )
 
 type Resolver interface {
-	Resolve(locator LocatorParam, osArch osarch.OSArch, dst string, stdout io.Writer) error
+	Resolve(locator LocatorParam, osArch osarch.OSArch, dst string, stderr io.Writer) error
 }
 
 // ResolveArtifactTGZ executes ResolveArtifact for an artifact that is known to be a TGZ that contains a single file.
 // The checksum for the artifact is computed by computing the checksum of the file that is in the TGZ archive (rather
 // than the TGZ archive itself).
-func ResolveArtifactTGZ(locatorWithResolver LocatorWithResolverParam, defaultResolvers []Resolver, osArch osarch.OSArch, dst string, stdout io.Writer) error {
-	return ResolveArtifact(locatorWithResolver, defaultResolvers, osArch, dst, pluginTGZFileContentHash, stdout)
+func ResolveArtifactTGZ(locatorWithResolver LocatorWithResolverParam, defaultResolvers []Resolver, osArch osarch.OSArch, dst string, stderr io.Writer) error {
+	return ResolveArtifact(locatorWithResolver, defaultResolvers, osArch, dst, pluginTGZFileContentHash, stderr)
 }
 
 type PathChecksummer func(in string) (string, error)
@@ -49,7 +49,7 @@ type PathChecksummer func(in string) (string, error)
 // resolvers or if a checksum was provided and did not match. Note that, if the function resolves an artifact to the
 // destination, the artifact will not be removed even if the function returns an error (for example, due to checksums
 // not matching).
-func ResolveArtifact(locatorWithResolver LocatorWithResolverParam, defaultResolvers []Resolver, osArch osarch.OSArch, dst string, checksummer PathChecksummer, stdout io.Writer) error {
+func ResolveArtifact(locatorWithResolver LocatorWithResolverParam, defaultResolvers []Resolver, osArch osarch.OSArch, dst string, checksummer PathChecksummer, stderr io.Writer) error {
 	const errIndentSpaces = 4
 
 	resolversToUse := defaultResolvers
@@ -60,7 +60,7 @@ func ResolveArtifact(locatorWithResolver LocatorWithResolverParam, defaultResolv
 	success := false
 	var errs []string
 	for _, resolver := range resolversToUse {
-		if err := resolver.Resolve(locatorWithResolver.LocatorWithChecksums, osArch, dst, stdout); err != nil {
+		if err := resolver.Resolve(locatorWithResolver.LocatorWithChecksums, osArch, dst, stderr); err != nil {
 			errs = append(errs, err.Error())
 			continue
 		}

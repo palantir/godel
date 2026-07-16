@@ -65,7 +65,7 @@ func runGodelApp(osArgs []string) int {
 		if err != nil {
 			printErrAndExit(err, global.Debug)
 		}
-		providedConfigs, err := plugins.LoadProvidedConfigurations(configProvidersParam, os.Stdout)
+		providedConfigs, err := plugins.LoadProvidedConfigurations(configProvidersParam, os.Stderr)
 		if err != nil {
 			printErrAndExit(err, global.Debug)
 		}
@@ -89,7 +89,7 @@ func runGodelApp(osArgs []string) int {
 		var defaultUpgradeConfigTasks, pluginUpgradeConfigTasks []godellauncher.UpgradeConfigTask
 
 		tasksCfgInfo.DefaultTasksPluginsConfig = defaultTasksCfg
-		defaultTasks, defaultUpgradeConfigTasks, err = plugins.LoadPluginsTasksWithCache(defaultTasksCfg, defaultTasksParam, os.Stdout)
+		defaultTasks, defaultUpgradeConfigTasks, err = plugins.LoadPluginsTasksWithCache(defaultTasksCfg, defaultTasksParam, os.Stderr)
 		if err != nil {
 			printErrAndExit(err, global.Debug)
 		}
@@ -100,7 +100,7 @@ func runGodelApp(osArgs []string) int {
 		if err != nil {
 			printErrAndExit(err, global.Debug)
 		}
-		pluginTasks, pluginUpgradeConfigTasks, err = plugins.LoadPluginsTasksWithCache(pluginsCfg, pluginsParam, os.Stdout)
+		pluginTasks, pluginUpgradeConfigTasks, err = plugins.LoadPluginsTasksWithCache(pluginsCfg, pluginsParam, os.Stderr)
 		if err != nil {
 			printErrAndExit(err, global.Debug)
 		}

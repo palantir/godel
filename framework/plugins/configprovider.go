@@ -41,14 +41,14 @@ import (
 //   - Unmarshals all of the resolved configurations into godellauncher.TasksConfig structs.
 //
 // Returns all of the unmarshaled configurations.
-func LoadProvidedConfigurations(taskConfigProvidersParam godellauncher.TasksConfigProvidersParam, stdout io.Writer) ([]config.TasksConfig, error) {
+func LoadProvidedConfigurations(taskConfigProvidersParam godellauncher.TasksConfigProvidersParam, stderr io.Writer) ([]config.TasksConfig, error) {
 	godelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create gödel home directory")
 	}
 	configsDir := godelHomeSpecDir.Path(layout.ConfigsDir)
 	downloadsDir := godelHomeSpecDir.Path(layout.DownloadsDir)
-	return resolveConfigProviders(configsDir, downloadsDir, taskConfigProvidersParam, stdout)
+	return resolveConfigProviders(configsDir, downloadsDir, taskConfigProvidersParam, stderr)
 }
 
 // resolveConfigProviders resolves all of the configurations provided by the specified parameters. Returns a slice that
@@ -69,7 +69,7 @@ func LoadProvidedConfigurations(taskConfigProvidersParam godellauncher.TasksConf
 //   - If the unmarshal fails, return an error
 //   - If the TaskConfig contains a plugin configuration that specifies an "override" parameter, return an error
 //     (configuration providers are not allowed to set overrides)
-func resolveConfigProviders(configsDir, downloadsDir string, taskConfigProvidersParam godellauncher.TasksConfigProvidersParam, stdout io.Writer) ([]config.TasksConfig, error) {
+func resolveConfigProviders(configsDir, downloadsDir string, taskConfigProvidersParam godellauncher.TasksConfigProvidersParam, stderr io.Writer) ([]config.TasksConfig, error) {
 	var configs []config.TasksConfig
 	providerErrors := make(map[artifactresolver.Locator]error)
 	for _, currProvider := range taskConfigProvidersParam.ConfigProviders {
@@ -79,7 +79,7 @@ func resolveConfigProviders(configsDir, downloadsDir string, taskConfigProviders
 			configsDir,
 			downloadsDir,
 			taskConfigProvidersParam.DefaultResolvers,
-			stdout,
+			stderr,
 		)
 		if !ok {
 			continue
@@ -129,14 +129,14 @@ func resolveAndVerifyConfigProvider(
 	artifactErrors map[artifactresolver.Locator]error,
 	dstBaseDir, downloadsDir string,
 	defaultResolvers []artifactresolver.Resolver,
-	stdout io.Writer) (currLocator artifactresolver.Locator, ok bool) {
+	stderr io.Writer) (currLocator artifactresolver.Locator, ok bool) {
 
 	currLocator = currArtifact.LocatorWithChecksums.Locator
 	currDstPath := filepath.Join(dstBaseDir, pathsinternal.ConfigProviderFileName(currLocator))
 
 	if _, err := os.Stat(currDstPath); os.IsNotExist(err) {
 		downloadDstPath := filepath.Join(downloadsDir, pathsinternal.ConfigProviderFileName(currLocator))
-		if err := artifactresolver.ResolveArtifact(currArtifact, defaultResolvers, osarch.Current(), downloadDstPath, artifactresolver.SHA256ChecksumFile, stdout); err != nil {
+		if err := artifactresolver.ResolveArtifact(currArtifact, defaultResolvers, osarch.Current(), downloadDstPath, artifactresolver.SHA256ChecksumFile, stderr); err != nil {
 			artifactErrors[currLocator] = err
 			return currLocator, false
 		}

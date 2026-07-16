@@ -161,7 +161,7 @@ func (p *pluginInfoWithAssets) UnmarshalJSON(data []byte) error {
 // stable (it has not changed in over 9 years), it is unlikely to be an issue (and in such a circumstance, changing the
 // naming scheme of the cache to add some kind of schema prefix or suffix or as a parent directory should be a
 // sufficient solution).
-func LoadPluginsTasksWithCache(pluginsConfig config.PluginsConfig, pluginsParam godellauncher.PluginsParam, stdout io.Writer) ([]godellauncher.Task, []godellauncher.UpgradeConfigTask, error) {
+func LoadPluginsTasksWithCache(pluginsConfig config.PluginsConfig, pluginsParam godellauncher.PluginsParam, stderr io.Writer) ([]godellauncher.Task, []godellauncher.UpgradeConfigTask, error) {
 	configBytes, err := json.Marshal(pluginsConfig)
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "failed to marshal plugins config as JSON")
@@ -170,7 +170,7 @@ func LoadPluginsTasksWithCache(pluginsConfig config.PluginsConfig, pluginsParam 
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "failed to create plugins config cache file path")
 	}
-	return loadPluginsTasks(pluginsParam, stdout, pluginsConfigCachePath)
+	return loadPluginsTasks(pluginsParam, stderr, pluginsConfigCachePath)
 }
 
 // Returns the path to the plugins-config cache file for the provided data. The path to the directory for the file is
