@@ -34,7 +34,7 @@ func ExecTask() godellauncher.Task {
 			}
 			execCmd := exec.Command(args[0], args[1:]...)
 			execCmd.Stdout = cmd.OutOrStdout()
-			execCmd.Stderr = cmd.OutOrStderr()
+			execCmd.Stderr = cmd.ErrOrStderr()
 			execCmd.Stdin = os.Stdin
 			return execCmd.Run()
 		},

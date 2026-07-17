@@ -43,7 +43,7 @@ import (
 //
 // Locks on a file in the Godel Home "downloads" directory with a file name derived based on the provided PkgSrc to
 // ensure that this operation does not run concurrently for the same package.
-func install(src godelgetter.PkgSrc, stdout io.Writer) (string, error) {
+func install(src godelgetter.PkgSrc, stderr io.Writer) (string, error) {
 	godelHomeSpecDir, err := layout.GodelHomeSpecDir(specdir.Create)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to create SpecDir for gödel home")
@@ -60,7 +60,7 @@ func install(src godelgetter.PkgSrc, stdout io.Writer) (string, error) {
 	}
 	defer unlockFn()
 
-	tgzFilePath, err := godelgetter.DownloadIntoDirectory(src, downloadsDir, stdout)
+	tgzFilePath, err := godelgetter.DownloadIntoDirectory(src, downloadsDir, stderr)
 	if err != nil {
 		return "", err
 	}

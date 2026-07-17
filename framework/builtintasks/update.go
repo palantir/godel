@@ -48,11 +48,11 @@ func UpdateTask() godellauncher.Task {
 					if err != nil {
 						return err
 					}
-					if err := installupdate.Update(projectDir, pkgSrc, cmd.OutOrStdout()); err != nil {
+					if err := installupdate.Update(projectDir, pkgSrc, cmd.ErrOrStderr()); err != nil {
 						return err
 					}
 				} else {
-					if err := installupdate.InstallVersion(projectDir, versionFlagVal, checksumFlagVal, cacheDurationFlagVal, false, cmd.OutOrStdout()); err != nil {
+					if err := installupdate.InstallVersion(projectDir, versionFlagVal, checksumFlagVal, cacheDurationFlagVal, false, cmd.ErrOrStderr()); err != nil {
 						return err
 					}
 				}
@@ -63,7 +63,7 @@ func UpdateTask() godellauncher.Task {
 				skipUpgradeConfigFlagVal,
 				action,
 				cmd.OutOrStdout(),
-				cmd.OutOrStderr(),
+				cmd.ErrOrStderr(),
 			)
 		},
 	}
