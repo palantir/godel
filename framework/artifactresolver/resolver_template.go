@@ -41,14 +41,14 @@ type goTemplateResolver struct {
 	tmplSrc string
 }
 
-func (r goTemplateResolver) Resolve(locator LocatorParam, osArch osarch.OSArch, dst string, stdout io.Writer) error {
+func (r goTemplateResolver) Resolve(locator LocatorParam, osArch osarch.OSArch, dst string, stderr io.Writer) error {
 	buf := &bytes.Buffer{}
 	if err := r.tmpl.Funcs(funcMap(locator, osArch)).Execute(buf, nil); err != nil {
 		return errors.Wrapf(err, "failed to execute template %q", r.tmplSrc)
 	}
 	srcURL := buf.String()
 
-	if err := godelgetter.Download(godelgetter.NewPkgSrc(srcURL, ""), dst, stdout); err != nil {
+	if err := godelgetter.Download(godelgetter.NewPkgSrc(srcURL, ""), dst, stderr); err != nil {
 		return errors.Wrapf(err, "failed to resolve artifact at %s", srcURL)
 	}
 	return nil

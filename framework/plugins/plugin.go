@@ -47,8 +47,8 @@ type pluginInfoWithAssets struct {
 //   - Creates runnable godellauncher.Task tasks for the plugins.
 //
 // Returns the tasks provided by the plugins in the provided parameters.
-func LoadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer) ([]godellauncher.Task, []godellauncher.UpgradeConfigTask, error) {
-	return loadPluginsTasks(pluginsParam, stdout, "")
+func LoadPluginsTasks(pluginsParam godellauncher.PluginsParam, stderr io.Writer) ([]godellauncher.Task, []godellauncher.UpgradeConfigTask, error) {
+	return loadPluginsTasks(pluginsParam, stderr, "")
 }
 
 // loadPluginsTasks is a helper function that loads the tasks defined by the plugins in the specified parameters and
@@ -58,7 +58,7 @@ func LoadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer)
 // map[artifactresolver.Locator]pluginInfoWithAssets. If the cache file exists, it is read and used to load the plugin
 // information. If the cache file does not exist, the work to resolve the plugins and verify their validity is performed
 // and then the resulting plugin information is written to the cache file.
-func loadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer, cachePath string) ([]godellauncher.Task, []godellauncher.UpgradeConfigTask, error) {
+func loadPluginsTasks(pluginsParam godellauncher.PluginsParam, stderr io.Writer, cachePath string) ([]godellauncher.Task, []godellauncher.UpgradeConfigTask, error) {
 	pluginsDir, assetsDir, downloadsDir, err := pathsinternal.ResourceDirs()
 	if err != nil {
 		return nil, nil, err
@@ -78,7 +78,7 @@ func loadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer,
 	}
 
 	if plugins == nil {
-		plugins, err = resolvePlugins(pluginsDir, assetsDir, downloadsDir, osarch.Current(), pluginsParam, stdout)
+		plugins, err = resolvePlugins(pluginsDir, assetsDir, downloadsDir, osarch.Current(), pluginsParam, stderr)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -147,7 +147,7 @@ func loadPluginsTasks(pluginsParam godellauncher.PluginsParam, stdout io.Writer,
 //     as the plugin information
 //   - If the plugin specifies assets, resolve all of the assets
 //   - Asset resolution uses a process that is analogous to plugin resolution, but performs it in the assets directory
-func resolvePlugins(pluginsDir, assetsDir, downloadsDir string, osArch osarch.OSArch, pluginsParam godellauncher.PluginsParam, stdout io.Writer) (map[artifactresolver.Locator]pluginInfoWithAssets, error) {
+func resolvePlugins(pluginsDir, assetsDir, downloadsDir string, osArch osarch.OSArch, pluginsParam godellauncher.PluginsParam, stderr io.Writer) (map[artifactresolver.Locator]pluginInfoWithAssets, error) {
 	// lock global resolver file while performing resolution
 	pluginResolverLockFilePath := filepath.Join(pluginsDir, "godel-resolver.lock")
 	pluginResolverLock := lockedfile.MutexAt(pluginResolverLockFilePath)
@@ -167,7 +167,7 @@ func resolvePlugins(pluginsDir, assetsDir, downloadsDir string, osArch osarch.OS
 			downloadsDir,
 			pluginsParam.DefaultResolvers,
 			osArch,
-			stdout,
+			stderr,
 		)
 		if !ok {
 			continue
@@ -179,7 +179,7 @@ func resolvePlugins(pluginsDir, assetsDir, downloadsDir string, osArch osarch.OS
 		}
 
 		// plugin has been successfully resolved: resolve assets for plugin
-		assetInfoMap, err := pluginsinternal.ResolveAssets(assetsDir, downloadsDir, currPlugin.Assets, osArch, pluginsParam.DefaultResolvers, stdout)
+		assetInfoMap, err := pluginsinternal.ResolveAssets(assetsDir, downloadsDir, currPlugin.Assets, osArch, pluginsParam.DefaultResolvers, stderr)
 		if err != nil {
 			pluginErrors[currPluginLocator] = errors.Wrapf(err, "failed to get asset(s) for plugin %+v", currPluginLocator)
 			continue

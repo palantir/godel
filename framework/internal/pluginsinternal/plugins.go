@@ -32,7 +32,7 @@ const (
 	IndentSpaces = 4
 )
 
-func ResolveAssets(assetsDir, downloadsDir string, assetParams []artifactresolver.LocatorWithResolverParam, osArch osarch.OSArch, defaultResolvers []artifactresolver.Resolver, stdout io.Writer) ([]artifactresolver.Locator, error) {
+func ResolveAssets(assetsDir, downloadsDir string, assetParams []artifactresolver.LocatorWithResolverParam, osArch osarch.OSArch, defaultResolvers []artifactresolver.Resolver, stderr io.Writer) ([]artifactresolver.Locator, error) {
 	if len(assetParams) == 0 {
 		return nil, nil
 	}
@@ -47,7 +47,7 @@ func ResolveAssets(assetsDir, downloadsDir string, assetParams []artifactresolve
 			downloadsDir,
 			defaultResolvers,
 			osArch,
-			stdout,
+			stderr,
 		)
 		if !ok {
 			continue
@@ -80,14 +80,14 @@ func ResolveAndVerify(
 	dstBaseDir, downloadsDir string,
 	defaultResolvers []artifactresolver.Resolver,
 	osArch osarch.OSArch,
-	stdout io.Writer) (currLocator artifactresolver.Locator, ok bool) {
+	stderr io.Writer) (currLocator artifactresolver.Locator, ok bool) {
 
 	currLocator = currArtifact.LocatorWithChecksums.Locator
 	currDstPath := filepath.Join(dstBaseDir, pathsinternal.PluginFileName(currLocator))
 
 	if _, err := os.Stat(currDstPath); os.IsNotExist(err) {
 		tgzDstPath := filepath.Join(downloadsDir, pathsinternal.PluginFileName(currLocator)+".tgz")
-		if err := artifactresolver.ResolveArtifactTGZ(currArtifact, defaultResolvers, osArch, tgzDstPath, stdout); err != nil {
+		if err := artifactresolver.ResolveArtifactTGZ(currArtifact, defaultResolvers, osArch, tgzDstPath, stderr); err != nil {
 			artifactErrors[currLocator] = err
 			return currLocator, false
 		}
