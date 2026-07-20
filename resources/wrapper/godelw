@@ -320,7 +320,10 @@ if [ ! -f "$CMD" ]; then
         fi
     fi
 
-    # Lock will be released by trap
+    # Release lock so other operations that are blocking can proceed.
+    # This is an optimization: even if this is not called, the lock will
+    # be released by trap on exit
+    release_lock "$LOCK_DIR"
 fi
 
 verify_checksum "$CMD" "$EXPECTED_CHECKSUM"
