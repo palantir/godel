@@ -4,9 +4,9 @@
 
 name: publish-godel-artifacts
 on:
-  release:
-    types:
-      - created
+  push:
+    tags:
+      - 'v[0-9]*'
 
 jobs:
   run-godel-publish:

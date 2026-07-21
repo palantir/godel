@@ -1,5 +1,11 @@
 version: 3
 
+options:
+  # Remove '[skip ci]' from Autorelease commit messages. The publish-godel-artifacts workflow triggers on the
+  # release tag push, and GitHub Actions honors '[skip ci]' on the tagged commit, so leaving it in would skip the
+  # publish run.
+  disable_skip_ci: true
+
 # Create the GitHub release as a draft so that the publish-godel-artifacts workflow
 # can upload the dist artifacts and then finalize (un-draft) the release.
 github_releases:

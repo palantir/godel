@@ -1,3 +1,16 @@
+default-tasks:
+  tasks:
+    # Override the built-in dist-plugin with 1.105.0, which includes the GitHub publisher change that reuses
+    # an existing draft release created by Autorelease. Remove this override once a released version of godel
+    # bundles dist-plugin >= 1.105.0.
+    com.palantir.distgo:dist-plugin:
+      locator:
+        id: com.palantir.distgo:dist-plugin:1.105.0
+        checksums:
+          darwin-amd64: 8bedb7e5f658ca68f73e409573ed09a697ec8f16b854bcae7c3aeb67624f0570
+          darwin-arm64: 2f6d397ec51013b107e97979a024208fb2ee56ecfbbd6afb84470e92e6adb227
+          linux-amd64: ac3613e6ea83ce1d5a6d4028ddbbe10fc41c10c3650ac2f2dad918515fffed3d
+          linux-arm64: 33dcaa1d99c8632c2ddd23abd0adcc4b98f597339f682eba9a8bcc066e199d69
 plugins:
   resolvers:
     - https://github.com/{{index GroupParts 1}}/{{index GroupParts 2}}/releases/download/v{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz
