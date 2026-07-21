@@ -1,12 +1,13 @@
+# Excavator auto-updates this file. Please contribute improvements to the central manage-autorelease-config check.
 version: 3
 
 options:
-  # Remove '[skip ci]' from Autorelease commit messages. The publish-godel-artifacts workflow triggers on the
-  # release tag push, and GitHub Actions honors '[skip ci]' on the tagged commit, so leaving it in would skip the
-  # publish run.
+  # Remove '[skip ci]' from Autorelease commit messages so the release tag push triggers the
+  # publish-godel-artifacts workflow. GitHub Actions honors '[skip ci]' on the tagged commit.
   disable_skip_ci: true
 
-# Create the GitHub release as a draft so that the publish-godel-artifacts workflow
-# can upload the dist artifacts and then finalize (un-draft) the release.
+# Create the GitHub release as a draft so the publish-godel-artifacts workflow can upload the dist
+# artifacts and then finalize (un-draft) the release. GitHub's immutable-releases feature rejects
+# asset uploads to a release once it has been published.
 github_releases:
   draft: true
