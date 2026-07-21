@@ -1,0 +1,6 @@
+version: 3
+
+# Create the GitHub release as a draft so that the publish-godel-artifacts workflow
+# can upload the dist artifacts and then finalize (un-draft) the release.
+github_releases:
+  draft: true
