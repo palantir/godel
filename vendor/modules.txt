@@ -56,8 +56,8 @@ github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.24
 ## explicit; go 1.20
 github.com/mattn/go-isatty
-# github.com/mattn/go-runewidth v0.0.24
-## explicit; go 1.20
+# github.com/mattn/go-runewidth v0.0.27
+## explicit; go 1.23
 github.com/mattn/go-runewidth
 # github.com/mholt/archiver/v3 v3.5.1
 ## explicit; go 1.13
