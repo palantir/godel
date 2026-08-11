@@ -101,23 +101,23 @@ var defaultPluginsConfig = config.PluginsConfig{
 			Assets: config.ToLocatorWithResolverConfigs([]config.LocatorWithResolverConfig{
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.golangci-lint-palantir:golangci-lint-palantir:0.14.0",
+						ID: "com.palantir.golangci-lint-palantir:golangci-lint-palantir:0.15.0",
 						Checksums: map[string]string{
-							"darwin-amd64": "86c2b214a2ca6bcf4b798b76786e48beaa070acc55dc615348c12547ae5344f6",
-							"darwin-arm64": "f413d124a4ee2776bfdc7319f7d95b1f347c792e0c3b7f29a97ee39ab0373c37",
-							"linux-amd64":  "0273b8bb20dfa8c069efb90ad2b5f2be94d71fababdbf0946f0c20c53074dbfb",
-							"linux-arm64":  "550056e7eeaa0050998f6dbfb23e2f117ea345398ef37f3cb71d76430e7562a9",
+							"darwin-amd64": "5370487294c61f53c246872ad37e104d933cb22f7ddec0b576f46446704cc842",
+							"darwin-arm64": "a365143bd5066ab0655f86069b90df9a4f3975aaabcc9eb5cad439697d18a4ed",
+							"linux-amd64":  "b4dbecc8da635f1a2e5726e8e25e59958e0cce49e5ed5fa360149204a921f273",
+							"linux-arm64":  "b8d8b172e4364fd02e5dc175fa871dce33ec2a6efa83d7a0504a421a225b757f",
 						},
 					}),
 				},
 				{
 					Locator: config.ToLocatorConfig(config.LocatorConfig{
-						ID: "com.palantir.golangci-lint-palantir:golangci-lint-palantir-config:0.14.0",
+						ID: "com.palantir.golangci-lint-palantir:golangci-lint-palantir-config:0.15.0",
 						Checksums: map[string]string{
-							"darwin-amd64": "ec55705e29ca8bff760f1b78fa482b914fa8944ca5d16fb63546de97730105d8",
-							"darwin-arm64": "ec55705e29ca8bff760f1b78fa482b914fa8944ca5d16fb63546de97730105d8",
-							"linux-amd64":  "ec55705e29ca8bff760f1b78fa482b914fa8944ca5d16fb63546de97730105d8",
-							"linux-arm64":  "ec55705e29ca8bff760f1b78fa482b914fa8944ca5d16fb63546de97730105d8",
+							"darwin-amd64": "b297a9384c93a7f63bd1cda880e9827bd04e7cf12ef2dac1ba8cb6426e1a175c",
+							"darwin-arm64": "b297a9384c93a7f63bd1cda880e9827bd04e7cf12ef2dac1ba8cb6426e1a175c",
+							"linux-amd64":  "b297a9384c93a7f63bd1cda880e9827bd04e7cf12ef2dac1ba8cb6426e1a175c",
+							"linux-arm64":  "b297a9384c93a7f63bd1cda880e9827bd04e7cf12ef2dac1ba8cb6426e1a175c",
 						},
 					}),
 				},
