@@ -6,7 +6,7 @@ github.com/VividCortex/ewma
 github.com/andybalholm/brotli
 github.com/andybalholm/brotli/flate
 github.com/andybalholm/brotli/matchfinder
-# github.com/cheggaaa/pb/v3 v3.2.0
+# github.com/cheggaaa/pb/v3 v3.2.1
 ## explicit; go 1.25.0
 github.com/cheggaaa/pb/v3
 github.com/cheggaaa/pb/v3/termutil
