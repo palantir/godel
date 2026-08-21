@@ -24,23 +24,11 @@ jobs:
           echo "Set GOPATH=$(go env GOPATH) in GITHUB_OUTPUT at $GITHUB_OUTPUT"
           echo "GOPATH=$(go env GOPATH)" >> "$GITHUB_ENV"
           echo "Set GOPATH=$(go env GOPATH) in GITHUB_ENV at $GITHUB_ENV"
-      - id: go-dist-info
-        uses: palantir/github-actions/go-dist-info@7004016b4a8d2706f6786928a3043c4f2afad160 # 0.1.0
-        with:
-          gopath: ${{ steps.set-gopath.outputs.GOPATH }}
-          go-version: go1.26.6
-      - id: restore-go-dist-from-cache
-        if: steps.go-dist-info.outputs.go-dist-exists != 'true'
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
-        with:
-          path: |
-            ${{ steps.set-gopath.outputs.GOPATH }}/go-dists/${{ steps.go-dist-info.outputs.go-dist-version }}
-          key: ${{ runner.os }}-${{ steps.go-dist-info.outputs.go-dist-version }}
       - id: go-dist-setup
         uses: palantir/github-actions/go-dist-setup@7004016b4a8d2706f6786928a3043c4f2afad160 # 0.1.0
         with:
           gopath: ${{ steps.set-gopath.outputs.gopath }}
-          go-version: ${{ steps.go-dist-info.outputs.go-dist-version }}
+          go-version: go1.26.6
       #####################
       # END Go dist setup
       #####################
@@ -55,6 +43,7 @@ jobs:
           path: |
             ~/.godel
           key: ${{ runner.os }}-godel-${{ hashFiles('godelw', 'godel/config/godel.yml') }}
+      - run: go env
       - run: ./godelw mod
       - run: ./godelw dist
       - run: ./godelw publish github --add-v-prefix --api-url=$GITHUB_API_URL --user=palantir --repository=godel --token=${{ secrets.GITHUB_TOKEN }}
