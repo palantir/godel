@@ -1,5 +1,0 @@
-type: improvement
-improvement:
-  description: Upgrade distgo to 1.43.0
-  links:
-  - https://github.com/palantir/godel/pull/667
