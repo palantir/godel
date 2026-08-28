@@ -31,6 +31,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Specifies the Go Major.Minor version that this version of godel should support.
+// There is an integration test that runs "./godelw verify" on a standard version of godel built by this repository
+// for a project with a go.mod with a go directive of supportedUpToGoMajorMinorVersion + ".0".
+//
+// The "lint" task can often fail if the plugin/asset is uses does not support a Go version. This test ensures that,
+// once the version of the plugin/asset used by godel supports a particular Major.Minor version, that support does not
+// regress.
+//
+// Generally, this value can be changed to be the next Major.Minor version once the default plugin/assets for
+// golangci-lint have been updated to the versions that support the new Major.Minor version. This value and the test
+// does not depend on any of the directives of the go.mod file in this repository, and the value can be changed and
+// verification can start for a new Major.Minor version before the godel repository itself has been updated to use the
+// new version.
+const supportedUpToGoMajorMinorVersion = "1.27"
+
 var (
 	godelTGZ    string
 	testRootDir string
@@ -72,6 +87,26 @@ func TestVersion(t *testing.T) {
 
 	output := execCommand(t, testProjectDir, "./godelw", "--version")
 	assert.Equal(t, fmt.Sprintf("godel version %v\n", version), output)
+}
+
+func TestWorksWithSupportedUpToGoMajorMinorVersion(t *testing.T) {
+	testProjectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
+
+	goMod := fmt.Sprintf(`module github.com/godel/test
+
+go %s
+`, supportedUpToGoMajorMinorVersion+".0")
+	err := os.WriteFile(filepath.Join(testProjectDir, "go.mod"), []byte(goMod), 0644)
+	require.NoError(t, err)
+
+	src := `package main
+
+func main() {}
+`
+	err = os.WriteFile(filepath.Join(testProjectDir, "main.go"), []byte(src), 0644)
+	require.NoError(t, err)
+
+	execCommand(t, testProjectDir, "./godelw", "verify")
 }
 
 func TestProjectVersion(t *testing.T) {
