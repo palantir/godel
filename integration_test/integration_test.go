@@ -38,6 +38,12 @@ import (
 // The "lint" task can often fail if the plugin/asset is uses does not support a Go version. This test ensures that,
 // once the version of the plugin/asset used by godel supports a particular Major.Minor version, that support does not
 // regress.
+//
+// Generally, this value can be changed to be the next Major.Minor version once the default plugin/assets for
+// golangci-lint have been updated to the versions that support the new Major.Minor version. This value and the test
+// does not depend on any of the directives of the go.mod file in this repository, and the value can be changed and
+// verification can start for a new Major.Minor version before the godel repository itself has been updated to use the
+// new version.
 const supportedUpToGoMajorMinorVersion = "1.27"
 
 var (
