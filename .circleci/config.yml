@@ -15,10 +15,11 @@ executors:
       - image: *image-version
     working_directory: /home/circleci/go/src/github.com/palantir/godel
     resource_class: medium
-  standard-executor-pkg-products-verify-test:
+  standard-executor-pkg-products-v2:
     docker:
       - image: *image-version
     working_directory: /home/circleci/go/src/github.com/palantir/godel/pkg/products/v2
+    resource_class: medium
 
 # Filter that matches all tags (will run on every build).
 all-tags-filter: &all-tags-filter
@@ -41,7 +42,7 @@ requires_jobs: &requires_jobs
   - test
   - dist
   - integration-test
-  - pkg-products-verify-test
+  - pkg-products-v2-verify
 
 workflows:
   version: 2
@@ -73,8 +74,8 @@ workflows:
             - build
           <<: *all-tags-filter
       - go-jobs/godel_verify:
-          name: "pkg-products-verify-test"
-          executor: "standard-executor-pkg-products-verify-test"
+          name: "pkg-products-v2-verify"
+          executor: "standard-executor-pkg-products-v2"
           setup_steps:
             - go-jobs/default_setup_steps:
                 checkout_steps:
