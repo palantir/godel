@@ -130,12 +130,10 @@ func TestResolvePlugins(t *testing.T) {
 	plugins, errs := resolvePlugins(pluginsDir, assetsDir, downloadsDir, osArch, godellauncher.PluginsParam{
 		Plugins: []godellauncher.SinglePluginParam{
 			{
-				LocatorWithResolverParam: artifactresolver.LocatorWithResolverParam{
-					LocatorWithChecksums: artifactresolver.LocatorParam{
-						Locator: loc,
-					},
-					Resolver: resolver,
+				LocatorWithChecksums: artifactresolver.LocatorParam{
+					Locator: loc,
 				},
+				Resolver: resolver,
 			},
 		},
 	}, outBuf)
