@@ -7,7 +7,7 @@ package specdir
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"sort"
 )
 
@@ -71,7 +71,7 @@ func (n *fileNode) fileNode() *fileNode {
 
 func (n *fileNode) createDirectoryStructure(parentDir string, values TemplateValues, includeOptional bool) error {
 	if n.pathType == DirPath && (!n.optional || includeOptional) {
-		currPath := path.Join(parentDir, n.name.name(values))
+		currPath := filepath.Join(parentDir, n.name.name(values))
 		if err := os.MkdirAll(currPath, 0755); err != nil {
 			return fmt.Errorf("failed to create directory %s: %v", currPath, err)
 		}
@@ -93,16 +93,7 @@ func (p fileNodePath) getPath(templateValues map[string]string) string {
 	for _, node := range p {
 		parts = append(parts, node.name.name(templateValues))
 	}
-	return path.Join(parts...)
-}
-
-// getTemplateNames returns the names of all of the templates in the given path
-func (p fileNodePath) getTemplateNames() []string {
-	var names []string
-	for _, currNode := range p {
-		names = append(names, getTemplateKeysFromName(currNode.name)...)
-	}
-	return names
+	return filepath.Join(parts...)
 }
 
 func (n *fileNode) paths(parentPath string, templateValues map[string]string, includeOptional bool) []string {
@@ -110,7 +101,7 @@ func (n *fileNode) paths(parentPath string, templateValues map[string]string, in
 
 	// only add node and children if it is not optional or if optional paths are being included
 	if !n.optional || includeOptional {
-		currPath := path.Join(parentPath, n.name.name(templateValues))
+		currPath := filepath.Join(parentPath, n.name.name(templateValues))
 
 		// add current node
 		paths = append(paths, currPath)
@@ -170,7 +161,7 @@ func (n *fileNode) validate(rootDir, pathFromRoot string, values TemplateValues)
 func (n *fileNode) verifyLayoutForDir(rootDir, pathFromRoot string, values TemplateValues) error {
 	if n.pathType == DirPath {
 		for _, c := range n.children {
-			currPath := path.Join(pathFromRoot, c.fileNode().name.name(values))
+			currPath := filepath.Join(pathFromRoot, c.fileNode().name.name(values))
 			if err := c.fileNode().validate(rootDir, currPath, values); err != nil {
 				return err
 			}

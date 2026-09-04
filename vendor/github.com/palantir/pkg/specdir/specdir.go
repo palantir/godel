@@ -7,7 +7,7 @@ package specdir
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"sort"
 )
 
@@ -42,9 +42,9 @@ func (s *specDirStruct) Path(name string) string {
 	if value, ok := s.aliasValues[name]; ok {
 		pathRoot := s.rootDir
 		if s.spec.rootIsPartOfSpec() {
-			pathRoot = path.Dir(s.rootDir)
+			pathRoot = filepath.Dir(s.rootDir)
 		}
-		return path.Join(pathRoot, value)
+		return filepath.Join(pathRoot, value)
 	}
 	return ""
 }
@@ -78,7 +78,7 @@ func New(rootDir string, spec LayoutSpec, values TemplateValues, mode Mode) (Spe
 		// if the root directory is part of the specification, verify that the name matches the required name
 		if spec.rootIsPartOfSpec() {
 			expectedRootDirName := spec.rootNode().name.name(values)
-			if path.Base(rootDir) != expectedRootDirName {
+			if filepath.Base(rootDir) != expectedRootDirName {
 				return nil, fmt.Errorf("root directory name %s does not match name required by specification: %v", rootDir, expectedRootDirName)
 			}
 		}
