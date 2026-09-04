@@ -1,14 +1,6 @@
 # Excavator auto-updates this file. Please contribute improvements to the central manage-autorelease-config check.
 version: 3
 
-groups:
-  __default__:
-    paths: ["."]
-    tag_prefix: "v"
-  generator:
-    paths: ["pkg/products/v2"]
-    tag_prefix: "pkg/products/v2"
-
 options:
   # Remove '[skip ci]' from Autorelease commit messages so the release tag push triggers the
   # publish-godel-artifacts workflow. GitHub Actions honors '[skip ci]' on the tagged commit.
