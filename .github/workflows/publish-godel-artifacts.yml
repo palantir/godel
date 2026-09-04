@@ -28,7 +28,7 @@ jobs:
         uses: palantir/github-actions/go-dist-setup@7004016b4a8d2706f6786928a3043c4f2afad160 # 0.1.0
         with:
           gopath: ${{ steps.set-gopath.outputs.gopath }}
-          go-version: go1.26.7
+          go-version: go1.26.8
       #####################
       # END Go dist setup
       #####################
