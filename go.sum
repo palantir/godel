@@ -1,8 +1,8 @@
 github.com/VividCortex/ewma v1.2.0 h1:f58SaIzcDXrSy3kWaHNvuJgJ3Nmz59Zji6XoJR/q1ow=
 github.com/VividCortex/ewma v1.2.0/go.mod h1:nz4BbCtbLyFDeC9SUHbtcT5644juEuWfUAUnGx7j5l4=
 github.com/andybalholm/brotli v1.0.1/go.mod h1:loMXtMfwqflxFJPmdbJO0a3KNoPuLBgiu3qAvBg8x/Y=
-github.com/andybalholm/brotli v1.2.2 h1:HzTuoo2ErYQqf5qvcJInB8uvqSVxRttzkFexPWtnceM=
-github.com/andybalholm/brotli v1.2.2/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=
+github.com/andybalholm/brotli v1.2.3 h1:8H1qwOkl2LPfjf3YezB90JnCliZb6SInJ/OJkEbA5NQ=
+github.com/andybalholm/brotli v1.2.3/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=
 github.com/cheggaaa/pb/v3 v3.2.1 h1:aprZbFRG+B7+ug76S8QZ6Y1PW168UHzOmbC3wa+aU6I=
 github.com/cheggaaa/pb/v3 v3.2.1/go.mod h1:U9hSVxoKqJrZIE3PkFG1xXXNaK/Ilzg+EF/scpXzEdw=
 github.com/clipperhouse/uax29/v2 v2.7.0 h1:+gs4oBZ2gPfVrKPthwbMzWZDaAFPGYK72F0NJv2v7Vk=
