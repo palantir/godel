@@ -7,7 +7,7 @@ package specdir
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 )
 
 type PathType bool
@@ -166,22 +166,22 @@ func getTemplateKeysFromName(n NodeName) []string {
 }
 
 func verifyPath(rootDirPath, pathFromRootDir, expectedName string, pathType PathType, optional bool) error {
-	if path.Base(pathFromRootDir) != expectedName {
+	if filepath.Base(pathFromRootDir) != expectedName {
 		return fmt.Errorf("%s is not a path to %s", pathFromRootDir, expectedName)
 	}
 
-	pathInfo, err := os.Stat(path.Join(rootDirPath, pathFromRootDir))
+	pathInfo, err := os.Stat(filepath.Join(rootDirPath, pathFromRootDir))
 	if err != nil {
 		if os.IsNotExist(err) {
 			if !optional {
-				return fmt.Errorf("%s does not exist", path.Join(path.Base(rootDirPath), pathFromRootDir))
+				return fmt.Errorf("%s does not exist", filepath.Join(filepath.Base(rootDirPath), pathFromRootDir))
 			}
 			// path does not exist, but it is optional so is okay
 			return nil
 		}
-		return fmt.Errorf("failed to stat %s", path.Join(path.Base(rootDirPath), pathFromRootDir))
+		return fmt.Errorf("failed to stat %s", filepath.Join(filepath.Base(rootDirPath), pathFromRootDir))
 	} else if currIsDir := pathInfo.IsDir(); currIsDir == bool(pathType) {
-		return fmt.Errorf("isDir for %s returned wrong value: expected %v, was %v", path.Join(path.Base(rootDirPath), pathFromRootDir), !pathType, currIsDir)
+		return fmt.Errorf("isDir for %s returned wrong value: expected %v, was %v", filepath.Join(filepath.Base(rootDirPath), pathFromRootDir), !pathType, currIsDir)
 	}
 
 	return nil
