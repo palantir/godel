@@ -43,7 +43,7 @@ require (
 	github.com/nwaples/rardecode v1.1.3 // indirect
 	github.com/palantir/pkg v1.2.0 // indirect
 	github.com/palantir/witchcraft-go-error v1.42.0 // indirect
-	github.com/palantir/witchcraft-go-params v1.38.0 // indirect
+	github.com/palantir/witchcraft-go-params v1.47.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.29 // indirect
 	github.com/ulikunitz/xz v0.5.16 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect

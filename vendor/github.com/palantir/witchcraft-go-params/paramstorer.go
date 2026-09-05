@@ -5,8 +5,8 @@ package wparams
 // the maps returned by SafeParams and UnsafeParams are references to the underlying storage and should not be modified
 // by the caller.
 type ParamStorer interface {
-	SafeParams() map[string]interface{}
-	UnsafeParams() map[string]interface{}
+	SafeParams() map[string]any
+	UnsafeParams() map[string]any
 }
 
 // NewParamStorer returns a new ParamStorer that stores all of the params in the provided ParamStorer inputs. The params
@@ -25,29 +25,29 @@ func NewParamStorer(paramStorers ...ParamStorer) ParamStorer {
 }
 
 // NewSafeParamStorer returns a new ParamStorer that stores the provided parameters as SafeParams.
-func NewSafeParamStorer(safeParams map[string]interface{}) ParamStorer {
+func NewSafeParamStorer(safeParams map[string]any) ParamStorer {
 	return NewSafeAndUnsafeParamStorer(safeParams, nil)
 }
 
 // NewSafeParam returns a new ParamStorer that stores a single safe parameter.
-func NewSafeParam(key string, value interface{}) ParamStorer {
+func NewSafeParam(key string, value any) ParamStorer {
 	return singleParamStorer{key: key, value: value, safe: true}
 }
 
 // NewUnsafeParamStorer returns a new ParamStorer that stores the provided parameters as UnsafeParams.
-func NewUnsafeParamStorer(unsafeParams map[string]interface{}) ParamStorer {
+func NewUnsafeParamStorer(unsafeParams map[string]any) ParamStorer {
 	return NewSafeAndUnsafeParamStorer(nil, unsafeParams)
 }
 
 // NewUnsafeParam returns a new ParamStorer that stores a single unsafe parameter.
-func NewUnsafeParam(key string, value interface{}) ParamStorer {
+func NewUnsafeParam(key string, value any) ParamStorer {
 	return singleParamStorer{key: key, value: value, safe: false}
 }
 
 // NewSafeAndUnsafeParamStorer returns a new ParamStorer that stores the provided safe parameters as SafeParams and the
 // unsafe parameters as UnsafeParams. If the safeParams and unsafeParams have any keys in common, the key/value pairs in
 // the unsafeParams will be used (the conflicting key/value pairs provided by safeParams will be ignored).
-func NewSafeAndUnsafeParamStorer(safeParams, unsafeParams map[string]interface{}) ParamStorer {
+func NewSafeAndUnsafeParamStorer(safeParams, unsafeParams map[string]any) ParamStorer {
 	storer := &mapParamStorer{}
 	for k, v := range safeParams {
 		storer.putSafeParam(k, v)
@@ -59,36 +59,36 @@ func NewSafeAndUnsafeParamStorer(safeParams, unsafeParams map[string]interface{}
 }
 
 type mapParamStorer struct {
-	safeParams   map[string]interface{}
-	unsafeParams map[string]interface{}
+	safeParams   map[string]any
+	unsafeParams map[string]any
 }
 
-func (m *mapParamStorer) SafeParams() map[string]interface{} {
+func (m *mapParamStorer) SafeParams() map[string]any {
 	if m.safeParams == nil {
-		return map[string]interface{}{}
+		return map[string]any{}
 	}
 	return m.safeParams
 }
 
-func (m *mapParamStorer) UnsafeParams() map[string]interface{} {
+func (m *mapParamStorer) UnsafeParams() map[string]any {
 	if m.unsafeParams == nil {
-		return map[string]interface{}{}
+		return map[string]any{}
 	}
 	return m.unsafeParams
 }
 
-func (m *mapParamStorer) putSafeParam(k string, v interface{}) {
+func (m *mapParamStorer) putSafeParam(k string, v any) {
 	if m.safeParams == nil {
-		m.safeParams = map[string]interface{}{k: v}
+		m.safeParams = map[string]any{k: v}
 	} else {
 		m.safeParams[k] = v
 	}
 	delete(m.unsafeParams, k)
 }
 
-func (m *mapParamStorer) putUnsafeParam(k string, v interface{}) {
+func (m *mapParamStorer) putUnsafeParam(k string, v any) {
 	if m.unsafeParams == nil {
-		m.unsafeParams = map[string]interface{}{k: v}
+		m.unsafeParams = map[string]any{k: v}
 	} else {
 		m.unsafeParams[k] = v
 	}
@@ -126,20 +126,20 @@ func (m *mapParamStorer) copyFrom(storer ParamStorer) {
 
 type singleParamStorer struct {
 	key   string
-	value interface{}
+	value any
 	safe  bool
 }
 
-func (s singleParamStorer) SafeParams() map[string]interface{} {
+func (s singleParamStorer) SafeParams() map[string]any {
 	if !s.safe {
-		return map[string]interface{}{}
+		return map[string]any{}
 	}
-	return map[string]interface{}{s.key: s.value}
+	return map[string]any{s.key: s.value}
 }
 
-func (s singleParamStorer) UnsafeParams() map[string]interface{} {
+func (s singleParamStorer) UnsafeParams() map[string]any {
 	if s.safe {
-		return map[string]interface{}{}
+		return map[string]any{}
 	}
-	return map[string]interface{}{s.key: s.value}
+	return map[string]any{s.key: s.value}
 }
