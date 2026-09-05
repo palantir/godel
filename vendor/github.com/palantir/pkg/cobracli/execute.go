@@ -5,10 +5,18 @@
 package cobracli
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"maps"
+	"os"
+	"slices"
+	"sort"
 	"strings"
 
+	werror "github.com/palantir/witchcraft-go-error"
 	"github.com/spf13/cobra"
 )
 
@@ -204,4 +212,70 @@ func FlagErrorsUsageErrorConfigurer(command *cobra.Command) {
 	command.SetFlagErrorFunc(func(c *cobra.Command, err error) error {
 		return fmt.Errorf("%s\n%s", err.Error(), strings.TrimSuffix(c.UsageString(), "\n"))
 	})
+}
+
+// PrintInfoLevelErrorAndParamsWithDebugTransformer provides a cobra error handler that prints the error message and
+// any werror-attached safe/unsafe params, one per line. Param values are formatted using their JSON-marshalled
+// representation; if a value cannot be marshalled, the marshalling error message is printed in its place.
+//
+// If the debugVar pointer is non-nil and resolves to true, the debugErrTransform function is called to render the
+// error instead, and params are not printed separately. Commonly, debugErrTransform is paired with
+// errorstringer.StackWithInterleavedMessages to print a stacktrace.
+//
+// Output is written to errWriter. If errWriter is nil, os.Stderr is used. Note that this handler does not write to
+// the cobra command's configured error stream (command.ErrOrStderr()): callers that want to redirect output through
+// the command must pass command.ErrOrStderr() (or an equivalent writer) explicitly. Output is buffered and flushed
+// in a single write so partial output is not emitted on a write failure.
+func PrintInfoLevelErrorAndParamsWithDebugTransformer(errWriter io.Writer, debugVar *bool, debugErrTransform func(error) string) func(command *cobra.Command, err error) {
+	if errWriter == nil {
+		errWriter = os.Stderr
+	}
+	return func(_ *cobra.Command, err error) {
+		if err == nil || err.Error() == "" {
+			return
+		}
+
+		var buf bytes.Buffer
+		// always flush buffer no matter what return path from function
+		defer func() {
+			_, _ = buf.WriteTo(errWriter)
+		}()
+
+		if debugVar != nil && *debugVar && debugErrTransform != nil {
+			// writes to bytes.Buffer always return nil error
+			_, _ = fmt.Fprintln(&buf, "Error:", debugErrTransform(err))
+			return
+		}
+		// writes to bytes.Buffer always return nil error
+		_, _ = fmt.Fprintln(&buf, "Error:", err.Error())
+		safe, unsafe := werror.ParamsFromError(err)
+		if len(safe) == 0 && len(unsafe) == 0 {
+			return
+		}
+		var keys []string
+		keys = slices.AppendSeq(keys, maps.Keys(safe))
+		keys = slices.AppendSeq(keys, maps.Keys(unsafe))
+		sort.Strings(keys)
+		// writes to bytes.Buffer always return nil error
+		_, _ = fmt.Fprintln(&buf, "Error params:")
+		for _, key := range keys {
+			if val, ok := safe[key]; ok {
+				// writes to bytes.Buffer always return nil error
+				_, _ = fmt.Fprintln(&buf, formattedParamLine(key, val))
+			}
+			if val, ok := unsafe[key]; ok {
+				// writes to bytes.Buffer always return nil error
+				_, _ = fmt.Fprintln(&buf, formattedParamLine(key, val))
+			}
+		}
+	}
+}
+
+func formattedParamLine(key string, val any) string {
+	marshalled, err := json.Marshal(val)
+	formattedVal := string(marshalled)
+	if err != nil {
+		formattedVal = fmt.Sprintf("error json marshalling parameter value: %s", err.Error())
+	}
+	return fmt.Sprintf("  %s: %s", key, formattedVal)
 }
