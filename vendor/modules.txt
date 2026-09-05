@@ -102,8 +102,8 @@ github.com/palantir/pkg/specdir
 ## explicit; go 1.25.0
 github.com/palantir/witchcraft-go-error
 github.com/palantir/witchcraft-go-error/internal/errors
-# github.com/palantir/witchcraft-go-params v1.38.0
-## explicit; go 1.24.0
+# github.com/palantir/witchcraft-go-params v1.47.0
+## explicit; go 1.26.0
 github.com/palantir/witchcraft-go-params
 # github.com/pierrec/lz4/v4 v4.1.29
 ## explicit; go 1.17
