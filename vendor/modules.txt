@@ -98,8 +98,8 @@ github.com/palantir/pkg/signals
 # github.com/palantir/pkg/specdir v1.4.0
 ## explicit; go 1.26.0
 github.com/palantir/pkg/specdir
-# github.com/palantir/witchcraft-go-error v1.42.0
-## explicit; go 1.25.0
+# github.com/palantir/witchcraft-go-error v1.49.0
+## explicit; go 1.26.0
 github.com/palantir/witchcraft-go-error
 github.com/palantir/witchcraft-go-error/internal/errors
 # github.com/palantir/witchcraft-go-params v1.47.0

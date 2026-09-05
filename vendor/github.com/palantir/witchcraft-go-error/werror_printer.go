@@ -55,7 +55,7 @@ func writeParams(err Werror, buffer *bytes.Buffer) {
 	}
 	for _, safeKey := range safeKeys {
 		safeValue := safeParams[safeKey]
-		if v := reflect.ValueOf(safeValue); v.Kind() == reflect.Ptr && !v.IsNil() {
+		if v := reflect.ValueOf(safeValue); v.Kind() == reflect.Pointer && !v.IsNil() {
 			safeValue = v.Elem().Interface()
 		}
 		buffer.WriteString(fmt.Sprintf("%+v:%+v", safeKey, safeValue))
@@ -69,8 +69,8 @@ func writeParams(err Werror, buffer *bytes.Buffer) {
 	}
 }
 
-func getSafeParamsAtCurrentLevel(err Werror) map[string]interface{} {
-	safeParamsAtThisLevel := make(map[string]interface{}, 0)
+func getSafeParamsAtCurrentLevel(err Werror) map[string]any {
+	safeParamsAtThisLevel := make(map[string]any, 0)
 	childSafeParams := getChildSafeParams(err)
 	for k, v := range err.SafeParams() {
 		_, ok := childSafeParams[k]
@@ -82,13 +82,13 @@ func getSafeParamsAtCurrentLevel(err Werror) map[string]interface{} {
 	return safeParamsAtThisLevel
 }
 
-func getChildSafeParams(err Werror) map[string]interface{} {
+func getChildSafeParams(err Werror) map[string]any {
 	if err.Cause() == nil {
-		return make(map[string]interface{}, 0)
+		return make(map[string]any, 0)
 	}
 	causeAsWerror, ok := err.Cause().(Werror)
 	if !ok {
-		return make(map[string]interface{}, 0)
+		return make(map[string]any, 0)
 	}
 	return causeAsWerror.SafeParams()
 }

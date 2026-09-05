@@ -42,7 +42,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.29 // indirect
 	github.com/nwaples/rardecode v1.1.3 // indirect
 	github.com/palantir/pkg v1.2.0 // indirect
-	github.com/palantir/witchcraft-go-error v1.42.0 // indirect
+	github.com/palantir/witchcraft-go-error v1.49.0 // indirect
 	github.com/palantir/witchcraft-go-params v1.47.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.29 // indirect
 	github.com/ulikunitz/xz v0.5.16 // indirect
