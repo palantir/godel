@@ -107,11 +107,9 @@ func (c *LocatorConfig) ToParam() (artifactresolver.LocatorParam, error) {
 		}
 	}
 	param := artifactresolver.LocatorParam{
-		Locator: artifactresolver.Locator{
-			Group:   parts[0],
-			Product: parts[1],
-			Version: parts[2],
-		},
+		Group:     parts[0],
+		Product:   parts[1],
+		Version:   parts[2],
 		Checksums: checksums,
 	}
 	return param, nil

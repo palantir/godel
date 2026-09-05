@@ -29,10 +29,8 @@ func TestTrimLegacyPrefix(t *testing.T) {
 		Foo                              string `yaml:"foo"`
 	}
 	fooBytes, err := yaml.Marshal(Foo{
-		ConfigWithLegacy: versionedconfig.ConfigWithLegacy{
-			Legacy: true,
-		},
-		Foo: "foo-value",
+		Legacy: true,
+		Foo:    "foo-value",
 	})
 	require.NoError(t, err)
 
@@ -48,10 +46,8 @@ func TestTrimLegacyPrefixDoesNotTrimSuffix(t *testing.T) {
 		versionedconfig.ConfigWithLegacy `yaml:",inline"`
 	}
 	fooBytes, err := yaml.Marshal(Foo{
-		ConfigWithLegacy: versionedconfig.ConfigWithLegacy{
-			Legacy: true,
-		},
-		Foo: "foo-value",
+		Legacy: true,
+		Foo:    "foo-value",
 	})
 	require.NoError(t, err)
 
