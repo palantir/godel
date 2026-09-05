@@ -77,8 +77,8 @@ github.com/palantir/distgo/pkg/git
 # github.com/palantir/godel/pkg/products/v2 v2.0.0
 ## explicit; go 1.13
 github.com/palantir/godel/pkg/products/v2
-# github.com/palantir/pkg v1.1.0
-## explicit; go 1.19
+# github.com/palantir/pkg v1.2.0
+## explicit; go 1.26.0
 github.com/palantir/pkg
 # github.com/palantir/pkg/cobracli v1.3.0
 ## explicit; go 1.25.0

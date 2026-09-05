@@ -3,3 +3,12 @@
 *.iws
 .idea/
 /out/
+
+# Mac
+.DS_Store
+
+# Claude local configuration
+.claude/settings.local.json
+
+# Claude local context
+CLAUDE.local.md
