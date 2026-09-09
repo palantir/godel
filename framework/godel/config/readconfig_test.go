@@ -50,11 +50,9 @@ exclude:
     - "godel"
 `,
 			want: config.GodelConfig(v0.GodelConfig{
-				TasksConfig: v0.TasksConfig{
-					Plugins: v0.PluginsConfig{
-						DefaultResolvers: []string{
-							"https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz",
-						},
+				Plugins: v0.PluginsConfig{
+					DefaultResolvers: []string{
+						"https://palantir.bintray.com/releases/{{GroupPath}}/{{Product}}/{{Version}}/{{Product}}-{{Version}}-{{OS}}-{{Arch}}.tgz",
 					},
 				},
 				Exclude: matcher.NamesPathsCfg{
