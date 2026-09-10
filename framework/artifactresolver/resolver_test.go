@@ -112,11 +112,9 @@ func TestRenderResolve(t *testing.T) {
 			"template with values",
 			ts.URL + "/foo/{{Group}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}",
 			LocatorParam{
-				Locator: Locator{
-					Group:   "Group",
-					Product: "Product",
-					Version: "Version",
-				},
+				Group:   "Group",
+				Product: "Product",
+				Version: "Version",
 			},
 			osarch.OSArch{
 				OS:   "darwin",
@@ -128,11 +126,9 @@ func TestRenderResolve(t *testing.T) {
 			"group path",
 			ts.URL + "/foo/{{GroupPath}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}",
 			LocatorParam{
-				Locator: Locator{
-					Group:   "a.b.c",
-					Product: "Product",
-					Version: "Version",
-				},
+				Group:   "a.b.c",
+				Product: "Product",
+				Version: "Version",
 			},
 			osarch.OSArch{
 				OS:   "darwin",
@@ -144,11 +140,9 @@ func TestRenderResolve(t *testing.T) {
 			"group parts",
 			ts.URL + "/{{index GroupParts 1}}/{{index GroupParts 2}}/{{Product}}-{{OS}}-{{Arch}}-{{Version}}",
 			LocatorParam{
-				Locator: Locator{
-					Group:   "a.b.c",
-					Product: "Product",
-					Version: "Version",
-				},
+				Group:   "a.b.c",
+				Product: "Product",
+				Version: "Version",
 			},
 			osarch.OSArch{
 				OS:   "darwin",
