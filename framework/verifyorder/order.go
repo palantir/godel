@@ -15,6 +15,7 @@
 package verifyorder
 
 const (
+	Lint     = 50
 	Format   = 100
 	Generate = 200
 	Imports  = 300
