@@ -77,11 +77,11 @@ func TestFoo(t *testing.T) {
 		args []string
 		want string
 	}{
-		{want: `(?s).+Failed tasks:\n\tformat --verify\n\tlicense --verify\n\tlint\n\ttest`},
-		{args: []string{"--skip-format"}, want: `(?s).+Failed tasks:\n\tlicense --verify\n\tlint\n\ttest`},
+		{want: `(?s).+Failed tasks:\n\tlint\n\tformat --verify\n\tlicense --verify\n\ttest`},
+		{args: []string{"--skip-format"}, want: `(?s).+Failed tasks:\n\tlint\n\tlicense --verify\n\ttest`},
 		{args: []string{"--skip-lint"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tlicense --verify\n\ttest`},
-		{args: []string{"--skip-license"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tlint\n\ttest`},
-		{args: []string{"--skip-test"}, want: `(?s).+Failed tasks:\n\tformat --verify\n\tlicense --verify\n\tlint`},
+		{args: []string{"--skip-license"}, want: `(?s).+Failed tasks:\n\tlint\n\tformat --verify\n\ttest`},
+		{args: []string{"--skip-test"}, want: `(?s).+Failed tasks:\n\tlint\n\tformat --verify\n\tlicense --verify`},
 	} {
 		t.Run(fmt.Sprintf("Args %v", tc.args), func(t *testing.T) {
 			err = os.MkdirAll(filepath.Join(testProjectDir, "gen"), 0755)
