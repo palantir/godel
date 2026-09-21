@@ -159,7 +159,9 @@ function verify_godel_version {
 # Returns 0 if lock acquired, 1 if timeout.
 function acquire_lock {
     local lock_dir=$1
-    local max_attempts=10  # Try up to 10 times (20 seconds with 2 second sleep)
+    # Try for up to 5 minutes (60 times with 5 second sleep).
+    # Chosen as a reasonable upper bound for the amount of time it should take to download and set
+    local max_attempts=60
     local attempt=0
 
     # Ensure parent directory exists
@@ -175,11 +177,11 @@ function acquire_lock {
         fi
 
         # Failed to acquire lock - check if it's stale
-        # A lock is stale if it's older than 5 minutes
+        # A lock is stale if it's older than 10 minutes
         if [ -d "$lock_dir" ]; then
             # Check if lock directory is old (use find for portability)
             # Find returns the directory if it's older than 5 minutes
-            local stale_lock=$(find "$lock_dir" -type d -mmin +5 2>/dev/null | head -1)
+            local stale_lock=$(find "$lock_dir" -type d -mmin +10 2>/dev/null | head -1)
             if [ -n "$stale_lock" ]; then
                 # Lock is stale - try to remove it
                 # Use rmdir to fail safely if another process is using it
@@ -187,8 +189,8 @@ function acquire_lock {
             fi
         fi
 
-        # Wait before retrying (constant 2 second delay)
-        sleep 2
+        # Wait before retrying (constant 10 second delay)
+        sleep 10
         attempt=$((attempt + 1))
     done
 
