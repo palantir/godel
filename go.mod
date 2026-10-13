@@ -10,7 +10,7 @@ require (
 	github.com/nmiyake/pkg/dirs v1.1.0
 	github.com/nmiyake/pkg/errorstringer v1.1.0
 	github.com/nmiyake/pkg/gofiles v1.2.0
-	github.com/palantir/distgo/pkg/git v1.0.0
+	github.com/palantir/distgo/pkg/git v1.1.0
 	github.com/palantir/godel/pkg/products/v2 v2.0.0
 	github.com/palantir/pkg/cobracli v1.4.0
 	github.com/palantir/pkg/gittest v1.3.0
@@ -30,6 +30,7 @@ require (
 require (
 	github.com/VividCortex/ewma v1.2.0 // indirect
 	github.com/andybalholm/brotli v1.2.6 // indirect
+	github.com/chainguard-dev/git-urls v1.0.2 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
 	github.com/fatih/color v1.19.0 // indirect

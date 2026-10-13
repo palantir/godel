@@ -3,9 +3,11 @@
 set -euo pipefail
 
 # Version and checksums for godel. Values are populated by the godel "dist" task.
-VERSION=2.18.0
-DARWIN_CHECKSUM=fd748300ee17d3cb7ef348b0c76d800320974446fe447ae82a5273d64dbd9b54
-LINUX_CHECKSUM=de1159510634db0467e60bce67d38735498dd5f9be74bfb90d340621683cfb75
+VERSION=2.186.0
+DARWIN_AMD64_CHECKSUM=fc294dbb8749ebe9efaffb69ec8a4f9b0a1b0efc122e01c4b9e09fd0834f0ca3
+DARWIN_ARM64_CHECKSUM=359f46662077239d3d9c9e3d9bd14183e62563b78e6ede2c171fa8629ee1733b
+LINUX_AMD64_CHECKSUM=1e5152c1824a035e9032a2bad52076b4139babf1c71c90a599e702a0b180567c
+LINUX_ARM64_CHECKSUM=7b692b007ff4039558c17079aeea54a155b7fd95cbadf15df28cc7991f0fadc9
 
 # Downloads file at URL to destination path using wget or curl. Prints an error and exits if wget or curl is not present.
 function download {
@@ -89,7 +91,7 @@ function compute_sha256 {
     local file=$1
     if command -v openssl >/dev/null 2>&1; then
         # print SHA-256 hash using openssl
-        openssl dgst -sha256 "$file" | sed -E 's/SHA256\(.*\)= //'
+        openssl dgst -sha256 "$file" | sed -E 's/SHA(2-)?256\(.*\)= //'
     elif command -v shasum >/dev/null 2>&1; then
         # Darwin systems ship with "shasum" utility
         shasum -a 256 "$file" | sed -E 's/[[:space:]]+.+//'
@@ -108,7 +110,7 @@ function verify_dist_tgz_valid {
     local tgz_path=$1
     local version=$2
 
-    local expected_paths=("godel-$version/" "godel-$version/bin/darwin-amd64/godel" "godel-$version/bin/linux-amd64/godel" "godel-$version/wrapper/godelw" "godel-$version/wrapper/godel/config/")
+    local expected_paths=("godel-$version/" "godel-$version/bin/darwin-amd64/godel" "godel-$version/bin/darwin-arm64/godel" "godel-$version/bin/linux-amd64/godel" "godel-$version/bin/linux-arm64/godel" "godel-$version/wrapper/godelw" "godel-$version/wrapper/godel/config/")
     local files=($(tar -tf "$tgz_path"))
 
     # this is a double-for loop, but fine since $expected_paths is small and bash doesn't have good primitives for set/map/list manipulation
@@ -142,13 +144,62 @@ function verify_godel_version {
     local base_dir=$1
     local version=$2
     local os=$3
+    local arch=$4
 
     local expected_output="godel version $version"
-    local version_output=$($base_dir/godel-$version/bin/$os-amd64/godel version)
+    local version_output=$($base_dir/godel-$version/bin/$os-$arch/godel version)
 
     if [ "$expected_output" != "$version_output" ]; then
         echo "Version reported by godel executable did not match expected version: expected \"$expected_output\", was \"$version_output\""
         exit 1
+    fi
+}
+
+# Acquires a lock using mkdir (atomic operation).
+# Returns 0 if lock acquired, 1 if timeout.
+function acquire_lock {
+    local lock_dir=$1
+    local max_attempts=10  # Try up to 10 times (20 seconds with 2 second sleep)
+    local attempt=0
+
+    # Ensure parent directory exists
+    mkdir -p "$(dirname "$lock_dir")"
+
+    while [ $attempt -lt $max_attempts ]; do
+        # Try to create lock directory atomically
+        if mkdir "$lock_dir" 2>/dev/null; then
+            # Success - we have the lock
+            # Write PID to lock directory for debugging
+            echo $$ > "$lock_dir/pid"
+            return 0
+        fi
+
+        # Failed to acquire lock - check if it's stale
+        # A lock is stale if it's older than 5 minutes
+        if [ -d "$lock_dir" ]; then
+            # Check if lock directory is old (use find for portability)
+            # Find returns the directory if it's older than 5 minutes
+            local stale_lock=$(find "$lock_dir" -type d -mmin +5 2>/dev/null | head -1)
+            if [ -n "$stale_lock" ]; then
+                # Lock is stale - try to remove it
+                # Use rmdir to fail safely if another process is using it
+                rmdir "$lock_dir" 2>/dev/null || rm -rf "$lock_dir" 2>/dev/null
+            fi
+        fi
+
+        # Wait before retrying (constant 2 second delay)
+        sleep 2
+        attempt=$((attempt + 1))
+    done
+
+    return 1
+}
+
+# Releases a lock by removing the lock directory.
+function release_lock {
+    local lock_dir=$1
+    if [ -d "$lock_dir" ]; then
+        rm -rf "$lock_dir"
     fi
 }
 
@@ -161,67 +212,118 @@ GODEL_BASE_DIR=${GODEL_HOME:-$HOME/.godel}
 # determine OS
 OS=""
 EXPECTED_CHECKSUM=""
-case "$(uname)" in
-  Darwin*)
-    OS=darwin
-    EXPECTED_CHECKSUM=$DARWIN_CHECKSUM
-    ;;
-  Linux*)
-    OS=linux
-    EXPECTED_CHECKSUM=$LINUX_CHECKSUM
-    ;;
-  *)
-    echo "Unsupported operating system: $(uname)"
-    exit 1
-    ;;
+case "$(uname)-$(uname -m)" in
+    Darwin-x86_64)
+        OS=darwin
+        ARCH=amd64
+        EXPECTED_CHECKSUM=$DARWIN_AMD64_CHECKSUM
+        ;;
+    Darwin-arm64)
+        OS=darwin
+        ARCH=arm64
+        EXPECTED_CHECKSUM=$DARWIN_ARM64_CHECKSUM
+        ;;
+    Linux-x86_64)
+        OS=linux
+        ARCH=amd64
+        EXPECTED_CHECKSUM=$LINUX_AMD64_CHECKSUM
+        ;;
+    Linux-aarch64)
+        OS=linux
+        ARCH=arm64
+        EXPECTED_CHECKSUM=$LINUX_ARM64_CHECKSUM
+        ;;
+    *)
+        echo "Unsupported operating system-architecture: $(uname)-$(uname -m)"
+        exit 1
+        ;;
 esac
 
 # path to godel binary
-CMD=$GODEL_BASE_DIR/dists/godel-$VERSION/bin/$OS-amd64/godel
+CMD=$GODEL_BASE_DIR/dists/godel-$VERSION/bin/$OS-$ARCH/godel
 
 # godel binary is not present -- download distribution
 if [ ! -f "$CMD" ]; then
-    # get download URL
-    PROPERTIES_FILE=$SCRIPT_HOME/godel/config/godel.properties
-    if [ ! -f "$PROPERTIES_FILE" ]; then
-        echo "Properties file must exist at $PROPERTIES_FILE"
+    # Define lock directory for this godel version
+    LOCK_DIR="$GODEL_BASE_DIR/downloads/.lock-godel-$VERSION"
+
+    # Try to acquire lock
+    if ! acquire_lock "$LOCK_DIR"; then
+        echo "Failed to acquire lock for godel installation after timeout"
+        echo "If you believe this is due to a stale lock, remove: $LOCK_DIR"
         exit 1
     fi
-    DOWNLOAD_URL=$(cat "$PROPERTIES_FILE" | sed -E -n "s/^distributionURL=//p")
-    if [ -z "$DOWNLOAD_URL" ]; then
-        echo "Value for property \"distributionURL\" was empty in $PROPERTIES_FILE"
-        exit 1
+
+    # Set up trap to release lock on exit (success or failure)
+    trap 'release_lock "$LOCK_DIR"' EXIT
+
+    # Double-check if binary exists after acquiring lock
+    # (another process may have installed it while we were waiting)
+    if [ ! -f "$CMD" ]; then
+        # get download URL
+        PROPERTIES_FILE=$SCRIPT_HOME/godel/config/godel.properties
+        if [ ! -f "$PROPERTIES_FILE" ]; then
+            echo "Properties file must exist at $PROPERTIES_FILE"
+            exit 1
+        fi
+        DOWNLOAD_URL=$(cat "$PROPERTIES_FILE" | sed -E -n "s/^distributionURL=//p")
+        if [ -z "$DOWNLOAD_URL" ]; then
+            echo "Value for property \"distributionURL\" was empty in $PROPERTIES_FILE"
+            exit 1
+        fi
+        DOWNLOAD_CHECKSUM=$(cat "$PROPERTIES_FILE" | sed -E -n "s/^distributionSHA256=//p")
+
+        # create downloads directory if it does not already exist
+        mkdir -p "$GODEL_BASE_DIR/downloads"
+
+        # download tgz and verify its contents
+        # Download to unique location that includes PID ($$) and use trap ensure that temporary download file is cleaned up
+        # if script is terminated before the file is moved to its destination.
+        DOWNLOAD_DST=$GODEL_BASE_DIR/downloads/godel-$VERSION-$$.tgz
+        download "$DOWNLOAD_URL" "$DOWNLOAD_DST"
+        trap 'rm -rf "$DOWNLOAD_DST"; release_lock "$LOCK_DIR"' EXIT
+        if [ -n "$DOWNLOAD_CHECKSUM" ]; then
+            verify_checksum "$DOWNLOAD_DST" "$DOWNLOAD_CHECKSUM"
+        fi
+        verify_dist_tgz_valid "$DOWNLOAD_DST" "$VERSION"
+
+        # create temporary directory for unarchiving, unarchive downloaded file and verify directory
+        TMP_DIST_DIR=$(mktemp -d "$GODEL_BASE_DIR/tmp_XXXXXX" 2>/dev/null || mktemp -d -t "$GODEL_BASE_DIR/tmp_XXXXXX")
+        trap 'rm -rf "$TMP_DIST_DIR"; release_lock "$LOCK_DIR"' EXIT
+        tar zxvf "$DOWNLOAD_DST" -C "$TMP_DIST_DIR" >/dev/null 2>&1
+        verify_godel_version "$TMP_DIST_DIR" "$VERSION" "$OS" "$ARCH"
+
+        # rename downloaded file to remove PID portion
+        mv "$DOWNLOAD_DST" "$GODEL_BASE_DIR/downloads/godel-$VERSION.tgz"
+
+        # if destination directory for distribution already exists, remove it
+        if [ -d "$GODEL_BASE_DIR/dists/godel-$VERSION" ]; then
+            rm -rf "$GODEL_BASE_DIR/dists/godel-$VERSION"
+        fi
+
+        # ensure that parent directory of destination exists
+        mkdir -p "$GODEL_BASE_DIR/dists"
+
+        # move expanded distribution directory to destination location. The location of the unarchived directory is known to
+        # be in the same directory tree as the destination, so "mv" should always work.
+        mv "$TMP_DIST_DIR/godel-$VERSION" "$GODEL_BASE_DIR/dists/godel-$VERSION"
+
+        # edge case cleanup: if the destination directory "$GODEL_BASE_DIR/dists/godel-$VERSION" was created prior to the
+        # "mv" operation above, then the move operation will move the source directory into the destination directory. In
+        # this case, remove the directory. It should always be safe to remove this directory because if the directory
+        # existed in the distribution and was non-empty, then the move operation would fail (because non-empty directories
+        # cannot be overwritten by mv). All distributions of a given version are also assumed to be identical. The only
+        # instance in which this would not work is if the distribution purposely contained an empty directory that matched
+        # the name "godel-$VERSION", and this is assumed to never be true.
+        if [ -d "$GODEL_BASE_DIR/dists/godel-$VERSION/godel-$VERSION" ]; then
+            rm -rf "$GODEL_BASE_DIR/dists/godel-$VERSION/godel-$VERSION"
+        fi
     fi
-    DOWNLOAD_CHECKSUM=$(cat "$PROPERTIES_FILE" | sed -E -n "s/^distributionSHA256=//p")
 
-    # create downloads directory if it does not already exist
-    mkdir -p "$GODEL_BASE_DIR/downloads"
-
-    # download tgz and verify its contents
-    DOWNLOAD_DST=$GODEL_BASE_DIR/downloads/godel-$VERSION.tgz
-    download "$DOWNLOAD_URL" "$DOWNLOAD_DST"
-    if [ -n "$DOWNLOAD_CHECKSUM" ]; then
-        verify_checksum "$DOWNLOAD_DST" "$DOWNLOAD_CHECKSUM"
-    fi
-    verify_dist_tgz_valid "$DOWNLOAD_DST" "$VERSION"
-
-    # create temporary directory for unarchiving, unarchive downloaded file and verify directory
-    TMP_DIST_DIR=$(mktemp -d "$GODEL_BASE_DIR/tmp_XXXXXX" 2>/dev/null || mktemp -d -t "$GODEL_BASE_DIR/tmp_XXXXXX")
-    trap 'rm -rf "$TMP_DIST_DIR"' EXIT
-    tar zxvf "$DOWNLOAD_DST" -C "$TMP_DIST_DIR" >/dev/null 2>&1
-    verify_godel_version "$TMP_DIST_DIR" "$VERSION" "$OS"
-
-    # if destination directory for distribution already exists, remove it
-    if [ -d "$GODEL_BASE_DIR/dists/godel-$VERSION" ]; then
-          rm -rf "$GODEL_BASE_DIR/dists/godel-$VERSION"
-    fi
-
-    # ensure that parent directory of destination exists
-    mkdir -p "$GODEL_BASE_DIR/dists"
-
-    # move expanded distribution directory to destination location. The location of the unarchived directory is known to
-    # be in the same directory tree as the destination, so "mv" should always work.
-    mv "$TMP_DIST_DIR/godel-$VERSION" "$GODEL_BASE_DIR/dists/godel-$VERSION"
+    # Release lock so other operations that are blocking can proceed.
+    # This is an optimization: even if this is not called, the lock will
+    # be released by trap on exit
+    release_lock "$LOCK_DIR"
 fi
 
 verify_checksum "$CMD" "$EXPECTED_CHECKSUM"

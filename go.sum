@@ -3,6 +3,8 @@ github.com/VividCortex/ewma v1.2.0/go.mod h1:nz4BbCtbLyFDeC9SUHbtcT5644juEuWfUAU
 github.com/andybalholm/brotli v1.0.1/go.mod h1:loMXtMfwqflxFJPmdbJO0a3KNoPuLBgiu3qAvBg8x/Y=
 github.com/andybalholm/brotli v1.2.6 h1:ftYnfj6usCp+UGV5kSJ3+chpMQgU+gJf/AxsUQ52REI=
 github.com/andybalholm/brotli v1.2.6/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=
+github.com/chainguard-dev/git-urls v1.0.2 h1:pSpT7ifrpc5X55n4aTTm7FFUE+ZQHKiqpiwNkJrVcKQ=
+github.com/chainguard-dev/git-urls v1.0.2/go.mod h1:rbGgj10OS7UgZlbzdUQIQpT0k/D4+An04HJY7Ol+Y/o=
 github.com/cheggaaa/pb/v3 v3.2.1 h1:aprZbFRG+B7+ug76S8QZ6Y1PW168UHzOmbC3wa+aU6I=
 github.com/cheggaaa/pb/v3 v3.2.1/go.mod h1:U9hSVxoKqJrZIE3PkFG1xXXNaK/Ilzg+EF/scpXzEdw=
 github.com/clipperhouse/uax29/v2 v2.7.0 h1:+gs4oBZ2gPfVrKPthwbMzWZDaAFPGYK72F0NJv2v7Vk=
@@ -39,7 +41,6 @@ github.com/mattn/go-runewidth v0.0.31/go.mod h1:3qAiGCV4Koz/yuveO58qUefmUTRm8r0I
 github.com/mholt/archiver/v3 v3.5.1 h1:rDjOBX9JSF5BvoJGvjqK479aL70qh9DIpZCl+k7Clwo=
 github.com/mholt/archiver/v3 v3.5.1/go.mod h1:e3dqJ7H78uzsRSEACH1joayhuSyhnonssnDhppzS1L4=
 github.com/nmiyake/pkg v1.0.0/go.mod h1:078BHtQj5Tk8Im6EpMHR0/Stp79lwL3FIRiGaC9hTDM=
-github.com/nmiyake/pkg/dirs v1.0.0/go.mod h1:r6/PkZ3CA1szGfQkxcHheEjBWi6Zu6jLb+lQmRXEyvM=
 github.com/nmiyake/pkg/dirs v1.0.2/go.mod h1:fVEsJ8Y8gFb14mbXq4iFQgzR19mMLEKA/lX3Y7Ccl3w=
 github.com/nmiyake/pkg/dirs v1.1.0 h1:qyTzK3bTqAJfekQcU6vlydM/YRxhHsv6MiRFEwTkJcw=
 github.com/nmiyake/pkg/dirs v1.1.0/go.mod h1:lGSUDZPexhLt+aWYfPHXsqnt+HFr2l/+lbEMWUhdZ/U=
@@ -50,15 +51,14 @@ github.com/nmiyake/pkg/gofiles v1.2.0/go.mod h1:aPXiVvXPwxNanRNuFIRVPYn6eTC4qxjD
 github.com/nwaples/rardecode v1.1.0/go.mod h1:5DzqNKiOdpKKBH87u8VlvAnPZMXcGRhxWkRpHbbfGS0=
 github.com/nwaples/rardecode v1.1.3 h1:cWCaZwfM5H7nAD6PyEdcVnczzV8i/JtotnyW/dD9lEc=
 github.com/nwaples/rardecode v1.1.3/go.mod h1:5DzqNKiOdpKKBH87u8VlvAnPZMXcGRhxWkRpHbbfGS0=
-github.com/palantir/distgo/pkg/git v1.0.0 h1:bryRJ9ZdJapz5tGzd/snv6U66tLxyb1b4PbPya/aqD4=
-github.com/palantir/distgo/pkg/git v1.0.0/go.mod h1:eXrr3SOmf/sWTYmtiubYVxSaVegTlMGgRgBUFMFFedw=
+github.com/palantir/distgo/pkg/git v1.1.0 h1:8ThEUZxMeUbRHdXuKco4ytBh74V7rtE+yfwDjvug9KA=
+github.com/palantir/distgo/pkg/git v1.1.0/go.mod h1:QhKxNr5yr4nlhdpzkXcnNecYOY782BXzS1pRxDucKYA=
 github.com/palantir/godel/pkg/products/v2 v2.0.0 h1:E3DuAEA1yotLLDQt7vIrYRapRwXRyW6u8Yuq2p/qyLs=
 github.com/palantir/godel/pkg/products/v2 v2.0.0/go.mod h1:SaLUycZLVP5qV6mL9MWG3jkX4dS23lJnzpubTGAV4FU=
 github.com/palantir/pkg v1.2.0 h1:GxXiXLcayV/JNptEyBIDvUrd1NRzI+TwpsL64sufrd8=
 github.com/palantir/pkg v1.2.0/go.mod h1:y8Dt3/qSZjq+0pLBeCsxXDqzby3G08bw85gZmJm5mwA=
 github.com/palantir/pkg/cobracli v1.4.0 h1:pMSAaz3rzfkVuaGgOmrgqMkDefizoHdcXtzUroFf5u8=
 github.com/palantir/pkg/cobracli v1.4.0/go.mod h1:F3PqaAXFuDoH16b6aorTDb1pcQPTw9aZOJ8cWnBmALs=
-github.com/palantir/pkg/gittest v1.0.0/go.mod h1:M49S4TsX5sh7lYJmOF+pFzcB4fJNOylzN8tOdpSq958=
 github.com/palantir/pkg/gittest v1.3.0 h1:JkoXNT3MWhlmmDyNhpkYJlQG4Boe99d9M15QJcIFlns=
 github.com/palantir/pkg/gittest v1.3.0/go.mod h1:sfzWndTEU0HBZ8XZHFAsFZx9DH5Ere+hfYK13USLjbg=
 github.com/palantir/pkg/matcher v1.3.0 h1:sRcoJUknco5GSKiFW464bbl+E61rwXwyFvHmmisI7B0=
