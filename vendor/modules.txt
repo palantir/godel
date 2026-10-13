@@ -5,6 +5,9 @@ github.com/VividCortex/ewma
 ## explicit; go 1.22
 github.com/andybalholm/brotli
 github.com/andybalholm/brotli/matchfinder
+# github.com/chainguard-dev/git-urls v1.0.2
+## explicit; go 1.19
+github.com/chainguard-dev/git-urls
 # github.com/cheggaaa/pb/v3 v3.2.1
 ## explicit; go 1.25.0
 github.com/cheggaaa/pb/v3
@@ -71,8 +74,8 @@ github.com/nmiyake/pkg/gofiles
 # github.com/nwaples/rardecode v1.1.3
 ## explicit
 github.com/nwaples/rardecode
-# github.com/palantir/distgo/pkg/git v1.0.0
-## explicit; go 1.13
+# github.com/palantir/distgo/pkg/git v1.1.0
+## explicit; go 1.27.0
 github.com/palantir/distgo/pkg/git
 # github.com/palantir/godel/pkg/products/v2 v2.0.0
 ## explicit; go 1.13
