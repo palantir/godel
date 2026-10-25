@@ -20,6 +20,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/palantir/godel/v2/framework/godel/config"
 	"github.com/palantir/godel/v2/framework/godellauncher"
@@ -104,6 +105,8 @@ func VerifyTask(tasks []godellauncher.Task, verifyTasksConfig config.VerifyTasks
 					taskGlobal.TaskArgs = taskFlagArgs
 
 					_, _ = fmt.Fprintf(stdout, "Running %s...\n", task.Name)
+					taskStart := time.Now()
+					taskStatusString := "succeeded"
 					if err := task.Run(taskGlobal, stdout); err != nil {
 						var applyArgs []string
 						if *applyVar {
@@ -113,7 +116,10 @@ func VerifyTask(tasks []godellauncher.Task, verifyTasksConfig config.VerifyTasks
 						}
 						nameWithFlag := strings.Join(append([]string{task.Name}, applyArgs...), " ")
 						failedChecks = append(failedChecks, nameWithFlag)
+						taskStatusString = "failed"
 					}
+					taskDuration := time.Since(taskStart)
+					fmt.Fprintf(stdout, "Finished %s in %s; task %s\n", task.Name, taskDuration, taskStatusString)
 				}
 
 				if len(failedChecks) != 0 {
