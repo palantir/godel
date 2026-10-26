@@ -53,11 +53,8 @@ func runGodelApp(osArgs []string) int {
 			printErrAndExit(err, global.Debug)
 		}
 
-		// set environment variables specified in configuration
-		for k, v := range godelCfg.Environment {
-			if err := os.Setenv(k, v); err != nil {
-				printErrAndExit(err, global.Debug)
-			}
+		if err := godelCfg.ApplyEnvironment(filepath.Dir(global.Wrapper)); err != nil {
+			printErrAndExit(err, global.Debug)
 		}
 
 		taskCfgProviders := config.TasksConfigProvidersConfig(godelCfg.TasksConfigProviders)

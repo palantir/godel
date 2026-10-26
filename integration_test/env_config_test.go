@@ -53,7 +53,12 @@ func main() {
 	cfg, err := config.ReadGodelConfigFromProjectDir(testProjectDir)
 	require.NoError(t, err)
 
+	t.Setenv("GOTOOLCHAIN", "local")
+	require.NoError(t, os.WriteFile(filepath.Join(testProjectDir, "go.mod"),
+		[]byte("module example.com/test\ngo 1.27.0\ntoolchain go1.27.3\n"), 0644))
+
 	cfgContent := fmt.Sprintf(`
+manage-gotoolchain: true
 environment:
   GODEL_TEST_ENV_VAR: test-var-content
 plugins:
@@ -87,7 +92,7 @@ if [ "$1" = "%s" ]; then
     exit 0
 fi
 
-echo ${GODEL_TEST_ENV_VAR}
+echo "${GODEL_TEST_ENV_VAR}:${GOTOOLCHAIN}"
 `, pluginapi.PluginInfoCommandName, `%s`), string(pluginInfoJSON)), 0755)
 	require.NoError(t, err)
 
@@ -108,5 +113,31 @@ echo ${GODEL_TEST_ENV_VAR}
 	assert.Regexp(t, wantOutput, gotOutput)
 
 	gotOutput = execCommand(t, testProjectDir, "./godelw", "env-var")
-	assert.Equal(t, "test-var-content\n", gotOutput)
+	assert.Equal(t, "test-var-content:go1.27.3\n", gotOutput)
+}
+
+func TestManagedGoToolchainExec(t *testing.T) {
+	projectDir := setUpGodelTestAndDownload(t, testRootDir, godelTGZ, version)
+	cfg, err := config.ReadGodelConfigFromProjectDir(projectDir)
+	require.NoError(t, err)
+	enabled := true
+	cfg.ManageGoToolchain = &enabled
+	data, err := yaml.Marshal(cfg)
+	require.NoError(t, err)
+	cfgDir, err := godellauncher.ConfigDirPath(projectDir)
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(filepath.Join(cfgDir, godellauncher.GodelConfigYML), data, 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(projectDir, "go.mod"),
+		[]byte("module example.com/test\ngo 1.27.0\ntoolchain go1.27.3\n"), 0644))
+
+	nestedDir := filepath.Join(projectDir, "nested")
+	require.NoError(t, os.Mkdir(nestedDir, 0755))
+	require.NoError(t, os.WriteFile(filepath.Join(nestedDir, "go.mod"),
+		[]byte("module example.com/nested\ngo 1.26.0\n"), 0644))
+	t.Setenv("GOTOOLCHAIN", "local")
+	for _, dir := range []string{projectDir, nestedDir} {
+		got := execCommand(t, dir, filepath.Join(projectDir, "godelw"),
+			"exec", "--", "sh", "-c", `printf '%s' "$GOTOOLCHAIN"`)
+		assert.Equal(t, "go1.27.3", got)
+	}
 }

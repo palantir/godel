@@ -99,12 +99,8 @@ func RunPlugin(
 		if err != nil {
 			return cleanup, errors.Wrapf(err, "failed to read godel config")
 		}
-		// set environment variables specified in configuration.
-		// Mirrors logic in main.go: https://github.com/palantir/godel/blob/987d322e725e7cd0b08bfeb3130878056a1d8c69/main.go#L56-L61
-		for k, v := range godelCfg.Environment {
-			if err := os.Setenv(k, v); err != nil {
-				return cleanup, errors.Wrapf(err, "failed to set environment variable %s=%s", k, v)
-			}
+		if err := godelCfg.ApplyEnvironment(projectDir); err != nil {
+			return cleanup, errors.Wrapf(err, "failed to configure godel environment")
 		}
 	}
 	return cleanup, task.Run(globalConfig, stdout)
