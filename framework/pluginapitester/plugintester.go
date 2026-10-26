@@ -50,6 +50,34 @@ func RunPlugin(
 	}
 
 	cleanup = func() {}
+	if projectDir != "" {
+		if !filepath.IsAbs(projectDir) {
+			wd, err := os.Getwd()
+			if err != nil {
+				return cleanup, errors.Wrapf(err, "failed to determine working directory")
+			}
+			projectDir = filepath.Join(wd, projectDir)
+		}
+
+		// Read and apply configuration before querying plugin metadata, mirroring godel startup.
+		// Restore GOTOOLCHAIN before returning because RunPlugin executes in the caller's process.
+		godelCfg, err := config.ReadGodelConfigFromProjectDir(projectDir)
+		if err != nil {
+			return cleanup, errors.Wrapf(err, "failed to read godel config")
+		}
+		toolchain, toolchainWasSet := os.LookupEnv("GOTOOLCHAIN")
+		defer func() {
+			if toolchainWasSet {
+				_ = os.Setenv("GOTOOLCHAIN", toolchain)
+			} else {
+				_ = os.Unsetenv("GOTOOLCHAIN")
+			}
+		}()
+		if err := godelCfg.ApplyEnvironment(projectDir); err != nil {
+			return cleanup, errors.Wrapf(err, "failed to configure godel environment")
+		}
+	}
+
 	info, err := pluginapi.InfoFromPlugin(pluginPath)
 	if err != nil {
 		return cleanup, err
@@ -71,14 +99,6 @@ func RunPlugin(
 		Debug:    debug,
 	}
 	if projectDir != "" {
-		if !filepath.IsAbs(projectDir) {
-			wd, err := os.Getwd()
-			if err != nil {
-				return cleanup, errors.Wrapf(err, "failed to determine working directory")
-			}
-			projectDir = filepath.Join(wd, projectDir)
-		}
-
 		godelwPath := filepath.Join(projectDir, "godelw")
 		if _, err := os.Stat(godelwPath); os.IsNotExist(err) {
 			if err := os.WriteFile(godelwPath, nil, 0644); err != nil {
@@ -91,17 +111,6 @@ func RunPlugin(
 			}
 		}
 		globalConfig.Wrapper = filepath.Join(projectDir, "godelw")
-
-		// read godel configuration and set any environment variables specified in it.
-		// config.ReadGodelConfigFromProjectDir returns an empty configuration if the file does not exist, so this is
-		// safe to call (and effectively a noop) even if the configuration file does not exist.
-		godelCfg, err := config.ReadGodelConfigFromProjectDir(projectDir)
-		if err != nil {
-			return cleanup, errors.Wrapf(err, "failed to read godel config")
-		}
-		if err := godelCfg.ApplyEnvironment(projectDir); err != nil {
-			return cleanup, errors.Wrapf(err, "failed to configure godel environment")
-		}
 	}
 	return cleanup, task.Run(globalConfig, stdout)
 }
