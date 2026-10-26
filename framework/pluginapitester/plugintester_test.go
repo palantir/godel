@@ -72,10 +72,8 @@ func TestRunPluginScopesManagedGoToolchain(t *testing.T) {
 				require.NoError(t, os.Unsetenv("GOTOOLCHAIN"))
 			}
 			projectDir := t.TempDir()
-			require.NoError(t, os.WriteFile(filepath.Join(projectDir, "godelw"), nil, 0644))
-			require.NoError(t, os.MkdirAll(filepath.Join(projectDir, "godel", "config"), 0755))
-			configDir, err := godellauncher.ConfigDirPath(projectDir)
-			require.NoError(t, err)
+			configDir := filepath.Join(projectDir, "godel", "config")
+			require.NoError(t, os.MkdirAll(configDir, 0755))
 			require.NoError(t, os.WriteFile(filepath.Join(configDir, godellauncher.GodelConfigYML), []byte(tc.config), 0644))
 			if tc.goMod != "" {
 				require.NoError(t, os.WriteFile(filepath.Join(projectDir, "go.mod"), []byte(tc.goMod), 0644))
@@ -103,8 +101,9 @@ printf '%%s' "$GOTOOLCHAIN"
 				false,
 				&stdout,
 			)
-			cleanup()
 			require.NoError(t, err)
+			wrapperPath := filepath.Join(projectDir, "godelw")
+			require.FileExists(t, wrapperPath)
 			assert.Equal(t, tc.wantPlugin, stdout.String())
 			metadataValue, err := os.ReadFile(metadataEnvironment)
 			require.NoError(t, err)
@@ -114,6 +113,8 @@ printf '%%s' "$GOTOOLCHAIN"
 			if tc.parentSet {
 				assert.Equal(t, "local", parentValue)
 			}
+			cleanup()
+			assert.NoFileExists(t, wrapperPath)
 		})
 	}
 }

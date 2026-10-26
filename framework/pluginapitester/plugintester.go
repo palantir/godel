@@ -59,6 +59,19 @@ func RunPlugin(
 			projectDir = filepath.Join(wd, projectDir)
 		}
 
+		// ConfigDirPath validates the wrapper layout, so create the temporary wrapper before reading configuration.
+		godelwPath := filepath.Join(projectDir, "godelw")
+		if _, err := os.Stat(godelwPath); os.IsNotExist(err) {
+			if err := os.WriteFile(godelwPath, nil, 0644); err != nil {
+				return cleanup, errors.Wrapf(err, "failed to create temporary godelw file")
+			}
+			cleanup = func() {
+				if err := os.Remove(godelwPath); err != nil {
+					fmt.Println(errors.Wrapf(err, "failed to remove temporary godelw file"))
+				}
+			}
+		}
+
 		// Read and apply configuration before querying plugin metadata, mirroring godel startup.
 		// Restore GOTOOLCHAIN before returning because RunPlugin executes in the caller's process.
 		godelCfg, err := config.ReadGodelConfigFromProjectDir(projectDir)
@@ -99,17 +112,6 @@ func RunPlugin(
 		Debug:    debug,
 	}
 	if projectDir != "" {
-		godelwPath := filepath.Join(projectDir, "godelw")
-		if _, err := os.Stat(godelwPath); os.IsNotExist(err) {
-			if err := os.WriteFile(godelwPath, nil, 0644); err != nil {
-				return cleanup, errors.Wrapf(err, "failed to create temporary godelw file")
-			}
-			cleanup = func() {
-				if err := os.Remove(godelwPath); err != nil {
-					fmt.Println(errors.Wrapf(err, "failed to remove temporary godelw file"))
-				}
-			}
-		}
 		globalConfig.Wrapper = filepath.Join(projectDir, "godelw")
 	}
 	return cleanup, task.Run(globalConfig, stdout)
