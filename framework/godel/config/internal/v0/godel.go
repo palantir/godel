@@ -26,7 +26,15 @@ type GodelConfig struct {
 	// TasksConfigProviders specifies the providers used to load provided task configuration.
 	TasksConfigProviders TasksConfigProvidersConfig `yaml:"tasks-config-providers,omitempty"`
 
-	// ManageGoToolchain selects GOTOOLCHAIN from the project go.mod. Unspecified defaults to false.
+	// ManageGoToolchain specifies whether godel should manage the GOTOOLCHAIN environment variable value during its
+	// invocation. If true, then, on startup, godel will parse the go.mod file and determine the toolchain version that
+	// should be used based on that value, and set environment variable GOTOOLCHAIN={toolchain value} upon invocation.
+	// If this value is true, then specifying a GOTOOLCHAIN value in the Environment map is not allowed, and will cause
+	// an error on startup.
+	//
+	// If this value is false, no toolchain management is performed.
+	//
+	// Unspecified defaults to false.
 	ManageGoToolchain *bool `yaml:"manage-gotoolchain,omitempty"`
 
 	// Environment specifies the environment variables that are set by gödel when it is run.

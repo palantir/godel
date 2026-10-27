@@ -86,7 +86,7 @@ func RunPlugin(
 				_ = os.Unsetenv("GOTOOLCHAIN")
 			}
 		}()
-		if err := godelCfg.ApplyEnvironment(projectDir); err != nil {
+		if err := godelCfg.SetEnvVars(projectDir); err != nil {
 			return cleanup, errors.Wrapf(err, "failed to configure godel environment")
 		}
 	}

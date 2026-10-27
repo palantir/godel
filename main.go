@@ -53,7 +53,8 @@ func runGodelApp(osArgs []string) int {
 			printErrAndExit(err, global.Debug)
 		}
 
-		if err := godelCfg.ApplyEnvironment(filepath.Dir(global.Wrapper)); err != nil {
+		// set environment variables specified in configuration
+		if err := godelCfg.SetEnvVars(filepath.Dir(global.Wrapper)); err != nil {
 			printErrAndExit(err, global.Debug)
 		}
 

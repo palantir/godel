@@ -93,7 +93,7 @@ func TestApplyEnvironment(t *testing.T) {
 			cfg, err := config.ReadGodelConfigFromFile(cfgPath)
 			require.NoError(t, err)
 
-			err = cfg.ApplyEnvironment(projectDir)
+			err = cfg.SetEnvVars(projectDir)
 			if tc.wantErr != "" {
 				require.ErrorContains(t, err, tc.wantErr)
 				assert.Equal(t, "local", os.Getenv("GOTOOLCHAIN"))

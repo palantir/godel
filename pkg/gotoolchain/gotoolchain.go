@@ -27,40 +27,47 @@ import (
 
 var languageVersion = regexp.MustCompile(`^[0-9]+\.[0-9]+$`)
 
-// FromGoMod returns the toolchain name for the specified go.mod file. An explicit
-// toolchain other than "default" takes precedence over the required go directive.
-// A go directive containing only major.minor is normalized to major.minor.0.
-// Custom toolchains are unsupported. This function does not inspect go.work,
-// invoke Go, or compare the selected toolchain with the go directive.
-func FromGoMod(path string) (string, error) {
-	data, err := os.ReadFile(path)
+// FromGoMod returns the toolchain name for the specified go.mod file. The toolchain that should be used for a go.mod
+// file is determined as follows:
+//
+//  1. If the toolchain directive has any value other than "default", that value is used
+//  2. If there is no toolchain directive but the go directive specifies a version, that version is used. If the version
+//     specified by the go directive consists of only major.minor (for example, 1.27), it is normalized to "major.minor.0".
+//
+// Custom toolchains are unsupported. This function does not inspect go.work, invoke Go, or compare the selected
+// toolchain with the go directive.
+//
+// Returns an error if the provided go.mod file is invalid or does not specify a valid toolchain based on the outlined
+// rules.
+func FromGoMod(goModFilePath string) (string, error) {
+	data, err := os.ReadFile(goModFilePath)
 	if err != nil {
-		return "", fmt.Errorf("read go.mod %s: %w", path, err)
+		return "", fmt.Errorf("read go.mod %s: %w", goModFilePath, err)
 	}
 	// ParseLax ignores toolchain directives because they apply only to main modules.
-	mod, err := modfile.Parse(path, data, nil)
+	mod, err := modfile.Parse(goModFilePath, data, nil)
 	if err != nil {
-		return "", fmt.Errorf("parse go.mod %s: %w", path, err)
+		return "", fmt.Errorf("parse go.mod %s: %w", goModFilePath, err)
 	}
 	if mod.Go == nil {
-		return "", fmt.Errorf("go.mod %s must contain a go directive", path)
+		return "", fmt.Errorf("go.mod %s must contain a go directive", goModFilePath)
 	}
 
-	name := ""
+	var toolchainValue string
 	if mod.Toolchain != nil && mod.Toolchain.Name != "default" {
-		name = mod.Toolchain.Name
+		toolchainValue = mod.Toolchain.Name
 	} else {
 		v := mod.Go.Version
 		if languageVersion.MatchString(v) {
 			v += ".0"
 		}
-		name = "go" + v
+		toolchainValue = "go" + v
 	}
-	if strings.Contains(name, "-") {
-		return "", fmt.Errorf("go.mod %s specifies unsupported non-standard toolchain %q", path, name)
+	if strings.Contains(toolchainValue, "-") {
+		return "", fmt.Errorf("go.mod %s specifies unsupported non-standard toolchain %q", goModFilePath, toolchainValue)
 	}
-	if !version.IsValid(name) {
-		return "", fmt.Errorf("go.mod %s specifies invalid toolchain %q", path, name)
+	if !version.IsValid(toolchainValue) {
+		return "", fmt.Errorf("go.mod %s specifies invalid toolchain %q", goModFilePath, toolchainValue)
 	}
-	return name, nil
+	return toolchainValue, nil
 }
