@@ -33,30 +33,29 @@ import (
 // After considering the GOTOOLCHAIN logic described above, sets all the environment variables specified in
 // c.Environment.
 func (c GodelConfig) SetEnvVars(projectDir string) error {
-	// set environment variables
+	manageGoToolchain := c.ManageGoToolchain != nil && *c.ManageGoToolchain
+	var toolchain string
+	if manageGoToolchain {
+		if _, exists := c.Environment["GOTOOLCHAIN"]; exists {
+			return fmt.Errorf("manage-gotoolchain is true: environment must not specify GOTOOLCHAIN")
+		}
+		var err error
+		toolchain, err = gotoolchain.FromGoMod(filepath.Join(projectDir, "go.mod"))
+		if err != nil {
+			return err
+		}
+	}
+
 	for k, v := range c.Environment {
 		if err := os.Setenv(k, v); err != nil {
 			return fmt.Errorf("set environment variable %s: %w", k, err)
 		}
 	}
 
-	// if GOTOOLCHAIN is not managed, done
-	manageGoToolchain := c.ManageGoToolchain != nil && *c.ManageGoToolchain
-	if !manageGoToolchain {
-		return nil
-	}
-
-	if _, exists := c.Environment["GOTOOLCHAIN"]; exists {
-		return fmt.Errorf("the map Environment cannot specify GOTOOLCHAIN when ManageGoToolchain is true")
-	}
-
-	toolchain, err := gotoolchain.FromGoMod(filepath.Join(projectDir, "go.mod"))
-	if err != nil {
-		return err
-	}
-
-	if err := os.Setenv("GOTOOLCHAIN", toolchain); err != nil {
-		return fmt.Errorf("set GOTOOLCHAIN: %w", err)
+	if manageGoToolchain {
+		if err := os.Setenv("GOTOOLCHAIN", toolchain); err != nil {
+			return fmt.Errorf("set GOTOOLCHAIN: %w", err)
+		}
 	}
 
 	return nil

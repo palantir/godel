@@ -30,12 +30,12 @@ var languageVersion = regexp.MustCompile(`^[0-9]+\.[0-9]+$`)
 // FromGoMod returns the toolchain name for the specified go.mod file. The toolchain that should be used for a go.mod
 // file is determined as follows:
 //
-//  1. If the toolchain directive has any value other than "default", that value is used
-//  2. If there is no toolchain directive but the go directive specifies a version, that version is used. If the version
-//     specified by the go directive consists of only major.minor (for example, 1.27), it is normalized to "major.minor.0".
+//  1. If the toolchain directive has any value other than "default", that value is used.
+//  2. If the toolchain directive is absent or is "default", the go directive's version is used. If that version consists
+//     of only major.minor (for example, 1.27), it is normalized to "major.minor.0".
 //
-// Custom toolchains are unsupported. This function does not inspect go.work, invoke Go, or compare the selected
-// toolchain with the go directive.
+// A go directive is required even when an explicit toolchain directive exists. Custom toolchains are unsupported. This
+// function does not inspect go.work, invoke Go, or compare the selected toolchain with the go directive.
 //
 // Returns an error if the provided go.mod file is invalid or does not specify a valid toolchain based on the outlined
 // rules.
