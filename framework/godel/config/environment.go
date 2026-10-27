@@ -35,12 +35,15 @@ import (
 // c.Environment.
 func (c GodelConfig) SetEnvVars(projectDir string) error {
 	envVarsMap := maps.Clone(c.Environment)
+	if envVarsMap == nil {
+		envVarsMap = make(map[string]string)
+	}
 
 	// if Go toolchain should be managed, verify that input map does not specify a GOTOOLCHAIN value,
 	// determine the toolchain value based on go.mod, and include the computed value as a value to be set.
 	if c.ManageGoToolchain != nil && *c.ManageGoToolchain {
 		if _, exists := envVarsMap["GOTOOLCHAIN"]; exists {
-			return fmt.Errorf("ManageGoToolchain is true: Environment must not specify GOTOOLCHAIN")
+			return fmt.Errorf("ManageGoToolchain is true: environment must not specify GOTOOLCHAIN")
 		}
 		toolchain, err := gotoolchain.FromGoMod(filepath.Join(projectDir, "go.mod"))
 		if err != nil {

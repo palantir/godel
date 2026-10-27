@@ -106,3 +106,17 @@ func TestApplyEnvironment(t *testing.T) {
 		})
 	}
 }
+
+func TestSetEnvVarsManagedWithoutEnvironment(t *testing.T) {
+	t.Setenv("GOTOOLCHAIN", "local")
+	projectDir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(projectDir, "go.mod"),
+		[]byte("module example.com/test\ngo 1.27.0\ntoolchain go1.27.3\n"), 0644))
+	cfgPath := filepath.Join(projectDir, "godel.yml")
+	require.NoError(t, os.WriteFile(cfgPath, []byte("manage-gotoolchain: true\n"), 0644))
+	cfg, err := config.ReadGodelConfigFromFile(cfgPath)
+	require.NoError(t, err)
+
+	require.NoError(t, cfg.SetEnvVars(projectDir))
+	assert.Equal(t, "go1.27.3", os.Getenv("GOTOOLCHAIN"))
+}
