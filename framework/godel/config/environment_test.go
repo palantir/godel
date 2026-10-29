@@ -75,10 +75,13 @@ func TestApplyEnvironment(t *testing.T) {
 		{name: "disabled configured value", setting: "manage-gotoolchain: false", extraEnvironment: "  GOTOOLCHAIN: go1.26.5\n", want: "go1.26.5"},
 		{name: "override inherited value", setting: "manage-gotoolchain: true", goMod: "module example.com/test\ngo 1.27.0\ntoolchain go1.27.3\n", want: "go1.27.3"},
 		{name: "fallback", setting: "manage-gotoolchain: true", goMod: "module example.com/test\ngo 1.27\n", want: "go1.27.0"},
+		{name: "default toolchain fallback", setting: "manage-gotoolchain: true", goMod: "module example.com/test\ngo 1.27\ntoolchain default\n", want: "go1.27.0"},
+		{name: "toolchain missing patch", setting: "manage-gotoolchain: true", goMod: "module example.com/test\ngo 1.27\ntoolchain go1.27\n", wantErr: "needs a patch number"},
+		{name: "custom toolchain", setting: "manage-gotoolchain: true", goMod: "module example.com/test\ngo 1.27.0\ntoolchain go1.27.3-custom\n", wantErr: "invalid standard Go version"},
 		{name: "configured conflict", setting: "manage-gotoolchain: true", extraEnvironment: "  GOTOOLCHAIN: local\n", wantErr: "environment must not specify GOTOOLCHAIN"},
 		{name: "empty configured conflict", setting: "manage-gotoolchain: true", extraEnvironment: "  GOTOOLCHAIN: \"\"\n", wantErr: "environment must not specify GOTOOLCHAIN"},
 		{name: "missing module", setting: "manage-gotoolchain: true", wantErr: "read go.mod"},
-		{name: "invalid module", setting: "manage-gotoolchain: true", goMod: "invalid", wantErr: "parse go.mod"},
+		{name: "invalid module", setting: "manage-gotoolchain: true", goMod: "invalid", wantErr: "failed to parse"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Setenv("GOTOOLCHAIN", "local")

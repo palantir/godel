@@ -20,7 +20,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/palantir/godel/v2/pkg/gotoolchain"
+	"github.com/palantir/pkg/gotoolchain"
 )
 
 // SetEnvVars sets the environment variables based on the GodelConfig receiver c.
