@@ -50,6 +50,47 @@ func RunPlugin(
 	}
 
 	cleanup = func() {}
+	if projectDir != "" {
+		if !filepath.IsAbs(projectDir) {
+			wd, err := os.Getwd()
+			if err != nil {
+				return cleanup, errors.Wrapf(err, "failed to determine working directory")
+			}
+			projectDir = filepath.Join(wd, projectDir)
+		}
+
+		// ConfigDirPath validates the wrapper layout, so create the temporary wrapper before reading configuration.
+		godelwPath := filepath.Join(projectDir, "godelw")
+		if _, err := os.Stat(godelwPath); os.IsNotExist(err) {
+			if err := os.WriteFile(godelwPath, nil, 0644); err != nil {
+				return cleanup, errors.Wrapf(err, "failed to create temporary godelw file")
+			}
+			cleanup = func() {
+				if err := os.Remove(godelwPath); err != nil {
+					fmt.Println(errors.Wrapf(err, "failed to remove temporary godelw file"))
+				}
+			}
+		}
+
+		// Read and apply configuration before querying plugin metadata, mirroring godel startup.
+		// Restore GOTOOLCHAIN before returning because RunPlugin executes in the caller's process.
+		godelCfg, err := config.ReadGodelConfigFromProjectDir(projectDir)
+		if err != nil {
+			return cleanup, errors.Wrapf(err, "failed to read godel config")
+		}
+		toolchain, toolchainWasSet := os.LookupEnv("GOTOOLCHAIN")
+		defer func() {
+			if toolchainWasSet {
+				_ = os.Setenv("GOTOOLCHAIN", toolchain)
+			} else {
+				_ = os.Unsetenv("GOTOOLCHAIN")
+			}
+		}()
+		if err := godelCfg.SetEnvVars(projectDir); err != nil {
+			return cleanup, errors.Wrapf(err, "failed to configure godel environment")
+		}
+	}
+
 	info, err := pluginapi.InfoFromPlugin(pluginPath)
 	if err != nil {
 		return cleanup, err
@@ -71,41 +112,7 @@ func RunPlugin(
 		Debug:    debug,
 	}
 	if projectDir != "" {
-		if !filepath.IsAbs(projectDir) {
-			wd, err := os.Getwd()
-			if err != nil {
-				return cleanup, errors.Wrapf(err, "failed to determine working directory")
-			}
-			projectDir = filepath.Join(wd, projectDir)
-		}
-
-		godelwPath := filepath.Join(projectDir, "godelw")
-		if _, err := os.Stat(godelwPath); os.IsNotExist(err) {
-			if err := os.WriteFile(godelwPath, nil, 0644); err != nil {
-				return cleanup, errors.Wrapf(err, "failed to create temporary godelw file")
-			}
-			cleanup = func() {
-				if err := os.Remove(godelwPath); err != nil {
-					fmt.Println(errors.Wrapf(err, "failed to remove temporary godelw file"))
-				}
-			}
-		}
 		globalConfig.Wrapper = filepath.Join(projectDir, "godelw")
-
-		// read godel configuration and set any environment variables specified in it.
-		// config.ReadGodelConfigFromProjectDir returns an empty configuration if the file does not exist, so this is
-		// safe to call (and effectively a noop) even if the configuration file does not exist.
-		godelCfg, err := config.ReadGodelConfigFromProjectDir(projectDir)
-		if err != nil {
-			return cleanup, errors.Wrapf(err, "failed to read godel config")
-		}
-		// set environment variables specified in configuration.
-		// Mirrors logic in main.go: https://github.com/palantir/godel/blob/987d322e725e7cd0b08bfeb3130878056a1d8c69/main.go#L56-L61
-		for k, v := range godelCfg.Environment {
-			if err := os.Setenv(k, v); err != nil {
-				return cleanup, errors.Wrapf(err, "failed to set environment variable %s=%s", k, v)
-			}
-		}
 	}
 	return cleanup, task.Run(globalConfig, stdout)
 }
