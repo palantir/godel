@@ -8,8 +8,8 @@ github.com/andybalholm/brotli/matchfinder
 # github.com/chainguard-dev/git-urls v1.0.2
 ## explicit; go 1.19
 github.com/chainguard-dev/git-urls
-# github.com/cheggaaa/pb/v3 v3.2.1
-## explicit; go 1.25.0
+# github.com/cheggaaa/pb/v3 v3.3.0
+## explicit; go 1.26.0
 github.com/cheggaaa/pb/v3
 github.com/cheggaaa/pb/v3/termutil
 # github.com/clipperhouse/uax29/v2 v2.7.0
