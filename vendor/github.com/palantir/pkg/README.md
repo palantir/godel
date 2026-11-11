@@ -17,6 +17,13 @@ cli
 `cli` provides a framework for creating CLI applications. It provides support for commands, subcommands, flags, before
 and after hooks, documentation, deprecation, command-line completion and other functionality.
 
+gotoolchain
+-----------
+`gotoolchain` determines the Go toolchain that should be used for a module based on the `go` and `toolchain` directives
+of its `go.mod` file. Provides a Go implementation and an equivalent bash implementation (available as an embedded
+script) that are tested to behave identically, so that tools written in Go and environments that can only run shell
+scripts select the same toolchain.
+
 matcher
 -------
 `matcher` allows files to be matched based on their name or path. Supports composing and combining matchers and provides
@@ -43,4 +50,3 @@ the specification and create new directory structures based on a specification.
 License
 -------
 This project is made available under the [BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause).
-
