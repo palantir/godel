@@ -105,6 +105,10 @@ func VerifyTask(tasks []godellauncher.Task, verifyTasksConfig config.VerifyTasks
 
 					_, _ = fmt.Fprintf(stdout, "Running %s...\n", task.Name)
 					if err := task.Run(taskGlobal, stdout); err != nil {
+						// tasks that print their own error output return an empty error, so only print non-empty errors
+						if errStr := err.Error(); errStr != "" {
+							_, _ = fmt.Fprintf(stdout, "Error: %s\n", errStr)
+						}
 						var applyArgs []string
 						if *applyVar {
 							applyArgs = task.Verify.ApplyTrueArgs

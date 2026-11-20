@@ -163,7 +163,12 @@ func (ti taskInfoImpl) toTask(pluginExecPath, cfgFileName string, assets []strin
 			cmd.Stderr = stdout
 			cmd.Stdin = os.Stdin
 			if err := cmd.Run(); err != nil {
-				if _, ok := err.(*exec.ExitError); ok {
+				if exitErr, ok := err.(*exec.ExitError); ok {
+					if exitErr.ExitCode() == -1 {
+						// process was terminated by a signal (for example, SIGKILL from the OOM killer) and could
+						// not print its own error, so return an error that surfaces the cause
+						return errors.Wrapf(err, "plugin process for task %s was terminated", t.Name)
+					}
 					// create empty error because command will likely print its own error
 					return fmt.Errorf("")
 				}
