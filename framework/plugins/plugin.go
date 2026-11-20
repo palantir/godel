@@ -64,6 +64,14 @@ func loadPluginsTasks(pluginsParam godellauncher.PluginsParam, stderr io.Writer,
 		return nil, nil, err
 	}
 
+	// Verify before reading the cache so that the check also applies to configuration whose plugin information was
+	// cached by a version of gödel that did not perform it.
+	for _, currPlugin := range pluginsParam.Plugins {
+		if err := pluginsinternal.VerifyAssetVersions(currPlugin.Assets); err != nil {
+			return nil, nil, errors.Wrapf(err, "invalid assets for plugin %s", currPlugin.LocatorWithChecksums.Locator.String())
+		}
+	}
+
 	var plugins map[artifactresolver.Locator]pluginInfoWithAssets
 	if cachePath != "" {
 		if pluginsConfigCacheBytes, err := os.ReadFile(cachePath); err == nil {

@@ -19,6 +19,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 
@@ -35,6 +36,9 @@ const (
 func ResolveAssets(assetsDir, downloadsDir string, assetParams []artifactresolver.LocatorWithResolverParam, osArch osarch.OSArch, defaultResolvers []artifactresolver.Resolver, stderr io.Writer) ([]artifactresolver.Locator, error) {
 	if len(assetParams) == 0 {
 		return nil, nil
+	}
+	if err := VerifyAssetVersions(assetParams); err != nil {
+		return nil, err
 	}
 
 	var assets []artifactresolver.Locator
@@ -72,6 +76,37 @@ func ResolveAssets(assetsDir, downloadsDir string, assetParams []artifactresolve
 		errStringsParts = append(errStringsParts, assetErrors[k].Error())
 	}
 	return nil, errors.New(strings.Join(errStringsParts, "\n"+strings.Repeat(" ", IndentSpaces)))
+}
+
+// VerifyAssetVersions returns an error if the provided assets specify more than one version of the same asset (an asset
+// with a given {group, product} pair). This mirrors the restriction that there is at most one version of a given
+// plugin, and catches configuration in which a version update added a new asset locator instead of replacing the
+// existing one. Multiple entries with the same locator are not considered an error.
+func VerifyAssetVersions(assetParams []artifactresolver.LocatorWithResolverParam) error {
+	versions := make(map[string][]string)
+	for _, currAsset := range assetParams {
+		currLocator := currAsset.LocatorWithChecksums.Locator
+		key := currLocator.GroupAndProductString()
+		if !slices.Contains(versions[key], currLocator.Version) {
+			versions[key] = append(versions[key], currLocator.Version)
+		}
+	}
+
+	var conflicts []string
+	for key, currVersions := range versions {
+		if len(currVersions) < 2 {
+			continue
+		}
+		conflicts = append(conflicts, fmt.Sprintf("%s: %s", key, strings.Join(currVersions, ", ")))
+	}
+	if len(conflicts) == 0 {
+		return nil
+	}
+	sort.Strings(conflicts)
+
+	errStringsParts := []string{fmt.Sprintf("%d asset(s) specified with multiple versions:", len(conflicts))}
+	errStringsParts = append(errStringsParts, conflicts...)
+	return errors.New(strings.Join(errStringsParts, "\n"+strings.Repeat(" ", IndentSpaces)))
 }
 
 func ResolveAndVerify(
