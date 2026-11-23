@@ -16,6 +16,8 @@ package installupdate
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -48,4 +50,14 @@ second line`,
 			assert.Equal(t, tc.want, got)
 		})
 	}
+}
+
+// Verifies that getGodelVersion includes the wrapper's stderr output in the returned error.
+func TestGetGodelVersionErrorIncludesStderr(t *testing.T) {
+	projectDir := t.TempDir()
+	script := "#!/usr/bin/env bash\necho 'SHA-256 checksum of downloaded file did not match expected value' >&2\nexit 1\n"
+	require.NoError(t, os.WriteFile(filepath.Join(projectDir, "godelw"), []byte(script), 0755))
+	_, err := getGodelVersion(projectDir)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "SHA-256 checksum of downloaded file did not match expected value")
 }

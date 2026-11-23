@@ -15,6 +15,7 @@
 package installupdate
 
 import (
+	"bytes"
 	"io"
 	"os/exec"
 	"path/filepath"
@@ -46,13 +47,15 @@ func runUpgradeConfig(projectDir string, args []string, stdout, stderr io.Writer
 func getGodelVersion(projectDir string) (godelVersion, error) {
 	godelw := filepath.Join(projectDir, "godelw")
 	cmd := exec.Command(godelw, "version")
+	// The wrapper writes diagnostics such as download and checksum failures to stderr, so capture it for error output.
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
 	output, err := cmd.Output()
 	if err != nil {
-		return godelVersion{}, errors.Wrapf(err, "failed to execute command %v: %s", cmd.Args, string(output))
+		return godelVersion{}, errors.Wrapf(err, "failed to execute command %v\nstdout:\n%s\nstderr:\n%s", cmd.Args, string(output), stderr.String())
 	}
 
-	// split input on line breaks and only consider final line. Do this in case invoking "godelw" causes assets to be
-	// downloaded (in which case download messages will be in output before version is printed).
+	// Only consider the final line in case anything other than the version was written to stdout.
 	outputString, err := getLastLine(string(output))
 	if err != nil {
 		return godelVersion{}, err
