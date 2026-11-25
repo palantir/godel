@@ -77,6 +77,62 @@ exclude:
 	}
 }
 
+func TestReadGodelConfigFromFileDuplicateKeys(t *testing.T) {
+	testDir, cleanup, err := dirs.TempDir("", "")
+	require.NoError(t, err)
+	defer cleanup()
+
+	inputFile := filepath.Join(testDir, "godel.yml")
+	err = os.WriteFile(inputFile, []byte(`plugins:
+  plugins:
+    - locator:
+        id: com.palantir.godel-mod-plugin:mod-plugin:1.0.0
+        id: com.palantir.godel-mod-plugin:mod-plugin:2.0.0
+        checksums:
+          darwin-amd64: abc
+          linux-amd64: def
+          linux-amd64: ghi
+exclude:
+  names:
+    - vendor
+exclude:
+  names:
+    - godel
+`), 0644)
+	require.NoError(t, err)
+
+	_, err = config.ReadGodelConfigFromFile(inputFile)
+	require.Error(t, err)
+	assert.Equal(t, fmt.Sprintf(`invalid gödel configuration in %s: configuration contains duplicate keys:
+    line 5: key "id" already defined at line 4
+    line 9: key "linux-amd64" already defined at line 8
+    line 13: key "exclude" already defined at line 10`, inputFile), err.Error())
+}
+
+func TestReadGodelConfigFromFileAllowsUnrecognizedKeys(t *testing.T) {
+	testDir, cleanup, err := dirs.TempDir("", "")
+	require.NoError(t, err)
+	defer cleanup()
+
+	inputFile := filepath.Join(testDir, "godel.yml")
+	err = os.WriteFile(inputFile, []byte(`unrecognized-key: value
+exclude:
+  names:
+    - vendor
+`), 0644)
+	require.NoError(t, err)
+
+	gotCfg, err := config.ReadGodelConfigFromFile(inputFile)
+	require.NoError(t, err)
+	assert.Equal(t, config.GodelConfig(v0.GodelConfig{
+		Exclude: matcher.NamesPathsCfg{
+			Names: []string{
+				"vendor",
+			},
+		},
+	}), gotCfg)
+}
+
 func TestReadGodelConfigFromFileError(t *testing.T) {
 	nonexistentFile := fmt.Sprintf("TestReadGodelConfigFromFileError-%d.yml", time.Now().Unix())
 
